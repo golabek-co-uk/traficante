@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.6.2</Version>
+    <Authors>Jakub Puchała</Authors>
+    <Product>Musoq</Product>
+    <PackageProjectUrl>https://github.com/Puchaczov/Musoq</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Puchaczov/Musoq/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>sql, csv, dotnet-core</PackageTags>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;NETSTANDARD2_0;DEBUG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DefineConstants>TRACE;NETSTANDARD2_0;DEBUG</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Musoq.Schema\Musoq.Schema.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="dotnet $(SolutionDir)Shared\Musoq.Repository.Packer\Musoq.Repository.Packer.dll --packType 0 --sourceDir &quot;$(ProjectDir)\bin\$(ConfigurationName)\netcoreapp2.1&quot; --destDir &quot;$(ProjectDir)\bin\$(ConfigurationName)&quot; --dll &quot;Musoq.Schema.Csv&quot; --license &quot;MIT&quot; --licenseUrl &quot;https://github.com/Puchaczov/Musoq/blob/master/LICENSE&quot; --descriptionFile &quot;$(ProjectDir)\$(ProjectName).modf&quot;" />
+  </Target>
+
+</Project>

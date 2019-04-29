@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.6.4</Version>
+    <Authors>Jakub Puchała</Authors>
+    <Product>Musoq</Product>
+    <PackageProjectUrl>https://github.com/Puchaczov/Musoq</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Puchaczov/Musoq/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageTags>sql, dotnet-core</PackageTags>
+    <AssemblyVersion>0.5.1.0</AssemblyVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Musoq.Plugins\Musoq.Plugins.csproj" />
+  </ItemGroup>
+
+</Project>

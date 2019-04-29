@@ -1,0 +1,27 @@
+﻿select 
+	w.Id, 
+	d.Id,
+	a.Id
+from #schema.whatever() w 
+join #schema.diff() d on w.Id = d.Id
+join #schema.abc() a on a.Id = d.Id
+where d.Abc > 0
+
+=>
+
+select 
+	w.Id, 
+	d.Id,
+	a.Id
+from (
+	join(
+		join(
+			#schema.whatever(), 
+			#schema.diff(), 
+			a.Id = b.Id
+		), 
+		#schema.abc(), 
+		a.Id = b.Id
+	)
+) 
+where d.Abc > 0
