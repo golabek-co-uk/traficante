@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Musoq.Schema.DataSources
 {
     public interface IObjectResolver
@@ -8,6 +10,10 @@ namespace Musoq.Schema.DataSources
 
         object this[int index] { get; }
 
+        object GetValue(string name);
+
         bool HasColumn(string name);
+
+        IEnumerable<IObjectResolver> Stream { get; set; }
     }
 }

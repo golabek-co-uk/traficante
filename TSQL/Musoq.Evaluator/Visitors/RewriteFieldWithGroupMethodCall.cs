@@ -48,20 +48,21 @@ namespace Musoq.Evaluator.Visitors
 
         public override void Visit(AccessMethodNode node)
         {
-            if (node.IsAggregateMethod)
-            {
-                Nodes.Pop();
+            //if (node.IsAggregateMethod)
+            //{
+            //    Nodes.Pop();
 
-                var wordNode = node.Arguments.Args[0] as WordNode;
-                var accessGroup = new AccessColumnNode("none", string.Empty, typeof(Group), TextSpan.Empty);
-                var args = new List<Node> {accessGroup, wordNode};
-                args.AddRange(node.Arguments.Args.Skip(1));
-                var extractFromGroup = new AccessMethodNode(
-                    new FunctionToken(node.Method.Name, TextSpan.Empty), 
-                    new ArgsListNode(args.ToArray()), node.ExtraAggregateArguments, node.Method, node.Alias);
-                Nodes.Push(extractFromGroup);
-            }
-            else if (_fields.Select(f => f.Expression.ToString()).Contains(node.ToString()))
+            //    var wordNode = node.Arguments.Args[0] as WordNode;
+            //    var accessGroup = new AccessColumnNode("none", string.Empty, typeof(Group), TextSpan.Empty);
+            //    var args = new List<Node> {accessGroup, wordNode};
+            //    args.AddRange(node.Arguments.Args.Skip(1));
+            //    var extractFromGroup = new AccessMethodNode(
+            //        new FunctionToken(node.Method.Name, TextSpan.Empty), 
+            //        new ArgsListNode(args.ToArray()), node.ExtraAggregateArguments, node.Method, node.Alias);
+            //    Nodes.Push(extractFromGroup);
+            //}
+            //else 
+            if (_fields.Select(f => f.Expression.ToString()).Contains(node.ToString()))
             {
                 Nodes.Push(new AccessColumnNode(node.ToString(), string.Empty, node.ReturnType, TextSpan.Empty));
             }

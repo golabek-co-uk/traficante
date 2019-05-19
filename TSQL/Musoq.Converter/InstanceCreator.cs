@@ -5,12 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Musoq.Converter.Build;
 using Musoq.Converter.Exceptions;
 using Musoq.Evaluator;
 using Musoq.Evaluator.Runtime;
+using Musoq.Evaluator.Tables;
 using Musoq.Schema;
+using Musoq.Schema.DataSources;
 
 namespace Musoq.Converter
 {
@@ -53,10 +56,14 @@ namespace Musoq.Converter
 
             RuntimeLibraries.CreateReferences();
 
-            BuildChain chain = 
+            //BuildChain chain = 
+            //    new CreateTree(
+            //        new TransformToStreamTree(new TransformTree(
+            //            new TurnQueryIntoRunnableCode(null))));
+
+            BuildChain chain =
                 new CreateTree(
-                    new TransformTree(
-                        new TurnQueryIntoRunnableCode(null)));
+                    new TransformToStreamTree(null));
 
             CompilationException compilationError = null;
             try
@@ -80,37 +87,37 @@ namespace Musoq.Converter
             if (!Directory.Exists(tempPath))
                 Directory.CreateDirectory(tempPath);
 
-            var builder = new StringBuilder();
-            using (var writer = new StringWriter(builder))
-            {
-                items.Compilation?.SyntaxTrees.ElementAt(0).GetRoot().WriteTo(writer);
-            }
+            //var builder = new StringBuilder();
+            //using (var writer = new StringWriter(builder))
+            //{
+            //    items.Compilation?.SyntaxTrees.ElementAt(0).GetRoot().WriteTo(writer);
+            //}
 
-            using (var file = new StreamWriter(File.Open(csPath, FileMode.Create)))
-            {
-                file.Write(builder.ToString());
-            }
+            //using (var file = new StreamWriter(File.Open(csPath, FileMode.Create)))
+            //{
+            //    file.Write(builder.ToString());
+            //}
 
-            if (items.DllFile != null && items.DllFile.Length > 0)
-            {
-                using (var file = new BinaryWriter(File.Open(assemblyPath, FileMode.Create)))
-                {
-                    if (items.DllFile != null)
-                        file.Write(items.DllFile);
-                }
-            }
+            //if (items.DllFile != null && items.DllFile.Length > 0)
+            //{
+            //    using (var file = new BinaryWriter(File.Open(assemblyPath, FileMode.Create)))
+            //    {
+            //        if (items.DllFile != null)
+            //            file.Write(items.DllFile);
+            //    }
+            //}
 
-            if (items.PdbFile != null && items.PdbFile.Length > 0)
-            {
-                using (var file = new BinaryWriter(File.Open(pdbPath, FileMode.Create)))
-                {
-                    if (items.PdbFile != null)
-                        file.Write(items.PdbFile);
-                }
-            }
+            //if (items.PdbFile != null && items.PdbFile.Length > 0)
+            //{
+            //    using (var file = new BinaryWriter(File.Open(pdbPath, FileMode.Create)))
+            //    {
+            //        if (items.PdbFile != null)
+            //            file.Write(items.PdbFile);
+            //    }
+            //}
 
-            if (!compiled && compilationError != null)
-                throw compilationError;
+            //if (!compiled && compilationError != null)
+            //    throw compilationError;
 
             var runnable = new RunnableDebugDecorator(CreateRunnable(items), csPath, assemblyPath, pdbPath);
 
@@ -134,14 +141,43 @@ namespace Musoq.Converter
 
         private static IRunnable CreateRunnable(BuildItems items, Func<Assembly> createAssembly)
         {
-            var assembly = createAssembly();
+            var runnableStream = new RunnableStream();
+            runnableStream.Provider = items.SchemaProvider;
+            runnableStream.Stream = items.Stream;
+            runnableStream.Columns = items.Columns;
+            runnableStream.ColumnsTypes = items.ColumnsTypes;
+            return runnableStream;
+        }
+    }
 
-            var type = assembly.GetType(items.AccessToClassPath);
+    public class RunnableStream : IRunnable
+    {
+        public ISchemaProvider Provider { get; set; }
+        public IQueryable<IObjectResolver> Stream { get; set; }
+        public string[] Columns { get; set; }
+        public Type[] ColumnsTypes { get; set; }
+        
 
-            var runnable = (IRunnable)Activator.CreateInstance(type);
-            runnable.Provider = items.SchemaProvider;
-
-            return runnable;
+        public Table Run(CancellationToken token)
+        {
+            List<Column> columns2 = new List<Column>();
+            for(int i = 0; i < Columns.Length; i++)
+            {
+                columns2.Add(new Column(Columns[i], ColumnsTypes[i], i));
+            }
+            
+            Table t = new Table("entities", columns2.ToArray());
+            foreach(var row in Stream.ToList())
+            {
+                object[] values = new object[columns2.Count];
+                for (int i = 0; i < Columns.Length; i++)
+                {
+                    values[i] = row.GetValue(Columns[i]);
+                }
+                ObjectsRow row2 = new ObjectsRow(values);
+                t.Add(row2);
+            }
+            return t;
         }
     }
 }

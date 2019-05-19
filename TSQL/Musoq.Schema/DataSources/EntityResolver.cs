@@ -23,11 +23,18 @@ namespace Musoq.Schema.DataSources
 
         public object Context => _entitiy;
 
+        public IEnumerable<IObjectResolver> Stream { get; set; }
+
         object IObjectResolver.this[string name]
             => _indexToObjectAccessMap[_nameToIndexMap[name]](_entitiy);
 
         object IObjectResolver.this[int index]
             => _indexToObjectAccessMap[index](_entitiy);
+
+        object IObjectResolver.GetValue(string name)
+        {
+            return ((IObjectResolver)this)[name];
+        }
 
         public bool HasColumn(string name)
         {

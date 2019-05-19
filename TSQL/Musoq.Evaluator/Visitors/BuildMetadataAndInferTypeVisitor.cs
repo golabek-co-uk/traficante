@@ -824,39 +824,39 @@ namespace Musoq.Evaluator.Visitors
             var isAggregateMethod = method.GetCustomAttribute<AggregationMethodAttribute>() != null;
 
             AccessMethodNode accessMethod;
-            if (isAggregateMethod)
-            {
-                accessMethod = func(node.FToken, args, node.ExtraAggregateArguments, method, alias);
-                var identifier = accessMethod.ToString();
+            //if (isAggregateMethod)
+            //{
+            //    accessMethod = func(node.FToken, args, node.ExtraAggregateArguments, method, alias);
+            //    //var identifier = accessMethod.ToString();
 
-                var newArgs = new List<Node> {new WordNode(identifier)};
-                newArgs.AddRange(args.Args.Skip(1));
-                var newSetArgs = new List<Node> {new WordNode(identifier)};
-                newSetArgs.AddRange(args.Args);
+            //    //var newArgs = new List<Node> {new WordNode(identifier)};
+            //    //newArgs.AddRange(args.Args.Skip(1));
+            //    //var newSetArgs = new List<Node> {new WordNode(identifier)};
+            //    //newSetArgs.AddRange(args.Args);
 
-                var setMethodName = $"Set{method.Name}";
-                var argTypes = newSetArgs.Select(f => f.ReturnType).ToArray();
+            //    //var setMethodName = $"Set{method.Name}";
+            //    //var argTypes = newSetArgs.Select(f => f.ReturnType).ToArray();
 
-                if (!schemaTablePair.Schema.TryResolveAggreationMethod(
-                    setMethodName,
-                    argTypes,
-                    out var setMethod))
-                {
-                    var names = argTypes.Length == 0
-                        ? string.Empty
-                        : argTypes.Select(arg => arg.Name).Aggregate((a, b) => a + ", " + b);
-                    throw new NotSupportedException($"Cannot resolve method {setMethodName} with parameters {names}");
-                }
+            //    //if (!schemaTablePair.Schema.TryResolveAggreationMethod(
+            //    //    setMethodName,
+            //    //    argTypes,
+            //    //    out var setMethod))
+            //    //{
+            //    //    var names = argTypes.Length == 0
+            //    //        ? string.Empty
+            //    //        : argTypes.Select(arg => arg.Name).Aggregate((a, b) => a + ", " + b);
+            //    //    throw new NotSupportedException($"Cannot resolve method {setMethodName} with parameters {names}");
+            //    //}
 
-                var setMethodNode = func(new FunctionToken(setMethodName, TextSpan.Empty),
-                    new ArgsListNode(newSetArgs.ToArray()), null, setMethod,
-                    alias);
+            //    //var setMethodNode = func(new FunctionToken(setMethodName, TextSpan.Empty),
+            //    //    new ArgsListNode(newSetArgs.ToArray()), null, setMethod,
+            //    //    alias);
 
-                _refreshMethods.Add(setMethodNode);
+            //    //_refreshMethods.Add(setMethodNode);
 
-                accessMethod = func(node.FToken, new ArgsListNode(newArgs.ToArray()), null, method, alias);
-            }
-            else
+            //    //accessMethod = func(node.FToken, new ArgsListNode(newArgs.ToArray()), null, method, alias);
+            //}
+            //else
             {
                 accessMethod = func(node.FToken, args, new ArgsListNode(new Node[0]), method, alias);
             }

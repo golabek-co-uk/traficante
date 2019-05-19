@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Musoq.Evaluator;
 using Musoq.Parser.Nodes;
 using Musoq.Schema;
+using Musoq.Schema.DataSources;
 
 namespace Musoq.Converter.Build
 {
@@ -61,6 +63,24 @@ namespace Musoq.Converter.Build
         {
             get => (EmitResult) this["EMIT_RESULT"];
             set => this["EMIT_RESULT"] = value;
+        }
+
+        public IQueryable<IObjectResolver> Stream
+        {
+            get => (IQueryable<IObjectResolver>)this["Stream"];
+            set => this["Stream"] = value;
+        }
+
+        public string[] Columns
+        {
+            get => (string[])this["Columns"];
+            set => this["Columns"] = value;
+        }
+
+        public System.Type[] ColumnsTypes
+        {
+            get => (System.Type[])this["ColumnsTypes"];
+            set => this["ColumnsTypes"] = value;
         }
     }
 }

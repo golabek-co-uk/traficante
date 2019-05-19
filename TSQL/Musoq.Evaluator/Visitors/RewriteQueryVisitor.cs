@@ -403,10 +403,16 @@ namespace Musoq.Evaluator.Visitors
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
             var from = Nodes.Pop() as ExpressionFromNode;
 
+            Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
+            return;
+
             var scoreSelect = select;
             var scoreWhere = where;
 
             QueryNode query;
+            //QueryNode query = new QueryNode(select, from, where, groupBy, orderBy, skip, take);
+            //Nodes.Push(query);
+            //return;
 
             var splittedNodes = new List<Node>();
             var source = from.Alias.ToRowsSource().WithRowsUsage();
@@ -844,18 +850,19 @@ namespace Musoq.Evaluator.Visitors
                 {
                     var subNode = subNodes.Pop();
 
-                    if (subNode is AccessMethodNode aggregateMethod && aggregateMethod.IsAggregateMethod)
-                    {
-                        var subNodeStr = subNode.ToString();
-                        if (nestedFields.Select(f => f.Expression.ToString()).Contains(subNodeStr))
-                            continue;
+                    //if (subNode is AccessMethodNode aggregateMethod && aggregateMethod.IsAggregateMethod)
+                    //{
+                    //    var subNodeStr = subNode.ToString();
+                    //    if (nestedFields.Select(f => f.Expression.ToString()).Contains(subNodeStr))
+                    //        continue;
 
-                        var nameArg = (WordNode) aggregateMethod.Arguments.Args[0];
-                        nestedFields.Add(new FieldNode(subNode, fieldOrder, nameArg.Value));
-                        rawNestedFields.Add(new FieldNode(subNode, fieldOrder, string.Empty));
-                        fieldOrder += 1;
-                    }
-                    else if (subNode is AccessMethodNode method)
+                    //    var nameArg = (WordNode) aggregateMethod.Arguments.Args[0];
+                    //    nestedFields.Add(new FieldNode(subNode, fieldOrder, nameArg.Value));
+                    //    rawNestedFields.Add(new FieldNode(subNode, fieldOrder, string.Empty));
+                    //    fieldOrder += 1;
+                    //}
+                    //else 
+                    if (subNode is AccessMethodNode method)
                     {
                         foreach (var arg in method.Arguments.Args)
                             subNodes.Push(arg);

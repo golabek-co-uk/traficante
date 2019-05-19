@@ -120,6 +120,7 @@ namespace Musoq.Evaluator.Tests.Core
         public void CaseWhenArithmeticExpressionTest()
         {
             TestMethodTemplate<long>("1 + (case when 2 > 1 then 1 else 0 end) - 1", 1);
+            TestMethodTemplate<long>("1 + (case when 2 < 1 then 0 else 1 end) - 1", 1);
         }
     }
 }

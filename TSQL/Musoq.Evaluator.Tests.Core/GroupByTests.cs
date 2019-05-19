@@ -199,6 +199,7 @@ namespace Musoq.Evaluator.Tests.Core
                 }
             };
 
+
             var vm = CreateAndRunVirtualMachine(query, sources);
             var table = vm.Run();
 

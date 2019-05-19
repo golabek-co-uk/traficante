@@ -16,6 +16,8 @@ namespace Musoq.Evaluator.Tables
 
         public object Context => _row;
 
+        public IEnumerable<IObjectResolver> Stream { get; set; }
+
         public bool HasColumn(string name)
         {
             return _nameToIndexMap.ContainsKey(name);
@@ -34,6 +36,11 @@ namespace Musoq.Evaluator.Tables
                 return _row[_nameToIndexMap[name]];
 #endif
             }
+        }
+
+        object IObjectResolver.GetValue(string name)
+        {
+            return ((IObjectResolver)this)[name];
         }
 
         object IObjectResolver.this[int index] => _row[index];

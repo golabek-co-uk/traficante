@@ -309,11 +309,18 @@ namespace Musoq.Evaluator.Helpers
             }
         }
 
+        public object GetValue(string name)
+        {
+            return this[name];
+        }
+
         public object this[int index] => null;
 
         public bool HasColumn(string name)
         {
             return false;
         }
+
+        public IEnumerable<IObjectResolver> Stream { get; set; }
     }
 }
