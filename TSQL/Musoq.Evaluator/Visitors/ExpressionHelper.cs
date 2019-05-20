@@ -10,13 +10,22 @@ namespace Musoq.Evaluator.Visitors
 {
     public class ExpressionHelper
     {
-        public List<Type> AnonymousTypes = new List<Type>();
+        private List<Type> _anonymousTypes = new List<Type>();
+        private Dictionary<string, Type> _nodeId2AnonymousTypes = new Dictionary<string, Type>();
 
-        public string GenerateAnonymousTypeName()
+        public Type CreateAnonymousTypeForNode(string nodeId, IEnumerable<(string, Type)> fields)
         {
-            var alpha = "abcdefghijklmnopqrstuwxyz".ToCharArray().Select(x => x.ToString());
-            var nextLetter = alpha.Except(AnonymousTypes.Select(x=>x.Name)).First();
-            return nextLetter;
+            var newType = CreateAnonymousType(fields);
+            _nodeId2AnonymousTypes.Add(nodeId, newType);
+            return newType;
+        }
+
+        public Type CreateAnonymousTypeSameAs(Type type)
+        {
+            var fields = type.GetFields().Select(x => (x.Name, x.FieldType));
+            var newType = CreateAnonymousType(fields);
+            return newType;
+
         }
 
         public Type CreateAnonymousType(IEnumerable<(string, Type)> fields)
@@ -32,9 +41,21 @@ namespace Musoq.Evaluator.Visitors
             OverrideGetHashCode(dynamicTypeBuilder, fieldsBuilder);
 
             var dynamicType = dynamicTypeBuilder.CreateTypeInfo();
-            AnonymousTypes.Add(dynamicType);
+            _anonymousTypes.Add(dynamicType);
            
             return dynamicType;
+        }
+
+        public Type GetCreatedTypeForNode(string nodeId)
+        {
+            return _nodeId2AnonymousTypes[nodeId];
+        }
+
+        private string GenerateAnonymousTypeName()
+        {
+            var alpha = "abcdefghijklmnopqrstuwxyz".ToCharArray().Select(x => x.ToString());
+            var nextLetter = alpha.Except(_anonymousTypes.Select(x => x.Name)).First();
+            return nextLetter;
         }
 
         private static List<FieldBuilder> AddFields(TypeBuilder dynamicTypeBuilder, IEnumerable<(string, Type)> fields)

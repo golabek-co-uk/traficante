@@ -106,17 +106,7 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(DescNode node)
         {
-            var predicate = Nodes.Pop();
-            var predicateLambda = Expression.Lambda(predicate, this.item);
-
-            MethodCallExpression call = Expression.Call(
-                typeof(Queryable),
-                "OrderByDescending ",
-                new Type[] { this.itemType },
-                input,
-                predicateLambda);
-
-            Nodes.Push(Expression.Lambda(call, input));
+            throw new NotImplementedException();
         }
 
         public void Visit(StarNode node)
@@ -989,9 +979,7 @@ namespace Musoq.Evaluator.Visitors
                 last = Expression.Invoke(select, last);
             }
 
-            Expression<Func<IEnumerable<object>>> toStream = Expression.Lambda<Func<IEnumerable<object>>>(last);
-            var compiledToStream = toStream.Compile();
-            Stream = compiledToStream().AsQueryable().Select(x => new AnonymousTypeResolver(x));
+            Nodes.Push(last);
             Columns[_queryAlias] = node.Select.Fields.Select(x => x.FieldName).ToArray();
             ColumnsTypes[_queryAlias] = node.Select.Fields.Select(x => x.ReturnType).ToArray();
         }
@@ -1045,6 +1033,12 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(RootNode node)
         {
+            
+            Expression last = Nodes.Pop();
+            Expression<Func<IEnumerable<object>>> toStream = Expression.Lambda<Func<IEnumerable<object>>>(last);
+            var compiledToStream = toStream.Compile();
+            Stream = compiledToStream().AsQueryable().Select(x => new AnonymousTypeResolver(x));
+
             //throw new NotImplementedException();
         }
 
@@ -1053,19 +1047,103 @@ namespace Musoq.Evaluator.Visitors
             throw new NotImplementedException();
         }
 
+        public Expression Select(Expression input, Type outputItemType)
+        {
+            var inputItemType = input.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+            var inputItem = Expression.Parameter(inputItemType, "item_" + inputItemType.Name);
+
+            List<MemberBinding> bindings = new List<MemberBinding>();
+            foreach (var field in outputItemType.GetFields())
+            {
+                //"SelectProp = inputItem.Prop"
+                MemberBinding assignment = Expression.Bind(
+                    field,
+                    Expression.PropertyOrField(inputItem, field.Name));
+                bindings.Add(assignment);
+            }
+
+            //"new AnonymousType()"
+            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
+
+            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            var initialization = Expression.MemberInit(creationExpression, bindings);
+
+            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            Expression expression = Expression.Lambda(initialization, inputItem);
+
+            var call = Expression.Call(
+                typeof(Queryable),
+                "Select",
+                new Type[] { inputItemType, outputItemType },
+                input,
+                expression);
+            return call;
+        }
+
         public void Visit(UnionNode node)
         {
-            throw new NotImplementedException();
+            var right = Nodes.Pop();
+            var rightType = right.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+
+            var left = Nodes.Pop();
+            var leftType = left.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+
+            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
+            var leftSelect = Select(left, outputItemType);
+            var rightSelect = Select(right, outputItemType);
+
+            var call = Expression.Call(
+                typeof(Queryable),
+                "Union",
+                new Type[] { outputItemType },
+                leftSelect,
+                rightSelect);
+
+            Nodes.Push(call);
         }
 
         public void Visit(UnionAllNode node)
         {
-            throw new NotImplementedException();
+            var right = Nodes.Pop();
+            var rightType = right.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+
+            var left = Nodes.Pop();
+            var leftType = left.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+
+            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
+            var leftSelect = Select(left, outputItemType);
+            var rightSelect = Select(right, outputItemType);
+
+            var call = Expression.Call(
+                typeof(Queryable),
+                "Concat",
+                new Type[] { outputItemType },
+                leftSelect,
+                rightSelect);
+
+            Nodes.Push(call);
         }
 
         public void Visit(ExceptNode node)
         {
-            throw new NotImplementedException();
+            var right = Nodes.Pop();
+            var rightType = right.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+
+            var left = Nodes.Pop();
+            var leftType = left.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+
+            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
+            var leftSelect = Select(left, outputItemType);
+            var rightSelect = Select(right, outputItemType);
+
+            var call = Expression.Call(
+                typeof(Queryable),
+                "Except",
+                new Type[] { outputItemType },
+                leftSelect,
+                rightSelect);
+
+            Nodes.Push(call);
         }
 
         public void Visit(RefreshNode node)
@@ -1075,7 +1153,24 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(IntersectNode node)
         {
-            throw new NotImplementedException();
+            var right = Nodes.Pop();
+            var rightType = right.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+
+            var left = Nodes.Pop();
+            var leftType = left.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+
+            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
+            var leftSelect = Select(left, outputItemType);
+            var rightSelect = Select(right, outputItemType);
+
+            var call = Expression.Call(
+                typeof(Queryable),
+                "Intersect",
+                new Type[] { outputItemType },
+                leftSelect,
+                rightSelect);
+
+            Nodes.Push(call);
         }
 
         public void Visit(PutTrueNode node)
@@ -1112,7 +1207,11 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(JoinsNode node)
         {
-            throw new NotImplementedException();
+            //Enumerable.Join()
+            //var left = Nodes.Pop();
+            //var right = Nodes.Pop();
+            //var joins = node.Joins;
+            //throw new NotImplementedException();
         }
 
         public void Visit(JoinNode node)
