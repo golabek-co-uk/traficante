@@ -78,8 +78,8 @@ namespace Musoq.Converter.Build
             queryTree.Accept(csharpRewriteTraverser);
 
             items.Stream = csharpRewriter.Stream;
-            items.Columns = csharpRewriter.Columns.First().Value;
-            items.ColumnsTypes = csharpRewriter.ColumnsTypes.First().Value;
+            items.Columns = csharpRewriter.Columns.Last().Value;
+            items.ColumnsTypes = csharpRewriter.ColumnsTypes.Last().Value;
 
             Successor?.Build(items);
         }

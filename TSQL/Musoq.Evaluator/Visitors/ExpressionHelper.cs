@@ -11,21 +11,12 @@ namespace Musoq.Evaluator.Visitors
     public class ExpressionHelper
     {
         private List<Type> _anonymousTypes = new List<Type>();
-        private Dictionary<string, Type> _nodeId2AnonymousTypes = new Dictionary<string, Type>();
-
-        public Type CreateAnonymousTypeForNode(string nodeId, IEnumerable<(string, Type)> fields)
-        {
-            var newType = CreateAnonymousType(fields);
-            _nodeId2AnonymousTypes.Add(nodeId, newType);
-            return newType;
-        }
 
         public Type CreateAnonymousTypeSameAs(Type type)
         {
             var fields = type.GetFields().Select(x => (x.Name, x.FieldType));
             var newType = CreateAnonymousType(fields);
             return newType;
-
         }
 
         public Type CreateAnonymousType(IEnumerable<(string, Type)> fields)
@@ -42,13 +33,8 @@ namespace Musoq.Evaluator.Visitors
 
             var dynamicType = dynamicTypeBuilder.CreateTypeInfo();
             _anonymousTypes.Add(dynamicType);
-           
-            return dynamicType;
-        }
 
-        public Type GetCreatedTypeForNode(string nodeId)
-        {
-            return _nodeId2AnonymousTypes[nodeId];
+            return dynamicType;
         }
 
         private string GenerateAnonymousTypeName()
@@ -69,7 +55,7 @@ namespace Musoq.Evaluator.Visitors
 
             return fieldsBuilder;
         }
-        
+
         private static void OverrideGetHashCode(TypeBuilder dynamicTypeBuilder, List<FieldBuilder> fieldsBuilder)
         {
             //Pick two different prime numbers, e.g. 17 and 23, and do:
@@ -129,7 +115,7 @@ namespace Musoq.Evaluator.Visitors
 
             il.Emit(OpCodes.Ret); // return number
 
-            dynamicTypeBuilder.DefineMethodOverride(getHashCode, typeof(object).GetMethod("GetHashCode") );
+            dynamicTypeBuilder.DefineMethodOverride(getHashCode, typeof(object).GetMethod("GetHashCode"));
         }
 
         private static void OverrideEquals(TypeBuilder dynamicTypeBuilder, List<FieldBuilder> fieldsBuilder)
@@ -155,7 +141,7 @@ namespace Musoq.Evaluator.Visitors
                 il.Emit(OpCodes.Ldarg_1); //put "objecToCompare" on the stack
                 il.Emit(OpCodes.Ldfld, field); //put "objecToCompare.field" on the stack
                 il.Emit(OpCodes.Ceq); //if this.field == obj.field, put 1 else 0 on the stuck
-                il.Emit(OpCodes.Brfalse_S, goToFalse); // if 0 on the stuck, return false
+                il.Emit(OpCodes.Brfalse, goToFalse); // if 0 on the stuck, return false
             }
             il.Emit(OpCodes.Ldc_I4_1); // put true on the stack
             il.Emit(OpCodes.Ret);// return true
@@ -165,6 +151,119 @@ namespace Musoq.Evaluator.Visitors
 
             dynamicTypeBuilder.DefineMethodOverride(equals, typeof(object).GetMethod("Equals", new[] { typeof(object) }));
         }
-    }
 
+        public Type GetQueryableItemType(Expression queryable)
+        {
+            return queryable.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+        }
+
+        public Expression Select(Expression input, Type outputItemType)
+        {
+            var inputItemType = GetQueryableItemType(input);
+            var inputItem = Expression.Parameter(inputItemType, "item_" + inputItemType.Name);
+
+            List<MemberBinding> bindings = new List<MemberBinding>();
+            foreach (var field in outputItemType.GetFields())
+            {
+                //"SelectProp = inputItem.Prop"
+                MemberBinding assignment = Expression.Bind(
+                    field,
+                    Expression.PropertyOrField(inputItem, field.Name));
+                bindings.Add(assignment);
+            }
+
+            //"new AnonymousType()"
+            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
+
+            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            var initialization = Expression.MemberInit(creationExpression, bindings);
+
+            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            Expression expression = Expression.Lambda(initialization, inputItem);
+
+            var call = Expression.Call(
+                typeof(Queryable),
+                "Select",
+                new Type[] { inputItemType, outputItemType },
+                input,
+                expression);
+            return call;
+        }
+
+        public  (Expression, Expression) AlignSimpleTypes(Expression left, Expression right)
+        {
+            if (left.Type.IsValueType == false || right.Type.IsValueType == false)
+            {
+                return (left, right);
+            }
+            if (left.Type.Name == "Nullable`1" ^ right.Type.Name == "Nullable`1")
+            {
+               if ( left.Type.Name != "Nullable`1")
+                    left = Expression.Convert(left, typeof(Nullable<>).MakeGenericType(left.Type));
+                if (right.Type.Name != "Nullable`1")
+                    right = Expression.Convert(right, typeof(Nullable<>).MakeGenericType(right.Type));
+            }
+            //TODO: check best converstoin
+            //System.Byte
+            //System.SByte
+            //System.Int16
+            //System.UInt16
+            //System.Int32
+            //System.UInt32
+            //System.Int64
+            //System.UInt64
+            //System.Single
+            //System.Double
+            //System.Decimal
+            if (left.Type == typeof(System.Decimal) ^ right.Type == typeof(System.Decimal))
+            {
+                if (left.Type == typeof(System.Decimal))
+                    right = Expression.Convert(right, left.Type);
+                else
+                    left = Expression.Convert(left, right.Type);
+            }
+            if (left.Type == typeof(System.Int64) ^ right.Type == typeof(System.Int64))
+            {
+                if (left.Type == typeof(System.Int64))
+                    right = Expression.Convert(right, left.Type);
+                else
+                    left = Expression.Convert(left, right.Type);
+            }
+            return (left, right);
+        }
+
+        public Expression AlignSimpleTypes(Expression left, Type right)
+        {
+            //if (right.Name == "Nullable`1")
+            //{
+            //    if (left.Type.IsValueType && left.Type.Name != "Nullable`1")
+            //    {
+            //        return Expression.Convert(left, typeof(Nullable<>).MakeGenericType(left.Type));
+            //    }
+            //}
+            if (left.Type != right && right.IsArray == false) // right.IsArray == false -> because of "params" argument
+            {
+                return Expression.Convert(left, right);
+            }
+            return left;
+        }
+
+        public Expression SqlLikeOperation(Expression left, Expression right, Func<Expression, Expression,Expression> operation)
+        {
+            (left, right) = this.AlignSimpleTypes(left, right);
+
+            if (left.Type.IsValueType && right.Type.IsValueType && left.Type.Name != "Nullable`1")
+            {
+
+                return operation(left, right);
+            }
+            else
+            {
+                var leftIsNotNull = Expression.NotEqual(left, Expression.Default(left.Type));
+                var rightIsNotNull = Expression.NotEqual(right, Expression.Default(right.Type));
+                var bothAreNotNull = Expression.And(leftIsNotNull, rightIsNotNull);
+                return  Expression.And(bothAreNotNull, operation(left, right));
+            }
+        }
+    }
 }
