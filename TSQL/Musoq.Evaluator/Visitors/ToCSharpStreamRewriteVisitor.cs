@@ -60,15 +60,19 @@ namespace Musoq.Evaluator.Visitors
 
         ExpressionHelper expressionHelper = new ExpressionHelper();
 
-        Type _itemType = null;
+        //Type _itemType = null;
         ParameterExpression _item = null;// Expression.Parameter(typeof(IObjectResolver), "inputItem");
+        Dictionary<string, Expression> _alias2Item = new Dictionary<string, Expression>();
 
-        Type groupItemType = null;
-        ParameterExpression groupItem = null;
+        //Type groupItemType = null;
+        ParameterExpression _groupItem = null;
 
         ParameterExpression _input = null;
+        Dictionary<string, Expression> _alias2Input = new Dictionary<string, Expression>();
 
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
+
+        
 
         //ParameterExpression inputItemGroup = null;
         //ParameterExpression groupExpression = Expression.Parameter(typeof(IGrouping<IObjectResolver, IObjectResolver>), "group");
@@ -383,24 +387,24 @@ namespace Musoq.Evaluator.Visitors
 
             if (node.IsAggregateMethod)
             {
-                if (this._itemType.Name == "IGrouping`2")
+                if (this._item.Type.Name == "IGrouping`2")
                 {
                     if (node.Method.Name == "Count")
                     {
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
                             "Count",
-                            new Type[] { this.groupItemType },
+                            new Type[] { this._groupItem.Type },
                             new Expression[] { this._item });
                         Nodes.Push(call);
                     }
                     if (node.Method.Name == "Sum")
                     {
-                        var selector =  Expression.Lambda(args[0], this.groupItem);
+                        var selector =  Expression.Lambda(args[0], this._groupItem);
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
                             "Sum",
-                            new Type[] { this.groupItemType },
+                            new Type[] { this._groupItem.Type },
                             new Expression[] { this._item, selector });
                         Nodes.Push(call);
                     }
@@ -412,7 +416,7 @@ namespace Musoq.Evaluator.Visitors
                         MethodCallExpression call = Expression.Call(
                         typeof(Queryable),
                         "Count",
-                        new Type[] { this._itemType },
+                        new Type[] { this._item.Type },
                         new Expression[] { this._input });
                         Nodes.Push(call);
                     }
@@ -422,7 +426,7 @@ namespace Musoq.Evaluator.Visitors
                         MethodCallExpression call = Expression.Call(
                         typeof(Queryable),
                         "Sum",
-                        new Type[] { this._itemType },
+                        new Type[] { this._item.Type },
                         new Expression[] { this._input, selector });
                         Nodes.Push(call);
                     }
@@ -496,12 +500,8 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(AccessColumnNode node)
         {
-            //Expression<Func<IObjectResolver, object>> getValue = r => r.GetValue(node.Name);
-            //var returnValue = Expression.Invoke(getValue, new Expression[] { this.rowExpression });
-            //var castToReturnType = Expression.Convert(returnValue, node.ReturnType);
-            //Nodes.Push(castToReturnType);
-            
-            if (_itemType.Name == "IGrouping`2")
+
+            if (_item.Type.Name == "IGrouping`2")
             {
                 // TODO: just for testing. 
                 // come with idea, how to figure out if the colum is inside aggregation function 
@@ -514,14 +514,15 @@ namespace Musoq.Evaluator.Visitors
                 }
                 catch (Exception ex)
                 {
-                    var groupItemProperty = Expression.PropertyOrField(this.groupItem, node.Name);
+                    var groupItemProperty = Expression.PropertyOrField(this._groupItem, node.Name);
                     Nodes.Push(groupItemProperty);
                 }
 
                 return;
             }
 
-            var property = Expression.PropertyOrField(this._item, node.Name);
+            var item = _alias2Item[node.Alias];
+            var property = Expression.PropertyOrField(item, node.Name);
             Nodes.Push(property);
         }
 
@@ -601,19 +602,20 @@ namespace Musoq.Evaluator.Visitors
             var call = Expression.Call(
                 typeof(Queryable),
                 "Select",
-                new Type[] { this._itemType, outputItemType },
+                new Type[] { this._item.Type, outputItemType },
                 _input,
                 expression);
 
             Nodes.Push(Expression.Lambda(call, _input));
+            //Nodes.Push(call);
 
-            this._itemType = outputItemType;
+            //this._itemType = outputItemType;
 
             //"AnonymousType input"
-            this._item = Expression.Parameter(this._itemType, "item_" + this._itemType.Name);
+            this._item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
 
             //"IQueryable<AnonymousType> input"
-            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(this._itemType), "input");
+            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputItemType), "input");
         }
 
         public void Visit(GroupSelectNode node)
@@ -640,7 +642,7 @@ namespace Musoq.Evaluator.Visitors
             MethodCallExpression call = Expression.Call(
                 typeof(Queryable),
                 "Where",
-                new Type[] { this._itemType },
+                new Type[] { this._item.Type },
                 _input,
                 predicateLambda);
 
@@ -681,92 +683,27 @@ namespace Musoq.Evaluator.Visitors
             var groupByCall = Expression.Call(
                 typeof(Queryable),
                 "GroupBy",
-                new Type[] { this._itemType, outputItemType },
+                new Type[] { this._item.Type, outputItemType },
                 _input,
                 expression);
 
             Nodes.Push(Expression.Lambda(groupByCall, _input));
 
             // "ItemAnonymousType"
-            this.groupItemType = this._itemType;
+            //this.groupItemType = this._item.Type;
 
             // "ItemAnonymousType groupItem"
-            this.groupItem = Expression.Parameter(this._itemType, "groupItem");
+            this._groupItem = Expression.Parameter(this._item.Type, "groupItem");
 
             // "IGrouping<KeyAnonymousType, ItemAnonymousType>"
-            this._itemType = typeof(IGrouping<,>).MakeGenericType(outputItemType, this._itemType);
+            outputItemType = typeof(IGrouping<,>).MakeGenericType(outputItemType, this._item.Type);
 
             // "IGrouping<KeyAnonymousType, ItemAnonymousType> item"
-            this._item = Expression.Parameter(this._itemType, "item_" + this._itemType.Name);
+            this._item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
 
             // "IQueryable<IGrouping<KeyAnonymousType, ItemAnonymousType>> input"
-            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(this._itemType), "input");
-
+            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputItemType), "input");
             
-
-            ///////////////////
-
-            //ParameterExpression inputItemGroup = Expression.Parameter(typeof(IGrouping<,>).MakeGenericType(outputItemType, this.inputItemType), "inputItemGroup");
-            //var selectCall = Expression.Call(
-            //    typeof(Queryable),
-            //    "Select",
-            //    new Type[] { typeof(IGrouping<,>).MakeGenericType(outputItemType, this.inputItemType), outputItemType },
-            //    groupByCall,
-            //    Expression.Lambda(Expression.Property(inputItemGroup, "Key"), inputItemGroup));
-
-            //Nodes.Push(Expression.Lambda(selectCall, input));
-
-            ////////////////
-
-            //var fieldsInSelect = new Expression[node.Fields.Length];
-            //for (var i = 0; i < node.Fields.Length; i++)
-            //    fieldsInSelect[node.Fields.Length - 1 - i] = Nodes.Pop();
-
-            //var returnObjectInSelect = Expression.Variable(typeof(DictionaryResolver));
-            //var methodAddToDictionary = typeof(Dictionary<string, object>).GetMethod("Add", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(string), typeof(object) }, null);
-
-            //var bodyInSelect = new List<Expression>();
-            //bodyInSelect.Add(Expression.Assign(returnObjectInSelect, Expression.New(typeof(DictionaryResolver))));
-            //for (int i = 0; i < fieldsInSelect.Length; i++)
-            //{
-            //    var key = Expression.Constant(node.Fields[i].FieldName);
-            //    var value = Expression.Convert(fieldsInSelect[i], typeof(object));
-            //    bodyInSelect.Add(Expression.Call(returnObjectInSelect, methodAddToDictionary, key, value));
-            //}
-            ////return value
-            //bodyInSelect.Add(returnObjectInSelect);
-
-            //var groupBy = Expression.Block(new[] { returnObjectInSelect }, bodyInSelect);
-            //var groupByLambda = Expression.Lambda<Func<IObjectResolver, IObjectResolver>>(groupBy, inputItem);
-
-            ///////////
-            ///
-
-            //Expression<Func<GroupByNode, IQueryable<IObjectResolver>, IQueryable<IObjectResolver>>> expression = (g, s) =>
-            //{
-            //}
-            //((IQueryable<IObjectResolver>)groupBy).GroupBy(x => new { a = x }).Select(x => x)
-
-            //var bodyInSelect2 = new List<Expression>();
-            //bodyInSelect2.Add(Expression.Assign(Expression.Property(Expression.Property(groupExpression, "Key"), "Stream"), groupExpression));
-            //bodyInSelect2.Add(Expression.Property(groupExpression, "Key"));
-
-            //var groupByCall = Expression.Call(
-            //    typeof(Queryable),
-            //    "GroupBy",
-            //    new Type[] { typeof(IObjectResolver), typeof(IObjectResolver) },
-            //    queryableSource,
-            //    groupByLambda);
-
-            //var selectLambda = Expression.Lambda<Func<IGrouping<IObjectResolver, IObjectResolver>, IObjectResolver>>(Expression.Block(bodyInSelect2), groupExpression);
-            //var selectCall = Expression.Call(
-            //    typeof(Queryable),
-            //    "Select",
-            //    new Type[] { typeof(IGrouping<IObjectResolver, IObjectResolver>), typeof(IObjectResolver) },
-            //    groupByCall,
-            //    selectLambda);
-
-            //Nodes.Push(Expression.Lambda(selectCall, source));
         }
 
         public void Visit(HavingNode node)
@@ -778,7 +715,7 @@ namespace Musoq.Evaluator.Visitors
             MethodCallExpression call = Expression.Call(
                 typeof(Queryable),
                 "Where",
-                new Type[] { this._itemType },
+                new Type[] { this._item.Type },
                 _input,
                 predicateLambda);
 
@@ -788,7 +725,7 @@ namespace Musoq.Evaluator.Visitors
         public void Visit(SkipNode node)
         {
             //"IQueryable<AnonymousType> input"
-            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(this._itemType), "input");
+            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(this._item.Type), "input");
             
 
             var skipNumber = Expression.Constant((int)node.Value);
@@ -796,7 +733,7 @@ namespace Musoq.Evaluator.Visitors
             MethodCallExpression call = Expression.Call(
                 typeof(Queryable),
                 "Skip",
-                new Type[] { this._itemType },
+                new Type[] { this._item.Type },
                 _input,
                 skipNumber);
 
@@ -810,7 +747,7 @@ namespace Musoq.Evaluator.Visitors
             MethodCallExpression call = Expression.Call(
                 typeof(Queryable),
                 "Take",
-                new Type[] { this._itemType },
+                new Type[] { this._item.Type },
                 _input,
                 takeNumber);
 
@@ -867,15 +804,15 @@ namespace Musoq.Evaluator.Visitors
                 queryableRowSource,
                 expression);
 
-            Nodes.Push(Expression.Invoke(Expression.Lambda(call)));
-
-            this._itemType = entityType;
+            Nodes.Push(call);
 
             //"AnonymousType input"
-            this._item = Expression.Parameter(this._itemType, "item_" + this._itemType.Name);
+            this._item = Expression.Parameter(entityType, "item_" + entityType.Name);
+            this._alias2Item[node.Alias] = this._item;
 
             //"IQueryable<AnonymousType> input"
-            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(this._itemType), "input");
+            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(entityType), "input");
+            this._alias2Input[node.Alias] = this._input;
 
             Columns[node.Alias] = fields.Select(x => x.Item1).ToArray();
             ColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
@@ -896,13 +833,15 @@ namespace Musoq.Evaluator.Visitors
             var table = _cte[node.VariableName];
 
             //Get from IQueryable<AnonymousType>
-            this._itemType = table.Type.GetGenericArguments()[0]; 
+            var outputitemType = table.Type.GetGenericArguments()[0]; 
            
             //"AnonymousType input"
-            this._item = Expression.Parameter(this._itemType, "item_" + this._itemType.Name);
+            this._item = Expression.Parameter(outputitemType, "item_" + outputitemType.Name);
+            this._alias2Item[node.Alias] = this._item;
 
             //"IQueryable<AnonymousType> input"
-            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(this._itemType), "input");
+            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputitemType), "input");
+            this._alias2Input[node.Alias] = this._input;
 
             Nodes.Push(table);
         }
@@ -1206,13 +1145,141 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(JoinsNode node)
         {
-            //Enumerable.Join()
-            //var left = Nodes.Pop();
-            //var right = Nodes.Pop();
-            //var joins = node.Joins;
-            //throw new NotImplementedException();
-            throw new NotImplementedException();
+            var joinNodes = new List<(
+                JoinFromNode JoinNode, 
+                Expression OnExpression, 
+                Expression JoinExpression,
+                Type ItemType,
+                string ItemAlias)>();
+            FromNode fromNode = null;
+            Expression fromExpression = null;
+            Type fromItemType = null;
+            string fromItemAlias = null;
+            JoinFromNode joinNode = node.Joins;
+            do
+            {
+                var onExpression = Nodes.Pop();
+                var joinExpression = Nodes.Pop();
+                var itemType = this.expressionHelper.GetQueryableItemType(joinExpression);
+                var itemAlias = joinNode.With.Alias;
+                joinNodes.Add((joinNode, onExpression, joinExpression, itemType, itemAlias));
+                if (joinNode.Source is JoinFromNode)
+                {
+                    joinNode = joinNode.Source as JoinFromNode;
+                }
+                else
+                {
+                    fromNode = joinNode.Source;
+                    fromExpression = Nodes.Pop();
+                    fromItemType = this.expressionHelper.GetQueryableItemType(fromExpression);
+                    fromItemAlias = fromNode.Alias;
+                    joinNode = null;
+                }
+            } while (joinNode != null);
+
+
+            var ouputTypeFields = new List<(string Alias, Type Type)>();
+            foreach (var join in joinNodes)
+                ouputTypeFields.Add((join.ItemAlias, join.ItemType));
+            ouputTypeFields.Add((fromItemAlias, fromItemType));
+
+            var outputItemType = this.expressionHelper.CreateAnonymousType(ouputTypeFields.ToArray());
+
+            List<MemberBinding> bindings = new List<MemberBinding>();
+            //"SelectProp = inputItem.Prop"
+            foreach(var field in ouputTypeFields)
+            {
+                bindings.Add(Expression.Bind(
+                    outputItemType.GetField(field.Alias),
+                    this._alias2Item[field.Alias]));
+            }
+            
+            //"new AnonymousType()"
+            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
+
+            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            var initialization = Expression.MemberInit(creationExpression, bindings);
+
+            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            Expression expression = Expression.Lambda(initialization, (ParameterExpression)this._alias2Item[ouputTypeFields.FirstOrDefault().Alias]);
+
+            Expression lastJoinExpression = null;
+            Type lastJoinItemType = null;
+            string LastJoinItemAlias = null;
+            for (int i = 0; i < joinNodes.Count; i++)
+            {
+                var join = joinNodes[i];
+                if (i == 0)
+                {
+                    var onCall = Expression.Call(
+                        typeof(Queryable),
+                        "Where",
+                        new Type[] { join.ItemType },
+                        join.JoinExpression,
+                        Expression.Lambda(join.OnExpression, (ParameterExpression)this._alias2Item[join.ItemAlias]));
+
+                    lastJoinExpression = Expression.Call(
+                        typeof(Queryable),
+                        "Select",
+                        new Type[] { join.ItemType, outputItemType },
+                        onCall,
+                        expression);
+                    lastJoinItemType = join.ItemType;
+                    LastJoinItemAlias = join.ItemAlias;
+                }
+                else
+                {
+                    var onCall = Expression.Call(
+                        typeof(Queryable),
+                        "Where",
+                        new Type[] { join.ItemType },
+                        join.JoinExpression,
+                        Expression.Lambda(join.OnExpression, (ParameterExpression)this._alias2Item[join.ItemAlias]));
+                    var selectLambda = Expression.Lambda(
+                        Expression.Convert(lastJoinExpression, typeof(IEnumerable<>).MakeGenericType(outputItemType)),
+                        (ParameterExpression)this._alias2Item[join.ItemAlias]);
+                    lastJoinExpression =Expression.Call(
+                        typeof(Queryable),
+                        "SelectMany",
+                        new Type[] { join.ItemType, outputItemType },
+                        onCall,
+                        selectLambda);
+                }
+            }
+
+
+            var fromLambda = Expression.Lambda(
+                    Expression.Convert(lastJoinExpression, typeof(IEnumerable<>).MakeGenericType(outputItemType)),
+                    (ParameterExpression)this._alias2Item[fromNode.Alias]);
+            var fromCall = Expression.Call(
+                typeof(Queryable),
+                "SelectMany",
+                new Type[] { fromItemType, outputItemType },
+                fromExpression,
+                fromLambda
+                );
+
+            //Nodes.Push(Expression.Lambda(call, this._alias2Item[fromNode.Alias]));
+            Nodes.Push(fromCall);
+
+            //this._itemType = outputItemType;
+
+            //"AnonymousType input"
+            this._item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
+            this._alias2Item[node.Alias] = this._item;
+
+            foreach (var join in joinNodes)
+                this._alias2Item[join.ItemAlias] = Expression.PropertyOrField(this._item, join.ItemAlias);
+            this._alias2Item[fromItemAlias] = Expression.PropertyOrField(this._item, fromItemAlias);
+
+
+            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputItemType), "input");
+            this._alias2Input[node.Alias] = this._input;
+
+            
         }
+
+
 
         public void Visit(JoinNode node)
         {

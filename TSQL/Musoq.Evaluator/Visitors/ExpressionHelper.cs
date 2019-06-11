@@ -12,6 +12,17 @@ namespace Musoq.Evaluator.Visitors
     {
         private List<Type> _anonymousTypes = new List<Type>();
 
+        AssemblyName dynamicAssemblyName = null;
+        AssemblyBuilder dynamicAssembly = null;
+        ModuleBuilder dynamicModule = null;
+
+        public ExpressionHelper()
+        {
+            dynamicAssemblyName = new AssemblyName("Musoq.AnonymousTypes");
+            dynamicAssembly = AssemblyBuilder.DefineDynamicAssembly(dynamicAssemblyName, AssemblyBuilderAccess.Run);
+            dynamicModule = dynamicAssembly.DefineDynamicModule("Types");
+        }
+
         public Type CreateAnonymousTypeSameAs(Type type)
         {
             var fields = type.GetFields().Select(x => (x.Name, x.FieldType));
@@ -21,10 +32,6 @@ namespace Musoq.Evaluator.Visitors
 
         public Type CreateAnonymousType(IEnumerable<(string, Type)> fields)
         {
-            AssemblyName dynamicAssemblyName = new AssemblyName("Musoq.AnonymousTypes");
-            AssemblyBuilder dynamicAssembly = AssemblyBuilder.DefineDynamicAssembly(dynamicAssemblyName, AssemblyBuilderAccess.Run);
-            ModuleBuilder dynamicModule = dynamicAssembly.DefineDynamicModule("Types");
-
             TypeBuilder dynamicTypeBuilder = dynamicModule.DefineType(GenerateAnonymousTypeName(), TypeAttributes.Public);
 
             List<FieldBuilder> fieldsBuilder = AddFields(dynamicTypeBuilder, fields);
@@ -265,5 +272,39 @@ namespace Musoq.Evaluator.Visitors
                 return  Expression.And(bothAreNotNull, operation(left, right));
             }
         }
+
+        public Expression LookUp(Expression sequence, ParameterExpression sequenceElement, Expression predicate)
+        {
+            var predicateLambda = Expression.Lambda(predicate, sequenceElement);
+
+            MethodCallExpression call = Expression.Call(
+                typeof(Queryable),
+                "FirstOrDefault",
+                new Type[] { sequenceElement.Type },
+                sequence,
+                predicateLambda);
+
+            return call;
+            //return Expression.Lambda(call, sequenceElement);
+        }
+
+        //public Expression FirstOrDefault(Expression sequence, ParameterExpression sequenceElement, Ex)
+        //{
+        //    var predicateLambda = Expression.Lambda(predicate, sequenceElement);
+
+        //    MethodCallExpression call = Expression.Call(
+        //        typeof(Queryable),
+        //        "FirstOrDefault",
+        //        new Type[] { sequenceElement.Type },
+        //        sequence,
+        //        predicateLambda);
+
+        //    return call;
+        //    //return Expression.Lambda(call, sequenceElement);
+        //}
+
+
     }
+
+
 }
