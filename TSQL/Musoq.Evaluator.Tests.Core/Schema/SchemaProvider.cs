@@ -4,7 +4,7 @@ using Musoq.Schema;
 namespace Musoq.Evaluator.Tests.Core.Schema
 {
     public class SchemaProvider<T> : ISchemaProvider
-        where T : BasicEntity
+        //where T : BasicEntity
     {
         private readonly IDictionary<string, IEnumerable<T>> _values;
 

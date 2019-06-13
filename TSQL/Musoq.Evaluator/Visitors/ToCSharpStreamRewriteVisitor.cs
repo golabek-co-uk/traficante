@@ -32,30 +32,13 @@ namespace Musoq.Evaluator.Visitors
 {
     public class ToCSharpStreamRewriteVisitor : IExpressionVisitor
     {
-        private readonly Dictionary<string, int> _inMemoryTableIndexes = new Dictionary<string, int>();
-        private readonly List<string> _loadedAssemblies = new List<string>();
-
-        private readonly List<SyntaxNode> _members = new List<SyntaxNode>();
-        private readonly Stack<string> _methodNames = new Stack<string>();
-
-        private readonly List<string> _namespaces = new List<string>();
         private readonly IDictionary<string, int[]> _setOperatorFieldIndexes;
 
-        private readonly Dictionary<string, Type> _typesToInstantiate = new Dictionary<string, Type>();
-        private BlockSyntax _emptyBlock;
-        private SyntaxNode _groupHaving;
-
-        private VariableDeclarationSyntax _groupKeys;
-        private VariableDeclarationSyntax _groupValues;
-
-        private int _inMemoryTableIndex;
         private int _setOperatorMethodIdentifier;
         private int _caseWhenMethodIndex = 0;
 
-        private BlockSyntax _joinBlock;
         private string _queryAlias;
         private Scope _scope;
-        private BlockSyntax _selectBlock;
         private MethodAccessType _type;
 
         ExpressionHelper expressionHelper = new ExpressionHelper();
@@ -65,29 +48,19 @@ namespace Musoq.Evaluator.Visitors
         Dictionary<string, Expression> _alias2Item = new Dictionary<string, Expression>();
 
         //Type groupItemType = null;
-        ParameterExpression _groupItem = null;
+        ParameterExpression _itemInGroup = null;
 
         ParameterExpression _input = null;
-        Dictionary<string, Expression> _alias2Input = new Dictionary<string, Expression>();
 
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
-
-        
-
-        //ParameterExpression inputItemGroup = null;
-        //ParameterExpression groupExpression = Expression.Parameter(typeof(IGrouping<IObjectResolver, IObjectResolver>), "group");
-
-        ParameterExpression streamExpression = Expression.Parameter(typeof(IQueryable<IObjectResolver>), "stream");
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
         private ISchemaProvider _schemaProvider;
         private RuntimeContext _interCommunicator;
 
-        //public IDictionary<string, IQueryable<IObjectResolver>> Streams = new Dictionary<string, IQueryable<IObjectResolver>>();
-        //public Stack<Expression> Streams = new Stack<Expression>();
-        public IQueryable<IObjectResolver> Stream = null;
-        public IDictionary<string, string[]> Columns = new Dictionary<string, string[]>();
-        public IDictionary<string, Type[]> ColumnsTypes = new Dictionary<string, Type[]>();
+        public IQueryable<IObjectResolver> ResultStream = null;
+        public IDictionary<string, string[]> ResultColumns = new Dictionary<string, string[]>();
+        public IDictionary<string, Type[]> ResultColumnsTypes = new Dictionary<string, Type[]>();
 
 
         private IDictionary<SchemaFromNode, ISchemaColumn[]> InferredColumns { get; }
@@ -107,7 +80,6 @@ namespace Musoq.Evaluator.Visitors
         
         public void Visit(Node node)
         {
-            //throw new NotImplementedException();
         }
 
         public void Visit(DescNode node)
@@ -138,8 +110,8 @@ namespace Musoq.Evaluator.Visitors
                 }
 
                 Nodes.Push(Expression.Constant(columns));
-                Columns[fromNode.Alias] = descType.GetFields().Select(x => x.Name).ToArray();
-                ColumnsTypes[fromNode.Alias] = descType.GetFields().Select(x => x.FieldType).ToArray();
+                ResultColumns[fromNode.Alias] = descType.GetFields().Select(x => x.Name).ToArray();
+                ResultColumnsTypes[fromNode.Alias] = descType.GetFields().Select(x => x.FieldType).ToArray();
                 return;
             }
             if (node.Type == DescForType.Schema)
@@ -249,7 +221,6 @@ namespace Musoq.Evaluator.Visitors
             var right = Nodes.Pop();
             var left = Nodes.Pop();
             Nodes.Push(this.expressionHelper.SqlLikeOperation(left, right, Expression.GreaterThan));
-
         }
 
         public void Visit(LessNode node)
@@ -270,7 +241,6 @@ namespace Musoq.Evaluator.Visitors
         {
             Nodes.Push(Expression.Not(Nodes.Pop()));
         }
-
         public void Visit(LikeNode node)
         {
             Visit(new AccessMethodNode(
@@ -289,20 +259,20 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(InNode node)
         {
-            
             throw new NotImplementedException();
+        }
+
+        private FieldNode _currentFieldNode = null;
+        public void SetFieldNode(FieldNode node)
+        {
+            _currentFieldNode = node;
         }
 
         public void Visit(FieldNode node)
         {
-            /// TODO: uncomment
+            /// TODO: add check if conversion is needed
             var value = Nodes.Pop();
             Nodes.Push(Expression.Convert(value, node.ReturnType));
-
-            //Nodes.Push(node.Expression);
-            //throw new NotImplementedException();
-            //ParameterExpression row = Expression.Parameter(typeof(IObjectResolver), "row");
-            //Nodes.Push(Expression.Call(typeof(IObjectResolver).GetMethod("GetValue", new Type[1] { typeof(string) }), Expression.Constant(node.FieldName)));
         }
 
         public void Visit(FieldOrderedNode node)
@@ -314,25 +284,21 @@ namespace Musoq.Evaluator.Visitors
         public void Visit(StringNode node)
         {
             Nodes.Push(Expression.Constant(node.ObjValue, node.ReturnType));
-            //throw new NotImplementedException();
         }
 
         public void Visit(DecimalNode node)
         {
             Nodes.Push(Expression.Constant(node.ObjValue, node.ReturnType));
-            //throw new NotImplementedException();
         }
 
         public void Visit(IntegerNode node)
         {
             Nodes.Push(Expression.Constant(node.ObjValue, node.ReturnType));
-            //throw new NotImplementedException();
         }
 
         public void Visit(BooleanNode node)
         {
             Nodes.Push(Expression.Constant(node.ObjValue, node.ReturnType));
-            //throw new NotImplementedException();
         }
 
         public void Visit(WordNode node)
@@ -359,31 +325,12 @@ namespace Musoq.Evaluator.Visitors
                 left);
 
             Nodes.Push(containsCall);
-
-            ////var predicateLambda = Expression.Lambda<Func<this.inputItemType, bool>>(predicate, new ParameterExpression[] { this.inputItem });
-            //Expression.Lambda(Expression.Equal(left, right), left, this.item);
-            //var predicateLambda = Expression.Lambda(predicate, this.item);
-
-            //MethodCallExpression call = Expression.Call(
-            //    typeof(Queryable),
-            //    "Any",
-            //    new Type[] { this.itemType },
-            //    input,
-            //    predicateLambda);
-
-            //Nodes.Push(Expression.Lambda(call, input));
-
         }
 
         public void Visit(AccessMethodNode node)
         {
-            //Queryable.GroupBy((IQueryable<IObjectResolver>)null, x => x.GetValue("")).Select(x => x.Key)
-            //Expression<Func<IGrouping<object, IObjectResolver>, object>> count = x => new { c = x.Count(), a = x.Key }
-            //Expression<Func<IGrouping<object, IObjectResolver>, object>> count = x => new { c = x.Sum(, a = x.Key };
-
             var args = Enumerable.Range(0, node.ArgsCount).Select(x => Nodes.Pop()).Reverse().ToArray();
-            var argsTypes = args.Select(x => x.Type);
-            //var defaultSource = Nodes.First(x => typeof(IEnumerable<IObjectResolver>).IsAssignableFrom(x.Type));
+            var argsTypes = args.Select(x => x.Type).ToArray();
 
             if (node.IsAggregateMethod)
             {
@@ -391,21 +338,34 @@ namespace Musoq.Evaluator.Visitors
                 {
                     if (node.Method.Name == "Count")
                     {
+                        var selector = Expression.Lambda(args[0], this._itemInGroup);
+                        var group = Expression.Convert(this._item, typeof(IEnumerable<>).MakeGenericType(this._itemInGroup.Type));
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Enumerable),
+                            "Select",
+                            new Type[] { this._itemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { group, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
                             "Count",
-                            new Type[] { this._groupItem.Type },
-                            new Expression[] { this._item });
+                            new Type[] { node.Arguments.Args[0].ReturnType },
+                            new Expression[] { selectCall });
                         Nodes.Push(call);
                     }
                     if (node.Method.Name == "Sum")
                     {
-                        var selector =  Expression.Lambda(args[0], this._groupItem);
+                        var selector =  Expression.Lambda(args[0], this._itemInGroup);
+                        var group = Expression.Convert(this._item, typeof(IEnumerable<>).MakeGenericType(this._itemInGroup.Type));
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Enumerable),
+                            "Select",
+                            new Type[] { this._itemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { group, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
                             "Sum",
-                            new Type[] { this._groupItem.Type },
-                            new Expression[] { this._item, selector });
+                            new Type[] { },
+                            new Expression[] { selectCall });
                         Nodes.Push(call);
                     }
                 }
@@ -413,27 +373,48 @@ namespace Musoq.Evaluator.Visitors
                 {
                     if (node.Method.Name == "Count")
                     {
+                        var selector = Expression.Lambda(args[0], this._item);
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Queryable),
+                            "Select",
+                            new Type[] { this._item.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._input, selector });
                         MethodCallExpression call = Expression.Call(
-                        typeof(Queryable),
-                        "Count",
-                        new Type[] { this._item.Type },
-                        new Expression[] { this._input });
+                            typeof(Queryable),
+                            "Count",
+                            new Type[] { node.Arguments.Args[0].ReturnType },
+                            new Expression[] { selectCall });
                         Nodes.Push(call);
                     }
                     if (node.Method.Name == "Sum")
                     {
                         var selector = Expression.Lambda(args[0], this._item);
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Queryable),
+                            "Select",
+                            new Type[] { this._item.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._input, selector });
                         MethodCallExpression call = Expression.Call(
-                        typeof(Queryable),
-                        "Sum",
-                        new Type[] { this._item.Type },
-                        new Expression[] { this._input, selector });
+                            typeof(Queryable),
+                            "Sum",
+                            new Type[] {},
+                            new Expression[] { selectCall });
                         Nodes.Push(call);
                     }
                 }
             }
             else
             {
+                if (this._item.Type.Name == "IGrouping`2")
+                {
+                    var key = Expression.PropertyOrField(this._item, "Key");
+                    if (key.Type.GetFields().Any(x => string.Equals(x.Name, this._currentFieldNode.FieldName)))
+                    {
+                        Nodes.Push(Expression.PropertyOrField(key, this._currentFieldNode.FieldName));
+                        return;
+                    }
+                }
+
                 var instance = node.Method.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
                 /// TODO: check if there can be more that one generic argument
                 var method = node.Method.IsGenericMethodDefinition ?
@@ -443,14 +424,6 @@ namespace Musoq.Evaluator.Visitors
                 for(int i = 0; i < parameters.Length; i++)
                 {
                     args[i] = this.expressionHelper.AlignSimpleTypes(args[i], parameters[i].ParameterType);
-                    //var parameter = parameters[0];
-                    //if (parameter.ParameterType.Name == "Nullable`1")
-                    //{
-                    //    if (args[i].Type.IsValueType && args[i].Type.Name != "Nullable`1")
-                    //    {
-                    //        args[i] = Expression.Convert(args[i], typeof(Nullable<>).MakeGenericType(args[i].Type));
-                    //    }
-                    //}
                 }
                 var paramsParameter = parameters.FirstOrDefault(x => x.ParameterType.IsArray);
                 var paramsParameterIndex = Array.IndexOf(parameters, paramsParameter);
@@ -500,25 +473,53 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(AccessColumnNode node)
         {
-
             if (_item.Type.Name == "IGrouping`2")
             {
                 // TODO: just for testing. 
                 // come with idea, how to figure out if the colum is inside aggregation function 
                 // or is just column to display
-                try
+                //try
+                //{
+                var fieldNameameWithAlias = node.Alias + "." + node.Name;
+
+                var key = Expression.PropertyOrField(this._item, "Key");
+                if (key.Type.GetFields().Any(x => string.Equals(x.Name, fieldNameameWithAlias)))
                 {
-                    var key = Expression.PropertyOrField(this._item, "Key");
+                    var properyOfKey = Expression.PropertyOrField(key, fieldNameameWithAlias);
+                    Nodes.Push(properyOfKey);
+                    return;
+                } else
+                if (key.Type.GetFields().Any(x => string.Equals(x.Name, node.Name)))
+                {
                     var properyOfKey = Expression.PropertyOrField(key, node.Name);
                     Nodes.Push(properyOfKey);
+                    return;
                 }
-                catch (Exception ex)
+                else
                 {
-                    var groupItemProperty = Expression.PropertyOrField(this._groupItem, node.Name);
+                    var aliasProperty = this._itemInGroup.Type.GetFields().FirstOrDefault(x => string.Equals(x.Name, node.Alias));
+                    if (aliasProperty != null)
+                    {
+                        var nameProperty = aliasProperty.FieldType.GetFields().FirstOrDefault(x => string.Equals(x.Name, node.Name));
+                        if (nameProperty != null)
+                        {
+                            Nodes.Push(
+                                Expression.PropertyOrField( 
+                                    Expression.PropertyOrField(this._itemInGroup, node.Alias),
+                                    node.Name));
+                            return;
+                        }
+                    }
+                    var groupItemProperty = Expression.PropertyOrField(this._itemInGroup, node.Name);
                     Nodes.Push(groupItemProperty);
+                    return;
                 }
-
-                return;
+                //}
+                //catch (Exception ex)
+                //{
+                //    var groupItemProperty = Expression.PropertyOrField(this._itemInGroup, node.Name);
+                //    Nodes.Push(groupItemProperty);
+                //}
             }
 
             var item = _alias2Item[node.Alias];
@@ -567,11 +568,6 @@ namespace Musoq.Evaluator.Visitors
             //Nodes.Push(node);
         }
 
-        public void StartSelect(SelectNode node)
-        {
-            
-        }
-
         public void Visit(SelectNode node)
         {
             var outputFields = new (FieldNode Field, Expression Value)[node.Fields.Length];
@@ -607,9 +603,6 @@ namespace Musoq.Evaluator.Visitors
                 expression);
 
             Nodes.Push(Expression.Lambda(call, _input));
-            //Nodes.Push(call);
-
-            //this._itemType = outputItemType;
 
             //"AnonymousType input"
             this._item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
@@ -622,21 +615,9 @@ namespace Musoq.Evaluator.Visitors
         {
         }
 
-        public void StartWhere(WhereNode node)
-        {
-            //this.itemType = expressionHelper.AnonymousTypes.Last();
-
-            //////"AnonymousType input"
-            //this.item = Expression.Parameter(this.itemType, "inputItem");
-
-            //////"IQueryable<AnonymousType> input"
-            //this.input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(this.itemType), "input");
-        }
-
         public void Visit(WhereNode node)
         {
             var predicate =  Nodes.Pop();
-            //var predicateLambda = Expression.Lambda<Func<this.inputItemType, bool>>(predicate, new ParameterExpression[] { this.inputItem });
             var predicateLambda = Expression.Lambda(predicate, this._item);
 
             MethodCallExpression call = Expression.Call(
@@ -647,11 +628,6 @@ namespace Musoq.Evaluator.Visitors
                 predicateLambda);
 
             Nodes.Push(Expression.Lambda(call, _input));
-        }
-
-        public void StartGroupBy(GroupByNode node)
-        {
-            
         }
 
         public void Visit(GroupByNode node)
@@ -670,7 +646,7 @@ namespace Musoq.Evaluator.Visitors
                     field.Value);
                 bindings.Add(assignment);
             }
-
+            
             //"new AnonymousType()"
             var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
 
@@ -689,11 +665,9 @@ namespace Musoq.Evaluator.Visitors
 
             Nodes.Push(Expression.Lambda(groupByCall, _input));
 
-            // "ItemAnonymousType"
-            //this.groupItemType = this._item.Type;
 
-            // "ItemAnonymousType groupItem"
-            this._groupItem = Expression.Parameter(this._item.Type, "groupItem");
+            // "ItemAnonymousType itemInGroup "
+            this._itemInGroup = Expression.Parameter(this._item.Type, "itemInGroup_" + this._item.Type);
 
             // "IGrouping<KeyAnonymousType, ItemAnonymousType>"
             outputItemType = typeof(IGrouping<,>).MakeGenericType(outputItemType, this._item.Type);
@@ -703,13 +677,11 @@ namespace Musoq.Evaluator.Visitors
 
             // "IQueryable<IGrouping<KeyAnonymousType, ItemAnonymousType>> input"
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputItemType), "input");
-            
         }
 
         public void Visit(HavingNode node)
         {
             var predicate = Nodes.Pop();
-            //var predicateLambda = Expression.Lambda<Func<this.inputItemType, bool>>(predicate, new ParameterExpression[] { this.inputItem });
             var predicateLambda = Expression.Lambda(predicate, this._item);
 
             MethodCallExpression call = Expression.Call(
@@ -752,9 +724,6 @@ namespace Musoq.Evaluator.Visitors
                 takeNumber);
 
             Nodes.Push(Expression.Lambda(call, _input));
-
-            //IQueryable<IObjectResolver> stream = Streams[_queryAlias];
-            //Streams[_queryAlias] = stream.Take((int)node.Value);
         }
 
         public void Visit(JoinInMemoryWithSourceTableFromNode node)
@@ -812,10 +781,9 @@ namespace Musoq.Evaluator.Visitors
 
             //"IQueryable<AnonymousType> input"
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(entityType), "input");
-            this._alias2Input[node.Alias] = this._input;
 
-            Columns[node.Alias] = fields.Select(x => x.Item1).ToArray();
-            ColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
+            ResultColumns[node.Alias] = fields.Select(x => x.Item1).ToArray();
+            ResultColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
         }
 
         public void Visit(AliasedFromNode node)
@@ -841,7 +809,6 @@ namespace Musoq.Evaluator.Visitors
 
             //"IQueryable<AnonymousType> input"
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputitemType), "input");
-            this._alias2Input[node.Alias] = this._input;
 
             Nodes.Push(table);
         }
@@ -852,7 +819,6 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(ExpressionFromNode node)
         {
-            //throw new NotImplementedException();
         }
 
         public void Visit(SchemaMethodFromNode node)
@@ -862,8 +828,6 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(CreateTransformationTableNode node)
         {
-            
-            //throw new NotImplementedException();
         }
 
         public void Visit(RenameTableNode node)
@@ -892,8 +856,6 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(QueryNode node)
         {
-            //var stream = Streams.Pop(); // Streams[_queryAlias];
-
             Expression select = node.Select != null ? Nodes.Pop() : null;
 
             Expression orderBy = node.OrderBy != null ? Nodes.Pop() : null;
@@ -910,7 +872,7 @@ namespace Musoq.Evaluator.Visitors
             Expression from = node.From != null ? Nodes.Pop() : null;
 
 
-            Expression last = from;// Expression.Constant(stream, typeof(IQueryable<IObjectResolver>));
+            Expression last = from;
 
             if (where != null)
             {
@@ -948,15 +910,12 @@ namespace Musoq.Evaluator.Visitors
             }
 
             Nodes.Push(last);
-            Columns[_queryAlias] = node.Select.Fields.Select(x => x.FieldName).ToArray();
-            ColumnsTypes[_queryAlias] = node.Select.Fields.Select(x => x.ReturnType).ToArray();
+            ResultColumns[_queryAlias] = node.Select.Fields.Select(x => x.FieldName).ToArray();
+            ResultColumnsTypes[_queryAlias] = node.Select.Fields.Select(x => x.ReturnType).ToArray();
         }
 
         public void Visit(InternalQueryNode node)
         {
-            //var stream = Nodes.Pop(); // Streams[_queryAlias];
-
-
             Expression skip = node.Skip != null ? Nodes.Pop() : null;
             Expression take = node.Take != null ? Nodes.Pop() : null;
 
@@ -968,7 +927,7 @@ namespace Musoq.Evaluator.Visitors
             Expression from = node.From != null ? Nodes.Pop() : null;
 
 
-            Expression last = from;// Expression.Constant(stream, typeof(IQueryable<IObjectResolver>));
+            Expression last = from;
 
             if (where != null)
             {
@@ -995,27 +954,20 @@ namespace Musoq.Evaluator.Visitors
                 last = Expression.Invoke(select, last);
             }
             Nodes.Push(last);
-            //Streams.Push(last);
-            //Expression<Func<IEnumerable<IObjectResolver>>> toStream = Expression.Lambda<Func<IEnumerable<IObjectResolver>>>(last);
         }
 
         public void Visit(RootNode node)
         {
-            
             Expression last = Nodes.Pop();
             Expression<Func<IEnumerable<object>>> toStream = Expression.Lambda<Func<IEnumerable<object>>>(last);
             var compiledToStream = toStream.Compile();
-            Stream = compiledToStream().AsQueryable().Select(x => new AnonymousTypeResolver(x));
-
-            //throw new NotImplementedException();
+            ResultStream = compiledToStream().AsQueryable().Select(x => new AnonymousTypeResolver(x));
         }
 
         public void Visit(SingleSetNode node)
         {
             throw new NotImplementedException();
         }
-
-        
 
         public void Visit(UnionNode node)
         {
@@ -1029,12 +981,19 @@ namespace Musoq.Evaluator.Visitors
             var leftSelect = this.expressionHelper.Select(left, outputItemType);
             var rightSelect = this.expressionHelper.Select(right, outputItemType);
 
+            List<Expression> prameters = new List<Expression> { leftSelect, rightSelect };
+            if (node.Keys.Length > 0)
+            {
+                var comparerType = expressionHelper.CreateEqualityComparerForType(outputItemType, node.Keys);
+                var comparer = Expression.New(comparerType);
+                prameters.Add(comparer);
+            }
+
             var call = Expression.Call(
                 typeof(Queryable),
                 "Union",
                 new Type[] { outputItemType },
-                leftSelect,
-                rightSelect);
+                prameters.ToArray());
 
             Nodes.Push(call);
             
@@ -1069,24 +1028,30 @@ namespace Musoq.Evaluator.Visitors
 
             var left = Nodes.Pop();
             var leftType = this.expressionHelper.GetQueryableItemType(left);
-
+            
             var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
             var leftSelect = this.expressionHelper.Select(left, outputItemType);
             var rightSelect = this.expressionHelper.Select(right, outputItemType);
+
+            List<Expression> prameters = new List<Expression> { leftSelect , rightSelect };
+            if (node.Keys.Length > 0)
+            {
+                var comparerType = expressionHelper.CreateEqualityComparerForType(outputItemType, node.Keys);
+                var comparer = Expression.New(comparerType);
+                prameters.Add(comparer);
+            }
 
             var call = Expression.Call(
                 typeof(Queryable),
                 "Except",
                 new Type[] { outputItemType },
-                leftSelect,
-                rightSelect);
+                prameters.ToArray());
 
             Nodes.Push(call);
         }
 
         public void Visit(RefreshNode node)
         {
-            //throw new NotImplementedException();
         }
 
         public void Visit(IntersectNode node)
@@ -1118,9 +1083,6 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(MultiStatementNode node)
         {
-            
-
-            //throw new NotImplementedException();
         }
 
         public void Visit(StatementsArrayNode node)
@@ -1135,7 +1097,6 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(CteExpressionNode node)
         {
-            //throw new NotImplementedException();
         }
 
         public void Visit(CteInnerExpressionNode node)
@@ -1259,10 +1220,7 @@ namespace Musoq.Evaluator.Visitors
                 fromLambda
                 );
 
-            //Nodes.Push(Expression.Lambda(call, this._alias2Item[fromNode.Alias]));
             Nodes.Push(fromCall);
-
-            //this._itemType = outputItemType;
 
             //"AnonymousType input"
             this._item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
@@ -1274,9 +1232,6 @@ namespace Musoq.Evaluator.Visitors
 
 
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputItemType), "input");
-            this._alias2Input[node.Alias] = this._input;
-
-            
         }
 
 

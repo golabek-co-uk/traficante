@@ -11,18 +11,6 @@ namespace Musoq.Converter.Build
 {
     public class BuildItems : Dictionary<string, object>
     {
-        public byte[] DllFile
-        {
-            get => (byte[]) this["DLL_FILE"];
-            set => this["DLL_FILE"] = value;
-        }
-
-        public byte[] PdbFile
-        {
-            get => (byte[])this["PDB_FILE"];
-            set => this["PDB_FILE"] = value;
-        }
-
         public RootNode TransformedQueryTree
         {
             get => (RootNode)this["TRANSFORMED_QUERY_TREE"];
@@ -45,24 +33,6 @@ namespace Musoq.Converter.Build
         {
             get => (ISchemaProvider) this["SCHEMA_PROVIDER"];
             set => this["SCHEMA_PROVIDER"] = value;
-        }
-
-        public CSharpCompilation Compilation
-        {
-            get => (CSharpCompilation) this["COMPILATION"];
-            set => this["COMPILATION"] = value;
-        }
-
-        public string AccessToClassPath
-        {
-            get => (string) this["ACCESS_TO_CLASS_PATH"];
-            set => this["ACCESS_TO_CLASS_PATH"] = value;
-        }
-
-        public EmitResult EmitResult
-        {
-            get => (EmitResult) this["EMIT_RESULT"];
-            set => this["EMIT_RESULT"] = value;
         }
 
         public IQueryable<IObjectResolver> Stream

@@ -20,7 +20,6 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(SelectNode node)
         {
-            _visitor.StartSelect(node);
             foreach (var field in node.Fields)
                 field.Accept(this);
             node.Accept(_visitor);
@@ -127,15 +126,12 @@ namespace Musoq.Evaluator.Visitors
 
         public virtual void Visit(WhereNode node)
         {
-            _visitor.StartWhere(node);
             node.Expression.Accept(this);
             node.Accept(_visitor);
         }
 
         public void Visit(GroupByNode node)
         {
-            _visitor.StartGroupBy(node);
-
             foreach (var field in node.Fields)
                 field.Accept(this);
 
@@ -402,8 +398,10 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(FieldNode node)
         {
+            _visitor.SetFieldNode(node);
             node.Expression.Accept(this);
             node.Accept(_visitor);
+            _visitor.SetFieldNode(null);
         }
 
         public void Visit(FieldOrderedNode node)

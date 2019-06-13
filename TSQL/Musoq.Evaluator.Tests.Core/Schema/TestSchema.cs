@@ -10,7 +10,7 @@ using Musoq.Schema.Reflection;
 namespace Musoq.Evaluator.Tests.Core.Schema
 {
     public class TestSchema<T> : SchemaBase
-        where T : BasicEntity
+        //where T : BasicEntity
     {
         private static readonly IDictionary<string, int> TestNameToIndexMap;
         private static readonly IDictionary<int, Func<T, object>> TestIndexToObjectAccessMap;
@@ -34,16 +34,16 @@ namespace Musoq.Evaluator.Tests.Core.Schema
 
             TestIndexToObjectAccessMap = new Dictionary<int, Func<T, object>>
             {
-                {10, arg => arg.Name},
-                {11, arg => arg.City},
-                {12, arg => arg.Country},
-                {13, arg => arg.Population},
-                {14, arg => arg.Self},
-                {15, arg => arg.Money},
-                {16, arg => arg.Month},
-                {17, arg => arg.Time},
-                {18, arg => arg.Id},
-                {19, arg => arg.NullableValue},
+                {10, arg => (arg as BasicEntity).Name},
+                {11, arg => (arg as BasicEntity).City},
+                {12, arg => (arg as BasicEntity).Country},
+                {13, arg => (arg as BasicEntity).Population},
+                {14, arg => (arg as BasicEntity).Self},
+                {15, arg => (arg as BasicEntity).Money},
+                {16, arg => (arg as BasicEntity).Month},
+                {17, arg => (arg as BasicEntity).Time},
+                {18, arg => (arg as BasicEntity).Id},
+                {19, arg => (arg as BasicEntity).NullableValue},
             };
         }
 

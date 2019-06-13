@@ -60,36 +60,33 @@ namespace Musoq.Evaluator.Tests.Core
     public class Tests : TestBase
     {
         [TestMethod]
-        public void Test3()
-
+        public void GroupByTest()
         {
-
             var trainers = new List<Trainer>();
+            trainers.Add(new Trainer { Id = 1, Name = "A:Jon" });
+            trainers.Add(new Trainer { Id = 2, Name = "A:Mark" });
+            trainers.Add(new Trainer { Id = 3, Name = "B:Adam" });
+            var groupedResults = Queryable.GroupBy(trainers.AsQueryable(), x => new { a = x.Name.Substring(0, 1) });
+            var result = Queryable.Select(groupedResults, x => x.Key.a);
+            Assert.IsTrue(result.Count() == 2);
+        }
 
+        [TestMethod]
+        public void JoinTest()
+        {
+            var trainers = new List<Trainer>();
             trainers.Add(new Trainer { Id = 1, Name = "Jon" });
-
             trainers.Add(new Trainer { Id = 2, Name = "Mark" });
 
-
-
             var pets = new List<Pet>();
-
             pets.Add(new Pet { Id = 1, Name = "Bigos" });
-
             pets.Add(new Pet { Id = 2, Name = "Bacon" });
-
             pets.Add(new Pet { Id = 3, Name = "Banger" });
 
-
-
             var trainersPets = new List<TrainerPet>();
-
             trainersPets.Add(new TrainerPet { TrainerId = 1, PetId = 1 });
-
             trainersPets.Add(new TrainerPet { TrainerId = 1, PetId = 2 });
-
             trainersPets.Add(new TrainerPet { TrainerId = 2, PetId = 3 });
-
    
             var x = Queryable.SelectMany<Trainer,Output>(trainers.AsQueryable(),
                 trainer =>
@@ -99,35 +96,20 @@ namespace Musoq.Evaluator.Tests.Core
                 );
 
             var join = trainers.SelectMany(trainer =>
-
             {
-
                 return trainersPets.Where(trainerPet => trainerPet.TrainerId == trainer.Id)
-
                                    .SelectMany(trainerPet =>
-
                                    {
-
                                        return pets.Where(pet => pet.Id == trainerPet.PetId)
-
                                                           .Select(pet =>
-
                                                               new Output
-
                                                               {
-
                                                                   Trainer = trainer,
-
                                                                   TrainerPet = trainerPet,
-
                                                                   Pet = pet
-
                                                               });
-
                                    });
-
             }).ToList();
-
         }
     }
 }

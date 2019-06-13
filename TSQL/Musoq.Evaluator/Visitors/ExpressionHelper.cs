@@ -35,8 +35,9 @@ namespace Musoq.Evaluator.Visitors
             TypeBuilder dynamicTypeBuilder = dynamicModule.DefineType(GenerateAnonymousTypeName(), TypeAttributes.Public);
 
             List<FieldBuilder> fieldsBuilder = AddFields(dynamicTypeBuilder, fields);
-            OverrideEquals(dynamicTypeBuilder, fieldsBuilder);
-            OverrideGetHashCode(dynamicTypeBuilder, fieldsBuilder);
+            List<FieldInfo> fieldsInfo = fieldsBuilder.Select(x => (FieldInfo)x).ToList();
+            OverrideEquals(dynamicTypeBuilder, fieldsInfo);
+            OverrideGetHashCode(dynamicTypeBuilder, fieldsInfo);
 
             var dynamicType = dynamicTypeBuilder.CreateTypeInfo();
             _anonymousTypes.Add(dynamicType);
@@ -63,7 +64,7 @@ namespace Musoq.Evaluator.Visitors
             return fieldsBuilder;
         }
 
-        private static void OverrideGetHashCode(TypeBuilder dynamicTypeBuilder, List<FieldBuilder> fieldsBuilder)
+        private static void OverrideGetHashCode(TypeBuilder dynamicTypeBuilder, List<FieldInfo> fieldsBuilder)
         {
             //Pick two different prime numbers, e.g. 17 and 23, and do:
             //int hash = 17;
@@ -125,7 +126,7 @@ namespace Musoq.Evaluator.Visitors
             dynamicTypeBuilder.DefineMethodOverride(getHashCode, typeof(object).GetMethod("GetHashCode"));
         }
 
-        private static void OverrideEquals(TypeBuilder dynamicTypeBuilder, List<FieldBuilder> fieldsBuilder)
+        private static void OverrideEquals(TypeBuilder dynamicTypeBuilder, List<FieldInfo> fieldsBuilder)
         {
             MethodBuilder equals = dynamicTypeBuilder.DefineMethod(
                             "Equals",
@@ -157,6 +158,109 @@ namespace Musoq.Evaluator.Visitors
             il.Emit(OpCodes.Ret); // return false
 
             dynamicTypeBuilder.DefineMethodOverride(equals, typeof(object).GetMethod("Equals", new[] { typeof(object) }));
+        }
+
+        public Type CreateEqualityComparerForType(Type objType, string[] propsToCompare)
+        {
+            var comparerInterface = typeof(IEqualityComparer<>).MakeGenericType(objType);
+            TypeBuilder dynamicTypeBuilder = dynamicModule.DefineType(objType.Name + "_EqualityComparer", TypeAttributes.Public, typeof(object), new[] { comparerInterface });
+            var fieldsToCompare = objType.GetFields().Where(x => propsToCompare.Contains(x.Name)).ToList();
+            AddEqualsMethod(dynamicTypeBuilder, objType, fieldsToCompare);
+            AddGetHashCodeMethod(dynamicTypeBuilder, objType, fieldsToCompare);
+            var qualityComparerType = dynamicTypeBuilder.CreateTypeInfo();
+            return qualityComparerType;
+        }
+
+        private static void AddEqualsMethod(TypeBuilder dynamicTypeBuilder, Type objType, List<FieldInfo> fieldsBuilder)
+        {
+            MethodBuilder equals = dynamicTypeBuilder.DefineMethod(
+                            "Equals",
+                            MethodAttributes.Public
+                            | MethodAttributes.HideBySig
+                            | MethodAttributes.NewSlot
+                            | MethodAttributes.Virtual
+                            | MethodAttributes.Final,
+                            CallingConventions.HasThis,
+                            typeof(bool),
+                            new Type[] { objType, objType });
+
+            var il = equals.GetILGenerator();
+            Label goToFalse = il.DefineLabel();
+
+            foreach (var field in fieldsBuilder)
+            {
+                il.Emit(OpCodes.Ldarg_1); // put "obj1" on the stack
+                il.Emit(OpCodes.Ldfld, field); // put "obj1.field" on the stack 
+                il.Emit(OpCodes.Ldarg_2); //put "obj2" on the stack
+                il.Emit(OpCodes.Ldfld, field); //put "obj2.field" on the stack
+                il.Emit(OpCodes.Ceq); //if obj1.field == obj2.field, put 1 else 0 on the stuck
+                il.Emit(OpCodes.Brfalse, goToFalse); // if 0 on the stuck, return false
+            }
+            il.Emit(OpCodes.Ldc_I4_1); // put true on the stack
+            il.Emit(OpCodes.Ret);// return true
+            il.MarkLabel(goToFalse);
+            il.Emit(OpCodes.Ldc_I4_0); // put false on the stack
+            il.Emit(OpCodes.Ret); // return false
+        }
+
+        private static void AddGetHashCodeMethod(TypeBuilder dynamicTypeBuilder, Type objType, List<FieldInfo> fieldsBuilder)
+        {
+            //Pick two different prime numbers, e.g. 17 and 23, and do:
+            //int hash = 17;
+            //hash = hash * 23 + field1.GetHashCode();
+            //hash = hash * 23 + field2.GetHashCode();
+            //hash = hash * 23 + field3.GetHashCode();
+            //return hash;
+
+            MethodBuilder getHashCode = dynamicTypeBuilder.DefineMethod(
+                "GetHashCode",
+                MethodAttributes.Public
+                | MethodAttributes.HideBySig
+                | MethodAttributes.NewSlot
+                | MethodAttributes.Virtual
+                | MethodAttributes.Final,
+                CallingConventions.HasThis,
+                typeof(int),
+                new Type[] { objType });
+
+            var il = getHashCode.GetILGenerator();
+            il.Emit(OpCodes.Ldc_I4_S, 17); // put "17" on the stack
+            foreach (var field in fieldsBuilder)
+            {
+                Label gotoIsNull = il.DefineLabel();
+
+                il.Emit(OpCodes.Ldarg_1); // put "obj" on the stack
+                il.Emit(OpCodes.Ldfld, field); // put "obj.field" on the stack
+                il.Emit(OpCodes.Ldnull); // put "null" on the stack
+                il.Emit(OpCodes.Ceq); // if "obj.field" is "null"
+                il.Emit(OpCodes.Brtrue, gotoIsNull); // if "this.field" is null, goto IsNull
+
+                // "this.field" is not null
+                il.Emit(OpCodes.Ldc_I4_S, 23); // put "23" on the stack
+                il.Emit(OpCodes.Mul); // multiply "23 x last hash" and put result on the stack
+
+                if (field.FieldType.IsValueType)
+                {
+
+                    int localIndex = il.DeclareLocal(field.FieldType).LocalIndex; // declare the local variable
+                    il.Emit(OpCodes.Ldarg_1); // put "obj" on the stack
+                    il.Emit(OpCodes.Ldfld, field); // put "obj.field" on the stack
+                    il.Emit(OpCodes.Stloc, localIndex); // assign the value to the local variable
+                    il.Emit(OpCodes.Ldloca_S, localIndex); // load reference to the value from the local variable
+                }
+                else
+                {
+                    il.Emit(OpCodes.Ldarg_1); // put "obj" on the stack
+                    il.Emit(OpCodes.Ldfld, field); // put "obj.field" on the stack
+                }
+                il.Emit(OpCodes.Call, field.FieldType.GetMethod("GetHashCode", new Type[] { })); // call "GetHashCode" and put result on the stack
+                il.Emit(OpCodes.Add); // add result of "23 x last hash"  to result of "GetHashCode" and put is on the stack
+
+                // "this.field" is null, do nothing
+                il.MarkLabel(gotoIsNull); // IsNull label
+            }
+
+            il.Emit(OpCodes.Ret); // return number
         }
 
         public Type GetQueryableItemType(Expression queryable)

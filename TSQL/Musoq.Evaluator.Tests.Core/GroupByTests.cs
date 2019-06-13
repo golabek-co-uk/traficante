@@ -99,6 +99,38 @@ namespace Musoq.Evaluator.Tests.Core
             Assert.AreEqual(Convert.ToInt32(2), table[1].Values[1]);
         }
 
+        [TestMethod]
+        public void SimpleGroupByStringTest()
+        {
+            var query = @"select Name from #A.Entities() group by Name";
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("ABBA"),
+                        new BasicEntity("ABBA"),
+                        new BasicEntity("BABBA"),
+                        new BasicEntity("ABBA"),
+                        new BasicEntity("BABBA"),
+                        new BasicEntity("CECCA"),
+                        new BasicEntity("ABBA")
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(1, table.Columns.Count());
+            Assert.AreEqual("Name", table.Columns.ElementAt(0).ColumnName);
+            Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
+
+            Assert.AreEqual(3, table.Count);
+            Assert.AreEqual("ABBA", table[0].Values[0]);
+            Assert.AreEqual("BABBA", table[1].Values[0]);
+            Assert.AreEqual("CECCA", table[2].Values[0]);
+        }
 
         [TestMethod]
         public void SimpleRowNumberForGroupByTest()
@@ -346,7 +378,40 @@ namespace Musoq.Evaluator.Tests.Core
         public void GroupBySubstrTest()
         {
             var query =
-                @"select Substr(Name, 0, 2), Count(Substr(Name, 0, 2)) from #A.Entities() group by Substr(Name, 0, 2)";
+                @"select Substr(Name, 0, 2) from #A.Entities() group by Substr(Name, 0, 2)";
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("AA:1"),
+                        new BasicEntity("AA:2"),
+                        new BasicEntity("AA:3"),
+                        new BasicEntity("BB:1"),
+                        new BasicEntity("BB:2"),
+                        new BasicEntity("CC:1")
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(1, table.Columns.Count());
+            Assert.AreEqual("Substr(Name, 0, 2)", table.Columns.ElementAt(0).ColumnName);
+            Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
+
+            Assert.AreEqual(3, table.Count);
+            Assert.AreEqual("AA", table[0].Values[0]);
+            Assert.AreEqual("BB", table[1].Values[0]);
+            Assert.AreEqual("CC", table[2].Values[0]);
+        }
+
+        [TestMethod]
+        public void GroupBySubstrAndAggregationMethodTest()
+        {
+            var query =
+                @"select Substr(Name, 0, 2), Count(Substr(Name,  0, 2)) from #A.Entities() group by Substr(Name, 0, 2)";
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {
                 {
@@ -845,7 +910,7 @@ namespace Musoq.Evaluator.Tests.Core
         [TestMethod]
         public void GroupByWithCaseWhenInSelectTest()
         {
-            var query = @"select (case when Self.Month = 'jan' then 'JANUARY' when Self.Month = 'feb' then 'FEBRUARY' else 'NONE' end) from #A.Entities() group by Self.Month";
+            var query = @"select (case when Self.Month = 'jan' then 'JANUARY' when Self.Month = 'feb' then 'FEBRUARY' else 'NONE' end) from #A.Entities() Self group by Self.Month";
 
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {
@@ -867,6 +932,24 @@ namespace Musoq.Evaluator.Tests.Core
             Assert.AreEqual("JANUARY", table[0][0]);
             Assert.AreEqual("FEBRUARY", table[1][0]);
             Assert.AreEqual("NONE", table[2][0]);
+        }
+
+        [TestMethod]
+        public void GroupByWithSum()
+        {
+            var query = @"select City, Sum(Population) from #A.Entities() group by City";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {"#A", new[] {new BasicEntity("001", "", 100), new BasicEntity("001", "", 100)}}
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(1, table.Count);
+            Assert.AreEqual("001", table[0].Values[0]);
+            Assert.AreEqual(200m, table[0].Values[1]);
         }
     }
 }

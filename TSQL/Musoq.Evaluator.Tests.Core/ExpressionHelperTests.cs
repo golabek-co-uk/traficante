@@ -2,6 +2,7 @@
 using Musoq.Evaluator.Visitors;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Musoq.Evaluator.Tests.Core
@@ -123,6 +124,123 @@ namespace Musoq.Evaluator.Tests.Core
             expectedhash = expectedhash * 23 + new DateTime(2019, 4, 12).GetHashCode();
             
             Assert.AreEqual(expectedhash, object1.GetHashCode());
+        }
+
+        [TestMethod]
+        public void EqualityCompare_ImplementsInterface()
+        {
+            ExpressionHelper sut = new ExpressionHelper();
+            Type t = sut.CreateAnonymousType(new[] {
+                ("Id", typeof(int)),
+                ("Name", typeof(string))
+            });
+
+            Type t_comparer = sut.CreateEqualityComparerForType(t, new string[] { "Name" });
+
+            var implementsIEqualityComparer = typeof(IEqualityComparer<>).MakeGenericType(t).IsAssignableFrom(t_comparer);
+            Assert.IsTrue(implementsIEqualityComparer);
+        }
+
+        [TestMethod]
+        public void EqualityCompare_GetHashCode_SameObjectsReturnsSameHash()
+        {
+            ExpressionHelper sut = new ExpressionHelper();
+            Type t = sut.CreateAnonymousType(new[] {
+                ("Id", typeof(int)),
+                ("Name", typeof(string))
+            });
+        
+            var obj1 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Id").SetValue(obj1, (int)1);
+            t.GetField("Name").SetValue(obj1, "daniel");
+
+            var obj2 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Id").SetValue(obj2, (int)2);
+            t.GetField("Name").SetValue(obj2, "daniel");
+
+            Type t_comparer = sut.CreateEqualityComparerForType(t, new string[] { "Name" });
+            var comparer = t_comparer.GetConstructors()[0].Invoke(new object[0]);
+            var getHashCode = t_comparer.GetMethods().Single(x => x.Name == "GetHashCode" && x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == t);
+
+            var hashCodeOfObj1 = getHashCode.Invoke(comparer, new[] { obj1 });
+            var hashCodeOfObj2 = getHashCode.Invoke(comparer, new[] { obj2 });
+            Assert.AreEqual(hashCodeOfObj1, hashCodeOfObj2);
+        }
+
+        [TestMethod]
+        public void EqualityCompare_GetHashCode_DifferentObjectsReturnsDifferentHash()
+        {
+            ExpressionHelper sut = new ExpressionHelper();
+            Type t = sut.CreateAnonymousType(new[] {
+                ("Id", typeof(int)),
+                ("Name", typeof(string))
+            });
+
+            var obj1 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Id").SetValue(obj1, (int)1);
+            t.GetField("Name").SetValue(obj1, "daniel");
+
+            var obj2 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Id").SetValue(obj2, (int)2);
+            t.GetField("Name").SetValue(obj2, "john");
+
+            Type t_comparer = sut.CreateEqualityComparerForType(t, new string[] { "Name" });
+            var comparer = t_comparer.GetConstructors()[0].Invoke(new object[0]);
+            var getHashCode = t_comparer.GetMethods().Single(x => x.Name == "GetHashCode" && x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType == t);
+
+            var hashCodeOfObj1 = getHashCode.Invoke(comparer, new[] { obj1 });
+            var hashCodeOfObj2 = getHashCode.Invoke(comparer, new[] { obj2 });
+            Assert.AreNotEqual(hashCodeOfObj1, hashCodeOfObj2);
+        }
+
+        [TestMethod]
+        public void EqualityCompare_Equals_SameObjectsAreEquals()
+        {
+            ExpressionHelper sut = new ExpressionHelper();
+            Type t = sut.CreateAnonymousType(new[] {
+                ("Id", typeof(int)),
+                ("Name", typeof(string))
+            });
+
+            var obj1 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Id").SetValue(obj1, (int)1);
+            t.GetField("Name").SetValue(obj1, "daniel");
+
+            var obj2 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Id").SetValue(obj2, (int)2);
+            t.GetField("Name").SetValue(obj2, "daniel");
+
+            Type t_comparer = sut.CreateEqualityComparerForType(t, new string[] { "Name" });
+            var comparer = t_comparer.GetConstructors()[0].Invoke(new object[0]);
+            var equals = t_comparer.GetMethods().Single(x => x.Name == "Equals" && x.GetParameters().Length == 2);
+
+            var areEquals = (bool)equals.Invoke(comparer, new[] { obj1, obj2 });
+            Assert.IsTrue(areEquals);
+        }
+
+        [TestMethod]
+        public void EqualityCompare_Equals_DifferentObjectsAreDifferen()
+        {
+            ExpressionHelper sut = new ExpressionHelper();
+            Type t = sut.CreateAnonymousType(new[] {
+                ("Id", typeof(int)),
+                ("Name", typeof(string))
+            });
+
+            var obj1 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Id").SetValue(obj1, (int)1);
+            t.GetField("Name").SetValue(obj1, "daniel");
+
+            var obj2 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Id").SetValue(obj2, (int)2);
+            t.GetField("Name").SetValue(obj2, "john");
+
+            Type t_comparer = sut.CreateEqualityComparerForType(t, new string[] { "Name" });
+            var comparer = t_comparer.GetConstructors()[0].Invoke(new object[0]);
+            var equals = t_comparer.GetMethods().Single(x => x.Name == "Equals" && x.GetParameters().Length == 2);
+
+            var areEquals = (bool)equals.Invoke(comparer, new[] { obj1, obj2 });
+            Assert.IsFalse(areEquals);
         }
     }
 }

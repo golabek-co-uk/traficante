@@ -20,7 +20,7 @@ namespace Musoq.Evaluator.Tests.Core
 
         protected CompiledQuery CreateAndRunVirtualMachine<T>(string script,
             IDictionary<string, IEnumerable<T>> sources)
-            where T : BasicEntity
+            //where T : BasicEntity
         {
             return InstanceCreator.CompileForExecution(script, new SchemaProvider<T>(sources));
         }
