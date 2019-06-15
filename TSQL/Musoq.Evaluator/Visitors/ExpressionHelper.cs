@@ -12,13 +12,13 @@ namespace Musoq.Evaluator.Visitors
     {
         private List<Type> _anonymousTypes = new List<Type>();
 
-        AssemblyName dynamicAssemblyName = null;
-        AssemblyBuilder dynamicAssembly = null;
-        ModuleBuilder dynamicModule = null;
+        private AssemblyName dynamicAssemblyName = null;
+        private AssemblyBuilder dynamicAssembly = null;
+        private ModuleBuilder dynamicModule = null;
 
         public ExpressionHelper()
         {
-            dynamicAssemblyName = new AssemblyName("Musoq.AnonymousTypes");
+            dynamicAssemblyName = new AssemblyName("AnonymousTypes");
             dynamicAssembly = AssemblyBuilder.DefineDynamicAssembly(dynamicAssemblyName, AssemblyBuilderAccess.Run);
             dynamicModule = dynamicAssembly.DefineDynamicModule("Types");
         }
@@ -140,6 +140,15 @@ namespace Musoq.Evaluator.Visitors
                             new Type[] { typeof(object) });
 
             var il = equals.GetILGenerator();
+
+            ////
+            //il.Emit(OpCodes.Ldc_I4_1); // put true on the stack
+            //il.Emit(OpCodes.Ret);// return true
+            //dynamicTypeBuilder.DefineMethodOverride(equals, typeof(object).GetMethod("Equals", new[] { typeof(object) }));
+            //return;
+            
+            ////
+
             Label goToFalse = il.DefineLabel();
 
             foreach (var field in fieldsBuilder)
@@ -148,15 +157,15 @@ namespace Musoq.Evaluator.Visitors
                 il.Emit(OpCodes.Ldfld, field); // put "this.field" on the stack 
                 il.Emit(OpCodes.Ldarg_1); //put "objecToCompare" on the stack
                 il.Emit(OpCodes.Ldfld, field); //put "objecToCompare.field" on the stack
-                il.Emit(OpCodes.Ceq); //if this.field == obj.field, put 1 else 0 on the stuck
-                il.Emit(OpCodes.Brfalse, goToFalse); // if 0 on the stuck, return false
+                il.Emit(OpCodes.Call, typeof(Object).GetMethod("Equals", new Type[] { typeof(object), typeof(object) }));
+                il.Emit(OpCodes.Brfalse, goToFalse); //if Equals returned false, go to  "goToFalse" lable
             }
             il.Emit(OpCodes.Ldc_I4_1); // put true on the stack
             il.Emit(OpCodes.Ret);// return true
             il.MarkLabel(goToFalse);
             il.Emit(OpCodes.Ldc_I4_0); // put false on the stack
             il.Emit(OpCodes.Ret); // return false
-
+            
             dynamicTypeBuilder.DefineMethodOverride(equals, typeof(object).GetMethod("Equals", new[] { typeof(object) }));
         }
 
@@ -193,8 +202,12 @@ namespace Musoq.Evaluator.Visitors
                 il.Emit(OpCodes.Ldfld, field); // put "obj1.field" on the stack 
                 il.Emit(OpCodes.Ldarg_2); //put "obj2" on the stack
                 il.Emit(OpCodes.Ldfld, field); //put "obj2.field" on the stack
+
                 il.Emit(OpCodes.Ceq); //if obj1.field == obj2.field, put 1 else 0 on the stuck
                 il.Emit(OpCodes.Brfalse, goToFalse); // if 0 on the stuck, return false
+                // TODO: replace OpCodes.Ceq with the following code
+                //il.Emit(OpCodes.Call, typeof(Object).GetMethod("Equals", new Type[] { typeof(object), typeof(object) }));
+                //il.Emit(OpCodes.Brfalse, goToFalse); //if Equals returned false, go to  "goToFalse" lable
             }
             il.Emit(OpCodes.Ldc_I4_1); // put true on the stack
             il.Emit(OpCodes.Ret);// return true

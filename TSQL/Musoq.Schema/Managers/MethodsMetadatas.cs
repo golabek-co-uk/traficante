@@ -32,7 +32,7 @@ namespace Musoq.Schema.Managers
         /// </summary>
         public MethodsMetadatas()
         {
-            _methods = new Dictionary<string, List<MethodInfo>>();
+            _methods = new Dictionary<string, List<MethodInfo>>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>

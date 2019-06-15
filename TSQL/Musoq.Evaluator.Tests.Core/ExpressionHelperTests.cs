@@ -127,6 +127,24 @@ namespace Musoq.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        public void TwoObjects_AreEqual()
+        {
+            ExpressionHelper sut = new ExpressionHelper();
+            Type t = sut.CreateAnonymousType(new[] {
+                ("Substr(Name, 0, 2)", typeof(System.String))
+            });
+
+            var obj1 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Substr(Name, 0, 2)").SetValue(obj1, "AA");
+
+            var obj2 = t.GetConstructors()[0].Invoke(new object[0]);
+            t.GetField("Substr(Name, 0, 2)").SetValue(obj2, "AA");
+
+
+            Assert.AreEqual(obj1, obj2);
+        }
+
+        [TestMethod]
         public void EqualityCompare_ImplementsInterface()
         {
             ExpressionHelper sut = new ExpressionHelper();

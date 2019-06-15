@@ -18,6 +18,8 @@ namespace Musoq.Parser.Nodes
 
         public override string Id { get; }
 
+        public bool ReturnsSingleRow { get; set; }
+
         public override void Accept(IExpressionVisitor visitor)
         {
             visitor.Visit(this);

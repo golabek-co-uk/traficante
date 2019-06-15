@@ -403,6 +403,15 @@ namespace Musoq.Evaluator.Visitors
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
             var from = Nodes.Pop() as ExpressionFromNode;
 
+            if (groupBy == null)
+            {
+                var split = SplitBetweenAggreateAndNonAggreagate(select.Fields);
+                if (split.NotAggregateFields.Length == 0)
+                {
+                    select.ReturnsSingleRow = true;
+                }
+            }
+
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
             return;
 
@@ -1019,6 +1028,47 @@ namespace Musoq.Evaluator.Visitors
             var elseNode = Nodes.Pop();
 
             Nodes.Push(new CaseNode(whenThenPairs.ToArray(), elseNode, node.ReturnType));
+        }
+
+        private (FieldNode[] AggregateFields, FieldNode[] NotAggregateFields) SplitBetweenAggreateAndNonAggreagate(FieldNode[] fieldsToSplit)
+        {
+            var aggregateFields = new List<FieldNode>();
+            var notAggregateFields = new List<FieldNode>();
+
+            foreach (var root in fieldsToSplit)
+            {
+                var subNodes = new Stack<Node>();
+
+                subNodes.Push(root.Expression);
+                bool hasAggregateMethod = false;
+                while (subNodes.Count > 0)
+                {
+                    var subNode = subNodes.Pop();
+
+                    if (subNode is AccessMethodNode aggregateMethod && aggregateMethod.IsAggregateMethod)
+                    {
+                        hasAggregateMethod = true;
+                        break;
+                    }
+                    else
+                    if (subNode is AccessMethodNode method)
+                    {
+                        foreach (var arg in method.Arguments.Args)
+                            subNodes.Push(arg);
+                    }
+                    else if (subNode is BinaryNode binary)
+                    {
+                        subNodes.Push(binary.Left);
+                        subNodes.Push(binary.Right);
+                    }
+                }
+                if (hasAggregateMethod)
+                    aggregateFields.Add(root);
+                else
+                    notAggregateFields.Add(root);
+            }
+
+            return (aggregateFields.ToArray(), notAggregateFields.ToArray());
         }
     }
 }

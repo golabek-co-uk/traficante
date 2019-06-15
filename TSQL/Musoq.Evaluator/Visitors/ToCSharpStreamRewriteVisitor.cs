@@ -336,6 +336,7 @@ namespace Musoq.Evaluator.Visitors
             {
                 if (this._item.Type.Name == "IGrouping`2")
                 {
+
                     if (node.Method.Name == "Count")
                     {
                         var selector = Expression.Lambda(args[0], this._itemInGroup);
@@ -351,6 +352,7 @@ namespace Musoq.Evaluator.Visitors
                             new Type[] { node.Arguments.Args[0].ReturnType },
                             new Expression[] { selectCall });
                         Nodes.Push(call);
+                        return;
                     }
                     if (node.Method.Name == "Sum")
                     {
@@ -367,7 +369,60 @@ namespace Musoq.Evaluator.Visitors
                             new Type[] { },
                             new Expression[] { selectCall });
                         Nodes.Push(call);
+                        return;
                     }
+                    if (node.Method.Name == "Max")
+                    {
+                        var selector = Expression.Lambda(args[0], this._itemInGroup);
+                        var group = Expression.Convert(this._item, typeof(IEnumerable<>).MakeGenericType(this._itemInGroup.Type));
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Enumerable),
+                            "Select",
+                            new Type[] { this._itemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { group, selector });
+                        MethodCallExpression call = Expression.Call(
+                            typeof(Enumerable),
+                            "Max",
+                            new Type[] { },
+                            new Expression[] { selectCall });
+                        Nodes.Push(call);
+                        return;
+                    }
+                    if (node.Method.Name == "Min")
+                    {
+                        var selector = Expression.Lambda(args[0], this._itemInGroup);
+                        var group = Expression.Convert(this._item, typeof(IEnumerable<>).MakeGenericType(this._itemInGroup.Type));
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Enumerable),
+                            "Select",
+                            new Type[] { this._itemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { group, selector });
+                        MethodCallExpression call = Expression.Call(
+                            typeof(Enumerable),
+                            "Min",
+                            new Type[] { },
+                            new Expression[] { selectCall });
+                        Nodes.Push(call);
+                        return;
+                    }
+                    if (node.Method.Name == "Avg")
+                    {
+                        var selector = Expression.Lambda(args[0], this._itemInGroup);
+                        var group = Expression.Convert(this._item, typeof(IEnumerable<>).MakeGenericType(this._itemInGroup.Type));
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Enumerable),
+                            "Select",
+                            new Type[] { this._itemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { group, selector });
+                        MethodCallExpression call = Expression.Call(
+                            typeof(Enumerable),
+                            "Average",
+                            new Type[] { },
+                            new Expression[] { selectCall });
+                        Nodes.Push(call);
+                        return;
+                    }
+                    throw new ApplicationException($"Aggregate method  {node.Method.Name} is not supported.");
                 }
                 else
                 {
@@ -385,6 +440,7 @@ namespace Musoq.Evaluator.Visitors
                             new Type[] { node.Arguments.Args[0].ReturnType },
                             new Expression[] { selectCall });
                         Nodes.Push(call);
+                        return;
                     }
                     if (node.Method.Name == "Sum")
                     {
@@ -400,7 +456,57 @@ namespace Musoq.Evaluator.Visitors
                             new Type[] {},
                             new Expression[] { selectCall });
                         Nodes.Push(call);
+                        return;
                     }
+                    if (node.Method.Name == "Avg")
+                    {
+                        var selector = Expression.Lambda(args[0], this._item);
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Queryable),
+                            "Select",
+                            new Type[] { this._item.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._input, selector });
+                        MethodCallExpression call = Expression.Call(
+                            typeof(Queryable),
+                            "Average",
+                            new Type[] { },
+                            new Expression[] { selectCall });
+                        Nodes.Push(call);
+                        return;
+                    }
+                    if (node.Method.Name == "Max")
+                    {
+                        var selector = Expression.Lambda(args[0], this._item);
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Queryable),
+                            "Select",
+                            new Type[] { this._item.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._input, selector });
+                        MethodCallExpression call = Expression.Call(
+                            typeof(Queryable),
+                            "Max",
+                            new Type[] { },
+                            new Expression[] { selectCall });
+                        Nodes.Push(call);
+                        return;
+                    }
+                    if (node.Method.Name == "Min")
+                    {
+                        var selector = Expression.Lambda(args[0], this._item);
+                        MethodCallExpression selectCall = Expression.Call(
+                            typeof(Queryable),
+                            "Select",
+                            new Type[] { this._item.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._input, selector });
+                        MethodCallExpression call = Expression.Call(
+                            typeof(Queryable),
+                            "Min",
+                            new Type[] { },
+                            new Expression[] { selectCall });
+                        Nodes.Push(call);
+                        return;
+                    }
+                    throw new ApplicationException($"Aggregate method  {node.Method.Name} is not supported.");
                 }
             }
             else
@@ -592,17 +698,33 @@ namespace Musoq.Evaluator.Visitors
             //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
-            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, _item);
+            if (node.ReturnsSingleRow)
+            {
+                var array = Expression.NewArrayInit(outputItemType, new Expression[] { initialization });
 
-            var call = Expression.Call(
-                typeof(Queryable),
-                "Select",
-                new Type[] { this._item.Type, outputItemType },
-                _input,
-                expression);
+                var call = Expression.Call(
+                    typeof(Queryable),
+                    "AsQueryable",
+                    new Type[] { outputItemType },
+                    array);
 
-            Nodes.Push(Expression.Lambda(call, _input));
+                Nodes.Push(Expression.Lambda(call, _input));
+            }
+            else
+            {
+                //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+                Expression expression = Expression.Lambda(initialization, _item);
+
+                var call = Expression.Call(
+                    typeof(Queryable),
+                    "Select",
+                    new Type[] { this._item.Type, outputItemType },
+                    _input,
+                    expression);
+
+                Nodes.Push(Expression.Lambda(call, _input));
+            }
+
 
             //"AnonymousType input"
             this._item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);

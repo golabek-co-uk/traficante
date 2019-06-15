@@ -10,6 +10,7 @@ namespace Musoq.Evaluator.Tests.Core
     public class GroupByTests : TestBase
     {
         [TestMethod]
+        [Ignore("Aggregate method with parent is not supported")]
         public void GroupByWithParentSumTest()
         {
             var query = @"select SumIncome(Money, 1), SumOutcome(Money, 1) from #A.Entities() group by Month, City";
@@ -41,14 +42,15 @@ namespace Musoq.Evaluator.Tests.Core
         public void GroupBySubtractGroupsTest()
         {
             var query =
-                @"select SumIncome(Money), SumOutcome(Money), SumIncome(Money) - Abs(SumOutcome(Money)) from #A.Entities() group by Month";
+                @"select Sum(Money), Sum(Money) - Abs(Sum(Money)) from #A.Entities() group by Month";
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {
                 {
                     "#A",
                     new[]
                     {
-                        new BasicEntity("jan", Convert.ToDecimal(400)), new BasicEntity("jan", Convert.ToDecimal(300)),
+                        new BasicEntity("jan", Convert.ToDecimal(400)),
+                        new BasicEntity("jan", Convert.ToDecimal(300)),
                         new BasicEntity("jan", Convert.ToDecimal(-200))
                     }
                 }
@@ -58,9 +60,34 @@ namespace Musoq.Evaluator.Tests.Core
             var table = vm.Run();
 
             Assert.AreEqual(1, table.Count);
-            Assert.AreEqual(Convert.ToDecimal(700), table[0].Values[0]);
-            Assert.AreEqual(Convert.ToDecimal(-200), table[0].Values[1]);
-            Assert.AreEqual(Convert.ToDecimal(500), table[0].Values[2]);
+            Assert.AreEqual(Convert.ToDecimal(500), table[0].Values[0]);
+            Assert.AreEqual(Convert.ToDecimal(0), table[0].Values[1]);
+        }
+
+        [TestMethod]
+        public void GroupByTwoSameAggregate()
+        {
+            var query =
+                @"select Sum(Money), Sum(Money) from #A.Entities() group by Month";
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A",
+                    new[]
+                    {
+                        new BasicEntity("jan", Convert.ToDecimal(400)),
+                        new BasicEntity("jan", Convert.ToDecimal(300)),
+                        new BasicEntity("jan", Convert.ToDecimal(-200))
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(1, table.Count);
+            Assert.AreEqual(Convert.ToDecimal(500), table[0].Values[0]);
+            Assert.AreEqual(Convert.ToDecimal(500), table[0].Values[0]);
         }
 
         [TestMethod]
@@ -535,6 +562,7 @@ namespace Musoq.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        [Ignore("Aggregate method with parent is not supported")]
         public void GroupByWithParentCountTest()
         {
             var query =
@@ -856,6 +884,7 @@ namespace Musoq.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        [Ignore("Group by complex object is not supported")]
         public void GroupByComplexObjectAccessTest()
         {
             var query = @"select Self.Month from #A.Entities() group by Self.Month";
@@ -879,6 +908,7 @@ namespace Musoq.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        [Ignore("Group by complex object is not supported")]
         public void GroupByComplexObjectAccessWithSumTest()
         {
             var query = @"select Self.Month, Sum(Self.Money) from #A.Entities() group by Self.Month";
@@ -950,6 +980,90 @@ namespace Musoq.Evaluator.Tests.Core
             Assert.AreEqual(1, table.Count);
             Assert.AreEqual("001", table[0].Values[0]);
             Assert.AreEqual(200m, table[0].Values[1]);
+        }
+
+        [TestMethod]
+        public void GroupByWithMax()
+        {
+            var query = @"select City, Max(Money) from #A.Entities() group by City";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {"#A",
+                    new[] 
+                    {
+                        new BasicEntity("London", "Jan", 100m),
+                        new BasicEntity("London", "Feb", 200m),
+                        new BasicEntity("Paris", "Jan", 100m),
+                        new BasicEntity("Paris", "Feb", -100m)
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual("London", table[0].Values[0]);
+            Assert.AreEqual(200m, table[0].Values[1]);
+            Assert.AreEqual("Paris", table[1].Values[0]);
+            Assert.AreEqual(100m, table[1].Values[1]);
+        }
+
+        [TestMethod]
+        public void GroupByWithMin()
+        {
+            var query = @"select City, Min(Money) from #A.Entities() group by City";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {"#A",
+                    new[]
+                    {
+                        new BasicEntity("London", "Jan", 100m),
+                        new BasicEntity("London", "Feb", 200m),
+                        new BasicEntity("Paris", "Jan", 100m),
+                        new BasicEntity("Paris", "Feb", -100m)
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual("London", table[0].Values[0]);
+            Assert.AreEqual(100m, table[0].Values[1]);
+            Assert.AreEqual("Paris", table[1].Values[0]);
+            Assert.AreEqual(-100m, table[1].Values[1]);
+        }
+
+        [TestMethod]
+        public void GroupByWithAvg()
+        {
+            var query = @"select City, AVG(Money) from #A.Entities() group by City";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {"#A",
+                    new[]
+                    {
+                        new BasicEntity("London", "Jan", 100m),
+                        new BasicEntity("London", "Feb", 200m),
+                        new BasicEntity("Paris", "Jan", 100m),
+                        new BasicEntity("Paris", "Feb", -100m)
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual("London", table[0].Values[0]);
+            Assert.AreEqual(150m, table[0].Values[1]);
+            Assert.AreEqual("Paris", table[1].Values[0]);
+            Assert.AreEqual(-0m, table[1].Values[1]);
         }
     }
 }
