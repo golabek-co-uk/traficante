@@ -24,9 +24,6 @@ namespace Musoq.Schema.DataSources
         {
             Name = name;
             _aggregator = methodsAggregator;
-
-            AddSource<SingleRowSource>("empty");
-            AddTable<SingleRowSchemaTable>("empty");
         }
 
         public void AddSource<TType>(string name, params object[] args)
