@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Musoq.Schema;
+using Musoq.Schema.DataSources;
+using Musoq.Schema.Reflection;
 
 namespace Musoq.Evaluator.Tests.Core.Schema
 {

@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Musoq.Converter\Musoq.Converter.csproj" />
     <ProjectReference Include="..\Musoq.Evaluator\Musoq.Evaluator.csproj" />
     <ProjectReference Include="..\Musoq.Parser\Musoq.Parser.csproj" />
     <ProjectReference Include="..\Musoq.Plugins\Musoq.Plugins.csproj" />
