@@ -24,85 +24,85 @@ namespace Musoq.Evaluator.Helpers
             return new ListRowSource(list);
         }
 
-        public static Table GetSpecificTableDescription(ISchemaTable table)
-        {
-            var newTable = new Table("desc", new[]
-            {
-                new Column("Name", typeof(string), 0),
-                new Column("Index", typeof(int), 1),
-                new Column("Type", typeof(string), 2)
-            });
+        //public static Table GetSpecificTableDescription(ISchemaTable table)
+        //{
+        //    var newTable = new Table("desc", new[]
+        //    {
+        //        new Column("Name", typeof(string), 0),
+        //        new Column("Index", typeof(int), 1),
+        //        new Column("Type", typeof(string), 2)
+        //    });
 
-            foreach (var column in table.Columns)
-            {
-                foreach (var complexField in CreateTypeComplexDescription(column.ColumnName, column.ColumnType))
-                {
-                    newTable.Add(new ObjectsRow(new object[]{ complexField.FieldName, column.ColumnIndex, complexField.Type.FullName }));
-                }
+        //    foreach (var column in table.Columns)
+        //    {
+        //        foreach (var complexField in CreateTypeComplexDescription(column.ColumnName, column.ColumnType))
+        //        {
+        //            newTable.Add(new ObjectsRow(new object[]{ complexField.FieldName, column.ColumnIndex, complexField.Type.FullName }));
+        //        }
                 
-            }
+        //    }
 
-            return newTable;
-        }
+        //    return newTable;
+        //}
 
-        public static Table GetSpecificSchemaDescriptions(ISchema schema)
-        {
-            return CreateTableFromConstructors(() => schema.GetRawConstructors());
-        }
+        //public static Table GetSpecificSchemaDescriptions(ISchema schema)
+        //{
+        //    return CreateTableFromConstructors(() => schema.GetRawConstructors());
+        //}
 
-        public static Table GetConstructorsForSpecificMethod(ISchema schema, string methodName)
-        {
-            return CreateTableFromConstructors(() => schema.GetRawConstructors(methodName));
-        }
+        //public static Table GetConstructorsForSpecificMethod(ISchema schema, string methodName)
+        //{
+        //    return CreateTableFromConstructors(() => schema.GetRawConstructors(methodName));
+        //}
 
-        private static Table CreateTableFromConstructors(Func<SchemaMethodInfo[]> getConstructors)
-        {
-            var maxColumns = 0;
-            var values = new List<List<string>>();
+        //private static Table CreateTableFromConstructors(Func<SchemaMethodInfo[]> getConstructors)
+        //{
+        //    var maxColumns = 0;
+        //    var values = new List<List<string>>();
 
-            foreach (var constructor in getConstructors())
-            {
-                var row = new List<string>();
-                values.Add(row);
+        //    foreach (var constructor in getConstructors())
+        //    {
+        //        var row = new List<string>();
+        //        values.Add(row);
 
-                row.Add(constructor.MethodName);
+        //        row.Add(constructor.MethodName);
 
-                if (constructor.ConstructorInfo.Arguments.Length > maxColumns)
-                    maxColumns = constructor.ConstructorInfo.Arguments.Length;
+        //        if (constructor.ConstructorInfo.Arguments.Length > maxColumns)
+        //            maxColumns = constructor.ConstructorInfo.Arguments.Length;
 
-                foreach (var param in constructor.ConstructorInfo.Arguments)
-                {
-                    row.Add($"{param.Name}: {param.Type.FullName}");
-                }
-            }
+        //        foreach (var param in constructor.ConstructorInfo.Arguments)
+        //        {
+        //            row.Add($"{param.Name}: {param.Type.FullName}");
+        //        }
+        //    }
 
-            maxColumns += 1;
+        //    maxColumns += 1;
 
-            foreach (var row in values)
-            {
-                if (maxColumns > row.Count)
-                {
-                    row.AddRange(new string[maxColumns - row.Count]);
-                }
-            }
+        //    foreach (var row in values)
+        //    {
+        //        if (maxColumns > row.Count)
+        //        {
+        //            row.AddRange(new string[maxColumns - row.Count]);
+        //        }
+        //    }
 
-            var columns = new Column[maxColumns];
-            columns[0] = new Column("Name", typeof(string), 0);
+        //    var columns = new Column[maxColumns];
+        //    columns[0] = new Column("Name", typeof(string), 0);
 
-            for (int i = 1; i < columns.Length; i++)
-            {
-                columns[i] = new Column($"Param {i - 1}", typeof(string), i);
-            }
+        //    for (int i = 1; i < columns.Length; i++)
+        //    {
+        //        columns[i] = new Column($"Param {i - 1}", typeof(string), i);
+        //    }
 
-            var descTable = new Table("desc", columns);
+        //    var descTable = new Table("desc", columns);
 
-            foreach (var row in values)
-            {
-                descTable.Add(new ObjectsRow(row.ToArray()));
-            }
+        //    foreach (var row in values)
+        //    {
+        //        descTable.Add(new ObjectsRow(row.ToArray()));
+        //    }
 
-            return descTable;
-        }
+        //    return descTable;
+        //}
 
         public static IEnumerable<(string FieldName, Type Type)> CreateTypeComplexDescription(
             string initialFieldName, Type type)
