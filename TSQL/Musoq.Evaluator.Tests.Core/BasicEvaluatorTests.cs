@@ -554,6 +554,23 @@ namespace Musoq.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        public void IdentifiersInBracketTest()
+        {
+            var query = @"select [Name] as 'x1' from [#A].Entities()";
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {"#A", new[] {new BasicEntity("001"), new BasicEntity("002")}}
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual("001", table[0].Values[0]);
+            Assert.AreEqual("002", table[1].Values[0]);
+        }
+
+        [TestMethod]
         public void SimpleSkipTest()
         {
             var query = @"select Name from #A.Entities() skip 2";

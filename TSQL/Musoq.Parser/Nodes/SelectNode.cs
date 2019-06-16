@@ -17,8 +17,7 @@ namespace Musoq.Parser.Nodes
         public override Type ReturnType { get; }
 
         public override string Id { get; }
-
-        public bool ReturnsSingleRow { get; set; }
+        public bool? ReturnsSingleRow { get; set; }
 
         public override void Accept(IExpressionVisitor visitor)
         {

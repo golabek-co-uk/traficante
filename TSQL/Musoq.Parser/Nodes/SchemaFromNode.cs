@@ -1,22 +1,22 @@
 ﻿namespace Musoq.Parser.Nodes
 {
-    public class SchemaFromNode : FromNode
+    public class SchemaFunctionFromNode : FromNode
     {
-        public SchemaFromNode(string schema, string method, ArgsListNode parameters, string alias)
+        public SchemaFunctionFromNode(string schema, string method, ArgsListNode parameters, string alias)
             : base(alias)
         {
             Schema = schema;
             Method = method;
-            Parameters = parameters;
+            MethodParameters = parameters;
             var paramsId = parameters.Id;
-            Id = $"{nameof(SchemaFromNode)}{schema}{method}{paramsId}{Alias}";
+            Id = $"{nameof(SchemaFunctionFromNode)}{schema}{method}{paramsId}{Alias}";
         }
 
         public string Schema { get; }
 
         public string Method { get; }
 
-        public ArgsListNode Parameters { get; }
+        public ArgsListNode MethodParameters { get; }
 
         public override string Id { get; }
 
@@ -27,7 +27,8 @@
 
         public override string ToString()
         {
-            return $"from {Schema}.{Method}({Parameters.Id}) {Alias}";
+
+            return $"from {Schema}.{Method}({MethodParameters.Id}) {Alias}";
         }
 
         public override int GetHashCode()
@@ -37,7 +38,48 @@
 
         public override bool Equals(object obj)
         {
-            if (obj is SchemaFromNode node)
+            if (obj is SchemaFunctionFromNode node)
+                return node.Id == Id;
+
+            return base.Equals(obj);
+        }
+    }
+
+    public class SchemaTableFromNode : FromNode
+    {
+        public SchemaTableFromNode(string schema, string tableOrView, string alias)
+            : base(alias)
+        {
+            Schema = schema;
+            TableOrView = tableOrView;
+            Id = $"{nameof(SchemaTableFromNode)}{schema}{tableOrView}{Alias}";
+        }
+
+        public string Schema { get; }
+
+        public string TableOrView { get; }
+
+        public override string Id { get; }
+
+        public override void Accept(IExpressionVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
+        public override string ToString()
+        {
+
+            return $"from {Schema}.{TableOrView} {Alias}";
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SchemaTableFromNode node)
                 return node.Id == Id;
 
             return base.Equals(obj);

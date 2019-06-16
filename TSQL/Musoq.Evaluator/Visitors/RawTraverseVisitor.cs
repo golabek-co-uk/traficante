@@ -156,9 +156,14 @@ namespace Musoq.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        public virtual void Visit(SchemaFromNode node)
+        public virtual void Visit(SchemaFunctionFromNode node)
         {
-            node.Parameters.Accept(this);
+            node.MethodParameters.Accept(this);
+            node.Accept(Visitor);
+        }
+
+        public virtual void Visit(SchemaTableFromNode node)
+        {
             node.Accept(Visitor);
         }
 
@@ -172,6 +177,11 @@ namespace Musoq.Evaluator.Visitors
         }
 
         public virtual void Visit(InMemoryTableFromNode node)
+        {
+            node.Accept(Visitor);
+        }
+
+        public void Visit(ReferentialFromNode node)
         {
             node.Accept(Visitor);
         }

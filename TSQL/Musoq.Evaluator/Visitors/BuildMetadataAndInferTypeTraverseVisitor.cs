@@ -201,10 +201,16 @@ namespace Musoq.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(SchemaFromNode node)
+        public void Visit(SchemaFunctionFromNode node)
         {
             SetQueryPart(QueryPart.From);
-            node.Parameters.Accept(this);
+            node.MethodParameters.Accept(this);
+            node.Accept(_visitor);
+        }
+
+        public void Visit(SchemaTableFromNode node)
+        {
+            SetQueryPart(QueryPart.From);
             node.Accept(_visitor);
         }
 
@@ -219,6 +225,12 @@ namespace Musoq.Evaluator.Visitors
         }
 
         public void Visit(InMemoryTableFromNode node)
+        {
+            SetQueryPart(QueryPart.From);
+            node.Accept(_visitor);
+        }
+
+        public void Visit(ReferentialFromNode node)
         {
             SetQueryPart(QueryPart.From);
             node.Accept(_visitor);
@@ -682,5 +694,6 @@ namespace Musoq.Evaluator.Visitors
 
             node.Accept(_visitor);
         }
+
     }
 }

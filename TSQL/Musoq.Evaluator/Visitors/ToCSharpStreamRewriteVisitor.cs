@@ -63,12 +63,12 @@ namespace Musoq.Evaluator.Visitors
         public IDictionary<string, Type[]> ResultColumnsTypes = new Dictionary<string, Type[]>();
 
 
-        private IDictionary<SchemaFromNode, ISchemaColumn[]> InferredColumns { get; }
+        private IDictionary<Node, ISchemaColumn[]> InferredColumns { get; }
 
         public ToCSharpStreamRewriteVisitor(
             ISchemaProvider schemaProvider,
             IDictionary<string, int[]> setOperatorFieldIndexes, 
-            IDictionary<SchemaFromNode, ISchemaColumn[]> inferredColumns)
+            IDictionary<Node, ISchemaColumn[]> inferredColumns)
         {
             _setOperatorFieldIndexes = setOperatorFieldIndexes;
             InferredColumns = inferredColumns;
@@ -86,7 +86,7 @@ namespace Musoq.Evaluator.Visitors
         {
             if (node.Type == DescForType.SpecificConstructor)
             {
-                var fromNode = (SchemaFromNode)node.From;
+                var fromNode = (SchemaFunctionFromNode)node.From;
 
                 var table = _schemaProvider
                     .GetSchema(fromNode.Schema)
@@ -116,7 +116,7 @@ namespace Musoq.Evaluator.Visitors
             }
             if (node.Type == DescForType.Schema)
             {
-                var fromNode = (SchemaFromNode)node.From;
+                var fromNode = (SchemaFunctionFromNode)node.From;
 
                 var table = _schemaProvider
                     .GetSchema(fromNode.Schema);
@@ -698,7 +698,7 @@ namespace Musoq.Evaluator.Visitors
             //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
-            if (node.ReturnsSingleRow)
+            if (node.ReturnsSingleRow.HasValue && node.ReturnsSingleRow.Value)
             {
                 var array = Expression.NewArrayInit(outputItemType, new Expression[] { initialization });
 
@@ -854,7 +854,7 @@ namespace Musoq.Evaluator.Visitors
         }
 
         
-        public void Visit(SchemaFromNode node)
+        public void Visit(SchemaFunctionFromNode node)
         {
             var rowSource = _schemaProvider.GetSchema(node.Schema).GetRowSource(node.Method, _interCommunicator, new object[0]).Rows;
 
@@ -874,6 +874,60 @@ namespace Musoq.Evaluator.Visitors
                 MemberBinding assignment = Expression.Bind(
                     entityType.GetField(field.Item1), 
                     Expression.Convert(Expression.Call(rowOfDataSource, "GetValue", new Type[] {}, new[] { Expression.Constant(field.Item1)}), field.Item2));
+                bindings.Add(assignment);
+            }
+
+            //"new AnonymousType()"
+            var creationExpression = Expression.New(entityType.GetConstructor(Type.EmptyTypes));
+
+            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            var initialization = Expression.MemberInit(creationExpression, bindings);
+
+            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            Expression expression = Expression.Lambda(initialization, rowOfDataSource);
+
+            var queryableRowSource = Expression.Constant(rowSource.AsQueryable());
+
+            var call = Expression.Call(
+                typeof(Queryable),
+                "Select",
+                new Type[] { typeof(IObjectResolver), entityType },
+                queryableRowSource,
+                expression);
+
+            Nodes.Push(call);
+
+            //"AnonymousType input"
+            this._item = Expression.Parameter(entityType, "item_" + entityType.Name);
+            this._alias2Item[node.Alias] = this._item;
+
+            //"IQueryable<AnonymousType> input"
+            this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(entityType), "input");
+
+            ResultColumns[node.Alias] = fields.Select(x => x.Item1).ToArray();
+            ResultColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
+        }
+
+        public void Visit(SchemaTableFromNode node)
+        {
+            var rowSource = _schemaProvider.GetSchema(node.Schema).GetRowSource(node.TableOrView, _interCommunicator, new object[0]).Rows;
+
+            var fields = _schemaProvider
+                .GetSchema(node.Schema)
+                .GetTableByName(node.TableOrView)
+                .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
+
+            Type entityType = expressionHelper.CreateAnonymousType(fields);
+
+            var rowOfDataSource = Expression.Parameter(typeof(IObjectResolver), "rowOfDataSource");
+
+            List<MemberBinding> bindings = new List<MemberBinding>();
+            foreach (var field in fields)
+            {
+                //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
+                MemberBinding assignment = Expression.Bind(
+                    entityType.GetField(field.Item1),
+                    Expression.Convert(Expression.Call(rowOfDataSource, "GetValue", new Type[] { }, new[] { Expression.Constant(field.Item1) }), field.Item2));
                 bindings.Add(assignment);
             }
 
@@ -933,6 +987,11 @@ namespace Musoq.Evaluator.Visitors
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputitemType), "input");
 
             Nodes.Push(table);
+        }
+
+        public void Visit(ReferentialFromNode node)
+        {
+            throw new NotImplementedException();
         }
 
         public void Visit(JoinFromNode node)
@@ -1466,7 +1525,7 @@ namespace Musoq.Evaluator.Visitors
         {
             _setOperatorMethodIdentifier += 1;
         }
-
+               
     }
 
 }

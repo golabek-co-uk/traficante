@@ -141,14 +141,6 @@ namespace Musoq.Evaluator.Visitors
 
             var il = equals.GetILGenerator();
 
-            ////
-            //il.Emit(OpCodes.Ldc_I4_1); // put true on the stack
-            //il.Emit(OpCodes.Ret);// return true
-            //dynamicTypeBuilder.DefineMethodOverride(equals, typeof(object).GetMethod("Equals", new[] { typeof(object) }));
-            //return;
-            
-            ////
-
             Label goToFalse = il.DefineLabel();
 
             foreach (var field in fieldsBuilder)

@@ -221,7 +221,11 @@ namespace Musoq.Evaluator.Visitors
         {
         }
 
-        public void Visit(SchemaFromNode node)
+        public void Visit(SchemaFunctionFromNode node)
+        {
+        }
+
+        public void Visit(SchemaTableFromNode node)
         {
         }
 
@@ -230,6 +234,10 @@ namespace Musoq.Evaluator.Visitors
         }
 
         public void Visit(InMemoryTableFromNode node)
+        {
+        }
+
+        public void Visit(ReferentialFromNode node)
         {
         }
 

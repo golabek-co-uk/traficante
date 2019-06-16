@@ -45,19 +45,68 @@ namespace Musoq.Parser.Lexing
 
         #region TokenUtils
 
-        protected sealed class TokenDefinition
+        protected class TokenDefinition
         {
-            public TokenDefinition(string pattern)
+            public Regex Regex { get; }
+            public Regex SubRegex { get; }
+
+            public TokenDefinition(string pattern, string subPattern = null)
             {
                 Regex = new Regex(pattern);
+                SubRegex = subPattern != null? new Regex(subPattern) : null;
             }
 
-            public TokenDefinition(string pattern, RegexOptions options)
+            public TokenDefinition(string pattern, RegexOptions options, string subPattern = null)
             {
                 Regex = new Regex(pattern, options);
+                SubRegex = subPattern != null ? new Regex(subPattern) : null;
             }
 
-            public Regex Regex { get; }
+            public virtual TokenMatch Match(string input, int position)
+            {
+                var match = Regex.Match(input, position);
+                if (match.Success)
+                {
+                    if (match.Index - position != 0)
+                    {
+                        return new TokenMatch { Success = false };
+                    }
+                    if (SubRegex != null)
+                    {
+                        var subMatch = SubRegex.Match(match.Value);
+                        if (subMatch.Success)
+                        {
+                            return new TokenMatch
+                            {
+                                Success = true,
+                                Match = match,
+                                SubMatch = subMatch
+                            };
+                        }
+                        else
+                        {
+                            return new TokenMatch
+                            {
+                                Success = false,
+                                Match = match,
+                            };
+                        }
+                    }
+                    return new TokenMatch
+                    {
+                        Success = true,
+                        Match = match,
+                    };
+                }
+                return new TokenMatch { Success = false };
+            }
+        }
+
+        public class TokenMatch
+        {
+            public bool Success { get; set; }
+            public Match Match { get; set; }
+            public Match SubMatch { get; set; }
         }
 
         #endregion
@@ -107,7 +156,7 @@ namespace Musoq.Parser.Lexing
         /// <param name="matchedDefinition">The matched definition.</param>
         /// <param name="match">The match.</param>
         /// <returns>The TToken.</returns>
-        protected abstract TToken GetToken(TokenDefinition matchedDefinition, Match match);
+        protected abstract TToken GetToken(TokenDefinition matchedDefinition, TokenMatch match);
 
         /// <summary>
         ///     Gets end of file token.
@@ -146,18 +195,15 @@ namespace Musoq.Parser.Lexing
             while (!IsOutOfRange)
             {
                 TokenDefinition matchedDefinition = null;
-                var matchLength = 0;
-
-                Match match = null;
+                TokenMatch match = null;
 
                 foreach (var rule in _definitions)
                 {
-                    match = rule.Regex.Match(Input, Position);
-
-                    if (match.Success && match.Index - Position == 0)
+                    var result = rule.Match(Input, Position);
+                    if (result.Success)
                     {
                         matchedDefinition = rule;
-                        matchLength = match.Length;
+                        match = result;
                         break;
                     }
                 }
@@ -166,7 +212,7 @@ namespace Musoq.Parser.Lexing
                     throw new UnknownTokenException(Position, Input[Position],
                         $"Unrecognized token exception at {Position} for {Input.Substring(Position)}");
                 var token = GetToken(matchedDefinition, match);
-                Position += matchLength;
+                Position += match.Match.Length;
 
                 return AssignTokenOfType(() => token);
             }

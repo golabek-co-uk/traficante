@@ -320,9 +320,14 @@ namespace Musoq.Evaluator.Visitors
             Nodes.Push(new TakeNode((IntegerNode) node.Expression));
         }
 
-        public virtual void Visit(SchemaFromNode node)
+        public virtual void Visit(SchemaFunctionFromNode node)
         {
-            Nodes.Push(new SchemaFromNode(node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
+            Nodes.Push(new SchemaFunctionFromNode(node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
+        }
+
+        public virtual void Visit(SchemaTableFromNode node)
+        {
+            Nodes.Push(new SchemaTableFromNode(node.Schema, node.TableOrView, node.Alias));
         }
 
         public virtual void Visit(JoinSourcesTableFromNode node)
@@ -337,6 +342,11 @@ namespace Musoq.Evaluator.Visitors
         public virtual void Visit(InMemoryTableFromNode node)
         {
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, node.Alias));
+        }
+
+        public void Visit(ReferentialFromNode node)
+        {
+            Nodes.Push(new ReferentialFromNode(node.Name, node.Alias));
         }
 
         public virtual void Visit(JoinFromNode node)
@@ -571,5 +581,6 @@ namespace Musoq.Evaluator.Visitors
 
             Nodes.Push(new CaseNode(whenThenPairs.ToArray(), elseNode, elseNode.ReturnType));
         }
+
     }
 }

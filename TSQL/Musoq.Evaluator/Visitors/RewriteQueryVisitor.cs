@@ -30,7 +30,7 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(DescNode node)
         {
-            var from = (SchemaFromNode) Nodes.Pop();
+            var from = (SchemaFunctionFromNode) Nodes.Pop();
             Nodes.Push(new DescNode(from, node.Type));
         }
 
@@ -329,9 +329,14 @@ namespace Musoq.Evaluator.Visitors
             Nodes.Push(new TakeNode((IntegerNode) node.Expression));
         }
 
-        public void Visit(SchemaFromNode node)
+        public void Visit(SchemaFunctionFromNode node)
         {
-            Nodes.Push(new SchemaFromNode(node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
+            Nodes.Push(new SchemaFunctionFromNode(node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
+        }
+
+        public void Visit(SchemaTableFromNode node)
+        {
+            Nodes.Push(new SchemaTableFromNode(node.Schema, node.TableOrView, node.Alias));
         }
 
         public void Visit(JoinSourcesTableFromNode node)
@@ -355,6 +360,11 @@ namespace Musoq.Evaluator.Visitors
         public void Visit(InMemoryTableFromNode node)
         {
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, node.Alias));
+        }
+
+        public void Visit(ReferentialFromNode node)
+        {
+            Nodes.Push(new ReferentialFromNode(node.Name, node.Alias));
         }
 
         public void Visit(CreateTransformationTableNode node)

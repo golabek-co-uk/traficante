@@ -86,7 +86,14 @@ namespace Musoq.Evaluator.Visitors
             Visitor.SetQueryPart(QueryPart.None);
         }
 
-        public override void Visit(SchemaFromNode node)
+        public override void Visit(SchemaFunctionFromNode node)
+        {
+            Visitor.SetQueryPart(QueryPart.From);
+            base.Visit(node);
+            Visitor.SetQueryPart(QueryPart.None);
+        }
+
+        public override void Visit(SchemaTableFromNode node)
         {
             Visitor.SetQueryPart(QueryPart.From);
             base.Visit(node);

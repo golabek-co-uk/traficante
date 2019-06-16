@@ -84,20 +84,20 @@ namespace Musoq.Parser
                 {
                     var accessMethod = ComposeAccessMethod(string.Empty);
 
-                    fromNode = new SchemaFromNode(name.Value, accessMethod.Name, accessMethod.Arguments, string.Empty);
+                    fromNode = new SchemaFunctionFromNode(name.Value, accessMethod.Name, accessMethod.Arguments, string.Empty);
                     return new DescNode(fromNode, DescForType.SpecificConstructor);
                 }
                 else
                 {
-                    var methodName = new WordNode(ConsumeAndGetToken(TokenType.Property).Value);
+                    var table = new WordNode(ConsumeAndGetToken(TokenType.Property).Value);
 
-                    fromNode = new SchemaFromNode(name.Value, methodName.Value, ArgsListNode.Empty, string.Empty);
+                    fromNode = new SchemaTableFromNode(name.Value, table.Value, string.Empty);
                     return new DescNode(fromNode, DescForType.Constructors);
                 }
             }
             else
             {
-                return new DescNode(new SchemaFromNode(name.Value, string.Empty, ArgsListNode.Empty, string.Empty), DescForType.Schema);
+                return new DescNode(new SchemaTableFromNode(name.Value, string.Empty, string.Empty), DescForType.Schema);
             }
         }
 
@@ -272,6 +272,9 @@ namespace Musoq.Parser
 
         private FromNode ComposeJoin(FromNode from)
         {
+            if (from == null)
+                return null;
+
             if (IsJoinToken(Current.TokenType))
             {
                 while (IsJoinToken(Current.TokenType))
@@ -598,30 +601,43 @@ namespace Musoq.Parser
                 Consume(TokenType.From);
 
             string alias;
-            if (Current.TokenType == TokenType.Word)
+            if (Current.TokenType == TokenType.Word || Current.TokenType == TokenType.Identifier)
             {
-                var name = ComposeWord();
+                var name = Current.TokenType == TokenType.Word ? ConsumeAndGetToken(TokenType.Word).Value : ConsumeAndGetToken(TokenType.Identifier).Value;
 
-                FromNode fromNode;
+                FromNode fromNode = null;
                 if(Current.TokenType == TokenType.Dot)
                 {
                     Consume(TokenType.Dot);
-                    var accessMethod = ComposeAccessMethod(string.Empty);
 
-                    alias = ComposeAlias();
+                    if (Current.TokenType == TokenType.Property)
+                    {
+                        var tableOrView = ConsumeAndGetToken(TokenType.Property).Value;
 
-                    fromNode = new SchemaFromNode(name.Value, accessMethod.Name, accessMethod.Arguments, alias);
+                        alias = ComposeAlias();
+
+                        fromNode = new SchemaTableFromNode(name, tableOrView, alias);
+                    }
+                    else if (Current.TokenType == TokenType.Function)
+                    {
+                        var accessMethod = ComposeAccessMethod(string.Empty);
+
+                        alias = ComposeAlias();
+
+                        fromNode = new SchemaFunctionFromNode(name, accessMethod.Name, accessMethod.Arguments, alias);
+                    }
                 }
                 else
                 {
                     alias = ComposeAlias();
-                    fromNode = new ReferentialFromNode(name.Value, alias);
+                    fromNode = new ReferentialFromNode(name, alias);
                 }
 
                 return fromNode;
             }
             else if(Current.TokenType == TokenType.Function)
             {
+
                 var method = ComposeAccessMethod(string.Empty);
                 alias = ComposeAlias();
 
@@ -680,6 +696,23 @@ namespace Musoq.Parser
                     args.Add(ComposeEqualityOperators());
                 } while (Current.TokenType == TokenType.Comma);
             }
+
+            Consume(TokenType.RightParenthesis);
+
+            return new ArgsListNode(args.ToArray());
+        }
+
+        private ArgsListNode ComposeCastArgs()
+        {
+            var args = new List<Node>();
+
+            Consume(TokenType.LeftParenthesis);
+
+            args.Add(ComposeEqualityOperators());
+
+            Consume(TokenType.As);
+
+            args.Add(ComposeEqualityOperators());
 
             Consume(TokenType.RightParenthesis);
 
@@ -780,14 +813,21 @@ namespace Musoq.Parser
             return new WordNode(ConsumeAndGetToken(TokenType.Word).Value);
         }
 
+        private WordNode ComposeIdentifier()
+        {
+            return new WordNode(ConsumeAndGetToken(TokenType.Identifier).Value);
+        }
+
         private AccessMethodNode ComposeAccessMethod(string alias)
         {
             if (!(Current is FunctionToken func))
                 throw new ArgumentNullException($"Expected token is {TokenType.Function} but {Current.TokenType} received");
 
+            bool isCastFunction = Current.Value.Equals("CAST", StringComparison.CurrentCultureIgnoreCase);
+
             Consume(TokenType.Function);
 
-            var args = ComposeArgs();
+            var args = isCastFunction ? ComposeCastArgs() : ComposeArgs();
 
             return new AccessMethodNode(func, args, null, null, alias);
         }

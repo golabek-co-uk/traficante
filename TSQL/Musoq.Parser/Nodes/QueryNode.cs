@@ -14,7 +14,7 @@ namespace Musoq.Parser.Nodes
             OrderBy = orderBy;
             Skip = skip;
             Take = take;
-            Id = $"{nameof(QueryNode)}{select.Id}{from.Id}{where?.Id}{groupBy?.Id}{orderBy?.Id}{skip?.Id}{take?.Id}";
+            Id = $"{nameof(QueryNode)}{select.Id}{from?.Id}{where?.Id}{groupBy?.Id}{orderBy?.Id}{skip?.Id}{take?.Id}";
         }
 
         public SelectNode Select { get; }

@@ -48,7 +48,8 @@ namespace Musoq.Evaluator.Visitors
         public List<Assembly> Assemblies { get; } = new List<Assembly>();
         public IDictionary<string, int[]> SetOperatorFieldPositions { get; } = new Dictionary<string, int[]>();
 
-        public IDictionary<SchemaFromNode, ISchemaColumn[]> InferredColumns = new Dictionary<SchemaFromNode, ISchemaColumn[]>();
+        public IDictionary<Node, ISchemaColumn[]> InferredColumns = new Dictionary<Node, ISchemaColumn[]>();
+
 
         public RootNode Root => (RootNode) Nodes.Peek();
 
@@ -414,7 +415,7 @@ namespace Musoq.Evaluator.Visitors
             Nodes.Push(new TakeNode((IntegerNode) node.Expression));
         }
 
-        public void Visit(SchemaFromNode node)
+        public void Visit(SchemaFunctionFromNode node)
         {
             var schema = _provider.GetSchema(node.Schema);
 
@@ -435,9 +436,38 @@ namespace Musoq.Evaluator.Visitors
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new SchemaFromNode(node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), _queryAlias);
+            var aliasedSchemaFromNode = new SchemaFunctionFromNode(node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), _queryAlias);
 
             if(!InferredColumns.ContainsKey(aliasedSchemaFromNode))
+                InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
+
+            Nodes.Push(aliasedSchemaFromNode);
+        }
+
+        public void Visit(SchemaTableFromNode node)
+        {
+            var schema = _provider.GetSchema(node.Schema);
+
+            ISchemaTable table;
+            if (_currentScope.Name != "Desc")
+                table = schema.GetTableByName(node.TableOrView, _schemaFromArgs.ToArray());
+            else
+                table = new DynamicTable(new ISchemaColumn[0]);
+
+            _schemaFromArgs.Clear();
+
+            AddAssembly(schema.GetType().Assembly);
+
+            _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
+            _generatedAliases.Add(_queryAlias);
+
+            var tableSymbol = new TableSymbol(_queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
+            _currentScope[node.Id] = _queryAlias;
+
+            var aliasedSchemaFromNode = new SchemaTableFromNode(node.Schema, node.TableOrView, _queryAlias);
+
+            if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
                 InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
 
             Nodes.Push(aliasedSchemaFromNode);
@@ -465,7 +495,7 @@ namespace Musoq.Evaluator.Visitors
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new SchemaFromNode(schemaInfo.Schema, schemaInfo.Method, node.Args, _queryAlias);
+            var aliasedSchemaFromNode = new SchemaFunctionFromNode(schemaInfo.Schema, schemaInfo.Method, node.Args, _queryAlias);
 
             if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
                 InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
@@ -507,6 +537,33 @@ namespace Musoq.Evaluator.Visitors
             _currentScope[node.Id] = _queryAlias;
 
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, _queryAlias));
+        }
+
+        public void Visit(ReferentialFromNode node)
+        {
+            _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.Name : node.Alias;
+            _generatedAliases.Add(_queryAlias);
+
+            TableSymbol tableSymbol;
+
+            if (_currentScope.Parent.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(node.Name))
+            {
+                tableSymbol = _currentScope.Parent.ScopeSymbolTable.GetSymbol<TableSymbol>(node.Name);
+            }
+            else
+            {
+                var scope = _currentScope;
+                while (scope != null && scope.Name != "CTE") scope = scope.Parent;
+
+                tableSymbol = scope.ScopeSymbolTable.GetSymbol<TableSymbol>(node.Name);
+            }
+
+            var tableSchemaPair = tableSymbol.GetTableByAlias(node.Name);
+            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
+                new TableSymbol(_queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
+            _currentScope[node.Id] = _queryAlias;
+
+            Nodes.Push(new InMemoryTableFromNode(node.Name, _queryAlias));
         }
 
         public void Visit(JoinFromNode node)

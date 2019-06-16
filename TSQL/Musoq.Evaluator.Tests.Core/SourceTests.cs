@@ -12,7 +12,7 @@ namespace Musoq.Evaluator.Tests.Core
         [TestMethod]
         public void SelectFromDictionaryTest()
         {
-            var query = @"select * from #A";
+            var query = @"select * from #A.Entities()";
 
             var sources = new Dictionary<string, IEnumerable<IDictionary<string, object>>>
             {
