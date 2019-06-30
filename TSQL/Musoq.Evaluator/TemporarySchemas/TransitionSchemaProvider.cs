@@ -3,25 +3,25 @@ using Musoq.Schema;
 
 namespace Musoq.Evaluator.TemporarySchemas
 {
-    public class TransitionSchemaProvider : ISchemaProvider
+    public class TransitionSchemaProvider : IDatabaseProvider
     {
-        private readonly ISchemaProvider _schemaProvider;
-        private readonly Dictionary<string, ISchema> _transientSchemas = new Dictionary<string, ISchema>();
+        private readonly IDatabaseProvider _schemaProvider;
+        private readonly Dictionary<string, IDatabase> _transientSchemas = new Dictionary<string, IDatabase>();
 
-        public TransitionSchemaProvider(ISchemaProvider schema)
+        public TransitionSchemaProvider(IDatabaseProvider schema)
         {
             _schemaProvider = schema;
         }
 
-        public ISchema GetSchema(string schema)
+        public IDatabase GetDatabase(string database)
         {
-            if (_transientSchemas.ContainsKey(schema))
-                return _transientSchemas[schema];
+            if (database != null && _transientSchemas.ContainsKey(database))
+                return _transientSchemas[database];
 
-            return _schemaProvider.GetSchema(schema);
+            return _schemaProvider.GetDatabase(database);
         }
 
-        public void AddTransitionSchema(ISchema schema)
+        public void AddTransitionSchema(IDatabase schema)
         {
             _transientSchemas.Add(schema.Name, schema);
         }

@@ -55,7 +55,7 @@ namespace Musoq.Evaluator.Visitors
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
-        private ISchemaProvider _schemaProvider;
+        private IDatabaseProvider _schemaProvider;
         private RuntimeContext _interCommunicator;
 
         public IQueryable<IObjectResolver> ResultStream = null;
@@ -63,12 +63,12 @@ namespace Musoq.Evaluator.Visitors
         public IDictionary<string, Type[]> ResultColumnsTypes = new Dictionary<string, Type[]>();
 
 
-        private IDictionary<Node, ISchemaColumn[]> InferredColumns { get; }
+        private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
         public ToCSharpStreamRewriteVisitor(
-            ISchemaProvider schemaProvider,
+            IDatabaseProvider schemaProvider,
             IDictionary<string, int[]> setOperatorFieldIndexes, 
-            IDictionary<Node, ISchemaColumn[]> inferredColumns)
+            IDictionary<Node, IColumn[]> inferredColumns)
         {
             _setOperatorFieldIndexes = setOperatorFieldIndexes;
             InferredColumns = inferredColumns;
@@ -89,8 +89,8 @@ namespace Musoq.Evaluator.Visitors
                 var fromNode = (SchemaFunctionFromNode)node.From;
 
                 var table = _schemaProvider
-                    .GetSchema(fromNode.Schema)
-                    .GetTableByName(fromNode.Method);
+                    .GetDatabase(null)
+                    .GetTableByName(fromNode.Schema, fromNode.Method);
 
                 var descType = expressionHelper.CreateAnonymousType(new (string, Type)[3] {
                     ("Name", typeof(string)),
@@ -119,7 +119,7 @@ namespace Musoq.Evaluator.Visitors
                 var fromNode = (SchemaFunctionFromNode)node.From;
 
                 var table = _schemaProvider
-                    .GetSchema(fromNode.Schema);
+                    .GetDatabase(fromNode.Schema);
             }
         }
 
@@ -856,11 +856,11 @@ namespace Musoq.Evaluator.Visitors
         
         public void Visit(SchemaFunctionFromNode node)
         {
-            var rowSource = _schemaProvider.GetSchema(node.Schema).GetRowSource(node.Method, _interCommunicator, new object[0]).Rows;
+            var rowSource = _schemaProvider.GetDatabase(null).GetRowSource(node.Schema, node.Method, _interCommunicator, new object[0]).Rows;
 
             var fields = _schemaProvider
-                .GetSchema(node.Schema)
-                .GetTableByName(node.Method)
+                .GetDatabase(null)
+                .GetTableByName(node.Schema, node.Method)
                 .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);
@@ -910,11 +910,11 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(SchemaTableFromNode node)
         {
-            var rowSource = _schemaProvider.GetSchema(node.Schema).GetRowSource(node.TableOrView, _interCommunicator, new object[0]).Rows;
+            var rowSource = _schemaProvider.GetDatabase(null).GetRowSource(node.Schema, node.TableOrView, _interCommunicator, new object[0]).Rows;
 
             var fields = _schemaProvider
-                .GetSchema(node.Schema)
-                .GetTableByName(node.TableOrView)
+                .GetDatabase(null)
+                .GetTableByName(node.Schema, node.TableOrView)
                 .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);

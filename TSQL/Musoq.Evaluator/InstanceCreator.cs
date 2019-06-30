@@ -18,7 +18,7 @@ namespace Musoq.Converter
 {
     public static class InstanceCreator
     {
-        public static CompiledQuery CompileForExecution(string script, ISchemaProvider schemaProvider)
+        public static CompiledQuery CompileForExecution(string script, IDatabaseProvider schemaProvider)
         {
             var items = new BuildItems
             {
@@ -49,7 +49,7 @@ namespace Musoq.Converter
 
     public class RunnableStream : IRunnable
     {
-        public ISchemaProvider Provider { get; set; }
+        public IDatabaseProvider Provider { get; set; }
         public IQueryable<IObjectResolver> Stream { get; set; }
         public string[] Columns { get; set; }
         public Type[] ColumnsTypes { get; set; }

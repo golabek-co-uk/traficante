@@ -11,19 +11,20 @@ namespace Musoq.Evaluator.Utils.Symbols
     {
         private readonly List<string> _orders = new List<string>();
 
-        private readonly Dictionary<string, Tuple<ISchema, ISchemaTable>> _tables =
-            new Dictionary<string, Tuple<ISchema, ISchemaTable>>();
+        private readonly Dictionary<string, Tuple<IDatabase, ITable>> _tables =
+            new Dictionary<string, Tuple<IDatabase, ITable>>();
 
         private string _fullTableName;
 
-        private ISchemaTable _fullTable;
-        private ISchema _fullSchema;
+        private ITable _fullTable;
+        private IDatabase _fullSchema;
 
-        public TableSymbol(string alias, ISchema schema, ISchemaTable table, bool hasAlias)
+        public TableSymbol(string schemaName, string alias, IDatabase schema, ITable table, bool hasAlias)
         {
-            _tables.Add(alias, new Tuple<ISchema, ISchemaTable>(schema, table));
+            _tables.Add(alias, new Tuple<IDatabase, ITable>(schema, table));
             _orders.Add(alias);
             HasAlias = hasAlias;
+            SchemaName = schemaName;
             _fullTableName = alias;
 
             _fullSchema = schema;
@@ -35,13 +36,14 @@ namespace Musoq.Evaluator.Utils.Symbols
             HasAlias = true;
         }
 
+        public string SchemaName { get; }
         public bool HasAlias { get; }
 
         public string[] CompoundTables => _orders.ToArray();
 
-        public (ISchema Schema, ISchemaTable Table, string TableName) GetTableByColumnName(string column)
+        public (IDatabase Schema, ITable Table, string TableName) GetTableByColumnName(string column)
         {
-            (ISchema, ISchemaTable, string) score = (null, null, null);
+            (IDatabase, ITable, string) score = (null, null, null);
 
             foreach (var table in _tables)
             {
@@ -56,14 +58,14 @@ namespace Musoq.Evaluator.Utils.Symbols
             return score;
         }
 
-        public (ISchema Schema, ISchemaTable Table, string TableName) GetTableByAlias(string alias)
+        public (IDatabase Schema, ITable Table, string TableName) GetTableByAlias(string alias)
         {
             if (_fullTableName == alias)
                 return (_fullSchema, _fullTable, alias);
             return (_tables[alias].Item1, _tables[alias].Item2, alias);
         }
 
-        public ISchemaColumn GetColumnByAliasAndName(string alias, string columnName)
+        public IColumn GetColumnByAliasAndName(string alias, string columnName)
         {
             if (_fullTableName == alias)
                 return _fullTable.Columns.Single(c => c.ColumnName == columnName);
@@ -71,9 +73,9 @@ namespace Musoq.Evaluator.Utils.Symbols
             return _tables[alias].Item2.Columns.Single(c => c.ColumnName == columnName);
         }
 
-        public ISchemaColumn GetColumn(string columnName)
+        public IColumn GetColumn(string columnName)
         {
-            ISchemaColumn column = null;
+            IColumn column = null;
             foreach (var table in _orders)
             {
                 var tmpColumn = _tables[table].Item2.Columns.SingleOrDefault(col => col.ColumnName == columnName);
@@ -93,14 +95,14 @@ namespace Musoq.Evaluator.Utils.Symbols
             return column;
         }
 
-        public ISchemaColumn[] GetColumns(string alias)
+        public IColumn[] GetColumns(string alias)
         {
             return _tables[alias].Item2.Columns;
         }
 
-        public ISchemaColumn[] GetColumns()
+        public IColumn[] GetColumns()
         {
-            var columns = new List<ISchemaColumn>();
+            var columns = new List<IColumn>();
             foreach (var table in _orders) columns.AddRange(GetColumns(table));
 
             return columns.ToArray();
@@ -129,7 +131,7 @@ namespace Musoq.Evaluator.Utils.Symbols
         {
             var symbol = new TableSymbol();
 
-            var compundTableColumns = new List<ISchemaColumn>();
+            var compundTableColumns = new List<IColumn>();
 
             foreach (var item in _tables)
             {

@@ -12,6 +12,8 @@
             Id = $"{nameof(SchemaFunctionFromNode)}{schema}{method}{paramsId}{Alias}";
         }
 
+        public string Database { get; set; }
+
         public string Schema { get; }
 
         public string Method { get; }
@@ -19,7 +21,7 @@
         public ArgsListNode MethodParameters { get; }
 
         public override string Id { get; }
-
+        
         public override void Accept(IExpressionVisitor visitor)
         {
             visitor.Visit(this);

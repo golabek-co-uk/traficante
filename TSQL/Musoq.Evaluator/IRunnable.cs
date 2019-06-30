@@ -6,7 +6,7 @@ namespace Musoq.Evaluator
 {
     public interface IRunnable
     {
-        ISchemaProvider Provider { get; set; }
+        IDatabaseProvider Provider { get; set; }
         Table Run(CancellationToken token);
     }
 }

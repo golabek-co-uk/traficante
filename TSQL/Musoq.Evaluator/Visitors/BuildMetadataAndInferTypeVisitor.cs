@@ -21,7 +21,7 @@ namespace Musoq.Evaluator.Visitors
 {
     public class BuildMetadataAndInferTypeVisitor : IAwareExpressionVisitor
     {
-        private readonly ISchemaProvider _provider;
+        private readonly IDatabaseProvider _databaseProvider;
 
         private readonly List<AccessMethodNode> _refreshMethods = new List<AccessMethodNode>();
         private readonly List<object> _schemaFromArgs = new List<object>();
@@ -31,7 +31,7 @@ namespace Musoq.Evaluator.Visitors
         private FieldNode[] _generatedColumns = new FieldNode[0];
         private string _identifier;
         private string _queryAlias;
-        private IDictionary<string, ISchemaTable> _explicitlyDefinedTables = new Dictionary<string, ISchemaTable>();
+        private IDictionary<string, ITable> _explicitlyDefinedTables = new Dictionary<string, ITable>();
         private IDictionary<string, string> _explicitlyCoupledTablesWithAliases = new Dictionary<string, string>();
         private IDictionary<string, SchemaMethodFromNode> _explicitlyUsedAliases = new Dictionary<string, SchemaMethodFromNode>();
 
@@ -39,16 +39,16 @@ namespace Musoq.Evaluator.Visitors
 
         private Stack<string> Methods { get; } = new Stack<string>();
 
-        public BuildMetadataAndInferTypeVisitor(ISchemaProvider provider)
+        public BuildMetadataAndInferTypeVisitor(IDatabaseProvider provider)
         {
-            _provider = provider;
+            _databaseProvider = provider;
         }
 
         protected Stack<Node> Nodes { get; } = new Stack<Node>();
         public List<Assembly> Assemblies { get; } = new List<Assembly>();
         public IDictionary<string, int[]> SetOperatorFieldPositions { get; } = new Dictionary<string, int[]>();
 
-        public IDictionary<Node, ISchemaColumn[]> InferredColumns = new Dictionary<Node, ISchemaColumn[]>();
+        public IDictionary<Node, IColumn[]> InferredColumns = new Dictionary<Node, IColumn[]>();
 
 
         public RootNode Root => (RootNode) Nodes.Peek();
@@ -287,7 +287,7 @@ namespace Musoq.Evaluator.Visitors
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(identifier);
 
-            (ISchema Schema, ISchemaTable Table, string TableName) tuple;
+            (IDatabase Schema, ITable Table, string TableName) tuple;
             if (!string.IsNullOrEmpty(node.Alias))
                 tuple = tableSymbol.GetTableByAlias(node.Alias);
             else
@@ -417,22 +417,23 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(SchemaFunctionFromNode node)
         {
-            var schema = _provider.GetSchema(node.Schema);
+            var database = _databaseProvider.GetDatabase(node.Database);
 
-            ISchemaTable table;
+
+            ITable table;
             if(_currentScope.Name != "Desc")
-                table = schema.GetTableByName(node.Method, _schemaFromArgs.ToArray());
+                table = database.GetTableByName(node.Schema, node.Method, _schemaFromArgs.ToArray());
             else
-                table = new DynamicTable(new ISchemaColumn[0]);
+                table = new DynamicTable(new IColumn[0]);
 
             _schemaFromArgs.Clear();
 
-            AddAssembly(schema.GetType().Assembly);
+            //AddAssembly(node.Schema, schema.GetType().Assembly);
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            var tableSymbol = new TableSymbol(_queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+            var tableSymbol = new TableSymbol(node.Schema, _queryAlias, database, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
@@ -446,13 +447,13 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(SchemaTableFromNode node)
         {
-            var schema = _provider.GetSchema(node.Schema);
+            var schema = _databaseProvider.GetDatabase(null);
 
-            ISchemaTable table;
+            ITable table;
             if (_currentScope.Name != "Desc")
-                table = schema.GetTableByName(node.TableOrView, _schemaFromArgs.ToArray());
+                table = schema.GetTableByName(node.Schema, node.TableOrView, _schemaFromArgs.ToArray());
             else
-                table = new DynamicTable(new ISchemaColumn[0]);
+                table = new DynamicTable(new IColumn[0]);
 
             _schemaFromArgs.Clear();
 
@@ -461,7 +462,7 @@ namespace Musoq.Evaluator.Visitors
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            var tableSymbol = new TableSymbol(_queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+            var tableSymbol = new TableSymbol(node.Schema, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
@@ -484,14 +485,14 @@ namespace Musoq.Evaluator.Visitors
             var tableName = _explicitlyCoupledTablesWithAliases[node.Identifier];
             var table = _explicitlyDefinedTables[tableName];
 
-            var schema = _provider.GetSchema(schemaInfo.Schema);
+            var schema = _databaseProvider.GetDatabase(null);
 
             AddAssembly(schema.GetType().Assembly);
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            var tableSymbol = new TableSymbol(_queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+            var tableSymbol = new TableSymbol(schemaInfo.Schema, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
@@ -533,7 +534,7 @@ namespace Musoq.Evaluator.Visitors
 
             var tableSchemaPair = tableSymbol.GetTableByAlias(node.VariableName);
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
-                new TableSymbol(_queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
+                new TableSymbol(null, _queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
             _currentScope[node.Id] = _queryAlias;
 
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, _queryAlias));
@@ -560,7 +561,7 @@ namespace Musoq.Evaluator.Visitors
 
             var tableSchemaPair = tableSymbol.GetTableByAlias(node.Name);
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
-                new TableSymbol(_queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
+                new TableSymbol(null, _queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
             _currentScope[node.Id] = _queryAlias;
 
             Nodes.Push(new InMemoryTableFromNode(node.Name, _queryAlias));
@@ -803,7 +804,7 @@ namespace Musoq.Evaluator.Visitors
 
             var table = new VariableTable(collector.CollectedFieldNames);
             _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
-                new TableSymbol(node.Name, new TransitionSchema(node.Name, table), table, false));
+                new TableSymbol(null, node.Name, new TransitionSchema(node.Name, table), table, false));
 
             Nodes.Push(new CteInnerExpressionNode(set, node.Name));
         }
@@ -876,7 +877,7 @@ namespace Musoq.Evaluator.Visitors
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(alias);
             var schemaTablePair = tableSymbol.GetTableByAlias(alias);
             if (!schemaTablePair.Schema.TryResolveAggreationMethod(node.Name, groupArgs.ToArray(), out var method))
-                method = schemaTablePair.Schema.ResolveMethod(node.Name, args.Args.Select(f => f.ReturnType).ToArray());
+                method = schemaTablePair.Schema.ResolveMethod(tableSymbol.SchemaName, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
 
             var isAggregateMethod = method.GetCustomAttribute<AggregationMethodAttribute>() != null;
 
@@ -962,7 +963,7 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(CreateTableNode node)
         {
-            var columns = new List<ISchemaColumn>();
+            var columns = new List<IColumn>();
 
             for (int i = 0; i < node.TableTypePairs.Length; i++)
             {
@@ -975,7 +976,7 @@ namespace Musoq.Evaluator.Visitors
                 if (type == null)
                     throw new TypeNotFoundException($"Type '{remappedType}' could not be found.");
 
-                columns.Add(new SchemaColumn(typePair.ColumnName, i, type));
+                columns.Add(new Schema.DataSources.Column(typePair.ColumnName, i, type));
             }
 
             var table = new DynamicTable(columns.ToArray());

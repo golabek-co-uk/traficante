@@ -9,7 +9,7 @@ using Musoq.Schema.Reflection;
 
 namespace Musoq.Schema.DataSources
 {
-    public abstract class SchemaBase : ISchema
+    public abstract class DatabaseBase : IDatabase
     {
         private const string _sourcePart = "_source";
         private const string _tablePart = "_table";
@@ -20,22 +20,22 @@ namespace Musoq.Schema.DataSources
         private List<SchemaMethodInfo> ConstructorsMethods { get; } = new List<SchemaMethodInfo>();
         private IDictionary<string, object[]> AdditionalArguments { get; } = new Dictionary<string, object[]>();
 
-        protected SchemaBase(string name, MethodsAggregator methodsAggregator)
+        protected DatabaseBase(string name, MethodsAggregator methodsAggregator)
         {
             Name = name;
             _aggregator = methodsAggregator;
         }
 
-        public void AddSource<TType>(string name, params object[] args)
+        public void AddSource<TType>(string schema, string name, params object[] args)
         {
-            var sourceName = $"{name.ToLowerInvariant()}{_sourcePart}";
+            var sourceName = $"{schema.ToLowerInvariant()}_{name.ToLowerInvariant()}{_sourcePart}";
             AddToConstructors<TType>(sourceName);
             AdditionalArguments.Add(sourceName, args);
         }
 
-        public void AddTable<TType>(string name)
+        public void AddTable<TType>(string schema, string name)
         {
-            AddToConstructors<TType>($"{name.ToLowerInvariant()}{_tablePart}");
+            AddToConstructors<TType>($"{schema.ToLowerInvariant()}_{name.ToLowerInvariant()}{_tablePart}");
         }
 
         private void AddToConstructors<TType>(string name)
@@ -54,21 +54,21 @@ namespace Musoq.Schema.DataSources
 
         public string Name { get; }
 
-        public virtual ISchemaTable GetTableByName(string name, params object[] parameters)
+        public virtual ITable GetTableByName(string schema, string name, params object[] parameters)
         {
-            var methods = GetConstructors($"{name.ToLowerInvariant()}{_tablePart}").Select(c => c.ConstructorInfo).ToArray();
+            var methods = GetConstructors(schema, $"{schema.ToLowerInvariant()}_{name.ToLowerInvariant()}{_tablePart}").Select(c => c.ConstructorInfo).ToArray();
 
             if (!TryMatchConstructorWithParams(methods, parameters, out var constructorInfo))
                 throw new NotSupportedException($"Unrecognized method {name}.");
 
-            return (ISchemaTable)constructorInfo.OriginConstructor.Invoke(parameters);
+            return (ITable)constructorInfo.OriginConstructor.Invoke(parameters);
         }
 
-        public virtual RowSource GetRowSource(string name, RuntimeContext interCommunicator, params object[] parameters)
+        public virtual RowSource GetRowSource(string schema, string name, RuntimeContext interCommunicator, params object[] parameters)
         {
-            var sourceName = $"{name.ToLowerInvariant()}{_sourcePart}";
+            var sourceName = $"{schema.ToLowerInvariant()}_{name.ToLowerInvariant()}{_sourcePart}";
 
-            var methods = GetConstructors(sourceName).Select(c => c.ConstructorInfo).ToArray();
+            var methods = GetConstructors(schema, sourceName).Select(c => c.ConstructorInfo).ToArray();
 
             if (AdditionalArguments.ContainsKey(sourceName))
                 parameters = parameters.ExpandParameters(AdditionalArguments[sourceName]);
@@ -82,17 +82,17 @@ namespace Musoq.Schema.DataSources
             return (RowSource)constructorInfo.OriginConstructor.Invoke(parameters);
         }
 
-        public SchemaMethodInfo[] GetConstructors(string methodName)
+        public SchemaMethodInfo[] GetConstructors(string schema, string methodName)
         {
-            return GetConstructors().Where(constr => constr.MethodName == methodName).ToArray();
+            return GetConstructors(schema).Where(constr => constr.MethodName == methodName).ToArray();
         }
 
-        public virtual SchemaMethodInfo[] GetConstructors()
+        public virtual SchemaMethodInfo[] GetConstructors(string schema)
         {
             return ConstructorsMethods.ToArray();
         }
 
-        public SchemaMethodInfo[] GetRawConstructors()
+        public SchemaMethodInfo[] GetRawConstructors(string schema)
         {
             return ConstructorsMethods
                 .Where(cm => cm.MethodName.Contains(_tablePart))
@@ -103,9 +103,9 @@ namespace Musoq.Schema.DataSources
                 }).ToArray();
         }
 
-        public SchemaMethodInfo[] GetRawConstructors(string methodName)
+        public SchemaMethodInfo[] GetRawConstructors(string schema, string methodName)
         {
-            return GetRawConstructors().Where(constr => constr.MethodName == methodName).ToArray();
+            return GetRawConstructors(schema).Where(constr => constr.MethodName == methodName).ToArray();
         }
 
         public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
@@ -118,7 +118,7 @@ namespace Musoq.Schema.DataSources
             return false;
         }
 
-        public MethodInfo ResolveMethod(string method, Type[] parameters)
+        public MethodInfo ResolveMethod(string schema, string method, Type[] parameters)
         {
             return _aggregator.ResolveMethod(method, parameters);
         }

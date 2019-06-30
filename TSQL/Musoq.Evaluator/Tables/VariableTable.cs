@@ -2,13 +2,13 @@
 
 namespace Musoq.Evaluator.Tables
 {
-    internal class VariableTable : ISchemaTable
+    internal class VariableTable : ITable
     {
-        public VariableTable(ISchemaColumn[] columns)
+        public VariableTable(IColumn[] columns)
         {
             Columns = columns;
         }
 
-        public ISchemaColumn[] Columns { get; }
+        public IColumn[] Columns { get; }
     }
 }

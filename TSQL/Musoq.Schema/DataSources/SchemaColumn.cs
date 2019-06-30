@@ -4,9 +4,9 @@ using System.Diagnostics;
 namespace Musoq.Schema.DataSources
 {
     [DebuggerDisplay("{ColumnType.FullName} {ColumnName}: {ColumnIndex}")]
-    public class SchemaColumn : ISchemaColumn
+    public class Column : IColumn
     {
-        public SchemaColumn(string columnName, int columnIndex, Type columnType)
+        public Column(string columnName, int columnIndex, Type columnType)
         {
             ColumnName = columnName;
             ColumnIndex = columnIndex;

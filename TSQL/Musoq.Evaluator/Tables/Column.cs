@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Musoq.Evaluator.Tables
 {
     [DebuggerDisplay("{ColumnIndex}. {ColumnName}: {ColumnType.Name}")]
-    public class Column : IEquatable<Column>, ISchemaColumn
+    public class Column : IEquatable<Column>, IColumn
     {
         public Column(string name, Type columnType, int columnOrder)
         {

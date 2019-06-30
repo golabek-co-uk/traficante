@@ -2,13 +2,13 @@
 
 namespace Musoq.Evaluator.TemporarySchemas
 {
-    public class DynamicTable : ISchemaTable
+    public class DynamicTable : ITable
     {
-        public DynamicTable(ISchemaColumn[] columns)
+        public DynamicTable(IColumn[] columns)
         {
             Columns = columns;
         }
 
-        public ISchemaColumn[] Columns { get; }
+        public IColumn[] Columns { get; }
     }
 }

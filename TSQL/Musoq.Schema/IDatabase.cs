@@ -1,0 +1,27 @@
+﻿using System;
+using System.Reflection;
+using Musoq.Schema.DataSources;
+
+namespace Musoq.Schema
+{
+    public interface IDatabase
+    {
+        string Name { get; }
+
+        ITable GetTableByName(string schema, string name, params object[] parameters);
+
+        Reflection.SchemaMethodInfo[] GetConstructors(string schema, string methodName);
+
+        Reflection.SchemaMethodInfo[] GetConstructors(string schema);
+
+        Reflection.SchemaMethodInfo[] GetRawConstructors(string schema);
+
+        Reflection.SchemaMethodInfo[] GetRawConstructors(string schema, string methodName);
+
+        RowSource GetRowSource(string schema, string name, RuntimeContext interCommunicator, params object[] parameters);
+
+        MethodInfo ResolveMethod(string schema, string method, Type[] parameters);
+
+        bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
+    }
+}

@@ -2,7 +2,7 @@
 
 namespace Musoq.Schema
 {
-    public interface ISchemaColumn
+    public interface IColumn
     {
         string ColumnName { get; }
         int ColumnIndex { get; }

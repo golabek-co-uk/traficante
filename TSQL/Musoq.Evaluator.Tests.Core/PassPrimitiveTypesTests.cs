@@ -53,7 +53,7 @@ namespace Musoq.Evaluator.Tests.Core
             OnMethodCall
         }
 
-        private class TestSchemaProvider : ISchemaProvider
+        private class TestSchemaProvider : IDatabaseProvider
         {
             private readonly IEnumerable<TestEntity> _entities;
             private readonly Action<object[]> _onGetTableOrRowSource;
@@ -65,13 +65,13 @@ namespace Musoq.Evaluator.Tests.Core
                 _onGetTableOrRowSource = onGetTableOrRowSource;
                 _whenChecked = whenChecked;
             }
-            public ISchema GetSchema(string schema)
+            public IDatabase GetDatabase(string schema)
             {
                 return new TestSchema(_entities, _onGetTableOrRowSource, _whenChecked);
             }
         }
 
-        private class TestSchema : SchemaBase
+        private class TestSchema : DatabaseBase
         {
 
             private readonly IEnumerable<TestEntity> _entities;
@@ -87,13 +87,13 @@ namespace Musoq.Evaluator.Tests.Core
                 _whenChecked = whenChecked;
             }
 
-            public override RowSource GetRowSource(string name, RuntimeContext communicator, params object[] parameters)
+            public override RowSource GetRowSource(string schema, string name, RuntimeContext communicator, params object[] parameters)
             {
                 if(_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(parameters);
                 return new EntitySource<TestEntity>(_entities, new Dictionary<string, int>(), new Dictionary<int, Func<TestEntity, object>>());
             }
 
-            public override ISchemaTable GetTableByName(string name, params object[] parameters)
+            public override ITable GetTableByName(string schema, string name, params object[] parameters)
             {
                 if (_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(parameters);
                 return new TestTable();
@@ -112,16 +112,16 @@ namespace Musoq.Evaluator.Tests.Core
                 return new MethodsAggregator(methodManager, propertiesManager);
             }
 
-            public override SchemaMethodInfo[] GetConstructors()
+            public override SchemaMethodInfo[] GetConstructors(string schema)
             {
                 var methodInfos = new List<SchemaMethodInfo>();
                 return methodInfos.ToArray();
             }
         }
 
-        private class TestTable : ISchemaTable
+        private class TestTable : ITable
         {
-            public ISchemaColumn[] Columns => new ISchemaColumn[0];
+            public IColumn[] Columns => new IColumn[0];
         }
 
         private class TestEntity

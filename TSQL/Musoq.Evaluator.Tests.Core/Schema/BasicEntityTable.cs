@@ -3,35 +3,35 @@ using Musoq.Schema.DataSources;
 
 namespace Musoq.Evaluator.Tests.Core.Schema
 {
-    public class BasicEntityTable : ISchemaTable
+    public class BasicEntityTable : ITable
     {
         public BasicEntityTable()
         {
-            Columns = new ISchemaColumn[]
+            Columns = new IColumn[]
             {
-                new SchemaColumn(nameof(BasicEntity.Name), 10,
+                new Column(nameof(BasicEntity.Name), 10,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.Name)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.City), 11,
+                new Column(nameof(BasicEntity.City), 11,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.City)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.Country), 12,
+                new Column(nameof(BasicEntity.Country), 12,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.Country)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.Population), 13,
+                new Column(nameof(BasicEntity.Population), 13,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.Population)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.Self), 14,
+                new Column(nameof(BasicEntity.Self), 14,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.Self)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.Money), 15,
+                new Column(nameof(BasicEntity.Money), 15,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.Money)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.Month), 16,
+                new Column(nameof(BasicEntity.Month), 16,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.Month)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.Time), 17,
+                new Column(nameof(BasicEntity.Time), 17,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.Time)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.Id), 18,
+                new Column(nameof(BasicEntity.Id), 18,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.Id)).PropertyType),
-                new SchemaColumn(nameof(BasicEntity.NullableValue), 19,
+                new Column(nameof(BasicEntity.NullableValue), 19,
                     typeof(BasicEntity).GetProperty(nameof(BasicEntity.NullableValue)).PropertyType)
             };
         }
 
-        public ISchemaColumn[] Columns { get; }
+        public IColumn[] Columns { get; }
     }
 }

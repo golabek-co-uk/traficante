@@ -17,7 +17,7 @@ namespace Musoq.Evaluator
             _filesToDelete = filesToDelete;
         }
 
-        public ISchemaProvider Provider
+        public IDatabaseProvider Provider
         {
             get => _runnable.Provider;
             set => _runnable.Provider = value;

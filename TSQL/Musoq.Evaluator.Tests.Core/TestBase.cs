@@ -18,11 +18,10 @@ namespace Musoq.Evaluator.Tests.Core
     {
         protected CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
 
-        protected CompiledQuery CreateAndRunVirtualMachine<T>(string script,
-            IDictionary<string, IEnumerable<T>> sources)
-            //where T : BasicEntity
+        protected CompiledQuery CreateAndRunVirtualMachine<T>(string script, IDictionary<string, IEnumerable<T>> sources)
         {
-            return InstanceCreator.CompileForExecution(script, new SchemaProvider<T>(sources));
+            var database = new TestDatabase<T>(sources);
+            return InstanceCreator.CompileForExecution(script, new DatabaseProvider(new[] { database }));
         }
 
         protected void TestMethodTemplate<TResult>(string operation, TResult score)

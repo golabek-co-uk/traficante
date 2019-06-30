@@ -8,22 +8,22 @@ using Musoq.Schema.Reflection;
 
 namespace Musoq.Evaluator.Tables
 {
-    internal class TransitionSchema : SchemaBase
+    internal class TransitionSchema : DatabaseBase
     {
-        private readonly ISchemaTable _table;
+        private readonly ITable _table;
 
-        public TransitionSchema(string name, ISchemaTable table)
+        public TransitionSchema(string name, ITable table)
             : base(name, CreateLibrary())
         {
             _table = table;
         }
 
-        public override ISchemaTable GetTableByName(string name, params object[] parameters)
+        public override ITable GetTableByName(string schema, string name, params object[] parameters)
         {
             return _table;
         }
 
-        public override RowSource GetRowSource(string name, RuntimeContext interCommunicator, params object[] parameters)
+        public override RowSource GetRowSource(string schema, string name, RuntimeContext interCommunicator, params object[] parameters)
         {
             return new TransientVariableSource(name);
         }
@@ -41,7 +41,7 @@ namespace Musoq.Evaluator.Tables
             return new MethodsAggregator(methodsManager, propertiesManager);
         }
 
-        public override SchemaMethodInfo[] GetConstructors()
+        public override SchemaMethodInfo[] GetConstructors(string schema)
         {
             var constructors = new List<SchemaMethodInfo>();
 

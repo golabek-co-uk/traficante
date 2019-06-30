@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Musoq.Schema;
 using Musoq.Schema.DataSources;
@@ -7,19 +8,20 @@ using Musoq.Schema.Reflection;
 
 namespace Musoq.Evaluator.Tests.Core.Schema
 {
-    public class SchemaProvider<T> : ISchemaProvider
-        //where T : BasicEntity
+    public class DatabaseProvider : IDatabaseProvider
     {
-        private readonly IDictionary<string, IEnumerable<T>> _values;
+        private IEnumerable<IDatabase> _databases;
 
-        public SchemaProvider(IDictionary<string, IEnumerable<T>> values)
+        public DatabaseProvider(IEnumerable<IDatabase> databases)
         {
-            _values = values;
+            this._databases = databases;
         }
 
-        public ISchema GetSchema(string schema)
+        public IDatabase GetDatabase(string database)
         {
-            return new TestSchema<T>(_values[schema]);
+            if (database != null)
+                return _databases.FirstOrDefault(x => x.Name == database);
+            return _databases.FirstOrDefault();
         }
     }
 }

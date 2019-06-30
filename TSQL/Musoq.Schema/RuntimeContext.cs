@@ -8,17 +8,17 @@ namespace Musoq.Schema
     {
         public CancellationToken EndWorkToken { get; }
 
-        public IReadOnlyCollection<ISchemaColumn> AllColumns { get; }
+        public IReadOnlyCollection<IColumn> AllColumns { get; }
 
-        public IReadOnlyCollection<ISchemaColumn> UsedColumns { get; }
+        public IReadOnlyCollection<IColumn> UsedColumns { get; }
 
-        public RuntimeContext(CancellationToken endWorkToken, IReadOnlyCollection<ISchemaColumn> originallyInferedColumns, IReadOnlyCollection<ISchemaColumn> usedColumns = null)
+        public RuntimeContext(CancellationToken endWorkToken, IReadOnlyCollection<IColumn> originallyInferedColumns, IReadOnlyCollection<IColumn> usedColumns = null)
         {
             EndWorkToken = endWorkToken;
             AllColumns = originallyInferedColumns;
             UsedColumns = usedColumns;
         }
 
-        public static RuntimeContext Empty => new RuntimeContext(CancellationToken.None, new ISchemaColumn[0], new ISchemaColumn[0]);
+        public static RuntimeContext Empty => new RuntimeContext(CancellationToken.None, new IColumn[0], new IColumn[0]);
     }
 }

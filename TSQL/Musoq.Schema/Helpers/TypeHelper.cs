@@ -115,13 +115,13 @@ namespace Musoq.Schema.Helpers
         /// </summary>
         /// <typeparam name="TType">Type to describe.</typeparam>
         /// <returns>Mapped entity.</returns>
-        public static (IDictionary<string, int> NameToIndexMap, IDictionary<int, Func<TType, object>> IndexToMethodAccessMap, ISchemaColumn[] Columns) GetEntityMap<TType>()
+        public static (IDictionary<string, int> NameToIndexMap, IDictionary<int, Func<TType, object>> IndexToMethodAccessMap, IColumn[] Columns) GetEntityMap<TType>()
         {
             var columnIndex = 0;
 
             var nameToIndexMap = new Dictionary<string, int>();
             var indexToMethodAccess = new Dictionary<int, Func<TType, object>>();
-            var columns = new List<ISchemaColumn>();
+            var columns = new List<IColumn>();
 
             var type = typeof(TType);
             foreach (var member in type.GetMembers())
@@ -153,7 +153,7 @@ namespace Musoq.Schema.Helpers
 
                 nameToIndexMap.Add(property.Name, columnIndex);
                 indexToMethodAccess.Add(columnIndex, (instance) => del(instance));
-                columns.Add(new SchemaColumn(property.Name, columnIndex, property.PropertyType));
+                columns.Add(new Column(property.Name, columnIndex, property.PropertyType));
 
                 columnIndex += 1;
             }

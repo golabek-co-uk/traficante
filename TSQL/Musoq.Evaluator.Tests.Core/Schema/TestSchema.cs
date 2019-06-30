@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Musoq.Schema;
 using Musoq.Schema.DataSources;
@@ -9,14 +10,14 @@ using Musoq.Schema.Reflection;
 
 namespace Musoq.Evaluator.Tests.Core.Schema
 {
-    public class TestSchema<T> : SchemaBase
+    public class TestDatabase<T> : DatabaseBase
         //where T : BasicEntity
     {
         private static readonly IDictionary<string, int> TestNameToIndexMap;
         private static readonly IDictionary<int, Func<T, object>> TestIndexToObjectAccessMap;
-        private readonly IEnumerable<T> _sources;
+        private readonly IDictionary<string, IEnumerable<T>> _sources;
 
-        static TestSchema()
+        static TestDatabase()
         {
             TestNameToIndexMap = new Dictionary<string, int>
             {
@@ -47,12 +48,17 @@ namespace Musoq.Evaluator.Tests.Core.Schema
             };
         }
 
-        public TestSchema(IEnumerable<T> sources)
+        public TestDatabase(IDictionary<string, IEnumerable<T>> sources)
             : base("test", CreateLibrary())
         {
             _sources = sources;
-            AddSource<EntitySource<T>>("entities", _sources, TestNameToIndexMap, TestIndexToObjectAccessMap);
-            AddTable<BasicEntityTable>("entities");
+            foreach(var source in sources)
+            {
+                AddSource<EntitySource<T>>(source.Key, "entities", source.Value, TestNameToIndexMap, TestIndexToObjectAccessMap);
+                AddTable<BasicEntityTable>(source.Key, "entities");
+            }
+            //AddSource<EntitySource<T>>("entities", _sources.Keys.First(), _sources.Values.First(), TestNameToIndexMap, TestIndexToObjectAccessMap);
+            //AddTable<BasicEntityTable>("entities", _sources.Keys.First());
         }
 
         private static MethodsAggregator CreateLibrary()
