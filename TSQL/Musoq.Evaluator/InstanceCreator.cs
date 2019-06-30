@@ -13,6 +13,7 @@ using Musoq.Evaluator.Runtime;
 using Musoq.Evaluator.Tables;
 using Musoq.Schema;
 using Musoq.Schema.DataSources;
+using Column = Musoq.Evaluator.Tables.Column;
 
 namespace Musoq.Converter
 {
