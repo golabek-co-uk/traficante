@@ -1218,5 +1218,55 @@ namespace Musoq.Evaluator.Tests.Core
             Assert.AreEqual(1m, table[1][0]);
             Assert.AreEqual(2m, table[1][1]);
         }
+
+        [TestMethod]
+        public void SelectWithAbsFunction()
+        {
+            var query = "select abs(Population) from #A.entities";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("may", 100m) { Population = -100 },
+                        new BasicEntity("june", 200m) { Population = 200 }
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Count);
+
+            Assert.AreEqual(100m, table[0][0]);
+            Assert.AreEqual(200m, table[1][0]);;
+        }
+
+        [TestMethod]
+        public void SelectGetDateFromTable()
+        {
+            var query = "select GetDate() from #A.entities";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("may", 100m) { Population = -100 },
+                        new BasicEntity("june", 200m) { Population = 200 }
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Count);
+
+            Assert.IsTrue(table[0][0] is DateTimeOffset);
+            Assert.IsTrue(table[1][0] is DateTimeOffset);
+        }
     }
 }

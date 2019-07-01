@@ -33,5 +33,9 @@ namespace Musoq.Evaluator.Tests.Core.Schema
         }
 
         public IColumn[] Columns { get; }
+
+        public string Name => throw new System.NotImplementedException();
+
+        public string Schema { get => throw new System.NotImplementedException(); }
     }
 }

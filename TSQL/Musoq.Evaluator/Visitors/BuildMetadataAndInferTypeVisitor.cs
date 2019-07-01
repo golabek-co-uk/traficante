@@ -422,9 +422,9 @@ namespace Musoq.Evaluator.Visitors
 
             ITable table;
             if(_currentScope.Name != "Desc")
-                table = database.GetTableByName(node.Schema, node.Method, _schemaFromArgs.ToArray());
+                table = database.GetFunctionByName(node.Schema, node.Method, _schemaFromArgs.ToArray());
             else
-                table = new DynamicTable(new IColumn[0]);
+                table = new DynamicTable(node.Schema, node.Method, new IColumn[0]);
 
             _schemaFromArgs.Clear();
 
@@ -451,9 +451,9 @@ namespace Musoq.Evaluator.Visitors
 
             ITable table;
             if (_currentScope.Name != "Desc")
-                table = schema.GetTableByName(node.Schema, node.TableOrView, _schemaFromArgs.ToArray());
+                table = schema.GetTableByName(node.Schema, node.TableOrView);
             else
-                table = new DynamicTable(new IColumn[0]);
+                table = new DynamicTable(node.Schema, node.TableOrView, new IColumn[0]);
 
             _schemaFromArgs.Clear();
 
@@ -802,7 +802,7 @@ namespace Musoq.Evaluator.Visitors
 
             set.Accept(traverser);
 
-            var table = new VariableTable(collector.CollectedFieldNames);
+            var table = new VariableTable(null, node.Name, collector.CollectedFieldNames);
             _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
                 new TableSymbol(null, node.Name, new TransitionSchema(node.Name, table), table, false));
 
@@ -979,7 +979,7 @@ namespace Musoq.Evaluator.Visitors
                 columns.Add(new Schema.DataSources.Column(typePair.ColumnName, i, type));
             }
 
-            var table = new DynamicTable(columns.ToArray());
+            var table = new DynamicTable(null, node.Name, columns.ToArray());
             _explicitlyDefinedTables.Add(node.Name, table);
 
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));

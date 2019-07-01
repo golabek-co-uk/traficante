@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Musoq.Schema.DataSources
 {
@@ -16,7 +17,7 @@ namespace Musoq.Schema.DataSources
         public EntityResolver(T entity, IDictionary<string, int> nameToIndexMap,
             IDictionary<int, Func<T, object>> indexToObjectAccessMap)
         {
-            _entitiy = entity;
+            _entitiy = entity;            
             _nameToIndexMap = nameToIndexMap;
             _indexToObjectAccessMap = indexToObjectAccessMap;
         }

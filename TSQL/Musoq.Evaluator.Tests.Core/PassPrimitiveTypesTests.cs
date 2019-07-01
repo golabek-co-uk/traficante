@@ -71,7 +71,7 @@ namespace Musoq.Evaluator.Tests.Core
             }
         }
 
-        private class TestSchema : DatabaseBase
+        private class TestSchema : Database
         {
 
             private readonly IEnumerable<TestEntity> _entities;
@@ -87,15 +87,15 @@ namespace Musoq.Evaluator.Tests.Core
                 _whenChecked = whenChecked;
             }
 
-            public override RowSource GetRowSource(string schema, string name, RuntimeContext communicator, params object[] parameters)
-            {
-                if(_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(parameters);
-                return new EntitySource<TestEntity>(_entities, new Dictionary<string, int>(), new Dictionary<int, Func<TestEntity, object>>());
-            }
+            //public override RowSource GetRowSource(string schema, string name, RuntimeContext communicator, params object[] parameters)
+            //{
+            //    if(_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(parameters);
+            //    return new EntitySource<TestEntity>(_entities);
+            //}
 
-            public override ITable GetTableByName(string schema, string name, params object[] parameters)
+            public override ITable GetTableByName(string schema, string name)
             {
-                if (_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(parameters);
+                if (_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(new object[0]);
                 return new TestTable();
             }
 
@@ -112,16 +112,20 @@ namespace Musoq.Evaluator.Tests.Core
                 return new MethodsAggregator(methodManager, propertiesManager);
             }
 
-            public override SchemaMethodInfo[] GetConstructors(string schema)
-            {
-                var methodInfos = new List<SchemaMethodInfo>();
-                return methodInfos.ToArray();
-            }
+            //public override SchemaMethodInfo[] GetConstructors(string schema)
+            //{
+            //    var methodInfos = new List<SchemaMethodInfo>();
+            //    return methodInfos.ToArray();
+            //}
         }
 
         private class TestTable : ITable
         {
             public IColumn[] Columns => new IColumn[0];
+
+            public string Name { get; }
+
+            public string Schema { get; }
         }
 
         private class TestEntity

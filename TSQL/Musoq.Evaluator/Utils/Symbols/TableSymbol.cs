@@ -19,6 +19,8 @@ namespace Musoq.Evaluator.Utils.Symbols
         private ITable _fullTable;
         private IDatabase _fullSchema;
 
+        public string SchemaName { get; }
+
         public TableSymbol(string schemaName, string alias, IDatabase schema, ITable table, bool hasAlias)
         {
             _tables.Add(alias, new Tuple<IDatabase, ITable>(schema, table));
@@ -36,7 +38,6 @@ namespace Musoq.Evaluator.Utils.Symbols
             HasAlias = true;
         }
 
-        public string SchemaName { get; }
         public bool HasAlias { get; }
 
         public string[] CompoundTables => _orders.ToArray();
@@ -150,7 +151,7 @@ namespace Musoq.Evaluator.Utils.Symbols
             }
 
             symbol._fullTableName = symbol._orders.Aggregate((a, b) => a + b);
-            symbol._fullTable = new DynamicTable(compundTableColumns.ToArray());
+            symbol._fullTable = new DynamicTable(symbol.SchemaName, symbol._fullTableName, compundTableColumns.ToArray());
             symbol._fullSchema = new TransitionSchema(symbol._fullTableName, symbol._fullTable);
 
             return symbol;

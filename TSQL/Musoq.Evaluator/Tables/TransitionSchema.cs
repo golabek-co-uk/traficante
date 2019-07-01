@@ -8,7 +8,7 @@ using Musoq.Schema.Reflection;
 
 namespace Musoq.Evaluator.Tables
 {
-    internal class TransitionSchema : DatabaseBase
+    internal class TransitionSchema : Database
     {
         private readonly ITable _table;
 
@@ -18,15 +18,15 @@ namespace Musoq.Evaluator.Tables
             _table = table;
         }
 
-        public override ITable GetTableByName(string schema, string name, params object[] parameters)
+        public override ITable GetTableByName(string schema, string name)
         {
             return _table;
         }
 
-        public override RowSource GetRowSource(string schema, string name, RuntimeContext interCommunicator, params object[] parameters)
-        {
-            return new TransientVariableSource(name);
-        }
+        //public override RowSource GetRowSource(string schema, string name, RuntimeContext interCommunicator, params object[] parameters)
+        //{
+        //    return new TransientVariableSource(name);
+        //}
 
         private static MethodsAggregator CreateLibrary()
         {
@@ -41,13 +41,13 @@ namespace Musoq.Evaluator.Tables
             return new MethodsAggregator(methodsManager, propertiesManager);
         }
 
-        public override SchemaMethodInfo[] GetConstructors(string schema)
-        {
-            var constructors = new List<SchemaMethodInfo>();
+        //public override SchemaMethodInfo[] GetConstructors(string schema)
+        //{
+        //    var constructors = new List<SchemaMethodInfo>();
 
-            constructors.AddRange(TypeHelper.GetSchemaMethodInfosForType<TransientVariableSource>("transient"));
+        //    constructors.AddRange(TypeHelper.GetSchemaMethodInfosForType<TransientVariableSource>("transient"));
 
-            return constructors.ToArray();
-        }
+        //    return constructors.ToArray();
+        //}
     }
 }

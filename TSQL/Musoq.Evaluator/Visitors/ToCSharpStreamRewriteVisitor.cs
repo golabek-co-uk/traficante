@@ -856,11 +856,12 @@ namespace Musoq.Evaluator.Visitors
         
         public void Visit(SchemaFunctionFromNode node)
         {
-            var rowSource = _schemaProvider.GetDatabase(null).GetRowSource(node.Schema, node.Method, _interCommunicator, new object[0]).Rows;
+            //var rowSource = _schemaProvider.GetDatabase(null).GetRowSource(node.Schema, node.Method, _interCommunicator, new object[0]).Rows;
+            var rowSource = _schemaProvider.GetDatabase(null).GetFunctionRowSource(node.Schema, node.Method, new object[0]).Rows;
 
             var fields = _schemaProvider
                 .GetDatabase(null)
-                .GetTableByName(node.Schema, node.Method)
+                .GetFunctionByName(node.Schema, node.Method, new object[0])
                 .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);
@@ -910,7 +911,7 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(SchemaTableFromNode node)
         {
-            var rowSource = _schemaProvider.GetDatabase(null).GetRowSource(node.Schema, node.TableOrView, _interCommunicator, new object[0]).Rows;
+            var rowSource = _schemaProvider.GetDatabase(null).GetTableRowSource(node.Schema, node.TableOrView).Rows;
 
             var fields = _schemaProvider
                 .GetDatabase(null)
