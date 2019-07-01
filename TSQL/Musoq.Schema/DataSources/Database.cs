@@ -12,8 +12,8 @@ namespace Musoq.Schema.DataSources
 {
     public abstract class Database : IDatabase
     {
-        private const string _sourcePart = "_source";
-        private const string _tablePart = "_table";
+        //private const string _sourcePart = "_source";
+        //private const string _tablePart = "_table";
 
         private readonly MethodsAggregator _aggregator;
 
@@ -36,26 +36,14 @@ namespace Musoq.Schema.DataSources
 
         public void AddTable<TType>(string schema, string name, IEnumerable<TType> items)
         {
-            List<Column> columns = new List<Column>();
-            int index = 0;
-            foreach (var prop in typeof(TType).GetProperties())
-            {
-                index++;
-                columns.Add(new Column(prop.Name, index, prop.PropertyType));
-            }
-            Tables.Add((new SchemaTable(schema, name, columns.ToArray()), new EntitySource<TType>(items)));
+            var entityMap = TypeHelper.GetEntityMap<TType>();
+            Tables.Add((new SchemaTable(schema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items)));
         }
 
         public void AddFunction<TType>(string schema, string name, Func<IEnumerable<TType>> items)
         {
-            List<Column> columns = new List<Column>();
-            int index = 0;
-            foreach (var prop in typeof(TType).GetProperties())
-            {
-                index++;
-                columns.Add(new Column(prop.Name, index, prop.PropertyType));
-            }
-            Functions.Add((new SchemaTable(schema, name, columns.ToArray()), new EntitySource<TType>(items())));
+            var entityMap = TypeHelper.GetEntityMap<TType>();
+            Functions.Add((new SchemaTable(schema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items())));
         } 
 
         public virtual ITable GetTableByName(string schema, string name)

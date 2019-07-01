@@ -15,10 +15,10 @@ namespace Musoq.Schema.Helpers
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>Name of type.</returns>
-        public static string GetTypeName(this Type type)
-        {
-            return GetUnderlyingNullable(type).Name;
-        }
+        //public static string GetTypeName(this Type type)
+        //{
+        //    return GetUnderlyingNullable(type).Name;
+        //}
 
         /// <summary>
         ///     Gets internal type of Nullable or type if not nullable.
@@ -39,20 +39,20 @@ namespace Musoq.Schema.Helpers
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>True if is pure value type. False if is Nullable[T] type or is reference type.</returns>
-        public static bool IsTrueValueType(this Type type)
-        {
-            var isValueType = type.IsValueType;
+        //public static bool IsTrueValueType(this Type type)
+        //{
+        //    var isValueType = type.IsValueType;
 
-            if (!isValueType)
-                return false;
+        //    if (!isValueType)
+        //        return false;
 
-            var isNullableType = Nullable.GetUnderlyingType(type) != null;
+        //    var isNullableType = Nullable.GetUnderlyingType(type) != null;
 
-            if (isNullableType)
-                return false;
+        //    if (isNullableType)
+        //        return false;
 
-            return true;
-        }
+        //    return true;
+        //}
 
         /// <summary>
         ///     Gets the optional parameters count.
@@ -92,11 +92,11 @@ namespace Musoq.Schema.Helpers
         /// <typeparam name="TType">The annotation</typeparam>
         /// <param name="parameters">Parameters to filter</param>
         /// <returns>Parameters that fit the requirements.</returns>
-        public static ParameterInfo[] GetParametersWithoutAttribute<TType>(this ParameterInfo[] parameters)
-            where TType : Attribute
-        {
-            return parameters.Where(f => f.GetCustomAttribute<TType>() == null).ToArray();
-        }
+        //public static ParameterInfo[] GetParametersWithoutAttribute<TType>(this ParameterInfo[] parameters)
+        //    where TType : Attribute
+        //{
+        //    return parameters.Where(f => f.GetCustomAttribute<TType>() == null).ToArray();
+        //}
 
         /// <summary>
         ///     Gets the parameters that are annotated by some attribute
@@ -110,12 +110,7 @@ namespace Musoq.Schema.Helpers
             return parameters.Where(f => f.GetCustomAttribute<TType>() != null).ToArray();
         }
 
-        /// <summary>
-        ///     Gets the dictionaries describing the type.
-        /// </summary>
-        /// <typeparam name="TType">Type to describe.</typeparam>
-        /// <returns>Mapped entity.</returns>
-        public static (IDictionary<string, int> NameToIndexMap, IDictionary<int, Func<TType, object>> IndexToMethodAccessMap, IColumn[] Columns) GetEntityMap<TType>()
+        public static EntityMap<TType> GetEntityMap<TType>()
         {
             var columnIndex = 0;
 
@@ -126,8 +121,8 @@ namespace Musoq.Schema.Helpers
             var type = typeof(TType);
             foreach (var member in type.GetMembers())
             {
-                if (member.GetCustomAttribute<EntityPropertyAttribute>() == null)
-                    continue;
+                //if (member.GetCustomAttribute<EntityPropertyAttribute>() == null)
+                //    continue;
 
                 if(member.MemberType != MemberTypes.Property)
                     continue;
@@ -158,45 +153,57 @@ namespace Musoq.Schema.Helpers
                 columnIndex += 1;
             }
 
-            return (nameToIndexMap, indexToMethodAccess, columns.ToArray());
-        }
-
-        public static (bool SupportsInterCommunicator, (string Name, Type Type)[] Parameters) GetParametersForConstructor(ConstructorInfo constructor)
-        {
-            var parameters = constructor.GetParameters();
-            var filteredConstructors = new List<(string Name, Type Type)>();
-            var supportsInterCommunicator = false;
-
-            foreach(var param in parameters)
+            return new EntityMap<TType>
             {
-                if (param.ParameterType != typeof(RuntimeContext))
-                    filteredConstructors.Add((param.Name, param.ParameterType));
-                else
-                    supportsInterCommunicator = true;
-            }
-
-            return (supportsInterCommunicator, filteredConstructors.ToArray());
+                NameToIndexMap = nameToIndexMap,
+                IndexToMethodAccessMap = indexToMethodAccess,
+                Columns = columns.ToArray()
+            };
         }
 
-        public static Reflection.ConstructorInfo[] GetConstructorsFor<TType>()
-        {
-            var constructors = new List<Reflection.ConstructorInfo>();
+        //public static (bool SupportsInterCommunicator, (string Name, Type Type)[] Parameters) GetParametersForConstructor(ConstructorInfo constructor)
+        //{
+        //    var parameters = constructor.GetParameters();
+        //    var filteredConstructors = new List<(string Name, Type Type)>();
+        //    var supportsInterCommunicator = false;
 
-            var type = typeof(TType);
-            var allConstructors = type.GetConstructors();
+        //    foreach(var param in parameters)
+        //    {
+        //        if (param.ParameterType != typeof(RuntimeContext))
+        //            filteredConstructors.Add((param.Name, param.ParameterType));
+        //        else
+        //            supportsInterCommunicator = true;
+        //    }
 
-            foreach (var constr in allConstructors)
-            {
-                var paramsInfo = GetParametersForConstructor(constr);
-                constructors.Add(new Reflection.ConstructorInfo(constr, type, paramsInfo.SupportsInterCommunicator, paramsInfo.Parameters));
-            }
+        //    return (supportsInterCommunicator, filteredConstructors.ToArray());
+        //}
 
-            return constructors.ToArray();
-        }
+        //public static Reflection.ConstructorInfo[] GetConstructorsFor<TType>()
+        //{
+        //    var constructors = new List<Reflection.ConstructorInfo>();
 
-        public static Reflection.SchemaMethodInfo[] GetSchemaMethodInfosForType<TType>(string typeIdentifier)
-        {
-            return GetConstructorsFor<TType>().Select(constr => new Reflection.SchemaMethodInfo(typeIdentifier, constr)).ToArray();
-        }
+        //    var type = typeof(TType);
+        //    var allConstructors = type.GetConstructors();
+
+        //    foreach (var constr in allConstructors)
+        //    {
+        //        var paramsInfo = GetParametersForConstructor(constr);
+        //        constructors.Add(new Reflection.ConstructorInfo(constr, type, paramsInfo.SupportsInterCommunicator, paramsInfo.Parameters));
+        //    }
+
+        //    return constructors.ToArray();
+        //}
+
+        //public static Reflection.SchemaMethodInfo[] GetSchemaMethodInfosForType<TType>(string typeIdentifier)
+        //{
+        //    return GetConstructorsFor<TType>().Select(constr => new Reflection.SchemaMethodInfo(typeIdentifier, constr)).ToArray();
+        //}
+    }
+
+    public class EntityMap<TType>
+    {
+        public IDictionary<string, int> NameToIndexMap { get; set; }
+        public IDictionary<int, Func<TType, object>> IndexToMethodAccessMap { get; set; }
+        public IColumn[] Columns { get; set; }
     }
 }
