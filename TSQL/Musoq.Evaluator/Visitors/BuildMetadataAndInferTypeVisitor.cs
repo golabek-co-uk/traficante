@@ -215,35 +215,30 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(StringNode node)
         {
-            AddAssembly(typeof(string).Assembly);
             Nodes.Push(new StringNode(node.Value));
             _schemaFromArgs.Add(node.Value);
         }
 
         public void Visit(DecimalNode node)
         {
-            AddAssembly(typeof(decimal).Assembly);
             Nodes.Push(new DecimalNode(node.Value));
             _schemaFromArgs.Add(node.Value);
         }
 
         public void Visit(IntegerNode node)
         {
-            AddAssembly(typeof(int).Assembly);
             Nodes.Push(new IntegerNode(node.ObjValue.ToString()));
             _schemaFromArgs.Add(node.ObjValue);
         }
 
         public void Visit(BooleanNode node)
         {
-            AddAssembly(typeof(bool).Assembly);
             Nodes.Push(new BooleanNode(node.Value));
             _schemaFromArgs.Add(node.Value);
         }
 
         public void Visit(WordNode node)
         {
-            AddAssembly(typeof(string).Assembly);
             Nodes.Push(new WordNode(node.Value));
             _schemaFromArgs.Add(node.Value);
         }
@@ -295,7 +290,7 @@ namespace Musoq.Evaluator.Visitors
 
             var column = tuple.Table.Columns.SingleOrDefault(f => f.ColumnName == node.Name);
 
-            AddAssembly(column.ColumnType.Assembly);
+            //AddAssembly(column.ColumnType.Assembly);
             node.ChangeReturnType(column.ColumnType);
 
             var accessColumn = new AccessColumnNode(column.ColumnName, tuple.TableName, column.ColumnType, node.Span);
@@ -313,7 +308,6 @@ namespace Musoq.Evaluator.Visitors
             {
                 var column = table.Columns[i];
 
-                AddAssembly(column.ColumnType.Assembly);
                 _generatedColumns[i] =
                     new FieldNode(
                         new AccessColumnNode(column.ColumnName, _identifier, column.ColumnType, TextSpan.Empty), i,
@@ -457,7 +451,7 @@ namespace Musoq.Evaluator.Visitors
 
             _schemaFromArgs.Clear();
 
-            AddAssembly(schema.GetType().Assembly);
+            //AddAssembly(schema.GetType().Assembly);
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
@@ -486,8 +480,6 @@ namespace Musoq.Evaluator.Visitors
             var table = _explicitlyDefinedTables[tableName];
 
             var schema = _databaseProvider.GetDatabase(null);
-
-            AddAssembly(schema.GetType().Assembly);
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
@@ -583,15 +575,15 @@ namespace Musoq.Evaluator.Visitors
             _identifier = from.Alias;
             Nodes.Push(new ExpressionFromNode(from));
 
-            var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(_identifier);
+            //var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(_identifier);
 
-            foreach (var tableAlias in tableSymbol.CompoundTables)
-            {
-                var tuple = tableSymbol.GetTableByAlias(tableAlias);
+            //foreach (var tableAlias in tableSymbol.CompoundTables)
+            //{
+            //    var tuple = tableSymbol.GetTableByAlias(tableAlias);
 
-                foreach (var column in tuple.Table.Columns)
-                    AddAssembly(column.ColumnType.Assembly);
-            }
+            //    foreach (var column in tuple.Table.Columns)
+            //        AddAssembly(column.ColumnType.Assembly);
+            //}
         }
 
         public void Visit(CreateTransformationTableNode node)
@@ -831,13 +823,13 @@ namespace Musoq.Evaluator.Visitors
             _currentScope = scope;
         }
 
-        private void AddAssembly(Assembly asm)
-        {
-            if (Assemblies.Contains(asm))
-                return;
+        //private void AddAssembly(Assembly asm)
+        //{
+        //    if (Assemblies.Contains(asm))
+        //        return;
 
-            Assemblies.Add(asm);
-        }
+        //    Assemblies.Add(asm);
+        //}
 
         private FieldNode[] CreateFields(FieldNode[] oldFields)
         {
@@ -918,9 +910,6 @@ namespace Musoq.Evaluator.Visitors
             {
                 accessMethod = func(node.FToken, args, new ArgsListNode(new Node[0]), method, alias);
             }
-
-            AddAssembly(method.DeclaringType.Assembly);
-            AddAssembly(method.ReturnType.Assembly);
 
             node.ChangeMethod(method);
 
