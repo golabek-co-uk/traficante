@@ -664,47 +664,47 @@ namespace Musoq.Evaluator.Visitors
             return fields.ToArray();
         }
 
-        private FieldNode[] CreateAndConcatFields(TableSymbol left, string lAlias, TableSymbol right, string rAlias,
-            Func<string, string, string> func)
-        {
-            return CreateAndConcatFields(left, lAlias, right, rAlias, func, func, (name, alias) => name,
-                (name, alias) => name);
-        }
+        //private FieldNode[] CreateAndConcatFields(TableSymbol left, string lAlias, TableSymbol right, string rAlias,
+        //    Func<string, string, string> func)
+        //{
+        //    return CreateAndConcatFields(left, lAlias, right, rAlias, func, func, (name, alias) => name,
+        //        (name, alias) => name);
+        //}
 
-        private FieldNode[] CreateAndConcatFields(TableSymbol left, string lAlias, TableSymbol right, string rAlias,
-            Func<string, string, string> lfunc, Func<string, string, string> rfunc, Func<string, string, string> lcfunc,
-            Func<string, string, string> rcfunc)
-        {
-            var fields = new List<FieldNode>();
+        //private FieldNode[] CreateAndConcatFields(TableSymbol left, string lAlias, TableSymbol right, string rAlias,
+        //    Func<string, string, string> lfunc, Func<string, string, string> rfunc, Func<string, string, string> lcfunc,
+        //    Func<string, string, string> rcfunc)
+        //{
+        //    var fields = new List<FieldNode>();
 
-            var i = 0;
+        //    var i = 0;
 
-            foreach (var compoundTable in left.CompoundTables)
-            foreach (var column in left.GetColumns(compoundTable))
-                fields.Add(
-                    new FieldNode(
-                        new AccessColumnNode(
-                            lcfunc(column.ColumnName, compoundTable),
-                            lAlias,
-                            column.ColumnType,
-                            TextSpan.Empty),
-                        i++,
-                        lfunc(column.ColumnName, compoundTable)));
+        //    foreach (var compoundTable in left.CompoundTables)
+        //    foreach (var column in left.GetColumns(compoundTable))
+        //        fields.Add(
+        //            new FieldNode(
+        //                new AccessColumnNode(
+        //                    lcfunc(column.ColumnName, compoundTable),
+        //                    lAlias,
+        //                    column.ColumnType,
+        //                    TextSpan.Empty),
+        //                i++,
+        //                lfunc(column.ColumnName, compoundTable)));
 
-            foreach (var compoundTable in right.CompoundTables)
-            foreach (var column in right.GetColumns(compoundTable))
-                fields.Add(
-                    new FieldNode(
-                        new AccessColumnNode(
-                            rcfunc(column.ColumnName, compoundTable),
-                            rAlias,
-                            column.ColumnType,
-                            TextSpan.Empty),
-                        i++,
-                        rfunc(column.ColumnName, compoundTable)));
+        //    foreach (var compoundTable in right.CompoundTables)
+        //    foreach (var column in right.GetColumns(compoundTable))
+        //        fields.Add(
+        //            new FieldNode(
+        //                new AccessColumnNode(
+        //                    rcfunc(column.ColumnName, compoundTable),
+        //                    rAlias,
+        //                    column.ColumnType,
+        //                    TextSpan.Empty),
+        //                i++,
+        //                rfunc(column.ColumnName, compoundTable)));
 
-            return fields.ToArray();
-        }
+        //    return fields.ToArray();
+        //}
 
         //private RefreshNode CreateRefreshMethods(IReadOnlyList<AccessMethodNode> refreshMethods)
         //{
@@ -738,10 +738,10 @@ namespace Musoq.Evaluator.Visitors
         {
         }
 
-        private bool HasMethod(IEnumerable<AccessMethodNode> methods, AccessMethodNode node)
-        {
-            return methods.Any(f => f.ToString() == node.ToString());
-        }
+        //private bool HasMethod(IEnumerable<AccessMethodNode> methods, AccessMethodNode node)
+        //{
+        //    return methods.Any(f => f.ToString() == node.ToString());
+        //}
 
         public void Visit(StatementsArrayNode node)
         {
