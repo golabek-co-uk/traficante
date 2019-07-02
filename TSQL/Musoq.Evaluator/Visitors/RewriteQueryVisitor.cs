@@ -451,9 +451,9 @@ namespace Musoq.Evaluator.Visitors
             Nodes.Push(new MultiStatementNode(nodes, null));
         }
 
-        public void Visit(RefreshNode node)
-        {
-        }
+        //public void Visit(RefreshNode node)
+        //{
+        //}
 
         public void Visit(UnionNode node)
         {
@@ -706,21 +706,21 @@ namespace Musoq.Evaluator.Visitors
             return fields.ToArray();
         }
 
-        private RefreshNode CreateRefreshMethods(IReadOnlyList<AccessMethodNode> refreshMethods)
-        {
-            var methods = new List<AccessMethodNode>();
+        //private RefreshNode CreateRefreshMethods(IReadOnlyList<AccessMethodNode> refreshMethods)
+        //{
+        //    var methods = new List<AccessMethodNode>();
 
-            foreach (var method in refreshMethods)
-            {
-                if (method.Method.GetCustomAttribute<AggregateSetDoNotResolveAttribute>() != null)
-                    continue;
+        //    foreach (var method in refreshMethods)
+        //    {
+        //        if (method.Method.GetCustomAttribute<AggregateSetDoNotResolveAttribute>() != null)
+        //            continue;
 
-                if (!HasMethod(methods, method))
-                    methods.Add(method);
-            }
+        //        if (!HasMethod(methods, method))
+        //            methods.Add(method);
+        //    }
 
-            return new RefreshNode(methods.ToArray());
-        }
+        //    return new RefreshNode(methods.ToArray());
+        //}
 
         public void Visit(CreateTableNode node)
         {

@@ -77,7 +77,7 @@ namespace Musoq.Parser
         void Visit(UnionNode node);
         void Visit(UnionAllNode node);
         void Visit(ExceptNode node);
-        void Visit(RefreshNode node);
+        //void Visit(RefreshNode node);
         void Visit(IntersectNode node);
         void Visit(PutTrueNode node);
         void Visit(MultiStatementNode node);

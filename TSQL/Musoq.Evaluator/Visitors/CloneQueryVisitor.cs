@@ -437,10 +437,10 @@ namespace Musoq.Evaluator.Visitors
         {
         }
 
-        public virtual void Visit(RefreshNode node)
-        {
-            Nodes.Push(new RefreshNode(node.Nodes));
-        }
+        //public virtual void Visit(RefreshNode node)
+        //{
+        //    Nodes.Push(new RefreshNode(node.Nodes));
+        //}
 
         public virtual void Visit(UnionNode node)
         {

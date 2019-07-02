@@ -481,7 +481,7 @@ namespace Musoq.Evaluator.Visitors
 
             _visitor.SetMethodAccessType(MethodAccessType.TransformingQuery);
             _visitor.SetQueryIdentifier(node.From.Alias);
-            node.Refresh?.Accept(this);
+            //node.Refresh?.Accept(this);
             node.From.Accept(this);
             node.Where?.Accept(this);
             //node.Select.Accept(this);
@@ -521,13 +521,13 @@ namespace Musoq.Evaluator.Visitors
             TraverseSetOperator(node);
         }
 
-        public void Visit(RefreshNode node)
-        {
-            foreach (var item in node.Nodes)
-                item.Accept(this);
+        //public void Visit(RefreshNode node)
+        //{
+        //    foreach (var item in node.Nodes)
+        //        item.Accept(this);
 
-            node.Accept(_visitor);
-        }
+        //    node.Accept(_visitor);
+        //}
 
         public void Visit(IntersectNode node)
         {

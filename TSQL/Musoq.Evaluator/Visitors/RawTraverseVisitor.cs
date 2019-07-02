@@ -453,13 +453,13 @@ namespace Musoq.Evaluator.Visitors
             TraverseSetOperator(node);
         }
 
-        public virtual void Visit(RefreshNode node)
-        {
-            foreach (var item in node.Nodes)
-                item.Accept(this);
+        //public virtual void Visit(RefreshNode node)
+        //{
+        //    foreach (var item in node.Nodes)
+        //        item.Accept(this);
 
-            node.Accept(Visitor);
-        }
+        //    node.Accept(Visitor);
+        //}
 
         public virtual void Visit(IntersectNode node)
         {

@@ -672,9 +672,9 @@ namespace Musoq.Evaluator.Visitors
         {
         }
 
-        public void Visit(RefreshNode node)
-        {
-        }
+        //public void Visit(RefreshNode node)
+        //{
+        //}
 
         public void Visit(UnionNode node)
         {

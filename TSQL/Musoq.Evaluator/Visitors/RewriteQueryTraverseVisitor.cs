@@ -477,7 +477,7 @@ namespace Musoq.Evaluator.Visitors
             node.Take?.Accept(this);
             node.Skip?.Accept(this);
             node.GroupBy?.Accept(this);
-            node.Refresh?.Accept(this);
+            //node.Refresh?.Accept(this);
             node.Accept(_visitor);
 
             _walker = _walker.Parent();
@@ -510,13 +510,13 @@ namespace Musoq.Evaluator.Visitors
             TraverseSetOperator(node);
         }
 
-        public void Visit(RefreshNode node)
-        {
-            foreach (var item in node.Nodes)
-                item.Accept(this);
+        //public void Visit(RefreshNode node)
+        //{
+        //    foreach (var item in node.Nodes)
+        //        item.Accept(this);
 
-            node.Accept(_visitor);
-        }
+        //    node.Accept(_visitor);
+        //}
 
         public void Visit(IntersectNode node)
         {

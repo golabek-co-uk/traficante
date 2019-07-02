@@ -5,13 +5,13 @@ namespace Musoq.Parser.Nodes
     public class InternalQueryNode : QueryNode
     {
         public InternalQueryNode(SelectNode select, FromNode from, WhereNode where, GroupByNode groupBy,
-            OrderByNode orderBy, SkipNode skip, TakeNode take, RefreshNode refresh)
+            OrderByNode orderBy, SkipNode skip, TakeNode take)
             : base(select, from, where, groupBy, orderBy, skip, take)
         {
-            Refresh = refresh;
+            //Refresh = refresh;
         }
 
-        public RefreshNode Refresh { get; }
+        //public RefreshNode Refresh { get; }
 
         public override Type ReturnType => null;
 

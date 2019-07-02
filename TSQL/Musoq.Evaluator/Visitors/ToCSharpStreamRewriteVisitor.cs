@@ -1232,9 +1232,9 @@ namespace Musoq.Evaluator.Visitors
             Nodes.Push(call);
         }
 
-        public void Visit(RefreshNode node)
-        {
-        }
+        //public void Visit(RefreshNode node)
+        //{
+        //}
 
         public void Visit(IntersectNode node)
         {
