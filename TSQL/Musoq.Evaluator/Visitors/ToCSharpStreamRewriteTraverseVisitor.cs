@@ -243,10 +243,10 @@ namespace Musoq.Evaluator.Visitors
             _walker = _walker.Parent();
         }
 
-        public void Visit(RenameTableNode node)
-        {
-            node.Accept(_visitor);
-        }
+        //public void Visit(RenameTableNode node)
+        //{
+        //    node.Accept(_visitor);
+        //}
 
         public void Visit(TranslatedSetTreeNode node)
         {

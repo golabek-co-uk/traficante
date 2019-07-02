@@ -253,9 +253,9 @@ namespace Musoq.Evaluator.Visitors
         {
         }
 
-        public void Visit(RenameTableNode node)
-        {
-        }
+        //public void Visit(RenameTableNode node)
+        //{
+        //}
 
         public void Visit(TranslatedSetTreeNode node)
         {

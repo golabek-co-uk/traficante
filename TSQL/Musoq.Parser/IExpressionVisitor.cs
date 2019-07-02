@@ -64,7 +64,7 @@ namespace Musoq.Parser
         void Visit(SchemaMethodFromNode node);
         void Visit(ReferentialFromNode node);
         void Visit(CreateTransformationTableNode node);
-        void Visit(RenameTableNode node);
+        //void Visit(RenameTableNode node);
         void Visit(TranslatedSetTreeNode node);
         void Visit(IntoNode node);
         void Visit(QueryScope node);

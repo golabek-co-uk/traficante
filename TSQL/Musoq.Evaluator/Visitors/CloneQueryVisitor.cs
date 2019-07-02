@@ -374,10 +374,10 @@ namespace Musoq.Evaluator.Visitors
             Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, items, node.ForGrouping));
         }
 
-        public virtual void Visit(RenameTableNode node)
-        {
-            Nodes.Push(new RenameTableNode(node.TableSourceName, node.TableDestinationName));
-        }
+        //public virtual void Visit(RenameTableNode node)
+        //{
+        //    Nodes.Push(new RenameTableNode(node.TableSourceName, node.TableDestinationName));
+        //}
 
         public virtual void Visit(TranslatedSetTreeNode node)
         {

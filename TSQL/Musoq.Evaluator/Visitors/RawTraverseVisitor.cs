@@ -208,10 +208,10 @@ namespace Musoq.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        public virtual void Visit(RenameTableNode node)
-        {
-            node.Accept(Visitor);
-        }
+        //public virtual void Visit(RenameTableNode node)
+        //{
+        //    node.Accept(Visitor);
+        //}
 
         public virtual void Visit(TranslatedSetTreeNode node)
         {

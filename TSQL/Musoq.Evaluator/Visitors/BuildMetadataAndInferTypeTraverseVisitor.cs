@@ -297,10 +297,10 @@ namespace Musoq.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(RenameTableNode node)
-        {
-            node.Accept(_visitor);
-        }
+        //public void Visit(RenameTableNode node)
+        //{
+        //    node.Accept(_visitor);
+        //}
 
         public void Visit(TranslatedSetTreeNode node)
         {
