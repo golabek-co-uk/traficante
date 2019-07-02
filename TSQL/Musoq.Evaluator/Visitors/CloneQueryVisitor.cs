@@ -226,9 +226,9 @@ namespace Musoq.Evaluator.Visitors
             Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));
         }
 
-        public virtual void Visit(AccessRefreshAggreationScoreNode node)
-        {
-        }
+        //public virtual void Visit(AccessRefreshAggreationScoreNode node)
+        //{
+        //}
 
         public virtual void Visit(AccessColumnNode node)
         {

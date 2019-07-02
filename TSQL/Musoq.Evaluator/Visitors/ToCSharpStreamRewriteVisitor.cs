@@ -572,10 +572,10 @@ namespace Musoq.Evaluator.Visitors
             }
         }
 
-        public void Visit(AccessRefreshAggreationScoreNode node)
-        {
-            throw new NotImplementedException();
-        }
+        //public void Visit(AccessRefreshAggreationScoreNode node)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         public void Visit(AccessColumnNode node)
         {

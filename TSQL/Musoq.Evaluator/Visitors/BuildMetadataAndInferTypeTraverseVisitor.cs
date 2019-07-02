@@ -77,11 +77,11 @@ namespace Musoq.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(AccessRefreshAggreationScoreNode node)
-        {
-            node.Arguments.Accept(this);
-            node.Accept(_visitor);
-        }
+        //public void Visit(AccessRefreshAggreationScoreNode node)
+        //{
+        //    node.Arguments.Accept(this);
+        //    node.Accept(_visitor);
+        //}
 
         public void Visit(AccessColumnNode node)
         {

@@ -267,12 +267,12 @@ namespace Musoq.Evaluator.Visitors
             Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));
         }
 
-        public void Visit(AccessRefreshAggreationScoreNode node)
-        {
-            VisitAccessMethod(node,
-                (token, node1, exargs, arg3, alias) =>
-                    new AccessRefreshAggreationScoreNode(token, node1 as ArgsListNode, exargs, arg3, alias));
-        }
+        //public void Visit(AccessRefreshAggreationScoreNode node)
+        //{
+        //    VisitAccessMethod(node,
+        //        (token, node1, exargs, arg3, alias) =>
+        //            new AccessRefreshAggreationScoreNode(token, node1 as ArgsListNode, exargs, arg3, alias));
+        //}
 
         public void Visit(AccessColumnNode node)
         {
