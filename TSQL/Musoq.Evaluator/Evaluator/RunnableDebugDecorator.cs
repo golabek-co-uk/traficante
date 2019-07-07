@@ -17,7 +17,7 @@ namespace Traficante.TSQL.Evaluator
             _filesToDelete = filesToDelete;
         }
 
-        public IDatabaseProvider Provider
+        public ISchemaProvider Provider
         {
             get => _runnable.Provider;
             set => _runnable.Provider = value;

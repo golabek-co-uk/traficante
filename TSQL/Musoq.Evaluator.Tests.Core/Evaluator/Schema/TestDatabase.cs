@@ -10,12 +10,12 @@ using Traficante.TSQL.Schema.Reflection;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core.Schema
 {
-    public class TestDatabase<T> : Database
+    public class TestSchema<T> : BaseSchema
         //where T : BasicEntity
     {
         private readonly IDictionary<string, IEnumerable<T>> _sources;
 
-        public TestDatabase(IDictionary<string, IEnumerable<T>> sources)
+        public TestSchema(IDictionary<string, IEnumerable<T>> sources)
             : base("test", CreateLibrary())
         {
             _sources = sources;

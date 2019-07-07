@@ -39,7 +39,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
-        private IDatabaseProvider _schemaProvider;
+        private ISchemaProvider _schemaProvider;
         private RuntimeContext _interCommunicator;
 
         public IQueryable<IObjectResolver> ResultStream = null;
@@ -50,7 +50,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
         public ToCSharpStreamRewriteVisitor(
-            IDatabaseProvider schemaProvider,
+            ISchemaProvider schemaProvider,
             IDictionary<string, int[]> setOperatorFieldIndexes, 
             IDictionary<Node, IColumn[]> inferredColumns)
         {

@@ -10,7 +10,7 @@ using Traficante.TSQL.Schema.Reflection;
 
 namespace Traficante.TSQL.Schema.DataSources
 {
-    public abstract class Database : IDatabase
+    public abstract class BaseSchema : ISchema
     {
         //private const string _sourcePart = "_source";
         //private const string _tablePart = "_table";
@@ -26,7 +26,7 @@ namespace Traficante.TSQL.Schema.DataSources
         public List<(ITable Table, RowSource Source)> Functions { get; private set; }
 
 
-        protected Database(string name, MethodsAggregator methodsAggregator)
+        protected BaseSchema(string name, MethodsAggregator methodsAggregator)
         {
             Name = name;
             Tables = new List<(ITable Table, RowSource Source)>();
@@ -36,18 +36,24 @@ namespace Traficante.TSQL.Schema.DataSources
 
         public void AddTable<TType>(string schema, string name, IEnumerable<TType> items)
         {
+            if (string.IsNullOrEmpty(schema))
+                schema = "dbo";
             var entityMap = TypeHelper.GetEntityMap<TType>();
             Tables.Add((new SchemaTable(schema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items)));
         }
 
         public void AddFunction<TType>(string schema, string name, Func<IEnumerable<TType>> items)
         {
+            if (string.IsNullOrEmpty(schema))
+                schema = "dbo";
             var entityMap = TypeHelper.GetEntityMap<TType>();
             Functions.Add((new SchemaTable(schema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items())));
         } 
 
         public virtual ITable GetTableByName(string schema, string name)
         {
+            if (string.IsNullOrEmpty(schema))
+                schema = "dbo";
             return Tables.FirstOrDefault(x => 
                     string.Equals(x.Table.Schema, schema, StringComparison.CurrentCultureIgnoreCase) && 
                     string.Equals(x.Table.Name, name, StringComparison.CurrentCultureIgnoreCase))
@@ -56,6 +62,8 @@ namespace Traficante.TSQL.Schema.DataSources
 
         public virtual RowSource GetTableRowSource(string schema, string name)
         {
+            if (string.IsNullOrEmpty(schema))
+                schema = "dbo";
             return Tables.FirstOrDefault(x =>
                     string.Equals(x.Table.Schema, schema, StringComparison.CurrentCultureIgnoreCase) &&
                     string.Equals(x.Table.Name, name, StringComparison.CurrentCultureIgnoreCase))
@@ -64,6 +72,8 @@ namespace Traficante.TSQL.Schema.DataSources
 
         public virtual ITable GetFunctionByName(string schema, string name, params object[] parameters)
         {
+            if (string.IsNullOrEmpty(schema))
+                schema = "dbo";
             return Functions.FirstOrDefault(x =>
                     string.Equals(x.Table.Schema, schema, StringComparison.CurrentCultureIgnoreCase) &&
                     string.Equals(x.Table.Name, name, StringComparison.CurrentCultureIgnoreCase))
@@ -72,6 +82,8 @@ namespace Traficante.TSQL.Schema.DataSources
 
         public virtual RowSource GetFunctionRowSource(string schema, string name, object[] parameters)
         {
+            if (string.IsNullOrEmpty(schema))
+                schema = "dbo";
             return Functions.FirstOrDefault(x =>
                     string.Equals(x.Table.Schema, schema, StringComparison.CurrentCultureIgnoreCase) &&
                     string.Equals(x.Table.Name, name, StringComparison.CurrentCultureIgnoreCase))

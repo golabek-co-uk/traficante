@@ -8,7 +8,7 @@ using Traficante.TSQL.Schema.Reflection;
 
 namespace Traficante.TSQL.Evaluator.Tables
 {
-    internal class TransitionSchema : Database
+    internal class TransitionSchema : BaseSchema
     {
         private readonly ITable _table;
 

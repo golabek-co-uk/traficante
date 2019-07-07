@@ -18,7 +18,7 @@ namespace Traficante.TSQL.Converter
 {
     public static class InstanceCreator
     {
-        public static CompiledQuery CompileForExecution(string script, IDatabaseProvider schemaProvider)
+        public static CompiledQuery CompileForExecution(string script, ISchemaProvider schemaProvider)
         {
             var items = new BuildItems
             {
@@ -49,7 +49,7 @@ namespace Traficante.TSQL.Converter
 
     public class RunnableStream : IRunnable
     {
-        public IDatabaseProvider Provider { get; set; }
+        public ISchemaProvider Provider { get; set; }
         public IQueryable<IObjectResolver> Stream { get; set; }
         public string[] Columns { get; set; }
         public Type[] ColumnsTypes { get; set; }

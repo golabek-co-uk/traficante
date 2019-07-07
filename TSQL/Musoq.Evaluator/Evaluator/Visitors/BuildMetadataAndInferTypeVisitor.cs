@@ -19,7 +19,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class BuildMetadataAndInferTypeVisitor : IAwareExpressionVisitor
     {
-        private readonly IDatabaseProvider _databaseProvider;
+        private readonly ISchemaProvider _databaseProvider;
 
         private readonly List<AccessMethodNode> _refreshMethods = new List<AccessMethodNode>();
         private readonly List<object> _schemaFromArgs = new List<object>();
@@ -37,7 +37,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         private Stack<string> Methods { get; } = new Stack<string>();
 
-        public BuildMetadataAndInferTypeVisitor(IDatabaseProvider provider)
+        public BuildMetadataAndInferTypeVisitor(ISchemaProvider provider)
         {
             _databaseProvider = provider;
         }
@@ -280,7 +280,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(identifier);
 
-            (IDatabase Schema, ITable Table, string TableName) tuple;
+            (ISchema Schema, ITable Table, string TableName) tuple;
             if (!string.IsNullOrEmpty(node.Alias))
                 tuple = tableSymbol.GetTableByAlias(node.Alias);
             else
@@ -449,8 +449,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             _schemaFromArgs.Clear();
 
-            //AddAssembly(schema.GetType().Assembly);
-
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
@@ -532,10 +530,35 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(ReferentialFromNode node)
         {
+            TableSymbol tableSymbol;
+            var schema = _databaseProvider.GetDatabase(null);
+            var table = schema.GetTableByName(null, node.Name);
+            if (table != null)
+            {
+                if (_currentScope.Name == "Desc")
+                    table = new DynamicTable("dbo", node.Name, new IColumn[0]);
+
+                _schemaFromArgs.Clear();
+
+                _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
+                _generatedAliases.Add(_queryAlias);
+
+                tableSymbol = new TableSymbol("dbo", _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+                _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
+                _currentScope[node.Id] = _queryAlias;
+
+                var aliasedSchemaFromNode = new SchemaTableFromNode("dbo", node.Name, _queryAlias);
+
+                if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
+                    InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
+
+                Nodes.Push(aliasedSchemaFromNode);
+                return;
+            }
+
+            tableSymbol = null;
             _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.Name : node.Alias;
             _generatedAliases.Add(_queryAlias);
-
-            TableSymbol tableSymbol;
 
             if (_currentScope.Parent.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(node.Name))
             {
