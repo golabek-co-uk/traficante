@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using Musoq.Evaluator.Helpers;
-using Musoq.Evaluator.Resources;
-using Musoq.Evaluator.TemporarySchemas;
 using Musoq.Evaluator.Utils;
-using Musoq.Evaluator.Utils.Symbols;
-using Musoq.Parser;
 using Musoq.Parser.Nodes;
-using Musoq.Plugins.Attributes;
-using Musoq.Schema;
-using Musoq.Schema.DataSources;
 
 namespace Musoq.Evaluator.Visitors
 {

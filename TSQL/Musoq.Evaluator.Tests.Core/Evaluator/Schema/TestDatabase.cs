@@ -13,8 +13,6 @@ namespace Musoq.Evaluator.Tests.Core.Schema
     public class TestDatabase<T> : Database
         //where T : BasicEntity
     {
-        private static readonly IDictionary<string, int> TestNameToIndexMap;
-        private static readonly IDictionary<int, Func<T, object>> TestIndexToObjectAccessMap;
         private readonly IDictionary<string, IEnumerable<T>> _sources;
 
         public TestDatabase(IDictionary<string, IEnumerable<T>> sources)

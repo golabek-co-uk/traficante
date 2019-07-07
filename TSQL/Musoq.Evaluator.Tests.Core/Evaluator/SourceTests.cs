@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Musoq.Schema.DataSources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace Musoq.Evaluator.Tests.Core
         public void SelectFromDictionaryTest()
         {
             var query = @"select * from #A.Entities()";
+
 
             var sources = new Dictionary<string, IEnumerable<IDictionary<string, object>>>
             {

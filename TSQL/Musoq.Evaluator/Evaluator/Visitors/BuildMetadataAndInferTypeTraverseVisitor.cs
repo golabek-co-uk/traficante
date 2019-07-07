@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Musoq.Evaluator.Resources;
 using Musoq.Evaluator.Utils;
 using Musoq.Evaluator.Utils.Symbols;
 using Musoq.Parser;
 using Musoq.Parser.Nodes;
+using Traficante.Sql.Evaluator.Resources;
 
 namespace Musoq.Evaluator.Visitors
 {
@@ -258,7 +258,7 @@ namespace Musoq.Evaluator.Visitors
             var id = $"{Scope[join.Source.Id]}{Scope[join.With.Id]}";
 
             Scope.ScopeSymbolTable.AddSymbol(id, firstTableSymbol.MergeSymbols(secondTableSymbol));
-            Scope[MetaAttributes.ProcessedQueryId] = id;
+            Scope["ProcessedQueryId"] = id;
 
             join.Expression.Accept(this);
             join.Accept(_visitor);
@@ -274,7 +274,7 @@ namespace Musoq.Evaluator.Visitors
                 id = $"{id}{Scope[join.With.Id]}";
 
                 Scope.ScopeSymbolTable.AddSymbol(id, previousTableSymbol.MergeSymbols(currentTableSymbol));
-                Scope[MetaAttributes.ProcessedQueryId] = id;
+                Scope["ProcessedQueryId"] = id;
 
                 join.Expression.Accept(this);
                 join.Accept(_visitor);

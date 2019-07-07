@@ -12,8 +12,4 @@
     <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Musoq.Plugins\Musoq.Plugins.csproj" />
-  </ItemGroup>
-
 </Project>

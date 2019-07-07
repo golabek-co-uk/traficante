@@ -12,8 +12,4 @@
     <PackageTags>sql, dotnet-core</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Musoq.Schema\Musoq.Schema.csproj" />
-  </ItemGroup>
-
 </Project>

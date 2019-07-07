@@ -14,10 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Musoq.Evaluator\Musoq.Evaluator.csproj" />
-    <ProjectReference Include="..\Musoq.Parser\Musoq.Parser.csproj" />
-    <ProjectReference Include="..\Musoq.Plugins\Musoq.Plugins.csproj" />
-    <ProjectReference Include="..\Musoq.Schema\Musoq.Schema.csproj" />
+    <ProjectReference Include="..\Musoq.Evaluator\Traficante.TSQL.csproj" />
   </ItemGroup>
 
 </Project>

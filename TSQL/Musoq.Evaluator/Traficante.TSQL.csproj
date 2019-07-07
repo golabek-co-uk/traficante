@@ -17,12 +17,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.9.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.9.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Musoq.Parser\Musoq.Parser.csproj" />
-    <ProjectReference Include="..\Musoq.Plugins\Musoq.Plugins.csproj" />
-    <ProjectReference Include="..\Musoq.Schema\Musoq.Schema.csproj" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,12 +25,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\Compilation.Designer.cs">
+    <Compile Update="Evaluator\Resources\Compilation.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Compilation.resx</DependentUpon>
     </Compile>
-    <Compile Update="Resources\MetaAttributes.Designer.cs">
+    <Compile Update="Evaluator\Resources\MetaAttributes.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>MetaAttributes.resx</DependentUpon>
@@ -43,11 +38,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Resources\Compilation.resx">
+    <EmbeddedResource Update="Evaluator\Resources\Compilation.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Compilation.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="Resources\MetaAttributes.resx">
+    <EmbeddedResource Update="Evaluator\Resources\MetaAttributes.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>MetaAttributes.Designer.cs</LastGenOutput>
     </EmbeddedResource>

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Musoq.Evaluator.Exceptions;
 using Musoq.Evaluator.Helpers;
-using Musoq.Evaluator.Resources;
 using Musoq.Evaluator.Tables;
 using Musoq.Evaluator.TemporarySchemas;
 using Musoq.Evaluator.Utils;
@@ -15,7 +13,7 @@ using Musoq.Parser.Nodes;
 using Musoq.Parser.Tokens;
 using Musoq.Plugins.Attributes;
 using Musoq.Schema;
-using Musoq.Schema.DataSources;
+using Traficante.Sql.Evaluator.Resources;
 
 namespace Musoq.Evaluator.Visitors
 {
@@ -276,8 +274,8 @@ namespace Musoq.Evaluator.Visitors
 
         public void Visit(AccessColumnNode node)
         {
-            var identifier = _currentScope.ContainsAttribute(MetaAttributes.ProcessedQueryId)
-                ? _currentScope[MetaAttributes.ProcessedQueryId]
+            var identifier = _currentScope.ContainsAttribute("ProcessedQueryId")
+                ? _currentScope["ProcessedQueryId"]
                 : _identifier;
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(identifier);
@@ -679,7 +677,7 @@ namespace Musoq.Evaluator.Visitors
         public void Visit(UnionNode node)
         {
             var key = CreateSetOperatorPositionKey();
-            _currentScope[MetaAttributes.SetOperatorName] = key;
+            _currentScope["SetOperatorName"] = key;
             SetOperatorFieldPositions.Add(key, CreateSetOperatorPositionIndexes((QueryNode) node.Left, node.Keys));
 
             var right = Nodes.Pop();
@@ -699,7 +697,7 @@ namespace Musoq.Evaluator.Visitors
         public void Visit(UnionAllNode node)
         {
             var key = CreateSetOperatorPositionKey();
-            _currentScope[MetaAttributes.SetOperatorName] = key;
+            _currentScope["SetOperatorName"] = key;
             SetOperatorFieldPositions.Add(key, CreateSetOperatorPositionIndexes((QueryNode) node.Left, node.Keys));
 
             var right = Nodes.Pop();
@@ -720,7 +718,7 @@ namespace Musoq.Evaluator.Visitors
         public void Visit(ExceptNode node)
         {
             var key = CreateSetOperatorPositionKey();
-            _currentScope[MetaAttributes.SetOperatorName] = key;
+            _currentScope["SetOperatorName"] = key;
             SetOperatorFieldPositions.Add(key, CreateSetOperatorPositionIndexes((QueryNode) node.Left, node.Keys));
 
             var right = Nodes.Pop();
@@ -740,7 +738,7 @@ namespace Musoq.Evaluator.Visitors
         public void Visit(IntersectNode node)
         {
             var key = CreateSetOperatorPositionKey();
-            _currentScope[MetaAttributes.SetOperatorName] = key;
+            _currentScope["SetOperatorName"] = key;
             SetOperatorFieldPositions.Add(key, CreateSetOperatorPositionIndexes((QueryNode) node.Left, node.Keys));
 
             var right = Nodes.Pop();

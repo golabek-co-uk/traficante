@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Musoq.Evaluator.Resources {
+namespace Traficante.Sql.Evaluator.Resources {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Musoq.Evaluator.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Musoq.Evaluator.Resources.Compilation", typeof(Compilation).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Traficante.Sql.Evaluator.Resources.Compilation", typeof(Compilation).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
