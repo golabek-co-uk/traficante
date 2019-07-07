@@ -3,17 +3,17 @@ using Traficante.TSQL.Schema;
 
 namespace Traficante.TSQL.Evaluator.TemporarySchemas
 {
-    public class TransitionSchemaProvider : ISchemaProvider
+    public class TransitionSchemaProvider : IDatabaseProvider
     {
-        private readonly ISchemaProvider _schemaProvider;
-        private readonly Dictionary<string, ISchema> _transientSchemas = new Dictionary<string, ISchema>();
+        private readonly IDatabaseProvider _schemaProvider;
+        private readonly Dictionary<string, IDatabase> _transientSchemas = new Dictionary<string, IDatabase>();
 
-        public TransitionSchemaProvider(ISchemaProvider schema)
+        public TransitionSchemaProvider(IDatabaseProvider schema)
         {
             _schemaProvider = schema;
         }
 
-        public ISchema GetDatabase(string database)
+        public IDatabase GetDatabase(string database)
         {
             if (database != null && _transientSchemas.ContainsKey(database))
                 return _transientSchemas[database];
@@ -21,7 +21,7 @@ namespace Traficante.TSQL.Evaluator.TemporarySchemas
             return _schemaProvider.GetDatabase(database);
         }
 
-        public void AddTransitionSchema(ISchema schema)
+        public void AddTransitionSchema(IDatabase schema)
         {
             _transientSchemas.Add(schema.Name, schema);
         }

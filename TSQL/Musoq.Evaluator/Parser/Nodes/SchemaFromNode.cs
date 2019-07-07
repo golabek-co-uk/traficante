@@ -2,14 +2,15 @@
 {
     public class SchemaFunctionFromNode : FromNode
     {
-        public SchemaFunctionFromNode(string schema, string method, ArgsListNode parameters, string alias)
-            : base(alias)
+        public SchemaFunctionFromNode(string database, string schema, string method, ArgsListNode parameters, string alias)
+    : base(alias)
         {
+            Database = database;
             Schema = schema;
             Method = method;
             MethodParameters = parameters;
             var paramsId = parameters.Id;
-            Id = $"{nameof(SchemaFunctionFromNode)}{schema}{method}{paramsId}{Alias}";
+            Id = $"{nameof(SchemaFunctionFromNode)}{database}{schema}{method}{paramsId}{Alias}";
         }
 
         public string Database { get; set; }
@@ -30,7 +31,7 @@
         public override string ToString()
         {
 
-            return $"from {Schema}.{Method}({MethodParameters.Id}) {Alias}";
+            return $"from {Database}.{Schema}.{Method}({MethodParameters.Id}) {Alias}";
         }
 
         public override int GetHashCode()
@@ -49,13 +50,16 @@
 
     public class SchemaTableFromNode : FromNode
     {
-        public SchemaTableFromNode(string schema, string tableOrView, string alias)
+        public SchemaTableFromNode(string database, string schema, string tableOrView, string alias)
             : base(alias)
         {
+            Database = database;
             Schema = schema;
             TableOrView = tableOrView;
-            Id = $"{nameof(SchemaTableFromNode)}{schema}{tableOrView}{Alias}";
+            Id = $"{nameof(SchemaTableFromNode)}{database}{schema}{tableOrView}{Alias}";
         }
+
+        public string Database { get; set; }
 
         public string Schema { get; }
 
@@ -71,7 +75,7 @@
         public override string ToString()
         {
 
-            return $"from {Schema}.{TableOrView} {Alias}";
+            return $"from {Database}.{Schema}.{TableOrView} {Alias}";
         }
 
         public override int GetHashCode()

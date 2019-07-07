@@ -19,7 +19,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class BuildMetadataAndInferTypeVisitor : IAwareExpressionVisitor
     {
-        private readonly ISchemaProvider _databaseProvider;
+        private readonly IDatabaseProvider _databaseProvider;
 
         private readonly List<AccessMethodNode> _refreshMethods = new List<AccessMethodNode>();
         private readonly List<object> _schemaFromArgs = new List<object>();
@@ -37,7 +37,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         private Stack<string> Methods { get; } = new Stack<string>();
 
-        public BuildMetadataAndInferTypeVisitor(ISchemaProvider provider)
+        public BuildMetadataAndInferTypeVisitor(IDatabaseProvider provider)
         {
             _databaseProvider = provider;
         }
@@ -280,7 +280,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(identifier);
 
-            (ISchema Schema, ITable Table, string TableName) tuple;
+            (IDatabase Schema, ITable Table, string TableName) tuple;
             if (!string.IsNullOrEmpty(node.Alias))
                 tuple = tableSymbol.GetTableByAlias(node.Alias);
             else
@@ -429,7 +429,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new SchemaFunctionFromNode(node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), _queryAlias);
+            var aliasedSchemaFromNode = new SchemaFunctionFromNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), _queryAlias);
 
             if(!InferredColumns.ContainsKey(aliasedSchemaFromNode))
                 InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
@@ -439,7 +439,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SchemaTableFromNode node)
         {
-            var schema = _databaseProvider.GetDatabase(null);
+            var schema = _databaseProvider.GetDatabase(node.Database);
 
             ITable table;
             if (_currentScope.Name != "Desc")
@@ -456,7 +456,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new SchemaTableFromNode(node.Schema, node.TableOrView, _queryAlias);
+            var aliasedSchemaFromNode = new SchemaTableFromNode(node.Database, node.Schema, node.TableOrView, _queryAlias);
 
             if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
                 InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
@@ -484,7 +484,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new SchemaFunctionFromNode(schemaInfo.Schema, schemaInfo.Method, node.Args, _queryAlias);
+            var aliasedSchemaFromNode = new SchemaFunctionFromNode(null, schemaInfo.Schema, schemaInfo.Method, node.Args, _queryAlias);
 
             if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
                 InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
@@ -547,7 +547,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
                 _currentScope[node.Id] = _queryAlias;
 
-                var aliasedSchemaFromNode = new SchemaTableFromNode("dbo", node.Name, _queryAlias);
+                var aliasedSchemaFromNode = new SchemaTableFromNode(null, null, node.Name, _queryAlias);
 
                 if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
                     InferredColumns.Add(aliasedSchemaFromNode, table.Columns);

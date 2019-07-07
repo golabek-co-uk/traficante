@@ -84,20 +84,20 @@ namespace Traficante.TSQL.Parser
                 {
                     var accessMethod = ComposeAccessMethod(string.Empty);
 
-                    fromNode = new SchemaFunctionFromNode(name.Value, accessMethod.Name, accessMethod.Arguments, string.Empty);
+                    fromNode = new SchemaFunctionFromNode(null, name.Value, accessMethod.Name, accessMethod.Arguments, string.Empty);
                     return new DescNode(fromNode, DescForType.SpecificConstructor);
                 }
                 else
                 {
                     var table = new WordNode(ConsumeAndGetToken(TokenType.Property).Value);
 
-                    fromNode = new SchemaTableFromNode(name.Value, table.Value, string.Empty);
+                    fromNode = new SchemaTableFromNode(null, name.Value, table.Value, string.Empty);
                     return new DescNode(fromNode, DescForType.Constructors);
                 }
             }
             else
             {
-                return new DescNode(new SchemaTableFromNode(name.Value, string.Empty, string.Empty), DescForType.Schema);
+                return new DescNode(new SchemaTableFromNode(null, name.Value, string.Empty, string.Empty), DescForType.Schema);
             }
         }
 
@@ -603,34 +603,48 @@ namespace Traficante.TSQL.Parser
             string alias;
             if (Current.TokenType == TokenType.Word || Current.TokenType == TokenType.Identifier)
             {
-                var name = Current.TokenType == TokenType.Word ? ConsumeAndGetToken(TokenType.Word).Value : ConsumeAndGetToken(TokenType.Identifier).Value;
+                var part1 = Current.TokenType == TokenType.Word ? ConsumeAndGetToken(TokenType.Word).Value : ConsumeAndGetToken(TokenType.Identifier).Value;
 
                 FromNode fromNode = null;
                 if(Current.TokenType == TokenType.Dot)
                 {
                     Consume(TokenType.Dot);
-
                     if (Current.TokenType == TokenType.Property)
                     {
-                        var tableOrView = ConsumeAndGetToken(TokenType.Property).Value;
-
-                        alias = ComposeAlias();
-
-                        fromNode = new SchemaTableFromNode(name, tableOrView, alias);
+                        var part2 = ConsumeAndGetToken(TokenType.Property).Value;
+                        if (Current.TokenType == TokenType.Dot)
+                        {
+                            Consume(TokenType.Dot);
+                            if (Current.TokenType == TokenType.Property)
+                            {
+                                var par3 = ConsumeAndGetToken(TokenType.Property).Value;
+                                alias = ComposeAlias();
+                                fromNode = new SchemaTableFromNode(part1, part2, par3, alias);
+                            }
+                            else if (Current.TokenType == TokenType.Function)
+                            {
+                                var part3 = ComposeAccessMethod(string.Empty);
+                                alias = ComposeAlias();
+                                fromNode = new SchemaFunctionFromNode(part1, part2, part3.Name, part3.Arguments, alias);
+                            }
+                        }
+                        else
+                        {
+                            alias = ComposeAlias();
+                            fromNode = new SchemaTableFromNode(null, part1, part2, alias);
+                        }
                     }
                     else if (Current.TokenType == TokenType.Function)
                     {
-                        var accessMethod = ComposeAccessMethod(string.Empty);
-
+                        var part2 = ComposeAccessMethod(string.Empty);
                         alias = ComposeAlias();
-
-                        fromNode = new SchemaFunctionFromNode(name, accessMethod.Name, accessMethod.Arguments, alias);
+                        fromNode = new SchemaFunctionFromNode(null, part1, part2.Name, part2.Arguments, alias);
                     }
                 }
                 else
                 {
                     alias = ComposeAlias();
-                    fromNode = new ReferentialFromNode(name, alias);
+                    fromNode = new ReferentialFromNode(part1, alias);
                 }
 
                 return fromNode;

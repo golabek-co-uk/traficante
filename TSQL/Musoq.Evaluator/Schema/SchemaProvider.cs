@@ -3,20 +3,23 @@ using System.Linq;
 
 namespace Traficante.TSQL.Schema
 {
-    public class SchemaProvider : ISchemaProvider
+    public class DatabaseProvider : IDatabaseProvider
     {
-        private IEnumerable<ISchema> _schemas;
+        private IEnumerable<IDatabase> _databases;
+        private string _defaultDatabase;
 
-        public SchemaProvider(IEnumerable<ISchema> schemas)
+        public DatabaseProvider(IEnumerable<IDatabase> databases, string defaultDatabase)
         {
-            this._schemas = schemas;
+            this._databases = databases;
+            this._defaultDatabase = defaultDatabase;
         }
 
-        public ISchema GetDatabase(string database)
+        public IDatabase GetDatabase(string database)
         {
             if (database != null)
-                return _schemas.FirstOrDefault(x => x.Name == database);
-            return _schemas.FirstOrDefault();
+                return _databases.FirstOrDefault(x => string.Equals(x.Name, database, System.StringComparison.CurrentCultureIgnoreCase));
+            else
+                return _databases.FirstOrDefault(x => string.Equals(x.Name, _defaultDatabase));
         }
     }
 }

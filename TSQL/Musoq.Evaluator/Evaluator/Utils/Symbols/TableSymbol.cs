@@ -11,19 +11,19 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
     {
         private readonly List<string> _orders = new List<string>();
 
-        private readonly Dictionary<string, Tuple<ISchema, ITable>> _tables =
-            new Dictionary<string, Tuple<ISchema, ITable>>();
+        private readonly Dictionary<string, Tuple<IDatabase, ITable>> _tables =
+            new Dictionary<string, Tuple<IDatabase, ITable>>();
 
         private string _fullTableName;
 
         private ITable _fullTable;
-        private ISchema _fullSchema;
+        private IDatabase _fullSchema;
 
         public string SchemaName { get; }
 
-        public TableSymbol(string schemaName, string alias, ISchema schema, ITable table, bool hasAlias)
+        public TableSymbol(string schemaName, string alias, IDatabase schema, ITable table, bool hasAlias)
         {
-            _tables.Add(alias, new Tuple<ISchema, ITable>(schema, table));
+            _tables.Add(alias, new Tuple<IDatabase, ITable>(schema, table));
             _orders.Add(alias);
             HasAlias = hasAlias;
             SchemaName = schemaName;
@@ -42,9 +42,9 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
 
         public string[] CompoundTables => _orders.ToArray();
 
-        public (ISchema Schema, ITable Table, string TableName) GetTableByColumnName(string column)
+        public (IDatabase Schema, ITable Table, string TableName) GetTableByColumnName(string column)
         {
-            (ISchema, ITable, string) score = (null, null, null);
+            (IDatabase, ITable, string) score = (null, null, null);
 
             foreach (var table in _tables)
             {
@@ -59,7 +59,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             return score;
         }
 
-        public (ISchema Schema, ITable Table, string TableName) GetTableByAlias(string alias)
+        public (IDatabase Schema, ITable Table, string TableName) GetTableByAlias(string alias)
         {
             if (_fullTableName == alias)
                 return (_fullSchema, _fullTable, alias);

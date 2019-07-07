@@ -39,7 +39,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
-        private ISchemaProvider _schemaProvider;
+        private IDatabaseProvider _schemaProvider;
         private RuntimeContext _interCommunicator;
 
         public IQueryable<IObjectResolver> ResultStream = null;
@@ -50,7 +50,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
         public ToCSharpStreamRewriteVisitor(
-            ISchemaProvider schemaProvider,
+            IDatabaseProvider schemaProvider,
             IDictionary<string, int[]> setOperatorFieldIndexes, 
             IDictionary<Node, IColumn[]> inferredColumns)
         {
@@ -895,10 +895,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SchemaTableFromNode node)
         {
-            var rowSource = _schemaProvider.GetDatabase(null).GetTableRowSource(node.Schema, node.TableOrView).Rows;
+            var rowSource = _schemaProvider.GetDatabase(node.Database).GetTableRowSource(node.Schema, node.TableOrView).Rows;
 
             var fields = _schemaProvider
-                .GetDatabase(null)
+                .GetDatabase(node.Database)
                 .GetTableByName(node.Schema, node.TableOrView)
                 .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
 

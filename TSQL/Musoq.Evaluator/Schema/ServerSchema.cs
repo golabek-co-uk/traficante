@@ -7,9 +7,9 @@ using Traficante.TSQL.Schema.Managers;
 
 namespace Traficante.TSQL.Schema
 {
-    public class ServerSchema : BaseSchema
+    public class Database : BaseDatabase
     {
-        public ServerSchema(): base("schema", CreateLibrary())
+        public Database(string database, string defaultSchema): base(database, defaultSchema, CreateLibrary())
         {
         }
 

@@ -1,7 +1,7 @@
 ﻿namespace Traficante.TSQL.Schema
 {
-    public interface ISchemaProvider
+    public interface IDatabaseProvider
     {
-        ISchema GetDatabase(string database);
+        IDatabase GetDatabase(string database);
     }
 }

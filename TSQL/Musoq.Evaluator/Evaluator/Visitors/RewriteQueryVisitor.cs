@@ -322,12 +322,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SchemaFunctionFromNode node)
         {
-            Nodes.Push(new SchemaFunctionFromNode(node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
+            Nodes.Push(new SchemaFunctionFromNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
         }
 
         public void Visit(SchemaTableFromNode node)
         {
-            Nodes.Push(new SchemaTableFromNode(node.Schema, node.TableOrView, node.Alias));
+            Nodes.Push(new SchemaTableFromNode(node.Database, node.Schema, node.TableOrView, node.Alias));
         }
 
         public void Visit(JoinSourcesTableFromNode node)

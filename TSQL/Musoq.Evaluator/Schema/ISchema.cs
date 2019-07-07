@@ -4,7 +4,7 @@ using Traficante.TSQL.Schema.DataSources;
 
 namespace Traficante.TSQL.Schema
 {
-    public interface ISchema
+    public interface IDatabase
     {
         string Name { get; }
 

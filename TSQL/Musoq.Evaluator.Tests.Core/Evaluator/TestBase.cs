@@ -20,8 +20,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
         protected CompiledQuery CreateAndRunVirtualMachine<T>(string script, IDictionary<string, IEnumerable<T>> sources)
         {
-            var database = new TestSchema<T>(sources);
-            return InstanceCreator.CompileForExecution(script, new SchemaProvider(new[] { database }));
+            var database = new TestDatabase<T>(sources);
+            return InstanceCreator.CompileForExecution(script, new DatabaseProvider(new[] { database }, "master"));
         }
 
         protected void TestMethodTemplate<TResult>(string operation, TResult score)

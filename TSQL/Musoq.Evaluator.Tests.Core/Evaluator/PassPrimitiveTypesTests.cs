@@ -53,7 +53,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             OnMethodCall
         }
 
-        private class TestSchemaProvider : ISchemaProvider
+        private class TestSchemaProvider : IDatabaseProvider
         {
             private readonly IEnumerable<TestEntity> _entities;
             private readonly Action<object[]> _onGetTableOrRowSource;
@@ -65,13 +65,13 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 _onGetTableOrRowSource = onGetTableOrRowSource;
                 _whenChecked = whenChecked;
             }
-            public ISchema GetDatabase(string schema)
+            public IDatabase GetDatabase(string schema)
             {
                 return new TestSchema(_entities, _onGetTableOrRowSource, _whenChecked);
             }
         }
 
-        private class TestSchema : BaseSchema
+        private class TestSchema : BaseDatabase
         {
 
             private readonly IEnumerable<TestEntity> _entities;
