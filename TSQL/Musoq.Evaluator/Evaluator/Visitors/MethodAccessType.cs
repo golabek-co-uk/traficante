@@ -1,4 +1,4 @@
-﻿namespace Musoq.Evaluator.Visitors
+﻿namespace Traficante.TSQL.Evaluator.Visitors
 {
     public enum MethodAccessType
     {

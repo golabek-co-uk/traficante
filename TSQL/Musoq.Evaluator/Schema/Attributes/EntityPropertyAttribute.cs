@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Schema.Attributes
+namespace Traficante.TSQL.Schema.Attributes
 {
     public class EntityPropertyAttribute : Attribute
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Musoq.Evaluator.Tests.Core
+namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     [TestClass]
     public class LogicalFunctionsTests : TestBase

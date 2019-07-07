@@ -1,4 +1,4 @@
-﻿namespace Musoq.Schema
+﻿namespace Traficante.TSQL.Schema
 {
     public interface ITable
     {

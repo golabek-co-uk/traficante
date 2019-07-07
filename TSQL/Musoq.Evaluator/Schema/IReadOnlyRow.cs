@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Musoq.Schema
+namespace Traficante.TSQL.Schema
 {
     public interface IReadOnlyRow
     {

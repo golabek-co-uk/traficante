@@ -1,4 +1,4 @@
-﻿namespace Musoq.Parser.Tokens
+﻿namespace Traficante.TSQL.Parser.Tokens
 {
     public class ContainsToken : Token
     {

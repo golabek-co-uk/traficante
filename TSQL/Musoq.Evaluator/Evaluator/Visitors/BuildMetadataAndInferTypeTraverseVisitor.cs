@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Musoq.Evaluator.Utils;
-using Musoq.Evaluator.Utils.Symbols;
-using Musoq.Parser;
-using Musoq.Parser.Nodes;
+using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Evaluator.Utils.Symbols;
+using Traficante.TSQL.Parser;
+using Traficante.TSQL.Parser.Nodes;
 using Traficante.Sql.Evaluator.Resources;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class BuildMetadataAndInferTypeTraverseVisitor : IQueryPartAwareExpressionVisitor
     {

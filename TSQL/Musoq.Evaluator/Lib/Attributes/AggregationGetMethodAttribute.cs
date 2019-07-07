@@ -1,4 +1,4 @@
-﻿namespace Musoq.Plugins.Attributes
+﻿namespace Traficante.TSQL.Plugins.Attributes
 {
     public class AggregationGetMethodAttribute : AggregationMethodAttribute
     {

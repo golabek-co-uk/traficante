@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Musoq.Plugins.Attributes;
-using Musoq.Schema.Helpers;
+using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Schema.Helpers;
 
-namespace Musoq.Schema.Managers
+namespace Traficante.TSQL.Schema.Managers
 {
     public class MethodsMetadatas
     {

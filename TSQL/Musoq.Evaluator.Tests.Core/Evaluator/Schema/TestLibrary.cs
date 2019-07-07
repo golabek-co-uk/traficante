@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Musoq.Plugins;
-using Musoq.Plugins.Attributes;
+using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Plugins.Attributes;
 
-namespace Musoq.Evaluator.Tests.Core.Schema
+namespace Traficante.TSQL.Evaluator.Tests.Core.Schema
 {
     public class TestLibrary : LibraryBase
     {

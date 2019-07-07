@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Musoq.Plugins.Attributes;
+using Traficante.TSQL.Plugins.Attributes;
 
-namespace Musoq.Plugins
+namespace Traficante.TSQL.Plugins
 {
     public partial class LibraryBase
     {

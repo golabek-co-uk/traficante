@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     public class PropertyValueNode : IdentifierNode
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Musoq.Evaluator.Utils.Symbols;
+using Traficante.TSQL.Evaluator.Utils.Symbols;
 
-namespace Musoq.Evaluator.Utils
+namespace Traficante.TSQL.Evaluator.Utils
 {
     public class SymbolTable
     {

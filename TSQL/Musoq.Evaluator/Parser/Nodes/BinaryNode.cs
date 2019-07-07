@@ -1,7 +1,7 @@
 ﻿using System;
-using Musoq.Parser.Helpers;
+using Traficante.TSQL.Parser.Helpers;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     public abstract class BinaryNode : Node
     {

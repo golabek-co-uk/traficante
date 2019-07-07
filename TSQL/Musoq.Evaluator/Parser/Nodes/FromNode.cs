@@ -1,7 +1,7 @@
 ﻿using System;
-using Musoq.Schema.DataSources;
+using Traficante.TSQL.Schema.DataSources;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     public abstract class FromNode : Node
     {

@@ -1,9 +1,9 @@
-﻿using Musoq.Schema;
+﻿using Traficante.TSQL.Schema;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Musoq.Evaluator.Tables
+namespace Traficante.TSQL.Evaluator.Tables
 {
     [DebuggerDisplay("{ColumnIndex}. {ColumnName}: {ColumnType.Name}")]
     public class Column : IEquatable<Column>, IColumn

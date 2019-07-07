@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Musoq.Evaluator.Tables;
-using Musoq.Evaluator.TemporarySchemas;
-using Musoq.Schema;
+using Traficante.TSQL.Evaluator.Tables;
+using Traficante.TSQL.Evaluator.TemporarySchemas;
+using Traficante.TSQL.Schema;
 
-namespace Musoq.Evaluator.Utils.Symbols
+namespace Traficante.TSQL.Evaluator.Utils.Symbols
 {
     public class TableSymbol : Symbol
     {

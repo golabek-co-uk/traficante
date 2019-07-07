@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace Musoq.Evaluator.Utils
+namespace Traficante.TSQL.Evaluator.Utils
 {
     [DebuggerDisplay("Name: '{Name}', ScopeId: {Id}")]
     public class Scope

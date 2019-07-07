@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Musoq.Parser.Tokens;
-using Musoq.Plugins.Attributes;
+using Traficante.TSQL.Parser.Tokens;
+using Traficante.TSQL.Plugins.Attributes;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     public class AccessMethodNode : Node
     {

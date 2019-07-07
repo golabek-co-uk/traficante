@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Musoq.Parser.Nodes;
+using Traficante.TSQL.Parser.Nodes;
 
-namespace Musoq.Evaluator.Utils.Symbols
+namespace Traficante.TSQL.Evaluator.Utils.Symbols
 {
     public class RefreshMethodsSymbol : Symbol
     {

@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using System.Reflection;
-using Musoq.Plugins;
-using Musoq.Plugins.Attributes;
+using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Plugins.Attributes;
 
-namespace Musoq.Schema.Managers
+namespace Traficante.TSQL.Schema.Managers
 {
     public class MethodsManager : MethodsMetadatas
     {

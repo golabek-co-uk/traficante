@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Plugins.Attributes
+namespace Traficante.TSQL.Plugins.Attributes
 {
     public class InjectGroupAttribute : InjectTypeAttribute
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Evaluator.Tables
+namespace Traficante.TSQL.Evaluator.Tables
 {
     public class TableIndex : IEquatable<TableIndex>
     {

@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Musoq.Plugins.Attributes;
-using Musoq.Schema.Helpers;
-using Musoq.Schema.Managers;
-using Musoq.Schema.Reflection;
+using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Schema.Helpers;
+using Traficante.TSQL.Schema.Managers;
+using Traficante.TSQL.Schema.Reflection;
 
-namespace Musoq.Schema.DataSources
+namespace Traficante.TSQL.Schema.DataSources
 {
     public abstract class Database : IDatabase
     {

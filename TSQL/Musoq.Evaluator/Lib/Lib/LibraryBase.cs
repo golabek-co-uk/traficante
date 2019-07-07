@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
-using Musoq.Plugins.Attributes;
-using Musoq.Plugins.Helpers;
+using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Plugins.Helpers;
 
-namespace Musoq.Plugins
+namespace Traficante.TSQL.Plugins
 {
     [BindableClass]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]

@@ -1,10 +1,10 @@
-﻿using Musoq.Schema;
+﻿using Traficante.TSQL.Schema;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Musoq.Evaluator.Tables
+namespace Traficante.TSQL.Evaluator.Tables
 {
     public class Table : IndexedList<Key, Row>, IEnumerable<Row>, IReadOnlyTable
     {

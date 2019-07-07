@@ -1,11 +1,11 @@
-﻿using Musoq.Parser.Nodes;
-using Musoq.Schema.DataSources;
+﻿using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Schema.DataSources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public static class QueryableObjectResolver
     {

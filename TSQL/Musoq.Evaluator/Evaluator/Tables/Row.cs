@@ -1,9 +1,9 @@
-﻿using Musoq.Schema;
+﻿using Traficante.TSQL.Schema;
 using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace Musoq.Evaluator.Tables
+namespace Traficante.TSQL.Evaluator.Tables
 {
     [DebuggerDisplay("{DebugInfo()}")]
     public abstract class Row : IEquatable<Row>, IValue<Key>, IReadOnlyRow

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Musoq.Plugins.Attributes;
+using Traficante.TSQL.Plugins.Attributes;
 
-namespace Musoq.Schema.Managers
+namespace Traficante.TSQL.Schema.Managers
 {
     public abstract class ManagerBase<TReflectedType>
     {

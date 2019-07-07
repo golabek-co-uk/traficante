@@ -11,22 +11,22 @@
 //using Microsoft.CodeAnalysis.CSharp.Syntax;
 //using Microsoft.CodeAnalysis.Editing;
 //using Microsoft.CodeAnalysis.Formatting;
-//using Musoq.Evaluator.Helpers;
-//using Musoq.Evaluator.Resources;
-//using Musoq.Evaluator.Runtime;
-//using Musoq.Evaluator.Tables;
-//using Musoq.Evaluator.Utils;
-//using Musoq.Evaluator.Utils.Symbols;
-//using Musoq.Parser.Nodes;
-//using Musoq.Parser.Tokens;
-//using Musoq.Plugins;
-//using Musoq.Plugins.Attributes;
-//using Musoq.Schema;
-//using Musoq.Schema.DataSources;
-//using Musoq.Schema.Helpers;
-//using TextSpan = Musoq.Parser.TextSpan;
+//using Traficante.TSQL.Evaluator.Helpers;
+//using Traficante.TSQL.Evaluator.Resources;
+//using Traficante.TSQL.Evaluator.Runtime;
+//using Traficante.TSQL.Evaluator.Tables;
+//using Traficante.TSQL.Evaluator.Utils;
+//using Traficante.TSQL.Evaluator.Utils.Symbols;
+//using Traficante.TSQL.Parser.Nodes;
+//using Traficante.TSQL.Parser.Tokens;
+//using Traficante.TSQL.Plugins;
+//using Traficante.TSQL.Plugins.Attributes;
+//using Traficante.TSQL.Schema;
+//using Traficante.TSQL.Schema.DataSources;
+//using Traficante.TSQL.Schema.Helpers;
+//using TextSpan = Traficante.TSQL.Parser.TextSpan;
 
-//namespace Musoq.Evaluator.Visitors
+//namespace Traficante.TSQL.Evaluator.Visitors
 //{
 //    public class ToCSharpRewriteTreeVisitor : IToCSharpTranslationExpressionVisitor
 //    {
@@ -101,11 +101,11 @@
 //            AddNamespace("System");
 //            AddNamespace(typeof(CancellationToken).Namespace);
 //            AddNamespace("System.Collections.Generic");
-//            AddNamespace("Musoq.Plugins");
-//            AddNamespace("Musoq.Schema");
-//            AddNamespace("Musoq.Evaluator");
-//            AddNamespace("Musoq.Evaluator.Tables");
-//            AddNamespace("Musoq.Evaluator.Helpers");
+//            AddNamespace("Traficante.TSQL.Plugins");
+//            AddNamespace("Traficante.TSQL.Schema");
+//            AddNamespace("Traficante.TSQL.Evaluator");
+//            AddNamespace("Traficante.TSQL.Evaluator.Tables");
+//            AddNamespace("Traficante.TSQL.Evaluator.Helpers");
 //        }
 
 //        public string Namespace { get; } = $"{Resources.Compilation.NamespaceConstantPart}_{StringHelpers.GenerateNamespaceIdentifier()}";

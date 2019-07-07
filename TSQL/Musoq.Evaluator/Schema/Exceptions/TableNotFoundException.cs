@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Schema.Exceptions
+namespace Traficante.TSQL.Schema.Exceptions
 {
     public class TableNotFoundException : Exception
     {

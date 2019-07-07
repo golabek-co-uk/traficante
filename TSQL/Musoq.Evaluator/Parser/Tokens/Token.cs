@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Musoq.Parser.Tokens
+namespace Traficante.TSQL.Parser.Tokens
 {
     [DebuggerDisplay("{Value} of type {TokenType},nq")]
     public class Token : GenericToken<TokenType>, IEquatable<Token>

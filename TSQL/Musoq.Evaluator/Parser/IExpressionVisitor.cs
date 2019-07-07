@@ -1,6 +1,6 @@
-﻿using Musoq.Parser.Nodes;
+﻿using Traficante.TSQL.Parser.Nodes;
 
-namespace Musoq.Parser
+namespace Traficante.TSQL.Parser
 {
     public interface IExpressionVisitor
     {

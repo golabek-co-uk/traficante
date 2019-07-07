@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Schema.Reflection
+namespace Traficante.TSQL.Schema.Reflection
 {
     public class ConstructorInfo
     {

@@ -1,7 +1,7 @@
-﻿using Musoq.Parser;
-using Musoq.Parser.Lexing;
+﻿using Traficante.TSQL.Parser;
+using Traficante.TSQL.Parser.Lexing;
 
-namespace Musoq.Converter.Build
+namespace Traficante.TSQL.Converter.Build
 {
     public class CreateTree : BuildChain
     {

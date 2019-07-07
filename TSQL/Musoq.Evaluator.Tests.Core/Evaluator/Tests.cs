@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Musoq.Evaluator.Tests.Core
+namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     class Trainer
 

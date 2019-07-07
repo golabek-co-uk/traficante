@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Musoq.Schema;
-using Musoq.Schema.DataSources;
-using Musoq.Schema.Helpers;
-using Musoq.Schema.Managers;
-using Musoq.Schema.Reflection;
+using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.DataSources;
+using Traficante.TSQL.Schema.Helpers;
+using Traficante.TSQL.Schema.Managers;
+using Traficante.TSQL.Schema.Reflection;
 
-namespace Musoq.Evaluator.Tests.Core.Schema
+namespace Traficante.TSQL.Evaluator.Tests.Core.Schema
 {
     public class TestDatabase<T> : Database
         //where T : BasicEntity

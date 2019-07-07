@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace Musoq.Evaluator.Tables
+namespace Traficante.TSQL.Evaluator.Tables
 {
     [DebuggerDisplay("{ToString()}")]
     public class Key : IEquatable<Key>

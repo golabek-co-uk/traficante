@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Musoq.Schema.DataSources
+namespace Traficante.TSQL.Schema.DataSources
 {
     public class DictionaryResolver : Dictionary<string, object>, IObjectResolver
     {

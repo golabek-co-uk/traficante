@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Musoq.Schema.DataSources
+namespace Traficante.TSQL.Schema.DataSources
 {
     [DebuggerDisplay("{ColumnType.FullName} {ColumnName}: {ColumnIndex}")]
     public class Column : IColumn

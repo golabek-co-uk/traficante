@@ -1,6 +1,6 @@
-﻿using Musoq.Converter.Build;
+﻿using Traficante.TSQL.Converter.Build;
 
-namespace Musoq.Converter
+namespace Traficante.TSQL.Converter
 {
     public abstract class BuildChain
     {

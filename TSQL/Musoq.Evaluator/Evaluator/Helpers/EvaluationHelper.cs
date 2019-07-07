@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Musoq.Evaluator.Tables;
-using Musoq.Evaluator.TemporarySchemas;
-using Musoq.Plugins;
-using Musoq.Schema;
-using Musoq.Schema.DataSources;
-using Musoq.Schema.Reflection;
+using Traficante.TSQL.Evaluator.Tables;
+using Traficante.TSQL.Evaluator.TemporarySchemas;
+using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.DataSources;
+using Traficante.TSQL.Schema.Reflection;
 
-namespace Musoq.Evaluator.Helpers
+namespace Traficante.TSQL.Evaluator.Helpers
 {
     public static class EvaluationHelper
     {

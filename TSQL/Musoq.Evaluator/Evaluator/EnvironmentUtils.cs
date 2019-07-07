@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
-using Musoq.Evaluator.Exceptions;
-using Musoq.Plugins;
+using Traficante.TSQL.Evaluator.Exceptions;
+using Traficante.TSQL.Plugins;
 
-namespace Musoq.Evaluator
+namespace Traficante.TSQL.Evaluator
 {
     public static class EnvironmentUtils
     {

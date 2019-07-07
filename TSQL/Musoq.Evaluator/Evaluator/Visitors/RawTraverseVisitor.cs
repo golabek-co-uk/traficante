@@ -1,8 +1,8 @@
 ﻿using System;
-using Musoq.Parser;
-using Musoq.Parser.Nodes;
+using Traficante.TSQL.Parser;
+using Traficante.TSQL.Parser.Nodes;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class RawTraverseVisitor<TExpressionVisitor> : IExpressionVisitor
         where TExpressionVisitor : class, IExpressionVisitor

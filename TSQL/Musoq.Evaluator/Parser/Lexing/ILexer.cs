@@ -1,4 +1,4 @@
-﻿namespace Musoq.Parser.Lexing
+﻿namespace Traficante.TSQL.Parser.Lexing
 {
     public interface ILexer<out TToken>
     {

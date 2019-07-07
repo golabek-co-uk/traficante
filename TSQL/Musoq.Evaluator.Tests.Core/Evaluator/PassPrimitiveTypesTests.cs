@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Musoq.Converter;
-using Musoq.Evaluator.Tests.Core.Schema;
-using Musoq.Schema;
-using Musoq.Schema.DataSources;
-using Musoq.Schema.Managers;
-using Musoq.Schema.Reflection;
+using Traficante.TSQL.Converter;
+using Traficante.TSQL.Evaluator.Tests.Core.Schema;
+using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.DataSources;
+using Traficante.TSQL.Schema.Managers;
+using Traficante.TSQL.Schema.Reflection;
 
-namespace Musoq.Evaluator.Tests.Core
+namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     [TestClass]
     public class PassPrimitiveTypesTests : TestBase

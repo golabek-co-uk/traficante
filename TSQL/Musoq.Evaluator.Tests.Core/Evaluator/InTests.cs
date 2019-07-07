@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Musoq.Evaluator.Tests.Core.Schema;
+using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 
-namespace Musoq.Evaluator.Tests.Core
+namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     [TestClass]
     public class InTests : TestBase

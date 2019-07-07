@@ -1,4 +1,4 @@
-﻿namespace Musoq.Parser.Nodes
+﻿namespace Traficante.TSQL.Parser.Nodes
 {
     public class AddNode : BinaryNode
     {

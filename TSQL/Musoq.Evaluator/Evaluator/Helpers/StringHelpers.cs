@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Musoq.Evaluator.Helpers
+namespace Traficante.TSQL.Evaluator.Helpers
 {
     public static class StringHelpers
     {

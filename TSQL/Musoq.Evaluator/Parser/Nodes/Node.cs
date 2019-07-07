@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     public abstract class Node
     {

@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Musoq.Evaluator.Helpers;
-using Musoq.Parser;
-using Musoq.Parser.Nodes;
-using Musoq.Parser.Tokens;
-using Musoq.Plugins;
+using Traficante.TSQL.Evaluator.Helpers;
+using Traficante.TSQL.Parser;
+using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Parser.Tokens;
+using Traficante.TSQL.Plugins;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class RewriteFieldWithGroupMethodCall : CloneQueryVisitor
     {

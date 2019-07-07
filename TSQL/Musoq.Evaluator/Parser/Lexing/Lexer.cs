@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using Musoq.Parser.Nodes;
-using Musoq.Parser.Tokens;
+using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Parser.Tokens;
 
-namespace Musoq.Parser.Lexing
+namespace Traficante.TSQL.Parser.Lexing
 {
     public class Lexer : LexerBase<Token>
     {

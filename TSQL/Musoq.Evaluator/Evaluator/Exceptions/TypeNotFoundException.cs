@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Musoq.Evaluator.Exceptions
+namespace Traficante.TSQL.Evaluator.Exceptions
 {
     public class TypeNotFoundException : Exception
     {

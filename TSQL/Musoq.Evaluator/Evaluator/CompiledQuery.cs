@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Threading;
-using Musoq.Evaluator.Tables;
+using Traficante.TSQL.Evaluator.Tables;
 
-namespace Musoq.Evaluator
+namespace Traficante.TSQL.Evaluator
 {
     [DebuggerStepThrough]
     public class CompiledQuery

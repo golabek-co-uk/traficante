@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Parser.Lexing
+namespace Traficante.TSQL.Parser.Lexing
 {
     public class UnknownTokenException : Exception
     {

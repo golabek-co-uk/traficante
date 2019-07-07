@@ -1,10 +1,10 @@
-﻿//using Musoq.Schema;
-//using Musoq.Schema.DataSources;
-//using Musoq.Schema.Helpers;
-//using Musoq.Schema.Reflection;
+﻿//using Traficante.TSQL.Schema;
+//using Traficante.TSQL.Schema.DataSources;
+//using Traficante.TSQL.Schema.Helpers;
+//using Traficante.TSQL.Schema.Reflection;
 //using System.Collections.Generic;
 
-//namespace Musoq.Evaluator.TemporarySchemas
+//namespace Traficante.TSQL.Evaluator.TemporarySchemas
 //{
 //    public class DescSchema : SchemaBase
 //    {

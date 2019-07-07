@@ -1,4 +1,4 @@
-﻿namespace Musoq.Parser
+﻿namespace Traficante.TSQL.Parser
 {
     public interface INamedSource
     {

@@ -7,14 +7,14 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Musoq.Converter.Build;
-using Musoq.Evaluator;
-using Musoq.Evaluator.Tables;
-using Musoq.Schema;
-using Musoq.Schema.DataSources;
-using Column = Musoq.Evaluator.Tables.Column;
+using Traficante.TSQL.Converter.Build;
+using Traficante.TSQL.Evaluator;
+using Traficante.TSQL.Evaluator.Tables;
+using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.DataSources;
+using Column = Traficante.TSQL.Evaluator.Tables.Column;
 
-namespace Musoq.Converter
+namespace Traficante.TSQL.Converter
 {
     public static class InstanceCreator
     {

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Musoq.Parser
+namespace Traficante.TSQL.Parser
 {
     /// <summary>
     ///     This class allows to store association between source text and parsed tree.

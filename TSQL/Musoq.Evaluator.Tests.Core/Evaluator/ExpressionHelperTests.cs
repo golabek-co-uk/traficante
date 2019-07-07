@@ -1,11 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Musoq.Evaluator.Visitors;
+using Traficante.TSQL.Evaluator.Visitors;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Musoq.Evaluator.Tests.Core
+namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     [TestClass]
     public class ExpressionHelperTests

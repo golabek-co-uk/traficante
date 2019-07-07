@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Musoq.Plugins
+namespace Traficante.TSQL.Plugins
 {
 #if DEBUG
     [DebuggerDisplay("{Name}")]

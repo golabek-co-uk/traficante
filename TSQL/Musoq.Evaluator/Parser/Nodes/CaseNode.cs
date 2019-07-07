@@ -1,8 +1,8 @@
-﻿using Musoq.Parser.Tokens;
+﻿using Traficante.TSQL.Parser.Tokens;
 using System;
 using System.Text;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     public class CaseNode : Node
     {

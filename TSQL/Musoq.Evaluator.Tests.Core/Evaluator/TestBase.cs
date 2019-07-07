@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Musoq.Converter;
-using Musoq.Evaluator.Tests.Core.Schema;
-using Musoq.Plugins;
-using Musoq.Schema;
+using Traficante.TSQL.Converter;
+using Traficante.TSQL.Evaluator.Tests.Core.Schema;
+using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Schema;
 using Environment = System.Environment;
 
-namespace Musoq.Evaluator.Tests.Core
+namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     public class TestBase
     {

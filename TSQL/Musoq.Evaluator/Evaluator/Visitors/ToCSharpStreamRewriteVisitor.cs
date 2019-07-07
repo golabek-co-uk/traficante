@@ -4,15 +4,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
-using Musoq.Evaluator.Utils;
-using Musoq.Parser;
-using Musoq.Parser.Nodes;
-using Musoq.Parser.Tokens;
-using Musoq.Schema;
-using Musoq.Schema.DataSources;
-using TextSpan = Musoq.Parser.TextSpan;
+using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Parser;
+using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Parser.Tokens;
+using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.DataSources;
+using TextSpan = Traficante.TSQL.Parser.TextSpan;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class ToCSharpStreamRewriteVisitor : IExpressionVisitor
     {

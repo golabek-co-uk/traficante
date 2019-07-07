@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Musoq.Schema.DataSources
+namespace Traficante.TSQL.Schema.DataSources
 {
 #if DEBUG
     [DebuggerDisplay("{" + nameof(DebugString) + "()}")]

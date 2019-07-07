@@ -1,6 +1,6 @@
-﻿using Musoq.Parser;
+﻿using Traficante.TSQL.Parser;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class CloneTraverseVisitor : RawTraverseVisitor<IExpressionVisitor>
     {

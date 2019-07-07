@@ -1,6 +1,6 @@
-﻿using Musoq.Parser.Tokens;
+﻿using Traficante.TSQL.Parser.Tokens;
 
-namespace Musoq.Parser.Lexing
+namespace Traficante.TSQL.Parser.Lexing
 {
     public class RBracketToken : Token
     {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using Musoq.Schema.DataSources;
+using Traficante.TSQL.Schema.DataSources;
 
-namespace Musoq.Schema
+namespace Traficante.TSQL.Schema
 {
     public interface IDatabase
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Evaluator.Tests.Core.Schema
+namespace Traficante.TSQL.Evaluator.Tests.Core.Schema
 {
     public class BasicEntity
     {

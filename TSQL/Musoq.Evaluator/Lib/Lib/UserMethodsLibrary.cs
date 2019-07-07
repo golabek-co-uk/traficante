@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Musoq.Plugins
+namespace Traficante.TSQL.Plugins
 {
     public class UserMethodsLibrary
     {

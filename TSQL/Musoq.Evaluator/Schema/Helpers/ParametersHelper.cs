@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Musoq.Schema.Helpers
+namespace Traficante.TSQL.Schema.Helpers
 {
     public static class ParametersHelper
     {

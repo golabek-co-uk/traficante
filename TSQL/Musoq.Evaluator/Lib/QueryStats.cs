@@ -1,4 +1,4 @@
-﻿namespace Musoq.Plugins
+﻿namespace Traficante.TSQL.Plugins
 {
     public class QueryStats
     {

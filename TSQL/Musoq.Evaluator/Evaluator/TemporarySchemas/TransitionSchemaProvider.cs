@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Musoq.Schema;
+using Traficante.TSQL.Schema;
 
-namespace Musoq.Evaluator.TemporarySchemas
+namespace Traficante.TSQL.Evaluator.TemporarySchemas
 {
     public class TransitionSchemaProvider : IDatabaseProvider
     {

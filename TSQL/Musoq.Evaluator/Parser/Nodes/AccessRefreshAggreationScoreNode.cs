@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
-using Musoq.Parser.Tokens;
+using Traficante.TSQL.Parser.Tokens;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     //public class AccessRefreshAggreationScoreNode : AccessMethodNode
     //{

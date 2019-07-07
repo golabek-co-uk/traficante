@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Parser.Tokens
+namespace Traficante.TSQL.Parser.Tokens
 {
     public abstract class GenericToken<TTokenType>
         where TTokenType : struct, IComparable, IFormattable

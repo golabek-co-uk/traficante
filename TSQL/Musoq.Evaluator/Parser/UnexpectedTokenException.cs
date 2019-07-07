@@ -1,7 +1,7 @@
 ﻿using System;
-using Musoq.Parser.Tokens;
+using Traficante.TSQL.Parser.Tokens;
 
-namespace Musoq.Parser
+namespace Traficante.TSQL.Parser
 {
     internal class UnexpectedTokenException<T> : Exception
     {

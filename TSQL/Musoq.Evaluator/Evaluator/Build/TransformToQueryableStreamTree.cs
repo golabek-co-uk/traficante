@@ -1,9 +1,9 @@
-﻿using Musoq.Evaluator.TemporarySchemas;
-using Musoq.Evaluator.Utils;
-using Musoq.Evaluator.Visitors;
+﻿using Traficante.TSQL.Evaluator.TemporarySchemas;
+using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Evaluator.Visitors;
 using System.Linq;
 
-namespace Musoq.Converter.Build
+namespace Traficante.TSQL.Converter.Build
 {
     public class TransformToQueryableStreamTree : BuildChain
     {

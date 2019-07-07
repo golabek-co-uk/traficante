@@ -1,8 +1,8 @@
-﻿using Musoq.Schema.Helpers;
+﻿using Traficante.TSQL.Schema.Helpers;
 using System;
 using System.Collections.Generic;
 
-namespace Musoq.Schema.DataSources
+namespace Traficante.TSQL.Schema.DataSources
 {
     public class EntitySource<T> : RowSource
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     public class CreateTableNode : Node
     {

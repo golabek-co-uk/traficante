@@ -1,4 +1,4 @@
-﻿namespace Musoq.Evaluator.Utils
+﻿namespace Traficante.TSQL.Evaluator.Utils
 {
     public class ScopeWalker
     {

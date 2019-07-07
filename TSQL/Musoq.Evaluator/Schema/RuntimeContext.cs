@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Musoq.Schema
+namespace Traficante.TSQL.Schema
 {
     public class RuntimeContext
     {

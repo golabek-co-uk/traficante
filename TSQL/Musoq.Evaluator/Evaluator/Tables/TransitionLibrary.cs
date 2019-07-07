@@ -1,6 +1,6 @@
-﻿using Musoq.Plugins;
+﻿using Traficante.TSQL.Plugins;
 
-namespace Musoq.Evaluator.Tables
+namespace Traficante.TSQL.Evaluator.Tables
 {
     public class TransitionLibrary : LibraryBase
     {

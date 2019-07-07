@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using Musoq.Parser.Nodes;
-using Musoq.Schema.Helpers;
+using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Schema.Helpers;
 
-namespace Musoq.Parser.Helpers
+namespace Traficante.TSQL.Parser.Helpers
 {
     public static class NodeHelper
     {

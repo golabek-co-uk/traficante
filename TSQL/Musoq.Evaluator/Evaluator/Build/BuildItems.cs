@@ -2,12 +2,12 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Musoq.Evaluator;
-using Musoq.Parser.Nodes;
-using Musoq.Schema;
-using Musoq.Schema.DataSources;
+using Traficante.TSQL.Evaluator;
+using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.DataSources;
 
-namespace Musoq.Converter.Build
+namespace Traficante.TSQL.Converter.Build
 {
     public class BuildItems : Dictionary<string, object>
     {

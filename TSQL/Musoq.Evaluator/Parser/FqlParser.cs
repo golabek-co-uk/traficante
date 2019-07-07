@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Musoq.Parser.Lexing;
-using Musoq.Parser.Nodes;
-using Musoq.Parser.Tokens;
+using Traficante.TSQL.Parser.Lexing;
+using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Parser.Tokens;
 
-namespace Musoq.Parser
+namespace Traficante.TSQL.Parser
 {
     public class FqlParser
     {

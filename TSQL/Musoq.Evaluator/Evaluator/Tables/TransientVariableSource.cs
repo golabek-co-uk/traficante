@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Musoq.Schema.DataSources;
+using Traficante.TSQL.Schema.DataSources;
 
-namespace Musoq.Evaluator.Tables
+namespace Traficante.TSQL.Evaluator.Tables
 {
     internal class TransientVariableSource : RowSource
     {

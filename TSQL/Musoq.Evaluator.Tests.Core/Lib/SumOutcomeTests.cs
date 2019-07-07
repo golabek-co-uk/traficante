@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Musoq.Plugins.Tests
+namespace Traficante.TSQL.Plugins.Tests
 {
     [TestClass]
     public class SumOutcomeTests : LibraryBaseBaseTests

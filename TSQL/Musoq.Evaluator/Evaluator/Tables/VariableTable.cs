@@ -1,6 +1,6 @@
-﻿using Musoq.Schema;
+﻿using Traficante.TSQL.Schema;
 
-namespace Musoq.Evaluator.Tables
+namespace Traficante.TSQL.Evaluator.Tables
 {
     internal class VariableTable : ITable
     {

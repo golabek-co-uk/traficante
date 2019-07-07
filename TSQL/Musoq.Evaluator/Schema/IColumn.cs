@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Schema
+namespace Traficante.TSQL.Schema
 {
     public interface IColumn
     {

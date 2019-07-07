@@ -1,7 +1,7 @@
-﻿using Musoq.Evaluator.Utils;
-using Musoq.Parser;
+﻿using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Parser;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public interface IScopeAwareExpressionVisitor : IExpressionVisitor
     {

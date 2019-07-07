@@ -1,8 +1,8 @@
 ﻿using System.Threading;
-using Musoq.Evaluator.Tables;
-using Musoq.Schema;
+using Traficante.TSQL.Evaluator.Tables;
+using Traficante.TSQL.Schema;
 
-namespace Musoq.Evaluator
+namespace Traficante.TSQL.Evaluator
 {
     public interface IRunnable
     {

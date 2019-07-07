@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Musoq.Evaluator.Exceptions;
-using Musoq.Evaluator.Helpers;
-using Musoq.Evaluator.Tables;
-using Musoq.Evaluator.TemporarySchemas;
-using Musoq.Evaluator.Utils;
-using Musoq.Evaluator.Utils.Symbols;
-using Musoq.Parser;
-using Musoq.Parser.Nodes;
-using Musoq.Parser.Tokens;
-using Musoq.Plugins.Attributes;
-using Musoq.Schema;
+using Traficante.TSQL.Evaluator.Exceptions;
+using Traficante.TSQL.Evaluator.Helpers;
+using Traficante.TSQL.Evaluator.Tables;
+using Traficante.TSQL.Evaluator.TemporarySchemas;
+using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Evaluator.Utils.Symbols;
+using Traficante.TSQL.Parser;
+using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Parser.Tokens;
+using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Schema;
 using Traficante.Sql.Evaluator.Resources;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class BuildMetadataAndInferTypeVisitor : IAwareExpressionVisitor
     {

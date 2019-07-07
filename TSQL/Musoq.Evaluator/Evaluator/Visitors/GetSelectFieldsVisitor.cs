@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Musoq.Parser;
-using Musoq.Parser.Nodes;
-using Musoq.Schema;
-using Musoq.Schema.DataSources;
+using Traficante.TSQL.Parser;
+using Traficante.TSQL.Parser.Nodes;
+using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.DataSources;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class GetSelectFieldsVisitor : IQueryPartAwareExpressionVisitor
     {

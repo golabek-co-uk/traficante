@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Musoq.Evaluator
+namespace Traficante.TSQL.Evaluator
 {
     public class Operators
     {

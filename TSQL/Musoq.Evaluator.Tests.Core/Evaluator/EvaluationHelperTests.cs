@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Musoq.Evaluator.Helpers;
+using Traficante.TSQL.Evaluator.Helpers;
 
-namespace Musoq.Evaluator.Tests.Core
+namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     [TestClass]
     public class EvaluationHelperTests

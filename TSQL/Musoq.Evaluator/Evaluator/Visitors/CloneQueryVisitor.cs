@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Musoq.Parser;
-using Musoq.Parser.Nodes;
+using Traficante.TSQL.Parser;
+using Traficante.TSQL.Parser.Nodes;
 
-namespace Musoq.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class CloneQueryVisitor : IExpressionVisitor
     {

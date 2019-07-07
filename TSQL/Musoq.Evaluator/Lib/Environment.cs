@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Musoq.Plugins
+namespace Traficante.TSQL.Plugins
 {
     public class Environment
     {

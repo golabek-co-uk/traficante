@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using Musoq.Schema.Attributes;
-using Musoq.Schema.DataSources;
+using Traficante.TSQL.Schema.Attributes;
+using Traficante.TSQL.Schema.DataSources;
 
-namespace Musoq.Schema.Helpers
+namespace Traficante.TSQL.Schema.Helpers
 {
     public static class TypeHelper
     {

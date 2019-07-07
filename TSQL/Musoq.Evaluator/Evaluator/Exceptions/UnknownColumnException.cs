@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Musoq.Evaluator.Exceptions
+namespace Traficante.TSQL.Evaluator.Exceptions
 {
     public class UnknownColumnException : Exception
     {

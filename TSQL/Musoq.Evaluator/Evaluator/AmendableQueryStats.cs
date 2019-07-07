@@ -1,6 +1,6 @@
-﻿//using Musoq.Plugins;
+﻿//using Traficante.TSQL.Plugins;
 
-//namespace Musoq.Evaluator
+//namespace Traficante.TSQL.Evaluator
 //{
 //    public class AmendableQueryStats : QueryStats
 //    {

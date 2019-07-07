@@ -1,9 +1,9 @@
 ﻿//using System;
 //using System.Collections.Generic;
-//using Musoq.Schema;
-//using Musoq.Schema.DataSources;
+//using Traficante.TSQL.Schema;
+//using Traficante.TSQL.Schema.DataSources;
 
-//namespace Musoq.Evaluator.TemporarySchemas
+//namespace Traficante.TSQL.Evaluator.TemporarySchemas
 //{
 //    public class TableMetadataSource : RowSource
 //    {

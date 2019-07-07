@@ -1,4 +1,4 @@
-﻿namespace Musoq.Evaluator.Helpers
+﻿namespace Traficante.TSQL.Evaluator.Helpers
 {
     public static class NamingHelper
     {

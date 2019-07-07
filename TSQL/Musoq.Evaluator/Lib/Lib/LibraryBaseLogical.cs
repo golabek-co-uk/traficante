@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using Musoq.Plugins.Attributes;
+using Traficante.TSQL.Plugins.Attributes;
 
-namespace Musoq.Plugins
+namespace Traficante.TSQL.Plugins
 {
     public partial class LibraryBase
     {

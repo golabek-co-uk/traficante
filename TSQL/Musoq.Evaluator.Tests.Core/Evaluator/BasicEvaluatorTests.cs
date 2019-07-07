@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Musoq.Evaluator.Tests.Core.Schema;
+using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 
-namespace Musoq.Evaluator.Tests.Core
+namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     [TestClass]
     public class BasicEvaluatorTests : TestBase
@@ -889,7 +889,7 @@ namespace Musoq.Evaluator.Tests.Core
             Assert.IsTrue(table.Any(row => (string) row[0] == "Name" && (string) row[2] == "System.String"));
             Assert.IsTrue(table.Any(row => (string) row[0] == "City" && (string) row[2] == "System.String"));
             Assert.IsTrue(table.Any(row => (string) row[0] == "Country" && (string) row[2] == "System.String"));
-            Assert.IsTrue(table.Any(row => (string) row[0] == "Self" && (string) row[2] == "Musoq.Evaluator.Tests.Core.Schema.BasicEntity"));
+            Assert.IsTrue(table.Any(row => (string) row[0] == "Self" && (string) row[2] == "Traficante.TSQL.Evaluator.Tests.Core.Schema.BasicEntity"));
             Assert.IsTrue(table.Any(row => (string) row[0] == "Money" && (string) row[2] == "System.Decimal"));
             Assert.IsTrue(table.Any(row => (string) row[0] == "Month" && (string) row[2] == "System.String"));
             Assert.IsTrue(table.Any(row => (string) row[0] == "Time" && (string) row[2] == "System.DateTime"));

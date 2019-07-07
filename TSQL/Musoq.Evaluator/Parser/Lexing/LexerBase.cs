@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Musoq.Parser.Lexing
+namespace Traficante.TSQL.Parser.Lexing
 {
     /// <summary>
     ///     Idea how to implement this piece of code where founded here:

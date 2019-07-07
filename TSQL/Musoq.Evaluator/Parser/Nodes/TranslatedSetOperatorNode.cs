@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace Musoq.Parser.Nodes
+namespace Traficante.TSQL.Parser.Nodes
 {
     public class TranslatedSetOperatorNode : Node
     {

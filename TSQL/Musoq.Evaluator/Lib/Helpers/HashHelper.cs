@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Musoq.Plugins.Helpers
+namespace Traficante.TSQL.Plugins.Helpers
 {
     public static class HashHelper
     {

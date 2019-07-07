@@ -1,4 +1,4 @@
-﻿namespace Musoq.Evaluator.Utils.Symbols
+﻿namespace Traficante.TSQL.Evaluator.Utils.Symbols
 {
     public abstract class Symbol
     {

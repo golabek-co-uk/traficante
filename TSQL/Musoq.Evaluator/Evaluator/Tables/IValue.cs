@@ -1,4 +1,4 @@
-﻿namespace Musoq.Evaluator.Tables
+﻿namespace Traficante.TSQL.Evaluator.Tables
 {
     public interface IValue<in TKey>
     {

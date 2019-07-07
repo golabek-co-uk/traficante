@@ -1,6 +1,6 @@
-﻿using Musoq.Parser.Nodes;
+﻿using Traficante.TSQL.Parser.Nodes;
 
-namespace Musoq.Parser.Tokens
+namespace Traficante.TSQL.Parser.Tokens
 {
     public class OuterJoinToken : Token
     {

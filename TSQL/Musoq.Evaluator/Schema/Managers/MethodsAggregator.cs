@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Musoq.Plugins;
+using Traficante.TSQL.Plugins;
 
-namespace Musoq.Schema.Managers
+namespace Traficante.TSQL.Schema.Managers
 {
     public class MethodsAggregator
     {
