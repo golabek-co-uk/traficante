@@ -149,6 +149,7 @@ namespace Traficante.TSQL.Schema.DataSources
         public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
         {
             var founded = _aggregator.TryResolveMethod(method, parameters, out methodInfo);
+            return founded;
 
             if (founded)
                 return methodInfo.GetCustomAttribute<AggregationMethodAttribute>() != null;

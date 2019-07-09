@@ -402,7 +402,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var select = Nodes.Pop() as SelectNode;
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
-            var from = Nodes.Pop() as ExpressionFromNode;
+            var from = node.From != null ? Nodes.Pop() as ExpressionFromNode : null;
 
             if (groupBy == null)
             {
@@ -411,6 +411,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 {
                     select.ReturnsSingleRow = true;
                 }
+            }
+
+            if (from == null)
+            {
+                select.ReturnsSingleRow = true;
             }
 
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));

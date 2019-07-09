@@ -597,6 +597,9 @@ namespace Traficante.TSQL.Parser
 
         private FromNode ComposeFrom(bool fromBefore = true)
         {
+            if (Current.TokenType == TokenType.EndOfFile)
+                return null;
+
             if (fromBefore)
                 Consume(TokenType.From);
 

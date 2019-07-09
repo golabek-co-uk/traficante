@@ -337,7 +337,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(QueryNode node)
         {
             LoadScope("Query");
-            node.From.Accept(this);
+            node.From?.Accept(this);
             node.Where?.Accept(this);
             node.Select.Accept(this);
             node.Take?.Accept(this);

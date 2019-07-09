@@ -657,16 +657,17 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var select = Nodes.Pop() as SelectNode;
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
-            var from = Nodes.Pop() as FromNode;
+            var from = node.From != null ? Nodes.Pop() as FromNode : null;
 
-            _currentScope.ScopeSymbolTable.AddSymbol(from.Alias.ToRefreshMethodsSymbolName(),
-                new RefreshMethodsSymbol(_refreshMethods));
-            _refreshMethods.Clear();
+            //_currentScope.ScopeSymbolTable.AddSymbol(from.Alias.ToRefreshMethodsSymbolName(),
+            //    new RefreshMethodsSymbol(_refreshMethods));
+            //_refreshMethods.Clear();
 
-            if (_currentScope.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(string.Empty))
-                _currentScope.ScopeSymbolTable.UpdateSymbol(string.Empty, from.Alias);
+            //if (_currentScope.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(string.Empty))
+            //    _currentScope.ScopeSymbolTable.UpdateSymbol(string.Empty, from.Alias);
 
-            Methods.Push(from.Alias);
+            if (from != null)
+                Methods.Push(from.Alias);
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
 
             _schemaFromArgs.Clear();
@@ -886,6 +887,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
             groupArgs.AddRange(args.Args.Skip(1).Select(f => f.ReturnType));
 
             var alias = !string.IsNullOrEmpty(node.Alias) ? node.Alias : _identifier;
+
+            if (string.IsNullOrEmpty(alias))
+            {
+                groupArgs.Clear();
+                groupArgs.AddRange(args.Args.Skip(1).Select(f => f.ReturnType));
+                var db = this._databaseProvider.GetDatabase(null);
+                if (db.TryResolveAggreationMethod(node.Name, groupArgs.ToArray(), out var buildinMethod))
+                {
+                    AccessMethodNode buildInAccessMethod = func(node.FToken, args, new ArgsListNode(new Node[0]), buildinMethod, alias);
+                    node.ChangeMethod(buildinMethod);
+                    Nodes.Push(buildInAccessMethod);
+                    return;
+                }
+            }
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(alias);
             var schemaTablePair = tableSymbol.GetTableByAlias(alias);

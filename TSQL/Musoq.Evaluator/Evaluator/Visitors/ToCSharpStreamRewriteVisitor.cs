@@ -495,7 +495,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             else
             {
-                if (this._item.Type.Name == "IGrouping`2")
+                if (this._item?.Type.Name == "IGrouping`2")
                 {
                     var key = Expression.PropertyOrField(this._item, "Key");
                     if (key.Type.GetFields().Any(x => string.Equals(x.Name, this._currentFieldNode.FieldName)))
@@ -692,7 +692,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     new Type[] { outputItemType },
                     array);
 
-                Nodes.Push(Expression.Lambda(call, _input));
+                if (_input != null)
+                    Nodes.Push(Expression.Lambda(call, _input));
+                else
+                    Nodes.Push(Expression.Lambda(call));
             }
             else
             {
@@ -1072,12 +1075,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             if (select != null)
             {
-                last = Expression.Invoke(select, last);
+                if (last != null)
+                {
+                    last = Expression.Invoke(select, last);
+                }
+                else
+                {
+                    last = Expression.Invoke(select);
+                }
             }
 
             Nodes.Push(last);
-            ResultColumns[_queryAlias] = node.Select.Fields.Select(x => x.FieldName).ToArray();
-            ResultColumnsTypes[_queryAlias] = node.Select.Fields.Select(x => x.ReturnType).ToArray();
+            ResultColumns[_queryAlias ?? ""] = node.Select.Fields.Select(x => x.FieldName).ToArray();
+            ResultColumnsTypes[_queryAlias ?? ""] = node.Select.Fields.Select(x => x.ReturnType).ToArray();
         }
 
         public void Visit(InternalQueryNode node)

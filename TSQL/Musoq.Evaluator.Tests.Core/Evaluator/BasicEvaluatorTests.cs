@@ -1268,5 +1268,20 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.IsTrue(table[0][0] is DateTimeOffset);
             Assert.IsTrue(table[1][0] is DateTimeOffset);
         }
+
+        [TestMethod]
+        public void SelectGetDate()
+        {
+            var query = "select GetDate()";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>> { };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(1, table.Count);
+
+            Assert.IsTrue(table[0][0] is DateTimeOffset);
+        }
     }
 }

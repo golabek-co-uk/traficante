@@ -286,9 +286,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _visitor.SetScope(_walker.Scope);
 
             _visitor.SetMethodAccessType(MethodAccessType.ResultQuery);
-            _visitor.SetQueryIdentifier(node.From.Alias);
+            _visitor.SetQueryIdentifier(node.From?.Alias);
 
-            node.From.Accept(this);
+            node.From?.Accept(this);
             node.Where?.Accept(this);
             //node.Select.Accept(this);
 
