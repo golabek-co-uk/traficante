@@ -3,23 +3,19 @@ using System.Reflection;
 
 namespace Traficante.TSQL.Parser.Nodes
 {
-    public class PropertyValueNode : IdentifierNode
+    public class VariableNode : IdentifierNode
     {
-        public PropertyValueNode(string name)
+        public VariableNode(string name)
             : base(name)
         {
         }
 
-        public PropertyValueNode(string name, PropertyInfo propertyInfo)
-            : base(name)
+        public VariableNode(string name, Type type)
+            : base(name, type)
         {
-            PropertyInfo = propertyInfo;
         }
-
-        public override Type ReturnType => PropertyInfo.PropertyType;
-
+        
         public override string Id { get; }
-        public PropertyInfo PropertyInfo { get; private set; }
 
         public override void Accept(IExpressionVisitor visitor)
         {

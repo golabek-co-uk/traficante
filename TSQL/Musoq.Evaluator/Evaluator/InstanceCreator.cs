@@ -62,8 +62,8 @@ namespace Traficante.TSQL.Converter
             {
                 columns2.Add(new Column(Columns[i], ColumnsTypes[i], i));
             }
-            
-            Table t = new Table("entities", columns2.ToArray());
+
+            Evaluator.Tables.Table t = new Evaluator.Tables.Table("entities", columns2.ToArray());
             foreach(var row in Stream.ToList())
             {
                 object[] values = new object[columns2.Count];

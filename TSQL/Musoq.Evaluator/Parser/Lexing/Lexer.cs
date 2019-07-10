@@ -169,6 +169,8 @@ namespace Traficante.TSQL.Parser.Lexing
                 return TokenType.Property;
             if (regex == TokenRegexDefinition.KColumn)
                 return TokenType.Identifier;
+            if (regex == TokenRegexDefinition.KVariable)
+                return TokenType.Variable;
             if (regex == TokenRegexDefinition.KInnerJoin)
                 return TokenType.InnerJoin;
             if (regex == TokenRegexDefinition.KOuterJoin)
@@ -215,6 +217,7 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KColumn = @"\[?([\w*?_]){1,}\]?";
             public static readonly string KHFromValue = @"#?([\w*?_]){1,}";
             public static readonly string KHFrom = @"\[?#?([\w*?_]){1,}\]?";
+            public static readonly string KVariable = @"@@?([\w*?_]){1,}";
             public static readonly string KLike = Format(Keyword, LikeToken.TokenText);
             public static readonly string KNotLike = @"(?<=[\s]{1,}|^)not[\s]{1,}like(?=[\s]{1,}|$)";
             public static readonly string KRLike = Format(Keyword, RLikeToken.TokenText);
@@ -342,6 +345,7 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KFalse, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KColumn, subPattern: TokenRegexDefinition.KColumnValue),
                 new TokenDefinition(TokenRegexDefinition.KHFrom, subPattern: TokenRegexDefinition.KHFromValue),
+                new TokenDefinition(TokenRegexDefinition.KVariable),
                 new TokenDefinition(TokenRegexDefinition.KDot),
                 new TokenDefinition(TokenRegexDefinition.KOn),
                 new TokenDefinition(TokenRegexDefinition.KTable),
@@ -448,6 +452,8 @@ namespace Traficante.TSQL.Parser.Lexing
                     return new SelectToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Identifier:
                     return new ColumnToken(tokenText, new TextSpan(Position, tokenText.Length));
+                case TokenType.Variable:
+                    return new VariableToken(tokenText, new TextSpan(Position, tokenText.Length));
                 case TokenType.Property:
                     return new AccessPropertyToken(tokenText, new TextSpan(Position, tokenText.Length));
                 case TokenType.Like:

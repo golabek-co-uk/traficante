@@ -22,6 +22,7 @@
         WhiteSpace,
         Equality,
         Identifier,
+        Variable,
         NumericColumn,
         Function,
         Property,

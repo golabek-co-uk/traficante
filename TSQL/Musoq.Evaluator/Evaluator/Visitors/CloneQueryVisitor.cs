@@ -263,6 +263,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new PropertyValueNode(node.Name, parentNodeType.GetProperty(node.Name)));
         }
 
+        public void Visit(VariableNode node)
+        {
+            Nodes.Push(new VariableNode(node.Name, node.ReturnType));
+        }
+
         public virtual void Visit(DotNode node)
         {
             var exp = Nodes.Pop();
@@ -580,7 +585,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var elseNode = Nodes.Pop();
 
             Nodes.Push(new CaseNode(whenThenPairs.ToArray(), elseNode, elseNode.ReturnType));
-        }
-
+        } 
     }
 }

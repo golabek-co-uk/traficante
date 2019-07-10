@@ -263,6 +263,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new PropertyValueNode(node.Name, node.PropertyInfo));
         }
 
+        public void Visit(VariableNode node)
+        {
+            Nodes.Push(new VariableNode(node.Name, node.ReturnType));
+        }
+
         public virtual void Visit(DotNode node)
         {
             var exp = Nodes.Pop();

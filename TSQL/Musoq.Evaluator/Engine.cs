@@ -43,5 +43,23 @@ namespace Traficante.TSQL
             }
             db.AddTable(schema, table, items);
         }
+
+        public void AddVariable<T>(string name, T value)
+        {
+            AddVariable(null, null, name, value);
+        }
+
+        public void AddVariable<T>(string database, string schema, string name, T value)
+        {
+            database = database ?? DefaultDatabase;
+            schema = schema ?? DefaultSchema;
+            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
+            if (db == null)
+            {
+                db = new Database(database, DefaultSchema);
+                _databases.Add(db);
+            }
+            db.AddVariable(schema, name, value);
+        }
     }
 }

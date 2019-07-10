@@ -346,6 +346,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new PropertyValueNode(node.Name, parentNodeType.GetProperty(node.Name)));
         }
 
+        public void Visit(VariableNode node)
+        {
+            //var parentNodeType = Nodes.Peek().ReturnType;
+            //Nodes.Push(new VariableNode(node.Name, parentNodeType.GetProperty(node.Name)));
+            var database = _databaseProvider.GetDatabase(null);
+            var variable = database.GetVariable(node.Name);
+            Nodes.Push(new VariableNode(node.Name, variable.Type));
+        }
+
         public void Visit(DotNode node)
         {
             var exp = Nodes.Pop();

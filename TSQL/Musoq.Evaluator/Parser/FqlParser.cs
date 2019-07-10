@@ -791,6 +791,9 @@ namespace Traficante.TSQL.Parser
                 case TokenType.Case:
                     var caseNodes = ComposeCase();
                     return new CaseNode(caseNodes.WhenThenNodes, caseNodes.ElseNode);
+                case TokenType.Variable:
+                    token = ConsumeAndGetToken(TokenType.Variable);
+                    return new VariableNode(token.Value);
             }
 
             throw new NotSupportedException($"Token {Current.Value}({Current.TokenType}) cannot be used here.");

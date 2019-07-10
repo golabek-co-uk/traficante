@@ -106,6 +106,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
+        public virtual void Visit(VariableNode node)
+        {
+            node.Accept(Visitor);
+        }
+
         public virtual void Visit(DotNode node)
         {
             node.Root.Accept(this);

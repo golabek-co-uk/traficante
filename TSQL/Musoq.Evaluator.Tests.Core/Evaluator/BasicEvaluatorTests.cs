@@ -1245,7 +1245,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        public void SelectGetDateFromTable()
+        public void Select_Function_WithFrom()
         {
             var query = "select GetDate() from #A.entities";
 
@@ -1270,7 +1270,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        public void SelectGetDate()
+        public void Select_Function_WithoutFrom()
         {
             var query = "select GetDate()";
 
@@ -1283,5 +1283,19 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             Assert.IsTrue(table[0][0] is DateTimeOffset);
         }
+
+        [TestMethod]
+        public void Select_Variable()
+        {
+            Engine sut = new Engine();
+            sut.AddVariable("@@VERSION", 123);
+
+            var table = sut.Run("SELECT @@VERSION AS 'SQL Server Version'");
+
+            Assert.AreEqual(1, table.Count);
+            Assert.AreEqual(123, table[0][0]);
+        }
+
+        
     }
 }

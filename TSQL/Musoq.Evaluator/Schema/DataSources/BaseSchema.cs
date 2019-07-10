@@ -25,6 +25,7 @@ namespace Traficante.TSQL.Schema.DataSources
         public string DefaultSchema { get; set; }
         public List<(ITable Table, RowSource Source)> Tables { get; private set; }
         public List<(ITable Table, RowSource Source)> Functions { get; private set; }
+        public List<(IVariable Variable, object Value)> Variables { get; private set; }
 
 
         protected BaseDatabase(string name, MethodsAggregator methodsAggregator)
@@ -32,6 +33,7 @@ namespace Traficante.TSQL.Schema.DataSources
             Name = name;
             Tables = new List<(ITable Table, RowSource Source)>();
             Functions = new List<(ITable Table, RowSource Source)>();
+            Variables = new List<(IVariable Variable, object Value)>();
             _aggregator = methodsAggregator;
         }
 
@@ -41,19 +43,20 @@ namespace Traficante.TSQL.Schema.DataSources
             DefaultSchema = defaultSchema;
             Tables = new List<(ITable Table, RowSource Source)>();
             Functions = new List<(ITable Table, RowSource Source)>();
+            Variables = new List<(IVariable Variable, object Value)>();
             _aggregator = methodsAggregator;
         }
 
         public void AddTable<TType>(string schema, string name, IEnumerable<TType> items)
         {
             var entityMap = TypeHelper.GetEntityMap<TType>();
-            Tables.Add((new SchemaTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items)));
+            Tables.Add((new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items)));
         }
 
         public void AddFunction<TType>(string schema, string name, Func<IEnumerable<TType>> items)
         {
             var entityMap = TypeHelper.GetEntityMap<TType>();
-            Functions.Add((new SchemaTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items())));
+            Functions.Add((new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items())));
         } 
 
         public virtual ITable GetTableByName(string schema, string name)
@@ -86,6 +89,21 @@ namespace Traficante.TSQL.Schema.DataSources
                     string.Equals(x.Table.Schema, schema ?? DefaultSchema, StringComparison.CurrentCultureIgnoreCase) &&
                     string.Equals(x.Table.Name, name, StringComparison.CurrentCultureIgnoreCase))
                 .Source;
+        }
+
+        public void AddVariable<TType>(string schema, string name, TType value)
+        {
+            Variables.Add((new DatabaseVariable(schema, name, typeof(TType)), value));
+        }
+
+        public IVariable GetVariable(string name)
+        {
+            return Variables.FirstOrDefault(x => string.Equals(x.Variable.Name, name, StringComparison.CurrentCultureIgnoreCase)).Variable;
+        }
+
+        public object GetVariableValue(string name)
+        {
+            return Variables.FirstOrDefault(x => string.Equals(x.Variable.Name, name, StringComparison.CurrentCultureIgnoreCase)).Value;
         }
 
         //private void AddToConstructors<TType>(string name)
@@ -195,9 +213,9 @@ namespace Traficante.TSQL.Schema.DataSources
         //}
     }
 
-    public class SchemaTable : ITable
+    public class DatabaseTable : ITable
     {
-        public SchemaTable(string schema, string name, IColumn[] columns)
+        public DatabaseTable(string schema, string name, IColumn[] columns)
         {
             Schema = schema;
             Name = name;
@@ -209,5 +227,21 @@ namespace Traficante.TSQL.Schema.DataSources
         public string Name { get; }
 
         public string Schema { get; }
+    }
+
+    public class DatabaseVariable : IVariable
+    {
+        public DatabaseVariable(string schema, string name, Type type)
+        {
+            Schema = schema;
+            Name = name;
+            Type = type;
+        }
+
+        public string Name { get; }
+
+        public string Schema { get; }
+
+        public Type Type { get; }
     }
 }

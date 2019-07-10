@@ -16,6 +16,10 @@ namespace Traficante.TSQL.Schema
 
         RowSource GetFunctionRowSource(string schema, string name, object[] parameters);
 
+        IVariable GetVariable(string name);
+
+        object GetVariableValue(string name);
+
 
         //Reflection.SchemaMethodInfo[] GetConstructors(string schema, string methodName);
 
@@ -30,5 +34,6 @@ namespace Traficante.TSQL.Schema
         MethodInfo ResolveMethod(string schema, string method, Type[] parameters);
 
         bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
+        
     }
 }

@@ -177,6 +177,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
+        public void Visit(VariableNode node)
+        {
+        }
+
         public void Visit(DotNode node)
         {
         }

@@ -645,6 +645,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(Expression.Property(obj, node.PropertyInfo));
         }
 
+        public void Visit(VariableNode node)
+        {
+            var database = _schemaProvider.GetDatabase(null);
+            Nodes.Push(Expression.Constant(database.GetVariableValue(node.Name)));
+        }
+
         public void Visit(DotNode node)
         {
         }
