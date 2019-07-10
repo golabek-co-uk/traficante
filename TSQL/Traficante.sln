@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traficante.TSQL", "Musoq.Evaluator\Traficante.TSQL.csproj", "{B50CC668-94C3-429A-9D1F-45F4BB40CB0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traficante.TSQL", ""Traficante.TSQL\Traficante.TSQL.csproj", "{B50CC668-94C3-429A-9D1F-45F4BB40CB0B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traficante.TSQL.Tests", "Musoq.Evaluator.Tests.Core\Traficante.TSQL.Tests.csproj", "{A04EDDB1-F09A-499F-BC2C-9714E9234C9C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traficante.TSQL.Tests", ""Traficante.TSQL.Tests\Traficante.TSQL.Tests.csproj", "{A04EDDB1-F09A-499F-BC2C-9714E9234C9C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
