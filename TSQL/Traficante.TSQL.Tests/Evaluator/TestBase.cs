@@ -10,6 +10,7 @@ using Traficante.TSQL.Converter;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 using Traficante.TSQL.Plugins;
 using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.Managers;
 using Environment = System.Environment;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
@@ -20,8 +21,15 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
         protected CompiledQuery CreateAndRunVirtualMachine<T>(string script, IDictionary<string, IEnumerable<T>> sources)
         {
-            var database = new TestDatabase<T>(sources);
-            return InstanceCreator.CompileForExecution(script, new DatabaseProvider(new[] { database }, "master"));
+            var engine = new Engine(new TestLibrary());
+
+            foreach (var source in sources)
+            {
+                engine.AddTable(null, source.Key, "entities", source.Value);
+                engine.AddFunction(null, source.Key, "Entities", () => source.Value);
+            }
+
+            return InstanceCreator.CompileForExecution(script, engine);
         }
 
         protected void TestMethodTemplate<TResult>(string operation, TResult score)
@@ -39,6 +47,19 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(typeof(TResult), table.Columns.ElementAt(0).ColumnType);
 
             Assert.AreEqual(score, table[0][0]);
+        }
+
+        private static MethodsAggregator CreateLibrary()
+        {
+            var methodManager = new MethodsManager();
+            var propertiesManager = new PropertiesManager();
+
+            var lib = new TestLibrary();
+
+            propertiesManager.RegisterProperties(lib);
+            methodManager.RegisterLibraries(lib);
+
+            return new MethodsAggregator(methodManager, propertiesManager);
         }
 
         static TestBase()

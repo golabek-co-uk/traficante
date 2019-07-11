@@ -25,7 +25,7 @@ namespace Traficante.TSQL.Schema.DataSources
         public string DefaultSchema { get; set; }
         public List<(ITable Table, RowSource Source)> Tables { get; private set; }
         public List<(ITable Table, RowSource Source)> Functions { get; private set; }
-        public List<(IVariable Variable, object Value)> Variables { get; private set; }
+
 
 
         protected BaseDatabase(string name, MethodsAggregator methodsAggregator)
@@ -33,7 +33,6 @@ namespace Traficante.TSQL.Schema.DataSources
             Name = name;
             Tables = new List<(ITable Table, RowSource Source)>();
             Functions = new List<(ITable Table, RowSource Source)>();
-            Variables = new List<(IVariable Variable, object Value)>();
             _aggregator = methodsAggregator;
         }
 
@@ -43,7 +42,6 @@ namespace Traficante.TSQL.Schema.DataSources
             DefaultSchema = defaultSchema;
             Tables = new List<(ITable Table, RowSource Source)>();
             Functions = new List<(ITable Table, RowSource Source)>();
-            Variables = new List<(IVariable Variable, object Value)>();
             _aggregator = methodsAggregator;
         }
 
@@ -89,21 +87,6 @@ namespace Traficante.TSQL.Schema.DataSources
                     string.Equals(x.Table.Schema, schema ?? DefaultSchema, StringComparison.CurrentCultureIgnoreCase) &&
                     string.Equals(x.Table.Name, name, StringComparison.CurrentCultureIgnoreCase))
                 .Source;
-        }
-
-        public void AddVariable<TType>(string schema, string name, TType value)
-        {
-            Variables.Add((new DatabaseVariable(schema, name, typeof(TType)), value));
-        }
-
-        public IVariable GetVariable(string name)
-        {
-            return Variables.FirstOrDefault(x => string.Equals(x.Variable.Name, name, StringComparison.CurrentCultureIgnoreCase)).Variable;
-        }
-
-        public object GetVariableValue(string name)
-        {
-            return Variables.FirstOrDefault(x => string.Equals(x.Variable.Name, name, StringComparison.CurrentCultureIgnoreCase)).Value;
         }
 
         //private void AddToConstructors<TType>(string name)
@@ -231,11 +214,12 @@ namespace Traficante.TSQL.Schema.DataSources
 
     public class DatabaseVariable : IVariable
     {
-        public DatabaseVariable(string schema, string name, Type type)
+        public DatabaseVariable(string schema, string name, Type type, object value)
         {
             Schema = schema;
             Name = name;
             Type = type;
+            Value = value;
         }
 
         public string Name { get; }
@@ -243,5 +227,7 @@ namespace Traficante.TSQL.Schema.DataSources
         public string Schema { get; }
 
         public Type Type { get; }
+
+        public object Value { get; }
     }
 }

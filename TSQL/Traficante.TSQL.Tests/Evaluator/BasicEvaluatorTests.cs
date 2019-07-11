@@ -1274,7 +1274,16 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         {
             var query = "select GetDate()";
 
-            var sources = new Dictionary<string, IEnumerable<BasicEntity>> { };
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("may", 100m) { Population = -100 },
+                        new BasicEntity("june", 200m) { Population = 200 }
+                    }
+                }
+            };
 
             var vm = CreateAndRunVirtualMachine(query, sources);
             var table = vm.Run();

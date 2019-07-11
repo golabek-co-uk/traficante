@@ -16,10 +16,6 @@ namespace Traficante.TSQL.Schema
 
         RowSource GetFunctionRowSource(string schema, string name, object[] parameters);
 
-        IVariable GetVariable(string name);
-
-        object GetVariableValue(string name);
-
 
         //Reflection.SchemaMethodInfo[] GetConstructors(string schema, string methodName);
 

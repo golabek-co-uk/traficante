@@ -18,11 +18,11 @@ namespace Traficante.TSQL.Converter
 {
     public static class InstanceCreator
     {
-        public static CompiledQuery CompileForExecution(string script, IDatabaseProvider schemaProvider)
+        public static CompiledQuery CompileForExecution(string script, IEngine schemaProvider)
         {
             var items = new BuildItems
             {
-                SchemaProvider = schemaProvider,
+                Engine = schemaProvider,
                 RawQuery = script
             };
 
@@ -39,7 +39,7 @@ namespace Traficante.TSQL.Converter
         private static IRunnable CreateRunnableStream(BuildItems items)
         {
             var runnableStream = new RunnableStream();
-            runnableStream.Provider = items.SchemaProvider;
+            runnableStream.Provider = items.Engine;
             runnableStream.Stream = items.Stream;
             runnableStream.Columns = items.Columns;
             runnableStream.ColumnsTypes = items.ColumnsTypes;
@@ -49,7 +49,7 @@ namespace Traficante.TSQL.Converter
 
     public class RunnableStream : IRunnable
     {
-        public IDatabaseProvider Provider { get; set; }
+        public IEngine Provider { get; set; }
         public IQueryable<IObjectResolver> Stream { get; set; }
         public string[] Columns { get; set; }
         public Type[] ColumnsTypes { get; set; }

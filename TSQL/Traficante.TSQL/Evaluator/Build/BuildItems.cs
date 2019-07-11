@@ -29,9 +29,9 @@ namespace Traficante.TSQL.Converter.Build
             set => this["RAW_QUERY"] = value;
         }
 
-        public IDatabaseProvider SchemaProvider
+        public IEngine Engine
         {
-            get => (IDatabaseProvider) this["SCHEMA_PROVIDER"];
+            get => (IEngine) this["SCHEMA_PROVIDER"];
             set => this["SCHEMA_PROVIDER"] = value;
         }
 

@@ -14,11 +14,9 @@ namespace Traficante.TSQL.Converter.Build
 
         public override void Build(BuildItems items)
         {
-            items.SchemaProvider = new TransitionSchemaProvider(items.SchemaProvider);
-
             var queryTree = items.RawQueryTree;
 
-            var metadataInferer = new BuildMetadataAndInferTypeVisitor(items.SchemaProvider);
+            var metadataInferer = new BuildMetadataAndInferTypeVisitor(items.Engine);
             var metadataInfererTraverser = new BuildMetadataAndInferTypeTraverseVisitor(metadataInferer);
 
             queryTree.Accept(metadataInfererTraverser);
@@ -32,7 +30,7 @@ namespace Traficante.TSQL.Converter.Build
 
             queryTree = rewriter.RootScript;
 
-            var csharpRewriter = new ToCSharpStreamRewriteVisitor(items.SchemaProvider, metadataInferer.SetOperatorFieldPositions, metadataInferer.InferredColumns);
+            var csharpRewriter = new ToCSharpStreamRewriteVisitor(items.Engine, metadataInferer.SetOperatorFieldPositions, metadataInferer.InferredColumns);
             var csharpRewriteTraverser = new ToCSharpStreamRewriteTraverseVisitor(csharpRewriter, new ScopeWalker(metadataInfererTraverser.Scope));
 
             queryTree.Accept(csharpRewriteTraverser);

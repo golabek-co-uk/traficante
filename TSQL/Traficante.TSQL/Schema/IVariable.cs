@@ -7,5 +7,6 @@ namespace Traficante.TSQL.Schema
         string Name { get; }
         string Schema { get; }
         Type Type { get; }
+        object Value { get; }
     }
 }

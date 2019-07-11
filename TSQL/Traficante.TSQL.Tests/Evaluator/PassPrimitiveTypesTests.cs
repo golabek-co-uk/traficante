@@ -53,7 +53,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             OnMethodCall
         }
 
-        private class TestSchemaProvider : IDatabaseProvider
+        private class TestSchemaProvider : IEngine
         {
             private readonly IEnumerable<TestEntity> _entities;
             private readonly Action<object[]> _onGetTableOrRowSource;
@@ -68,6 +68,11 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             public IDatabase GetDatabase(string schema)
             {
                 return new TestSchema(_entities, _onGetTableOrRowSource, _whenChecked);
+            }
+
+            public IVariable GetVariable(string name)
+            {
+                throw new NotImplementedException();
             }
         }
 

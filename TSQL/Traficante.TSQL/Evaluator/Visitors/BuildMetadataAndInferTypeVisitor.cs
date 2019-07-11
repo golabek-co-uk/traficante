@@ -19,7 +19,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class BuildMetadataAndInferTypeVisitor : IAwareExpressionVisitor
     {
-        private readonly IDatabaseProvider _databaseProvider;
+        private readonly IEngine _engine;
 
         private readonly List<AccessMethodNode> _refreshMethods = new List<AccessMethodNode>();
         private readonly List<object> _schemaFromArgs = new List<object>();
@@ -37,9 +37,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         private Stack<string> Methods { get; } = new Stack<string>();
 
-        public BuildMetadataAndInferTypeVisitor(IDatabaseProvider provider)
+        public BuildMetadataAndInferTypeVisitor(IEngine engine)
         {
-            _databaseProvider = provider;
+            _engine = engine;
         }
 
         protected Stack<Node> Nodes { get; } = new Stack<Node>();
@@ -350,8 +350,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             //var parentNodeType = Nodes.Peek().ReturnType;
             //Nodes.Push(new VariableNode(node.Name, parentNodeType.GetProperty(node.Name)));
-            var database = _databaseProvider.GetDatabase(null);
-            var variable = database.GetVariable(node.Name);
+            var variable = _engine.GetVariable(node.Name);
             Nodes.Push(new VariableNode(node.Name, variable.Type));
         }
 
@@ -418,7 +417,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SchemaFunctionFromNode node)
         {
-            var database = _databaseProvider.GetDatabase(node.Database);
+            var database = _engine.GetDatabase(node.Database);
 
 
             ITable table;
@@ -448,7 +447,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SchemaTableFromNode node)
         {
-            var schema = _databaseProvider.GetDatabase(node.Database);
+            var schema = _engine.GetDatabase(node.Database);
 
             ITable table;
             if (_currentScope.Name != "Desc")
@@ -484,7 +483,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var tableName = _explicitlyCoupledTablesWithAliases[node.Identifier];
             var table = _explicitlyDefinedTables[tableName];
 
-            var schema = _databaseProvider.GetDatabase(null);
+            var schema = _engine.GetDatabase(null);
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
@@ -540,7 +539,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(ReferentialFromNode node)
         {
             TableSymbol tableSymbol;
-            var schema = _databaseProvider.GetDatabase(null);
+            var schema = _engine.GetDatabase(null);
             var table = schema.GetTableByName(null, node.Name);
             if (table != null)
             {
@@ -901,7 +900,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 groupArgs.Clear();
                 groupArgs.AddRange(args.Args.Skip(1).Select(f => f.ReturnType));
-                var db = this._databaseProvider.GetDatabase(null);
+                var db = this._engine.GetDatabase(null);
                 if (db.TryResolveAggreationMethod(node.Name, groupArgs.ToArray(), out var buildinMethod))
                 {
                     AccessMethodNode buildInAccessMethod = func(node.FToken, args, new ArgsListNode(new Node[0]), buildinMethod, alias);

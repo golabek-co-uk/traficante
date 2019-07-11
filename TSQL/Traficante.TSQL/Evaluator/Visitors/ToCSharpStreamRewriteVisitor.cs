@@ -39,7 +39,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
-        private IDatabaseProvider _schemaProvider;
+        private IEngine _engine;
         private RuntimeContext _interCommunicator;
 
         public IQueryable<IObjectResolver> ResultStream = null;
@@ -50,14 +50,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
         public ToCSharpStreamRewriteVisitor(
-            IDatabaseProvider schemaProvider,
+            IEngine engine,
             IDictionary<string, int[]> setOperatorFieldIndexes, 
             IDictionary<Node, IColumn[]> inferredColumns)
         {
             _setOperatorFieldIndexes = setOperatorFieldIndexes;
             InferredColumns = inferredColumns;
             Nodes = new Stack<System.Linq.Expressions.Expression>();
-            _schemaProvider = schemaProvider;
+            _engine = engine;
             _interCommunicator = RuntimeContext.Empty;
 
         }
@@ -72,7 +72,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var fromNode = (SchemaFunctionFromNode)node.From;
 
-                var table = _schemaProvider
+                var table = _engine
                     .GetDatabase(null)
                     .GetTableByName(fromNode.Schema, fromNode.Method);
 
@@ -102,7 +102,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var fromNode = (SchemaFunctionFromNode)node.From;
 
-                var table = _schemaProvider
+                var table = _engine
                     .GetDatabase(fromNode.Schema);
             }
         }
@@ -647,8 +647,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(VariableNode node)
         {
-            var database = _schemaProvider.GetDatabase(null);
-            Nodes.Push(Expression.Constant(database.GetVariableValue(node.Name)));
+            var variable = _engine.GetVariable(node.Name);
+            Nodes.Push(Expression.Constant(variable.Value, variable.Type));
         }
 
         public void Visit(DotNode node)
@@ -850,9 +850,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(SchemaFunctionFromNode node)
         {
             //var rowSource = _schemaProvider.GetDatabase(null).GetRowSource(node.Schema, node.Method, _interCommunicator, new object[0]).Rows;
-            var rowSource = _schemaProvider.GetDatabase(null).GetFunctionRowSource(node.Schema, node.Method, new object[0]).Rows;
+            var rowSource = _engine.GetDatabase(null).GetFunctionRowSource(node.Schema, node.Method, new object[0]).Rows;
 
-            var fields = _schemaProvider
+            var fields = _engine
                 .GetDatabase(null)
                 .GetFunctionByName(node.Schema, node.Method, new object[0])
                 .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
@@ -904,9 +904,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SchemaTableFromNode node)
         {
-            var rowSource = _schemaProvider.GetDatabase(node.Database).GetTableRowSource(node.Schema, node.TableOrView).Rows;
+            var rowSource = _engine.GetDatabase(node.Database).GetTableRowSource(node.Schema, node.TableOrView).Rows;
 
-            var fields = _schemaProvider
+            var fields = _engine
                 .GetDatabase(node.Database)
                 .GetTableByName(node.Schema, node.TableOrView)
                 .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();

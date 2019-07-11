@@ -6,7 +6,7 @@ namespace Traficante.TSQL.Evaluator
 {
     public interface IRunnable
     {
-        IDatabaseProvider Provider { get; set; }
+        IEngine Provider { get; set; }
         Table Run(CancellationToken token);
     }
 }
