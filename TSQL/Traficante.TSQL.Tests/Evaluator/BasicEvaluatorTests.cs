@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
+using Traficante.TSQL.Tests;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
@@ -1305,6 +1306,41 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(123, table[0][0]);
         }
 
-        
+        [TestMethod]
+        public void Select_TwoQueries()
+        {
+            Engine sut = new Engine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" },
+                new Person { Id = 2, FirstName = "John", LastName = "Doe" },
+                new Person { Id = 3, FirstName = "Joe", LastName = "Block" }
+            });
+            sut.AddTable("Persons2", new Person[] {
+                new Person { Id = 5, FirstName = "Daniel", LastName = "Json" },
+                new Person { Id = 6, FirstName = "Mark", LastName = "Stanford" },
+            });
+
+
+            var resunt = sut.Run("SELECT * FROM Persons WHERE FirstName = 'John'; SELECT * FROM Persons2 WHERE FirstName = 'Daniel'");
+            Assert.AreEqual(1, resunt.Count);
+            Assert.AreEqual(5, resunt[0][0]);
+            Assert.AreEqual("Daniel", resunt[0][1]);
+            Assert.AreEqual("Json", resunt[0][2]);
+        }
+
+        [TestMethod]
+        public void Select_QueryAndSelectFunction()
+        {
+            Engine sut = new Engine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" },
+                new Person { Id = 2, FirstName = "John", LastName = "Doe" },
+                new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
+            });
+
+            var resunt = sut.Run("SELECT * FROM Persons WHERE FirstName = 'John'; SELECT GetDate()");
+            Assert.AreEqual(1, resunt.Count);
+            Assert.IsTrue(resunt[0][0] is DateTimeOffset);
+        }
     }
 }

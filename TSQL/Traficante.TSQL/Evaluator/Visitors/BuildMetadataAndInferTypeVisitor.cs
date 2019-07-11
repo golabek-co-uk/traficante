@@ -896,18 +896,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var alias = !string.IsNullOrEmpty(node.Alias) ? node.Alias : _identifier;
 
-            if (string.IsNullOrEmpty(alias))
+
+            var db = this._engine.GetDatabase(null);
+            if (db.TryResolveAggreationMethod(node.Name, args.Args.Skip(1).Select(f => f.ReturnType).ToArray(), out var buildinMethod))
             {
-                groupArgs.Clear();
-                groupArgs.AddRange(args.Args.Skip(1).Select(f => f.ReturnType));
-                var db = this._engine.GetDatabase(null);
-                if (db.TryResolveAggreationMethod(node.Name, groupArgs.ToArray(), out var buildinMethod))
-                {
-                    AccessMethodNode buildInAccessMethod = func(node.FToken, args, new ArgsListNode(new Node[0]), buildinMethod, alias);
-                    node.ChangeMethod(buildinMethod);
-                    Nodes.Push(buildInAccessMethod);
-                    return;
-                }
+                AccessMethodNode buildInAccessMethod = func(node.FToken, args, new ArgsListNode(new Node[0]), buildinMethod, alias);
+                node.ChangeMethod(buildinMethod);
+                Nodes.Push(buildInAccessMethod);
+                return;
             }
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(alias);

@@ -597,11 +597,12 @@ namespace Traficante.TSQL.Parser
 
         private FromNode ComposeFrom(bool fromBefore = true)
         {
-            if (Current.TokenType == TokenType.EndOfFile)
-                return null;
-
             if (fromBefore)
+            {
+                if (Current.TokenType != TokenType.From)
+                    return null;
                 Consume(TokenType.From);
+            }
 
             string alias;
             if (Current.TokenType == TokenType.Word || Current.TokenType == TokenType.Identifier)
