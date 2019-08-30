@@ -17,22 +17,19 @@ namespace Traficante.TSQL.Schema.DataSources
 
         private readonly MethodsAggregator _aggregator;
 
-        private IDictionary<string, Reflection.ConstructorInfo[]> Constructors { get; } = new Dictionary<string, Reflection.ConstructorInfo[]>();
-        private List<SchemaMethodInfo> ConstructorsMethods { get; } = new List<SchemaMethodInfo>();
-        private IDictionary<string, object[]> AdditionalArguments { get; } = new Dictionary<string, object[]>();
+        //private IDictionary<string, Reflection.ConstructorInfo[]> Constructors { get; } = new Dictionary<string, Reflection.ConstructorInfo[]>();
+        //private List<SchemaMethodInfo> ConstructorsMethods { get; } = new List<SchemaMethodInfo>();
+        //private IDictionary<string, object[]> AdditionalArguments { get; } = new Dictionary<string, object[]>();
 
         public string Name { get; set; }
         public string DefaultSchema { get; set; }
-        public List<(ITable Table, RowSource Source)> Tables { get; private set; }
-        public List<(ITable Table, RowSource Source)> Functions { get; private set; }
-
-
+        public List<(ITable Table, RowSource Source)> Tables { get; set; } = new List<(ITable Table, RowSource Source)>();
+        public List<(ITable Table, RowSource Source)> Functions { get; set; } = new List<(ITable Table, RowSource Source)>();
+        public List<IFunction> Functions2 { get; set; } = new List<IFunction>();
 
         protected BaseDatabase(string name, MethodsAggregator methodsAggregator)
         {
             Name = name;
-            Tables = new List<(ITable Table, RowSource Source)>();
-            Functions = new List<(ITable Table, RowSource Source)>();
             _aggregator = methodsAggregator;
         }
 
@@ -40,8 +37,6 @@ namespace Traficante.TSQL.Schema.DataSources
         {
             Name = name;
             DefaultSchema = defaultSchema;
-            Tables = new List<(ITable Table, RowSource Source)>();
-            Functions = new List<(ITable Table, RowSource Source)>();
             _aggregator = methodsAggregator;
         }
 
@@ -55,7 +50,14 @@ namespace Traficante.TSQL.Schema.DataSources
         {
             var entityMap = TypeHelper.GetEntityMap<TType>();
             Functions.Add((new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items())));
-        } 
+        }
+
+        public void AddFunction<T, TResult>(string schema, string name, Func<T,TResult> func)
+        {
+            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T) });
+            
+            Functions2.Add(function);
+        }
 
         public virtual ITable GetTableByName(string schema, string name)
         {
@@ -89,111 +91,16 @@ namespace Traficante.TSQL.Schema.DataSources
                 .Source;
         }
 
-        //private void AddToConstructors<TType>(string name)
-        //{
-        //    var schemaMethodInfos = TypeHelper
-        //        .GetSchemaMethodInfosForType<TType>(name);
-
-        //    ConstructorsMethods.AddRange(schemaMethodInfos);
-
-        //    var schemaMethods = schemaMethodInfos
-        //        .Select(schemaMethod => schemaMethod.ConstructorInfo)
-        //        .ToArray();
-
-        //    Constructors.Add(name, schemaMethods);
-        //}
-
-        //public virtual RowSource GetRowSource(string schema, string name, RuntimeContext interCommunicator, params object[] parameters)
-        //{
-        //    var sourceName = $"{schema.ToLowerInvariant()}_{name.ToLowerInvariant()}{_sourcePart}";
-
-        //    var methods = GetConstructors(schema, sourceName).Select(c => c.ConstructorInfo).ToArray();
-
-        //    if (AdditionalArguments.ContainsKey(sourceName))
-        //        parameters = parameters.ExpandParameters(AdditionalArguments[sourceName]);
-
-        //    if (!TryMatchConstructorWithParams(methods, parameters, out var constructorInfo))
-        //        throw new NotSupportedException($"Unrecognized method {name}.");
-
-        //    if (constructorInfo.SupportsInterCommunicator)
-        //        parameters = parameters.ExpandParameters(interCommunicator);
-
-        //    return (RowSource)constructorInfo.OriginConstructor.Invoke(parameters);
-        //}
-
-        //public SchemaMethodInfo[] GetConstructors(string schema, string methodName)
-        //{
-        //    return GetConstructors(schema).Where(constr => constr.MethodName == methodName).ToArray();
-        //}
-
-        //public virtual SchemaMethodInfo[] GetConstructors(string schema)
-        //{
-        //    return ConstructorsMethods.ToArray();
-        //}
-
-        //public SchemaMethodInfo[] GetRawConstructors(string schema)
-        //{
-        //    return ConstructorsMethods
-        //        .Where(cm => cm.MethodName.Contains(_tablePart))
-        //        .Select(cm => {
-        //            var index = cm.MethodName.IndexOf(_tablePart);
-        //            var rawMethodName = cm.MethodName.Substring(0, index);
-        //            return new SchemaMethodInfo(rawMethodName, cm.ConstructorInfo);
-        //        }).ToArray();
-        //}
-
-        //public SchemaMethodInfo[] GetRawConstructors(string schema, string methodName)
-        //{
-        //    return GetRawConstructors(schema).Where(constr => constr.MethodName == methodName).ToArray();
-        //}
-
         public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
         {
             var founded = _aggregator.TryResolveMethod(method, parameters, out methodInfo);
             return founded;
-
-            if (founded)
-                return methodInfo.GetCustomAttribute<AggregationMethodAttribute>() != null;
-
-            return false;
         }
 
         public MethodInfo ResolveMethod(string schema, string method, Type[] parameters)
         {
             return _aggregator.ResolveMethod(method, parameters);
         }
-
-        //protected bool ParamsMatchConstructor(Reflection.ConstructorInfo constructor, object[] parameters)
-        //{
-        //    bool matchingResult = true;
-
-        //    if (parameters.Length != constructor.Arguments.Length)
-        //        return false;
-
-        //    for (int i = 0; i < parameters.Length && matchingResult; ++i)
-        //    {
-        //        matchingResult &= 
-        //            constructor.Arguments[i].Type.IsAssignableFrom(
-        //                parameters[i].GetType());
-        //    }
-
-        //    return matchingResult;
-        //}
-
-        //protected bool TryMatchConstructorWithParams(Reflection.ConstructorInfo[] constructors, object[] parameters, out Reflection.ConstructorInfo foundedConstructor)
-        //{
-        //    foreach(var constructor in constructors)
-        //    {
-        //        if(ParamsMatchConstructor(constructor, parameters))
-        //        {
-        //            foundedConstructor = constructor;
-        //            return true;
-        //        }
-        //    }
-
-        //    foundedConstructor = null;
-        //    return false;
-        //}
     }
 
     public class DatabaseTable : ITable
@@ -212,6 +119,27 @@ namespace Traficante.TSQL.Schema.DataSources
         public string Schema { get; }
     }
 
+    public class DatabaseFunction : IFunction
+    {
+        public DatabaseFunction(string schema, string name, Type returnType, Type[] argumentsTypes)
+        {
+            Schema = schema;
+            Name = name;
+            ReturnType = returnType;
+            ArgumentsTypes = argumentsTypes;
+        }
+
+        public IColumn[] Columns { get; }
+
+        public string Name { get; }
+
+        public string Schema { get; }
+
+        public Type ReturnType { get; set; }
+
+        public Type[] ArgumentsTypes {get; set;}
+    }
+
     public class DatabaseVariable : IVariable
     {
         public DatabaseVariable(string schema, string name, Type type, object value)
@@ -228,6 +156,6 @@ namespace Traficante.TSQL.Schema.DataSources
 
         public Type Type { get; }
 
-        public object Value { get; }
+        public object Value { get; set; }
     }
 }

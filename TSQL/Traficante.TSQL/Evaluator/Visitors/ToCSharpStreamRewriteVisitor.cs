@@ -651,6 +651,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(Expression.Constant(variable.Value, variable.Type));
         }
 
+        public void Visit(DeclareNode node)
+        {
+            _engine.SetVariable(node.Variable.Name, node.Type.ReturnType, null);
+        }
+
+        public void Visit(SetNode node)
+        {
+            Expression valueExpression = Nodes.Pop();
+            var value = Expression.Lambda<Func<object>>(valueExpression).Compile()();
+            _engine.SetVariable(node.Variable.Name, value);
+        }
+
         public void Visit(DotNode node)
         {
         }
@@ -1140,10 +1152,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(RootNode node)
         {
-            Expression last = Nodes.Pop();
-            Expression<Func<IEnumerable<object>>> toStream = Expression.Lambda<Func<IEnumerable<object>>>(last);
-            var compiledToStream = toStream.Compile();
-            ResultStream = compiledToStream().AsQueryable().Select(x => new AnonymousTypeResolver(x));
+            if (Nodes.Any())
+            {
+                Expression last = Nodes.Pop();
+                Expression<Func<IEnumerable<object>>> toStream = Expression.Lambda<Func<IEnumerable<object>>>(last);
+                var compiledToStream = toStream.Compile();
+                ResultStream = compiledToStream().AsQueryable().Select(x => new AnonymousTypeResolver(x));
+            }
         }
 
         public void Visit(SingleSetNode node)

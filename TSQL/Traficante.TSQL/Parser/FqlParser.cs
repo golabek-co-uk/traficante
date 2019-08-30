@@ -63,6 +63,10 @@ namespace Traficante.TSQL.Parser
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeTable()), TokenType.Semicolon);
                 case TokenType.Couple:
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeCouple()), TokenType.Semicolon);
+                case TokenType.Declare:
+                    return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeDeclare()), TokenType.Semicolon);
+                case TokenType.Set:
+                    return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeSet()), TokenType.Semicolon);
 
                 default:
                     throw new NotSupportedException($"{Current.TokenType} cannot be used here.");
@@ -119,6 +123,48 @@ namespace Traficante.TSQL.Parser
             var identifierNode = (IdentifierNode)ComposeBaseTypes();
 
             return new CoupleNode(from, name, identifierNode.Name);
+        }
+
+        private DeclareNode ComposeDeclare()
+        {
+            Consume(TokenType.Declare);
+
+            var variable = ConsumeAndGetToken(TokenType.Variable);
+            var variableNode = new VariableNode(variable.Value);
+            var typeNode = ComposeType();
+            
+            return new DeclareNode(variableNode, typeNode);
+        }
+
+        private SetNode ComposeSet()
+        {
+            Consume(TokenType.Set);
+
+            var variable = ConsumeAndGetToken(TokenType.Variable);
+            var variableNode = new VariableNode(variable.Value);
+            Consume(TokenType.Equality);
+            var valueNode = ComposeBaseTypes();
+            return new SetNode(variableNode, valueNode);
+        }
+
+        private TypeNode ComposeType()
+        {
+            if (Current.TokenType == TokenType.Function)
+            {
+                var type = ConsumeAndGetToken(TokenType.Function);
+                Consume(TokenType.LeftParenthesis);
+                var size = ConsumeAndGetToken(TokenType.Integer);
+                Consume(TokenType.RightParenthesis);
+                var typeNode = new TypeNode(type.Value, long.Parse(size.Value));
+                return typeNode;
+            }
+            if (Current.TokenType == TokenType.Identifier)
+            {
+                var type = ConsumeAndGetToken(TokenType.Identifier);
+                var typeNode = new TypeNode(type.Value);
+                return typeNode;
+            }
+            return null;
         }
 
         private CreateTableNode ComposeTable()

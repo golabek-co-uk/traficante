@@ -1295,18 +1295,6 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        public void Select_Variable()
-        {
-            Engine sut = new Engine();
-            sut.AddVariable("@@VERSION", 123);
-
-            var table = sut.Run("SELECT @@VERSION AS 'SQL Server Version'");
-
-            Assert.AreEqual(1, table.Count);
-            Assert.AreEqual(123, table[0][0]);
-        }
-
-        [TestMethod]
         public void Select_TwoQueries()
         {
             Engine sut = new Engine();

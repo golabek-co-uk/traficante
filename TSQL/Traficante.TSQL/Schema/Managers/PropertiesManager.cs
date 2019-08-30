@@ -6,24 +6,24 @@ using Traficante.TSQL.Plugins.Attributes;
 
 namespace Traficante.TSQL.Schema.Managers
 {
-    public class PropertiesManager : ManagerBase<MethodInfo>
-    {
-        public ReadOnlyCollection<MethodInfo> Properties => Parts.AsReadOnly();
+    //public class PropertiesManager : ManagerBase<MethodInfo>
+    //{
+    //    public ReadOnlyCollection<MethodInfo> Properties => Parts.AsReadOnly();
 
-        public void RegisterProperties(LibraryBase library)
-        {
-            TryAddLibraryParts(library);
-        }
+    //    public void RegisterProperties(LibraryBase library)
+    //    {
+    //        TryAddLibraryParts(library);
+    //    }
 
-        protected override bool CanReflectedPartBeQueryable(MethodInfo reflectedInfo)
-        {
-            var parameters = reflectedInfo.GetParameters();
-            return parameters.Length == 1 && parameters[0].GetCustomAttributes(typeof(InjectSourceAttribute)) != null;
-        }
+    //    protected override bool CanReflectedPartBeQueryable(MethodInfo reflectedInfo)
+    //    {
+    //        var parameters = reflectedInfo.GetParameters();
+    //        return parameters.Length == 1 && parameters[0].GetCustomAttributes(typeof(InjectSourceAttribute)) != null;
+    //    }
 
-        protected override MethodInfo[] GetReflectedInfos(Type type)
-        {
-            return type.GetMethods();
-        }
-    }
+    //    protected override MethodInfo[] GetReflectedInfos(Type type)
+    //    {
+    //        return type.GetMethods();
+    //    }
+    //}
 }

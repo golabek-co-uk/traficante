@@ -21,15 +21,15 @@ namespace Traficante.TSQL.Schema
         private static MethodsAggregator CreateLibrary(LibraryBase library)
         {
             var methodManager = new MethodsManager();
-            var propertiesManager = new PropertiesManager();
+            //var propertiesManager = new PropertiesManager();
 
             if (library == null)
                 library = new Library();
 
-            propertiesManager.RegisterProperties(library);
+            //propertiesManager.RegisterProperties(library);
             methodManager.RegisterLibraries(library);
 
-            return new MethodsAggregator(methodManager, propertiesManager);
+            return new MethodsAggregator(methodManager);//, propertiesManager);
         }
     }
 }

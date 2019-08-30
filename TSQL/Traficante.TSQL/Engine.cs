@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using Traficante.TSQL.Converter;
 using Traficante.TSQL.Evaluator.Tables;
@@ -58,7 +59,7 @@ namespace Traficante.TSQL
             db.AddTable(schema, table, items);
         }
 
-        public void AddFunction<T>(string database, string schema, string table, Func<IEnumerable<T>> function)
+        public void AddFunction<T>(string database, string schema, string name, Func<IEnumerable<T>> function)
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
@@ -68,17 +69,56 @@ namespace Traficante.TSQL
                 db = new Database(database, DefaultSchema, _library);
                 _databases.Add(db);
             }
-            db.AddFunction(schema, table, function);
+            db.AddFunction(schema, name, function);
         }
 
-        public void AddVariable<T>(string name, T value)
+        public void AddFunction<T, TResult>(string database, string schema, string name, Func<T, TResult> function)
         {
-            AddVariable(null, null, name, value);
+            database = database ?? DefaultDatabase;
+            schema = schema ?? DefaultSchema;
+            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
+            if (db == null)
+            {
+                db = new Database(database, DefaultSchema, _library);
+                _databases.Add(db);
+            }
+            db.AddFunction(schema, name, function);
         }
 
-        public void AddVariable<T>(string database, string schema, string name, T value)
+        public void SetVariable<T>(string name, T value)
         {
-            _variables.Add(new DatabaseVariable(schema, name, typeof(T), value));
+            SetVariable(null, null, name, value);
+        }
+
+        public void SetVariable<T>(string database, string schema, string name, T value)
+        {
+            var variable = _variables.FirstOrDefault(x => string.Equals(x.Schema, schema, StringComparison.CurrentCultureIgnoreCase) && string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
+            if (variable != null)
+            {
+                variable.Value = value;
+            }
+            else
+            {
+                _variables.Add(new DatabaseVariable(schema, name, typeof(T), value));
+            }
+        }
+
+        public void SetVariable(string name, Type type, object value)
+        {
+            SetVariable(null, null, name, type, value);
+        }
+
+        public void SetVariable(string database, string schema, string name, Type type, object value)
+        {
+            var variable = _variables.FirstOrDefault(x => string.Equals(x.Schema, schema, StringComparison.CurrentCultureIgnoreCase) && string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
+            if (variable != null)
+            {
+                variable.Value = value;
+            }
+            else
+            {
+                _variables.Add(new DatabaseVariable(schema, name, type, value));
+            }
         }
 
         public IVariable GetVariable(string name)

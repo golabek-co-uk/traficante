@@ -74,6 +74,26 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             {
                 throw new NotImplementedException();
             }
+
+            public void SetVariable<T>(string name, T value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetVariable<T>(string database, string schema, string name, T value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetVariable(string name, Type type, object value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetVariable(string database, string schema, string name, Type type, object value)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestSchema : BaseDatabase
@@ -107,14 +127,14 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             private static MethodsAggregator CreateLibrary()
             {
                 var methodManager = new MethodsManager();
-                var propertiesManager = new PropertiesManager();
+                //var propertiesManager = new PropertiesManager();
 
                 var lib = new TestLibrary();
 
-                propertiesManager.RegisterProperties(lib);
+                //propertiesManager.RegisterProperties(lib);
                 methodManager.RegisterLibraries(lib);
 
-                return new MethodsAggregator(methodManager, propertiesManager);
+                return new MethodsAggregator(methodManager);//, propertiesManager);
             }
 
             //public override SchemaMethodInfo[] GetConstructors(string schema)

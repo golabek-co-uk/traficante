@@ -348,10 +348,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(VariableNode node)
         {
-            //var parentNodeType = Nodes.Peek().ReturnType;
-            //Nodes.Push(new VariableNode(node.Name, parentNodeType.GetProperty(node.Name)));
             var variable = _engine.GetVariable(node.Name);
             Nodes.Push(new VariableNode(node.Name, variable.Type));
+        }
+
+        public virtual void Visit(DeclareNode node)
+        {
+            Nodes.Push(new DeclareNode(node.Variable, node.Type));
+        }
+
+        public virtual void Visit(SetNode node)
+        {
+            Nodes.Push(new SetNode(node.Variable, node.Value));
         }
 
         public void Visit(DotNode node)
@@ -905,6 +913,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 Nodes.Push(buildInAccessMethod);
                 return;
             }
+
+            if (alias == null)
+            {
+                var methodInfo = db.ResolveMethod(null, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
+            }
+            //db.ResolveMethod()
+
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(alias);
             var schemaTablePair = tableSymbol.GetTableByAlias(alias);

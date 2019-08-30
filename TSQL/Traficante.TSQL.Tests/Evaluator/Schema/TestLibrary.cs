@@ -9,23 +9,23 @@ namespace Traficante.TSQL.Evaluator.Tests.Core.Schema
     {
         private readonly Random _random = new Random();
 
-        [BindableMethod]
-        public string Name([InjectSource] BasicEntity entity)
-        {
-            return entity.Name;
-        }
+        //[BindableMethod]
+        //public string Name([InjectSource] BasicEntity entity)
+        //{
+        //    return entity.Name;
+        //}
 
-        [BindableMethod]
-        public string MyName([InjectSource] BasicEntity entity)
-        {
-            return entity.Name;
-        }
+        //[BindableMethod]
+        //public string MyName([InjectSource] BasicEntity entity)
+        //{
+        //    return entity.Name;
+        //}
 
-        [BindableMethod]
-        public string Extension([InjectSource] BasicEntity entity)
-        {
-            return ".txt";
-        }
+        //[BindableMethod]
+        //public string Extension([InjectSource] BasicEntity entity)
+        //{
+        //    return ".txt";
+        //}
 
         [BindableMethod]
         public int RandomNumber()

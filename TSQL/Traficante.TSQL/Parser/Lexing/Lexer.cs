@@ -132,6 +132,10 @@ namespace Traficante.TSQL.Parser.Lexing
                     return TokenType.Else;
                 case EndToken.TokenText:
                     return TokenType.End;
+                case DeclareToken.TokenText:
+                    return TokenType.Declare;
+                case SetToken.TokenText:
+                    return TokenType.Set;
             }
 
             if (string.IsNullOrWhiteSpace(tokenText))
@@ -266,6 +270,8 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KThen = Format(Keyword, ThenToken.TokenText);
             public static readonly string KElse = Format(Keyword, ElseToken.TokenText);
             public static readonly string KEnd = Format(Keyword, EndToken.TokenText);
+            public static readonly string KDeclare = Format(Keyword, DeclareToken.TokenText);
+            public static readonly string KSet = Format(Keyword, SetToken.TokenText);
 
             private static string Format(string keyword, string arg)
             {
@@ -358,6 +364,8 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KThen),
                 new TokenDefinition(TokenRegexDefinition.KElse),
                 new TokenDefinition(TokenRegexDefinition.KEnd),
+                new TokenDefinition(TokenRegexDefinition.KDeclare),
+                new TokenDefinition(TokenRegexDefinition.KSet),
             };
         }
 
@@ -543,6 +551,10 @@ namespace Traficante.TSQL.Parser.Lexing
                     return new ElseToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.End:
                     return new EndToken(new TextSpan(Position, tokenText.Length));
+                case TokenType.Declare:
+                    return new DeclareToken(new TextSpan(Position, tokenText.Length));
+                case TokenType.Set:
+                    return new SetToken(new TextSpan(Position, tokenText.Length));
             }
 
             if (matchedDefinition.Regex.ToString() == TokenRegexDefinition.KWordBracketed)

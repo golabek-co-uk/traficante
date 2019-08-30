@@ -1,0 +1,738 @@
+
+------------------------------
+
+DECLARE @edition sysname;
+
+SET @edition = cast(SERVERPROPERTY(N'EDITION') as sysname);
+
+SELECT case when @edition = N'SQL Azure' then 2 else 1 end as 'DatabaseEngineType',
+
+SERVERPROPERTY('EngineEdition') AS DatabaseEngineEdition,
+
+SERVERPROPERTY('ProductVersion') AS ProductVersion,
+
+@@MICROSOFTVERSION AS MicrosoftVersion;
+
+select N'Windows' as host_platform
+
+if @edition = N'SQL Azure'
+
+  select 'TCP' as ConnectionProtocol
+
+else
+
+  exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')
+
+ 
+
+ 
+
+ 
+
+  ---------------------------
+
+  IF (@@microsoftversion / 0x01000000) >= 9 AND ISNULL(IS_SRVROLEMEMBER(N'sysadmin'), 0) = 1
+
+            BEGIN
+
+                SELECT se.is_admin_endpoint AS N'AdminConnection',
+
+                        (SELECT CAST(cfg.value AS bit) AS [ConfigValue]
+
+                                FROM
+
+                                sys.configurations AS cfg WHERE configuration_id=16387)
+
+                                AS N'SmoEnabled'
+
+                FROM  sys.endpoints se
+
+                INNER JOIN sys.dm_exec_connections dmc ON dmc.endpoint_id = se.endpoint_id
+
+                                                                            WHERE
+
+                                                                            dmc.session_id = @@spid
+
+            END
+
+            ELSE
+
+            BEGIN
+
+                        IF (@@microsoftversion / 0x01000000) >= 9
+
+                        BEGIN
+
+                    SELECT CAST(0 AS BIT) AS N'AdminConnection',
+
+                        (SELECT CAST(cfg.value AS bit) AS [ConfigValue]
+
+                                    FROM
+
+                                    sys.configurations AS cfg WHERE configuration_id=16387)
+
+                    AS N'SmoEnabled'
+
+                        END
+
+                        ELSE
+
+                        BEGIN
+
+                    SELECT CAST(0 AS BIT) AS N'AdminConnection',
+
+                    CAST(0 AS BIT) AS N'SmoEnabled'
+
+                        END
+
+            END
+
+ 
+
+ 
+
+ 
+
+------------------------------
+
+DECLARE @edition sysname;
+
+SET @edition = cast(SERVERPROPERTY(N'EDITION') as sysname);
+
+SELECT case when @edition = N'SQL Azure' then 2 else 1 end as 'DatabaseEngineType',
+
+SERVERPROPERTY('EngineEdition') AS DatabaseEngineEdition,
+
+SERVERPROPERTY('ProductVersion') AS ProductVersion,
+
+@@MICROSOFTVERSION AS MicrosoftVersion;
+
+select N'Windows' as host_platform
+
+if @edition = N'SQL Azure'
+
+  select 'TCP' as ConnectionProtocol
+
+else
+
+  exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+  ----------------------------
+
+  SET LOCK_TIMEOUT 10000
+
+ 
+
+ 
+
+ 
+
+ 
+
+  ----------------------------
+
+  DECLARE @edition sysname;
+
+SET @edition = cast(SERVERPROPERTY(N'EDITION') as sysname);
+
+SELECT case when @edition = N'SQL Azure' then 2 else 1 end as 'DatabaseEngineType',
+
+SERVERPROPERTY('EngineEdition') AS DatabaseEngineEdition,
+
+SERVERPROPERTY('ProductVersion') AS ProductVersion,
+
+@@MICROSOFTVERSION AS MicrosoftVersion;
+
+select N'Windows' as host_platform
+
+if @edition = N'SQL Azure'
+
+  select 'TCP' as ConnectionProtocol
+
+else
+
+  exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')
+
+ 
+
+ 
+
+ 
+
+ 
+
+  --------------------------------------------
+
+  SELECT
+
+CAST(SERVERPROPERTY('EngineEdition') AS int) AS [EngineEdition]
+
+ 
+
+ 
+
+ 
+
+ 
+
+-----------------------------------------------
+
+SELECT
+
+CAST(
+
+        serverproperty(N'Servername')
+
+       AS sysname) AS [Server_Name],
+
+'Server[@Name=' + quotename(CAST(
+
+        serverproperty(N'Servername')
+
+       AS sysname),'''') + ']' AS [Server_Urn],
+
+CAST(null AS int) AS [Server_ServerType],
+
+CAST(0x0001 AS int) AS [Server_Status],
+
+0 AS [Server_IsContainedAuthentication],
+
+(@@microsoftversion / 0x1000000) & 0xff AS [VersionMajor],
+
+(@@microsoftversion / 0x10000) & 0xff AS [VersionMinor],
+
+@@microsoftversion & 0xffff AS [BuildNumber],
+
+CAST(SERVERPROPERTY('IsSingleUser') AS bit) AS [IsSingleUser],
+
+CAST(SERVERPROPERTY(N'Edition') AS sysname) AS [Edition],
+
+CAST(SERVERPROPERTY('EngineEdition') AS int) AS [EngineEdition],
+
+CAST(ISNULL(SERVERPROPERTY(N'IsXTPSupported'), 0) AS bit) AS [IsXTPSupported],
+
+SERVERPROPERTY(N'ProductVersion') AS [VersionString],
+
+N'Windows' AS [HostPlatform],
+
+CAST(FULLTEXTSERVICEPROPERTY('IsFullTextInstalled') AS bit) AS [IsFullTextInstalled]
+
+ORDER BY
+
+[Server_Name] ASC
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+---------------------------------------------
+
+ 
+
+select
+
+    case
+
+        when object_id('dbo.sysdac_instances') is not null then 1
+
+    else
+
+        0
+
+    end
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+-----------------------------------
+
+select has_dbaccess('msdb')
+
+ 
+
+ 
+
+ 
+
+----------------------------------
+
+SET LOCK_TIMEOUT 10000
+
+ 
+
+ 
+
+ 
+
+---------------------------------
+
+DECLARE @edition sysname;
+
+SET @edition = cast(SERVERPROPERTY(N'EDITION') as sysname);
+
+SELECT case when @edition = N'SQL Azure' then 2 else 1 end as 'DatabaseEngineType',
+
+SERVERPROPERTY('EngineEdition') AS DatabaseEngineEdition,
+
+SERVERPROPERTY('ProductVersion') AS ProductVersion,
+
+@@MICROSOFTVERSION AS MicrosoftVersion;
+
+select N'Windows' as host_platform
+
+if @edition = N'SQL Azure'
+
+  select 'TCP' as ConnectionProtocol
+
+else
+
+  exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+----------------------------------
+
+SELECT
+
+case when 1=msdb.dbo.fn_syspolicy_is_automation_enabled() and exists (select * from msdb.dbo.syspolicy_system_health_state  where target_query_expression_with_id like 'Server%' ) then 1 else 0 end AS [PolicyHealthState]
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+--------------------------
+
+DECLARE @alwayson INT
+
+        EXECUTE @alwayson = master.dbo.xp_qv N'3641190370', @@SERVICENAME;
+
+ 
+
+ 
+
+ 
+
+SELECT
+
+ISNULL(@alwayson, -1) AS [AlwaysOn]
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+--------------------------
+
+SELECT
+
+CAST(SERVERPROPERTY(N'IsHadrEnabled') AS bit) AS [IsHadrEnabled]
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+---------------------------
+
+select SERVERPROPERTY(N'servername')
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+--------------------------
+
+SELECT
+
+N'Windows' AS [HostPlatform]
+
+ 
+
+        drop table #SVer
+
+ 
+
+ 
+
+ 
+
+ 
+
+-------------------------
+
+SELECT SERVERPROPERTY(N'Edition') AS [Edition], SERVERPROPERTY(N'EngineEdition') AS [EngineEdition]
+
+ 
+
+ 
+
+ 
+
+ 
+
+--------------------------
+
+SELECT
+
+CAST(SERVERPROPERTY(N'Servername') AS sysname) AS [Name],
+
+'IntegrationServices[@Name=' + quotename(CAST(SERVERPROPERTY(N'Servername') AS sysname),'''') + ']' AS [Urn]
+
+ORDER BY
+
+[Name] ASC
+
+ 
+
+ 
+
+ 
+
+ 
+
+-------------------------
+
+DECLARE @edition sysname;
+
+SET @edition = cast(SERVERPROPERTY(N'EDITION') as sysname);
+
+SELECT case when @edition = N'SQL Azure' then 2 else 1 end as 'DatabaseEngineType',
+
+SERVERPROPERTY('EngineEdition') AS DatabaseEngineEdition,
+
+SERVERPROPERTY('ProductVersion') AS ProductVersion,
+
+@@MICROSOFTVERSION AS MicrosoftVersion;
+
+select N'Windows' as host_platform
+
+if @edition = N'SQL Azure'
+
+  select 'TCP' as ConnectionProtocol
+
+else
+
+  exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')
+
+ 
+
+ 
+
+ 
+
+  -----------------------------
+
+  SELECT SERVERPROPERTY(N'Edition') AS [Edition], SERVERPROPERTY(N'EngineEdition') AS [EngineEdition]
+
+ 
+
+ 
+
+ 
+
+  ------------------------------
+
+  select SERVERPROPERTY(N'servername')
+
+ 
+
+ 
+
+ 
+
+ 
+
+  ----------------------------
+
+  SELECT
+
+CAST(serverproperty(N'Servername') AS sysname) AS [Name],
+
+'Server[@Name=' + quotename(CAST(
+
+        serverproperty(N'Servername')
+
+       AS sysname),'''') + ']' + '/JobServer' AS [Urn]
+
+ORDER BY
+
+[Name] ASC
+
+ 
+
+ 
+
+ 
+
+ 
+
+--------------------------------
+
+DECLARE @edition sysname;
+
+SET @edition = cast(SERVERPROPERTY(N'EDITION') as sysname);
+
+SELECT case when @edition = N'SQL Azure' then 2 else 1 end as 'DatabaseEngineType',
+
+SERVERPROPERTY('EngineEdition') AS DatabaseEngineEdition,
+
+SERVERPROPERTY('ProductVersion') AS ProductVersion,
+
+@@MICROSOFTVERSION AS MicrosoftVersion;
+
+select N'Windows' as host_platform
+
+if @edition = N'SQL Azure'
+
+  select 'TCP' as ConnectionProtocol
+
+else
+
+  exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')
+
+ 
+
+ 
+
+ 
+
+ 
+
+----------------------------
+
+select value_in_use from sys.configurations where configuration_id = 16384
+
+ 
+
+ 
+
+ 
+
+------------------------------------
+
+select is_srvrolemember('sysadmin') * 1 +is_srvrolemember('serveradmin') * 2 +is_srvrolemember('setupadmin') * 4 +is_srvrolemember('securityadmin') * 8 +is_srvrolemember('processadmin') * 16 +is_srvrolemember('dbcreator') * 32 +is_srvrolemember('diskadmin') * 64+ is_srvrolemember('bulkadmin') * 128
+
+ 
+
+ 
+
+-------------------
+
+select SERVERPROPERTY(N'servername')
+
+ 
+
+ 
+
+ 
+
+-------------------
+
+USE [msdb]
+
+ 
+
+ 
+
+ 
+
+------------------
+
+IF IS_MEMBER('SQLAgentOperatorRole') = 1 BEGIN SELECT 1 END ELSE BEGIN SELECT 0 END
+
+ 
+
+ 
+
+ 
+
+-------------------
+
+IF IS_MEMBER('SQLAgentReaderRole') = 1 BEGIN SELECT 1 END ELSE BEGIN SELECT 0 END
+
+ 
+
+ 
+
+ 
+
+-------------------
+
+IF IS_MEMBER('SQLAgentUserRole') = 1 BEGIN SELECT 1 END ELSE BEGIN SELECT 0 END
+
+ 
+
+ 
+
+ 
+
+------------------
+
+ 
+
+        declare @MasterPath nvarchar(512)
+
+        declare @LogPath nvarchar(512)
+
+        declare @ErrorLog nvarchar(512)
+
+        declare @ErrorLogPath nvarchar(512)
+
+ 
+
+        select @MasterPath=substring(physical_name, 1, len(physical_name) - charindex('\', reverse(physical_name))) from master.sys.database_files where name=N'master'
+
+        select @LogPath=substring(physical_name, 1, len(physical_name) - charindex('\', reverse(physical_name))) from master.sys.database_files where name=N'mastlog'
+
+        select @ErrorLog=cast(SERVERPROPERTY(N'errorlogfilename') as nvarchar(512))
+
+        select @ErrorLogPath=substring(@ErrorLog, 1, len(@ErrorLog) - charindex('\', reverse(@ErrorLog)))
+
+ 
+
+ 
+
+ 
+
+        declare @SmoRoot nvarchar(512)
+
+        exec master.dbo.xp_instance_regread N'HKEY_LOCAL_MACHINE', N'SOFTWARE\Microsoft\MSSQLServer\Setup', N'SQLPath', @SmoRoot OUTPUT
+
+ 
+
+ 
+
+ 
+
+SELECT
+
+CAST(case when 'a' <> 'A' then 1 else 0 end AS bit) AS [IsCaseSensitive],
+
+@@MAX_PRECISION AS [MaxPrecision],
+
+@ErrorLogPath AS [ErrorLogPath],
+
+@SmoRoot AS [RootDirectory],
+
+N'Windows' AS [HostPlatform],
+
+N'\' AS [PathSeparator],
+
+CAST(FULLTEXTSERVICEPROPERTY('IsFullTextInstalled') AS bit) AS [IsFullTextInstalled],
+
+@LogPath AS [MasterDBLogPath],
+
+@MasterPath AS [MasterDBPath],
+
+SERVERPROPERTY(N'ProductVersion') AS [VersionString],
+
+CAST(SERVERPROPERTY(N'Edition') AS sysname) AS [Edition],
+
+CAST(SERVERPROPERTY(N'ProductLevel') AS sysname) AS [ProductLevel],
+
+CAST(SERVERPROPERTY('IsSingleUser') AS bit) AS [IsSingleUser],
+
+CAST(SERVERPROPERTY('EngineEdition') AS int) AS [EngineEdition],
+
+convert(sysname, serverproperty(N'collation')) AS [Collation],
+
+CAST(SERVERPROPERTY(N'MachineName') AS sysname) AS [NetName],
+
+CAST(SERVERPROPERTY('IsClustered') AS bit) AS [IsClustered],
+
+SERVERPROPERTY(N'ResourceVersion') AS [ResourceVersionString],
+
+SERVERPROPERTY(N'ResourceLastUpdateDateTime') AS [ResourceLastUpdateDateTime],
+
+SERVERPROPERTY(N'CollationID') AS [CollationID],
+
+SERVERPROPERTY(N'ComparisonStyle') AS [ComparisonStyle],
+
+SERVERPROPERTY(N'SqlCharSet') AS [SqlCharSet],
+
+SERVERPROPERTY(N'SqlCharSetName') AS [SqlCharSetName],
+
+SERVERPROPERTY(N'SqlSortOrder') AS [SqlSortOrder],
+
+SERVERPROPERTY(N'SqlSortOrderName') AS [SqlSortOrderName],
+
+SERVERPROPERTY(N'BuildClrVersion') AS [BuildClrVersionString],
+
+SERVERPROPERTY(N'ComputerNamePhysicalNetBIOS') AS [ComputerNamePhysicalNetBIOS],
+
+CAST(SERVERPROPERTY('IsPolyBaseInstalled') AS bit) AS [IsPolyBaseInstalled]

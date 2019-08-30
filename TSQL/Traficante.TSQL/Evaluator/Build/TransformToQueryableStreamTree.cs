@@ -36,8 +36,8 @@ namespace Traficante.TSQL.Converter.Build
             queryTree.Accept(csharpRewriteTraverser);
 
             items.Stream = csharpRewriter.ResultStream;
-            items.Columns = csharpRewriter.ResultColumns.Last().Value;
-            items.ColumnsTypes = csharpRewriter.ResultColumnsTypes.Last().Value;
+            items.Columns = csharpRewriter.ResultColumns.LastOrDefault().Value;
+            items.ColumnsTypes = csharpRewriter.ResultColumnsTypes.LastOrDefault().Value;
 
             Successor?.Build(items);
         }

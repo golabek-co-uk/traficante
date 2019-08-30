@@ -57,6 +57,9 @@ namespace Traficante.TSQL.Converter
 
         public Table Run(CancellationToken token)
         {
+            if (Stream == null)
+                return null;
+
             List<Column> columns2 = new List<Column>();
             for(int i = 0; i < Columns.Length; i++)
             {

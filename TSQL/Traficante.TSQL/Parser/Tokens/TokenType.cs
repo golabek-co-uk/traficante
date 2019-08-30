@@ -75,6 +75,8 @@
         When,
         Then,
         Else,
-        End
+        End,
+        Declare,
+        Set
     }
 }
