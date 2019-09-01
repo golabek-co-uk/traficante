@@ -1541,7 +1541,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             _setOperatorMethodIdentifier += 1;
         }
-               
+
+        public void Visit(TypeNode node)
+        {
+            Nodes.Push(Expression.Constant(node.ReturnType));
+        }
     }
 
 }

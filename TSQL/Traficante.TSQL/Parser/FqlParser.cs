@@ -776,7 +776,8 @@ namespace Traficante.TSQL.Parser
 
             Consume(TokenType.As);
 
-            args.Add(ComposeEqualityOperators());
+            //args.Add(ComposeEqualityOperators());
+            args.Add(ComposeType());
 
             Consume(TokenType.RightParenthesis);
 

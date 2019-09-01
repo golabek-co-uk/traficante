@@ -926,8 +926,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (alias == null)
             {
                 var methodInfo = db.ResolveMethod(null, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
-                AccessMethodNode functionMethod = new AccessMethodNode(node.FToken, node.Arguments, node.ExtraAggregateArguments, methodInfo);
-                node.ChangeMethod(buildinMethod);
+                AccessMethodNode functionMethod = new AccessMethodNode(node.FToken, args, node.ExtraAggregateArguments, methodInfo);
+                //node.ChangeMethod(buildinMethod);
                 Nodes.Push(functionMethod);
                 return;
             }
@@ -1083,6 +1083,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var elseNode = Nodes.Pop();
 
             Nodes.Push(new CaseNode(whenThenPairs.ToArray(), elseNode, elseNode.ReturnType));
+        }
+
+        public void Visit(TypeNode node)
+        {
+            Nodes.Push(new TypeNode(node.Name, node.Size));
         }
     }
 }

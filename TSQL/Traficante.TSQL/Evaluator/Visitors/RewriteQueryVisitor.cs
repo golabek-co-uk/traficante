@@ -820,5 +820,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             return (aggregateFields.ToArray(), notAggregateFields.ToArray());
         }
+
+        public void Visit(TypeNode node)
+        {
+            Nodes.Push(new TypeNode(node.Name, node.Size));
+        }
     }
 }

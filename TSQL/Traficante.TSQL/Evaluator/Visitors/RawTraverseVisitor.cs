@@ -579,6 +579,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
+        public void Visit(TypeNode node)
+        {
+            node.Accept(Visitor);
+        }
+
         private void TraverseSetOperator(SetOperatorNode node)
         {
             node.Left.Accept(this);

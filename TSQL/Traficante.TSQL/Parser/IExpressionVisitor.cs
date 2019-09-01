@@ -94,5 +94,6 @@ namespace Traficante.TSQL.Parser
         void Visit(CreateTableNode node);
         void Visit(CoupleNode node);
         void Visit(CaseNode node);
+        void Visit(TypeNode node);
     }
 }

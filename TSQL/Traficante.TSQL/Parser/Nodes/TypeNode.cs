@@ -32,6 +32,7 @@ namespace Traficante.TSQL.Parser.Nodes
                     case "datetime": return typeof(DateTime?);
                     case "varchar": return typeof(string);
                     case "nvarchar": return typeof(string);
+                    case "sysname": return typeof(string);
                     default: return typeof(void);
                 }
             }

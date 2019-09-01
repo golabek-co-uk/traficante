@@ -595,6 +595,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var elseNode = Nodes.Pop();
 
             Nodes.Push(new CaseNode(whenThenPairs.ToArray(), elseNode, elseNode.ReturnType));
-        } 
+        }
+
+        public void Visit(TypeNode node)
+        {
+            Nodes.Push(new TypeNode(node.Name, node.Size));
+        }
     }
 }

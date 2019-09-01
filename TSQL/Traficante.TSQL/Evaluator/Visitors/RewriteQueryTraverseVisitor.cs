@@ -650,6 +650,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+        public void Visit(TypeNode node)
+        {
+            node.Accept(_visitor);
+        }
+
         private void TraverseSetOperator(SetOperatorNode node)
         {
             _walker = _walker.NextChild();

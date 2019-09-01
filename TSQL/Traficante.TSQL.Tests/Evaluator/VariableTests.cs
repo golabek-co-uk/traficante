@@ -55,7 +55,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        public void Declare_Set_Variable()
+        public void Declare_SetFunction()
         {
             Engine sut = new Engine();
             sut.AddFunction<string,string>(null, null, "SERVERPROPERTY", x => "Standard Edition");
@@ -68,16 +68,16 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        public void Declare_Cast_Set_Variable()
+        public void Declare_SetCast()
         {
             Engine sut = new Engine();
             sut.AddFunction<string, string>(null, null, "SERVERPROPERTY", x => "Standard Edition");
 
             var result = sut.Run("DECLARE @edition sysname; SET @edition = cast(SERVERPROPERTY(N'EDITION') as sysname); ");
             Assert.IsNull(result);
-            var variable = sut.GetVariable("@MasterPath");
-            Assert.AreEqual("@MasterPath", variable.Name);
-            Assert.AreEqual(typeof(string), variable.Type);
+            var variable = sut.GetVariable("@edition");
+            Assert.AreEqual("@edition", variable.Name);
+            Assert.AreEqual("Standard Edition", variable.Value);
         }
     }
 }

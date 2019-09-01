@@ -64,5 +64,15 @@ namespace Traficante.TSQL.Plugins
         {
             return obj?.ToString();
         }
+
+        [BindableMethod]
+        public object Cast(object obj, object type)
+        {
+            if (type == typeof(System.String))
+                return obj?.ToString();
+            throw new NotImplementedException("Cast not yet implemented");
+            
+        }
+        
     }
 }

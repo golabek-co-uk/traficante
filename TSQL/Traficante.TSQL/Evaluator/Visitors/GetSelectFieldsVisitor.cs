@@ -380,5 +380,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(CaseNode node)
         {
         }
+
+        public void Visit(TypeNode node)
+        {
+        }
     }
 }
