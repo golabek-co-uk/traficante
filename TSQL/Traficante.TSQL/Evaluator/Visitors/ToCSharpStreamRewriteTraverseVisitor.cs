@@ -125,7 +125,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(SetNode node)
         {
             node.Value?.Accept(this);
-            node.Variable?.Accept(this);
             node.Accept(_visitor);
         }
 

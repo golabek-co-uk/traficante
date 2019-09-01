@@ -21,7 +21,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
         protected CompiledQuery CreateAndRunVirtualMachine<T>(string script, IDictionary<string, IEnumerable<T>> sources)
         {
-            var engine = new Engine(new TestLibrary());
+            var engine = new Engine();
+            //new TestLibrary()
 
             foreach (var source in sources)
             {

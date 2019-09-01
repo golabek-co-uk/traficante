@@ -105,7 +105,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             public TestSchema(IEnumerable<TestEntity> entities, Action<object[]> onGetTableOrRowSource,
                 WhenCheckedParameters whenChecked)
-                : base("test", CreateLibrary())
+                : base("test")//, CreateLibrary())
             {
                 _entities = entities;
                 _onGetTableOrRowSource = onGetTableOrRowSource;
@@ -124,18 +124,18 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 return new TestTable();
             }
 
-            private static MethodsAggregator CreateLibrary()
-            {
-                var methodManager = new MethodsManager();
-                //var propertiesManager = new PropertiesManager();
+            //private static MethodsAggregator CreateLibrary()
+            //{
+            //    var methodManager = new MethodsManager();
+            //    //var propertiesManager = new PropertiesManager();
 
-                var lib = new TestLibrary();
+            //    var lib = new TestLibrary();
 
-                //propertiesManager.RegisterProperties(lib);
-                methodManager.RegisterLibraries(lib);
+            //    //propertiesManager.RegisterProperties(lib);
+            //    methodManager.RegisterLibraries(lib);
 
-                return new MethodsAggregator(methodManager);//, propertiesManager);
-            }
+            //    return new MethodsAggregator(methodManager);//, propertiesManager);
+            //}
 
             //public override SchemaMethodInfo[] GetConstructors(string schema)
             //{

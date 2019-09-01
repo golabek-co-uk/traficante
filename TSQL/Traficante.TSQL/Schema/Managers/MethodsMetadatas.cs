@@ -228,47 +228,24 @@ namespace Traficante.TSQL.Schema.Managers
             return paramType.IsArray && paramType.GetElementType().IsGenericParameter && arrayType.IsArray;
         }
 
-        /// <summary>
-        ///     Determine if there is more or equal values to pass to function that required parameters
-        ///     and less or equal parameters than function definition has.
-        /// </summary>
-        /// <param name="methodArgs">Passed arguments to function.</param>
-        /// <param name="parametersCount">All parameters count.</param>
-        /// <param name="optionalParametersCount">Optional parameters count.</param>
-        /// <returns></returns>
         private static bool CanUseSomeArgumentsAsDefaultParameters(IReadOnlyCollection<Type> methodArgs,
             int parametersCount, int optionalParametersCount)
         {
             return methodArgs.Count >= parametersCount - optionalParametersCount && methodArgs.Count <= parametersCount;
         }
 
-        /// <summary>
-        ///     Determine if passed arguments amount is greater than function can contain.
-        /// </summary>
-        /// <param name="methodArgs">Passed arguments.</param>
-        /// <param name="parametersCount">Parameters amount.</param>
-        /// <returns></returns>
         private static bool HasMoreArgumentsThanMethodDefinitionContains(IReadOnlyList<Type> methodArgs,
             int parametersCount)
         {
             return methodArgs.Count > parametersCount;
         }
 
-        /// <summary>
-        ///     Register new method.
-        /// </summary>
-        /// <param name="methodInfo">Method to register.</param>
         public void RegisterMethod(MethodInfo methodInfo)
         {
             RegisterMethod(methodInfo.Name, methodInfo);
         }
 
-        /// <summary>
-        ///     Register new method.
-        /// </summary>
-        /// <param name="name">Name of method.</param>
-        /// <param name="methodInfo">Method to register.</param>
-        private void RegisterMethod(string name, MethodInfo methodInfo)
+        public void RegisterMethod(string name, MethodInfo methodInfo)
         {
             if (_methods.ContainsKey(name))
                 _methods[name].Add(methodInfo);
@@ -276,11 +253,6 @@ namespace Traficante.TSQL.Schema.Managers
                 _methods.Add(name, new List<MethodInfo> {methodInfo});
         }
 
-        /// <summary>
-        ///     Register methods of some name of some type
-        /// </summary>
-        /// <typeparam name="TType">Type where methods will be searched.</typeparam>
-        /// <param name="methodName">Name of method to register.</param>
         public void RegisterMethods<TType>(string methodName)
         {
             var type = typeof(TType);
@@ -291,12 +263,6 @@ namespace Traficante.TSQL.Schema.Managers
                 RegisterMethod(m.Name, m);
         }
 
-        /// <summary>
-        ///     Determine if type can be safely converted to another type.
-        /// </summary>
-        /// <param name="to">To what type will be converted.</param>
-        /// <param name="from">From what type will be converted.</param>
-        /// <returns>Return true if convertion is possible, otherwise false.</returns>
         public static bool IsTypePossibleToConvert(Type to, Type from)
         {
             if (TypeCompatibilityTable.ContainsKey(to))

@@ -44,6 +44,17 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        public void Declare_SetString()
+        {
+            Engine sut = new Engine();
+            var result = sut.Run("declare @MasterPath nvarchar(512); SET @MasterPath = '/new/path/to/resource'");
+            Assert.IsNull(result);
+            var variable = sut.GetVariable("@MasterPath");
+            Assert.AreEqual("@MasterPath", variable.Name);
+            Assert.AreEqual("/new/path/to/resource", variable.Value);
+        }
+
+        [TestMethod]
         public void Declare_Set_Variable()
         {
             Engine sut = new Engine();
@@ -51,9 +62,9 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             var result = sut.Run("DECLARE @edition sysname; SET @edition = SERVERPROPERTY(N'EDITION'); ");
             Assert.IsNull(result);
-            var variable = sut.GetVariable("@MasterPath");
-            Assert.AreEqual("@MasterPath", variable.Name);
-            Assert.AreEqual(typeof(string), variable.Type);
+            var variable = sut.GetVariable("@edition");
+            Assert.AreEqual("@edition", variable.Name);
+            Assert.AreEqual("Standard Edition", variable.Value);
         }
 
         [TestMethod]

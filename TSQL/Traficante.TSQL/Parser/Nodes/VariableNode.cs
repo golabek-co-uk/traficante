@@ -15,7 +15,7 @@ namespace Traficante.TSQL.Parser.Nodes
         {
         }
         
-        public override string Id { get; }
+        public override string Id => $"{nameof(VariableNode)}{Name}";
 
         public override void Accept(IExpressionVisitor visitor)
         {

@@ -32,6 +32,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private IDictionary<string, ITable> _explicitlyDefinedTables = new Dictionary<string, ITable>();
         private IDictionary<string, string> _explicitlyCoupledTablesWithAliases = new Dictionary<string, string>();
         private IDictionary<string, SchemaMethodFromNode> _explicitlyUsedAliases = new Dictionary<string, SchemaMethodFromNode>();
+        private IDictionary<string, Type> _explicitlyDefinedVariables = new Dictionary<string, Type>();
 
         private int _setKey;
 
@@ -348,18 +349,26 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(VariableNode node)
         {
+            if (_explicitlyDefinedVariables.ContainsKey(node.Id))
+            {
+                Nodes.Push(new VariableNode(node.Name, _explicitlyDefinedVariables[node.Id]));
+                return;
+            }
             var variable = _engine.GetVariable(node.Name);
             Nodes.Push(new VariableNode(node.Name, variable.Type));
         }
 
         public virtual void Visit(DeclareNode node)
         {
+            _explicitlyDefinedVariables.Add(node.Variable.Id, node.Type.ReturnType);
             Nodes.Push(new DeclareNode(node.Variable, node.Type));
         }
 
         public virtual void Visit(SetNode node)
         {
-            Nodes.Push(new SetNode(node.Variable, node.Value));
+            var value = Nodes.Pop();
+            var variable = (VariableNode)Nodes.Pop();
+            Nodes.Push(new SetNode(variable, value));
         }
 
         public void Visit(DotNode node)
@@ -917,6 +926,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (alias == null)
             {
                 var methodInfo = db.ResolveMethod(null, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
+                AccessMethodNode functionMethod = new AccessMethodNode(node.FToken, node.Arguments, node.ExtraAggregateArguments, methodInfo);
+                node.ChangeMethod(buildinMethod);
+                Nodes.Push(functionMethod);
+                return;
             }
             //db.ResolveMethod()
 

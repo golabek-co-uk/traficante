@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Traficante.TSQL.Lib;
 using Traficante.TSQL.Plugins.Attributes;
 using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.Managers;
@@ -12,32 +13,24 @@ namespace Traficante.TSQL.Schema.DataSources
 {
     public abstract class BaseDatabase : IDatabase
     {
-        //private const string _sourcePart = "_source";
-        //private const string _tablePart = "_table";
-
-        private readonly MethodsAggregator _aggregator;
-
-        //private IDictionary<string, Reflection.ConstructorInfo[]> Constructors { get; } = new Dictionary<string, Reflection.ConstructorInfo[]>();
-        //private List<SchemaMethodInfo> ConstructorsMethods { get; } = new List<SchemaMethodInfo>();
-        //private IDictionary<string, object[]> AdditionalArguments { get; } = new Dictionary<string, object[]>();
-
         public string Name { get; set; }
         public string DefaultSchema { get; set; }
         public List<(ITable Table, RowSource Source)> Tables { get; set; } = new List<(ITable Table, RowSource Source)>();
         public List<(ITable Table, RowSource Source)> Functions { get; set; } = new List<(ITable Table, RowSource Source)>();
         public List<IFunction> Functions2 { get; set; } = new List<IFunction>();
+        public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
-        protected BaseDatabase(string name, MethodsAggregator methodsAggregator)
+        protected BaseDatabase(string name)
         {
             Name = name;
-            _aggregator = methodsAggregator;
+            MethodsManager.RegisterLibraries(new Library());
         }
 
-        protected BaseDatabase(string name, string defaultSchema, MethodsAggregator methodsAggregator)
+        protected BaseDatabase(string name, string defaultSchema)
         {
             Name = name;
             DefaultSchema = defaultSchema;
-            _aggregator = methodsAggregator;
+            MethodsManager.RegisterLibraries(new Library());
         }
 
         public void AddTable<TType>(string schema, string name, IEnumerable<TType> items)
@@ -55,7 +48,7 @@ namespace Traficante.TSQL.Schema.DataSources
         public void AddFunction<T, TResult>(string schema, string name, Func<T,TResult> func)
         {
             var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T) });
-            
+            this.MethodsManager.RegisterMethod(name, func.Method);
             Functions2.Add(function);
         }
 
@@ -93,13 +86,12 @@ namespace Traficante.TSQL.Schema.DataSources
 
         public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
         {
-            var founded = _aggregator.TryResolveMethod(method, parameters, out methodInfo);
-            return founded;
+            return MethodsManager.TryGetMethod(method, parameters, out methodInfo);
         }
 
         public MethodInfo ResolveMethod(string schema, string method, Type[] parameters)
         {
-            return _aggregator.ResolveMethod(method, parameters);
+            return MethodsManager.GetMethod(method, parameters);
         }
     }
 

@@ -648,7 +648,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(VariableNode node)
         {
             var variable = _engine.GetVariable(node.Name);
-            Nodes.Push(Expression.Constant(variable.Value, variable.Type));
+            Nodes.Push(Expression.Constant(variable?.Value, variable?.Type ?? node.ReturnType));
         }
 
         public void Visit(DeclareNode node)

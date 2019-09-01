@@ -53,7 +53,7 @@ namespace Traficante.TSQL
             var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
             if (db == null)
             {
-                db = new Database(database, DefaultSchema, _library);
+                db = new Database(database, DefaultSchema);
                 _databases.Add(db);
             }
             db.AddTable(schema, table, items);
@@ -66,7 +66,7 @@ namespace Traficante.TSQL
             var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
             if (db == null)
             {
-                db = new Database(database, DefaultSchema, _library);
+                db = new Database(database, DefaultSchema);//, _library);
                 _databases.Add(db);
             }
             db.AddFunction(schema, name, function);
@@ -79,7 +79,7 @@ namespace Traficante.TSQL
             var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
             if (db == null)
             {
-                db = new Database(database, DefaultSchema, _library);
+                db = new Database(database, DefaultSchema);//, _library);
                 _databases.Add(db);
             }
             db.AddFunction(schema, name, function);

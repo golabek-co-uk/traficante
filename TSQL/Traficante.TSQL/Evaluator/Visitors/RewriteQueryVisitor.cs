@@ -275,7 +275,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SetNode node)
         {
-            Nodes.Push(new SetNode(node.Variable, node.Value));
+            var variable = (VariableNode)Nodes.Pop();
+            var value = Nodes.Pop();
+            Nodes.Push(new SetNode(variable, value));
         }
 
         public virtual void Visit(DotNode node)
