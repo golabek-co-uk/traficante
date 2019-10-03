@@ -5,6 +5,7 @@ using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
+    [Ignore]
     [TestClass]
     public class CancellationTests : TestBase
     {

@@ -45,9 +45,44 @@ namespace Traficante.TSQL.Schema.DataSources
             Functions.Add((new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items())));
         }
 
-        public void AddFunction<T, TResult>(string schema, string name, Func<T,TResult> func)
+        public void AddFunction<TResult>(string schema, string name, Func<TResult> func)
         {
-            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T) });
+            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { });
+            this.MethodsManager.RegisterMethod(name, func.Method);
+            Functions2.Add(function);
+        }
+
+        public void AddFunction<T1, TResult>(string schema, string name, Func<T1,TResult> func)
+        {
+            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1) });
+            this.MethodsManager.RegisterMethod(name, func.Method);
+            Functions2.Add(function);
+        }
+
+        public void AddFunction<T1, T2, TResult>(string schema, string name, Func<T1, T2, TResult> func)
+        {
+            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1), typeof(T2) });
+            this.MethodsManager.RegisterMethod(name, func.Method);
+            Functions2.Add(function);
+        }
+
+        public void AddFunction<T1, T2, T3, TResult>(string schema, string name, Func<T1, T2, T3, TResult> func)
+        {
+            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1), typeof(T2), typeof(T3) });
+            this.MethodsManager.RegisterMethod(name, func.Method);
+            Functions2.Add(function);
+        }
+
+        public void AddFunction<T1, T2, T3, T4, TResult>(string schema, string name, Func<T1, T2, T3, T4, TResult> func)
+        {
+            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4) });
+            this.MethodsManager.RegisterMethod(name, func.Method);
+            Functions2.Add(function);
+        }
+
+        public void AddFunction<T1, T2, T3, T4, T5, TResult>(string schema, string name, Func<T1, T2, T3, T4, T5, TResult> func)
+        {
+            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) });
             this.MethodsManager.RegisterMethod(name, func.Method);
             Functions2.Add(function);
         }

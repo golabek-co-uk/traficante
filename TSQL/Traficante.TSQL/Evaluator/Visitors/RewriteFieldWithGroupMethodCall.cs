@@ -46,7 +46,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             base.Visit(node);
         }
 
-        public override void Visit(AccessMethodNode node)
+        public override void Visit(FunctionNode node)
         {
             //if (node.IsAggregateMethod)
             //{

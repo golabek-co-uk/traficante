@@ -213,7 +213,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new ContainsNode(left, right as ArgsListNode));
         }
 
-        public virtual void Visit(AccessMethodNode node)
+        public virtual void Visit(FunctionNode node)
         {
             VisitAccessMethod(node);
         }
@@ -583,11 +583,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return fields.ToArray();
         }
 
-        private void VisitAccessMethod(AccessMethodNode node)
+        private void VisitAccessMethod(FunctionNode node)
         {
             var args = Nodes.Pop() as ArgsListNode;
 
-            Nodes.Push(new AccessMethodNode(node.FToken, args, null, node.Method, node.Alias));
+            Nodes.Push(new FunctionNode(node.FToken, args, null, node.Method, node.Alias));
         }
 
         private FieldNode[][] SplitBetweenAggreateAndNonAggreagate(FieldNode[] fieldsToSplit, FieldNode[] groupByFields,
@@ -621,7 +621,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     //    fieldOrder += 1;
                     //}
                     //else 
-                    if (subNode is AccessMethodNode method)
+                    if (subNode is FunctionNode method)
                     {
                         foreach (var arg in method.Arguments.Args)
                             subNodes.Push(arg);
@@ -795,13 +795,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 {
                     var subNode = subNodes.Pop();
 
-                    if (subNode is AccessMethodNode aggregateMethod && aggregateMethod.IsAggregateMethod)
+                    if (subNode is FunctionNode aggregateMethod && aggregateMethod.IsAggregateMethod)
                     {
                         hasAggregateMethod = true;
                         break;
                     }
                     else
-                    if (subNode is AccessMethodNode method)
+                    if (subNode is FunctionNode method)
                     {
                         foreach (var arg in method.Arguments.Args)
                             subNodes.Push(arg);

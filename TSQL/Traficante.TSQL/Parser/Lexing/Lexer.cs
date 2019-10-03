@@ -136,6 +136,8 @@ namespace Traficante.TSQL.Parser.Lexing
                     return TokenType.Declare;
                 case SetToken.TokenText:
                     return TokenType.Set;
+                case ExecuteToken.TokenText:
+                    return TokenType.Execute;
             }
 
             if (string.IsNullOrWhiteSpace(tokenText))
@@ -555,6 +557,8 @@ namespace Traficante.TSQL.Parser.Lexing
                     return new DeclareToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Set:
                     return new SetToken(new TextSpan(Position, tokenText.Length));
+                case TokenType.Execute:
+                    return new ExecuteToken(new TextSpan(Position, tokenText.Length));
             }
 
             if (matchedDefinition.Regex.ToString() == TokenRegexDefinition.KWordBracketed)

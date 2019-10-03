@@ -6,11 +6,11 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
 {
     public class RefreshMethodsSymbol : Symbol
     {
-        public RefreshMethodsSymbol(IEnumerable<AccessMethodNode> refreshMethods)
+        public RefreshMethodsSymbol(IEnumerable<FunctionNode> refreshMethods)
         {
             RefreshMethods = refreshMethods.ToArray();
         }
 
-        public IReadOnlyList<AccessMethodNode> RefreshMethods { get; }
+        public IReadOnlyList<FunctionNode> RefreshMethods { get; }
     }
 }

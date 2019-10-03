@@ -6,11 +6,11 @@ using Traficante.TSQL.Plugins.Attributes;
 
 namespace Traficante.TSQL.Parser.Nodes
 {
-    public class AccessMethodNode : Node
+    public class FunctionNode : Node
     {
         public readonly FunctionToken FToken;
 
-        public AccessMethodNode(FunctionToken fToken, ArgsListNode args, ArgsListNode extraAggregateArguments,
+        public FunctionNode(FunctionToken fToken, ArgsListNode args, ArgsListNode extraAggregateArguments,
             MethodInfo method = (MethodInfo) null, string alias = "")
         {
             FToken = fToken;
@@ -18,7 +18,7 @@ namespace Traficante.TSQL.Parser.Nodes
             ExtraAggregateArguments = extraAggregateArguments;
             Method = method;
             Alias = alias;
-            Id = $"{nameof(AccessMethodNode)}{alias}{fToken.Value}{args.Id}";
+            Id = $"{nameof(FunctionNode)}{alias}{fToken.Value}{args.Id}";
         }
 
         public MethodInfo Method { get; private set; }

@@ -211,9 +211,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new ContainsNode(left, right as ArgsListNode));
         }
 
-        public virtual void Visit(AccessMethodNode node)
+        public virtual void Visit(FunctionNode node)
         {
-            Nodes.Push(new AccessMethodNode(node.FToken, (ArgsListNode) Nodes.Pop(), null, node.Method, node.Alias));
+            Nodes.Push(new FunctionNode(node.FToken, (ArgsListNode) Nodes.Pop(), null, node.Method, node.Alias));
         }
 
         public void Visit(AccessRawIdentifierNode node)

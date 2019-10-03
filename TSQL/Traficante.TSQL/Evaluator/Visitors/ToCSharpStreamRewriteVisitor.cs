@@ -227,7 +227,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
         public void Visit(LikeNode node)
         {
-            Visit(new AccessMethodNode(
+            Visit(new FunctionNode(
                 new FunctionToken(nameof(Operators.Like), TextSpan.Empty),
                 new ArgsListNode(new[] { node.Left, node.Right }), null,
                 typeof(Operators).GetMethod(nameof(Operators.Like))));
@@ -235,7 +235,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(RLikeNode node)
         {
-            Visit(new AccessMethodNode(
+            Visit(new FunctionNode(
                 new FunctionToken(nameof(Operators.RLike), TextSpan.Empty),
                 new ArgsListNode(new[] { node.Left, node.Right }), null,
                 typeof(Operators).GetMethod(nameof(Operators.RLike))));
@@ -311,11 +311,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(containsCall);
         }
 
-        public void Visit(AccessMethodNode node)
+        public void Visit(FunctionNode node)
         {
             var args = Enumerable.Range(0, node.ArgsCount).Select(x => Nodes.Pop()).Reverse().ToArray();
             var argsTypes = args.Select(x => x.Type).ToArray();
-
             if (node.IsAggregateMethod)
             {
                 if (this._item.Type.Name == "IGrouping`2")

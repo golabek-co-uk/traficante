@@ -10,6 +10,7 @@ using Traficante.TSQL.Schema.Reflection;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
+    [Ignore]
     [TestClass]
     public class PassPrimitiveTypesTests : TestBase
     {

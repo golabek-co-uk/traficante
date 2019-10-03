@@ -137,7 +137,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(AccessMethodNode node)
+        public void Visit(FunctionNode node)
         {
         }
 

@@ -91,4 +91,5 @@
             return base.Equals(obj);
         }
     }
+
 }

@@ -21,7 +21,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
     {
         private readonly IEngine _engine;
 
-        private readonly List<AccessMethodNode> _refreshMethods = new List<AccessMethodNode>();
+        private readonly List<FunctionNode> _refreshMethods = new List<FunctionNode>();
         private readonly List<object> _schemaFromArgs = new List<object>();
 
         private Scope _currentScope;
@@ -249,11 +249,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new ContainsNode(left, right as ArgsListNode));
         }
 
-        public virtual void Visit(AccessMethodNode node)
+        public virtual void Visit(FunctionNode node)
         {
             VisitAccessMethod(node,
                 (token, node1, exargs, arg3, alias) =>
-                    new AccessMethodNode(token, node1 as ArgsListNode, exargs, arg3, alias));
+                    new FunctionNode(token, node1 as ArgsListNode, exargs, arg3, alias));
         }
 
         public void Visit(AccessRawIdentifierNode node)
@@ -355,6 +355,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 return;
             }
             var variable = _engine.GetVariable(node.Name);
+            if (variable == null)
+                throw new Exception("Variable is not declare: " + node.Name);
             Nodes.Push(new VariableNode(node.Name, variable.Type));
         }
 
@@ -903,8 +905,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return fields.ToArray();
         }
 
-        private void VisitAccessMethod(AccessMethodNode node,
-            Func<FunctionToken, Node, ArgsListNode, MethodInfo, string, AccessMethodNode> func)
+        private void VisitAccessMethod(FunctionNode node,
+            Func<FunctionToken, Node, ArgsListNode, MethodInfo, string, FunctionNode> func)
         {
             var args = Nodes.Pop() as ArgsListNode;
 
@@ -913,11 +915,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var alias = !string.IsNullOrEmpty(node.Alias) ? node.Alias : _identifier;
 
-
             var db = this._engine.GetDatabase(null);
             if (db.TryResolveAggreationMethod(node.Name, args.Args.Skip(1).Select(f => f.ReturnType).ToArray(), out var buildinMethod))
             {
-                AccessMethodNode buildInAccessMethod = func(node.FToken, args, new ArgsListNode(new Node[0]), buildinMethod, alias);
+                FunctionNode buildInAccessMethod = func(node.FToken, args, new ArgsListNode(new Node[0]), buildinMethod, alias);
                 node.ChangeMethod(buildinMethod);
                 Nodes.Push(buildInAccessMethod);
                 return;
@@ -926,7 +927,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (alias == null)
             {
                 var methodInfo = db.ResolveMethod(null, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
-                AccessMethodNode functionMethod = new AccessMethodNode(node.FToken, args, node.ExtraAggregateArguments, methodInfo);
+                FunctionNode functionMethod = new FunctionNode(node.FToken, args, node.ExtraAggregateArguments, methodInfo);
                 //node.ChangeMethod(buildinMethod);
                 Nodes.Push(functionMethod);
                 return;
@@ -941,7 +942,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var isAggregateMethod = method.GetCustomAttribute<AggregationMethodAttribute>() != null;
 
-            AccessMethodNode accessMethod;
+            FunctionNode accessMethod;
             //if (isAggregateMethod)
             //{
             //    accessMethod = func(node.FToken, args, node.ExtraAggregateArguments, method, alias);

@@ -72,7 +72,7 @@ namespace Traficante.TSQL
             db.AddFunction(schema, name, function);
         }
 
-        public void AddFunction<T, TResult>(string database, string schema, string name, Func<T, TResult> function)
+        public void AddFunction<TResult>(string database, string schema, string name, Func<TResult> function)
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
@@ -84,6 +84,72 @@ namespace Traficante.TSQL
             }
             db.AddFunction(schema, name, function);
         }
+
+        public void AddFunction<T1, TResult>(string database, string schema, string name, Func<T1, TResult> function)
+        {
+            database = database ?? DefaultDatabase;
+            schema = schema ?? DefaultSchema;
+            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
+            if (db == null)
+            {
+                db = new Database(database, DefaultSchema);//, _library);
+                _databases.Add(db);
+            }
+            db.AddFunction(schema, name, function);
+        }
+
+        public void AddFunction<T1, T2, TResult>(string database, string schema, string name, Func<T1, T2, TResult> function)
+        {
+            database = database ?? DefaultDatabase;
+            schema = schema ?? DefaultSchema;
+            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
+            if (db == null)
+            {
+                db = new Database(database, DefaultSchema);//, _library);
+                _databases.Add(db);
+            }
+            db.AddFunction(schema, name, function);
+        }
+
+        public void AddFunction<T1, T2, T3, TResult>(string database, string schema, string name, Func<T1, T2, T3, TResult> function)
+        {
+            database = database ?? DefaultDatabase;
+            schema = schema ?? DefaultSchema;
+            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
+            if (db == null)
+            {
+                db = new Database(database, DefaultSchema);//, _library);
+                _databases.Add(db);
+            }
+            db.AddFunction(schema, name, function);
+        }
+
+        public void AddFunction<T1, T2, T3, T4, TResult>(string database, string schema, string name, Func<T1, T2, T3, T4, TResult> function)
+        {
+            database = database ?? DefaultDatabase;
+            schema = schema ?? DefaultSchema;
+            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
+            if (db == null)
+            {
+                db = new Database(database, DefaultSchema);//, _library);
+                _databases.Add(db);
+            }
+            db.AddFunction(schema, name, function);
+        }
+
+        public void AddFunction<T1, T2, T3, T4, T5, TResult>(string database, string schema, string name, Func<T1, T2, T3, T4, T5, TResult> function)
+        {
+            database = database ?? DefaultDatabase;
+            schema = schema ?? DefaultSchema;
+            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
+            if (db == null)
+            {
+                db = new Database(database, DefaultSchema);//, _library);
+                _databases.Add(db);
+            }
+            db.AddFunction(schema, name, function);
+        }
+
 
         public void SetVariable<T>(string name, T value)
         {

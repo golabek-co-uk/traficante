@@ -53,7 +53,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        public virtual void Visit(AccessMethodNode node)
+        public virtual void Visit(FunctionNode node)
         {
             node.Arguments.Accept(this);
             node.Accept(Visitor);

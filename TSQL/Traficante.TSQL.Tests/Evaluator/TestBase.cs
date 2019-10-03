@@ -18,11 +18,30 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
     public class TestBase
     {
         protected CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
+        Random _random = new Random();
 
         protected CompiledQuery CreateAndRunVirtualMachine<T>(string script, IDictionary<string, IEnumerable<T>> sources)
         {
             var engine = new Engine();
             //new TestLibrary()
+            engine.AddFunction<int?, int?>(null, null, "NullableMethod", x => x);
+            engine.AddFunction<int>(null, null, "RandomNumber", () => _random.Next(0, 100));
+            engine.AddFunction<decimal>(null, null, "GetOne", () => 1);
+            engine.AddFunction<string,string,string>(null, null, "GetTwo", (a,b) => 2.ToString());
+            engine.AddFunction<decimal, decimal>(null, null, "Inc", (number) => number + 1);
+            engine.AddFunction<long, long>(null, null, "Inc", (number) => number + 1);
+            engine.AddFunction<BasicEntity, BasicEntity>(null, null, "NothingToDo", (entity) => entity);
+            engine.AddFunction<int?, int?>(null, null, "NullableMethod", (value) => value);
+            engine.AddFunction<object, string>(null, null, "ToString", (obj) => obj.ToString());
+            engine.AddFunction<long, decimal, bool, bool, string, int>(null, null, "PrimitiveArgumentsMethod", (a, b, tr, fl, text) =>
+            {
+                Assert.AreEqual(1L, a);
+                Assert.AreEqual(2m, b);
+                Assert.AreEqual(true, tr);
+                Assert.AreEqual(false, fl);
+                Assert.AreEqual("text", text);
+                return 1;
+            });
 
             foreach (var source in sources)
             {

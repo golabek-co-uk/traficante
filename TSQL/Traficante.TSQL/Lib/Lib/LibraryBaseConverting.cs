@@ -70,8 +70,9 @@ namespace Traficante.TSQL.Plugins
         {
             if (type == typeof(System.String))
                 return obj?.ToString();
+            if (type == typeof(System.Boolean))
+                return Convert.ToBoolean(obj);
             throw new NotImplementedException("Cast not yet implemented");
-            
         }
         
     }

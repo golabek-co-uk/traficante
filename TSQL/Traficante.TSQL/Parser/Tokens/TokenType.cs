@@ -77,6 +77,7 @@
         Else,
         End,
         Declare,
-        Set
+        Set,
+        Execute
     }
 }

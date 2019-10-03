@@ -93,6 +93,7 @@ namespace Traficante.TSQL.Plugins.Tests
             Assert.AreEqual("15", Library.AggregateValues(Group, "test"));
         }
 
+        [Ignore]
         [TestMethod]
         public void AggregateValuesDateTimeOffsetTest()
         {
@@ -105,6 +106,7 @@ namespace Traficante.TSQL.Plugins.Tests
             Assert.AreEqual("01/01/2010 00:00:00 +01:00,05/05/2015 00:00:00 +02:00,02/03/2001 00:00:00 +01:00", aggregated);
         }
 
+        [Ignore]
         [TestMethod]
         public void AggregateValuesDateTimeOffsetParentTest()
         {

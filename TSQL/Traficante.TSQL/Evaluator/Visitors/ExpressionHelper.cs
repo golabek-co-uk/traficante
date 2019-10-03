@@ -359,6 +359,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //}
             if (left.Type != right && right.IsArray == false) // right.IsArray == false -> because of "params" argument
             {
+                if (right == typeof(string))
+                {
+                    var toString = typeof(Object).GetMethod("ToString");
+                    return Expression.Call(left, toString);
+                }
                 return Expression.Convert(left, right);
             }
             return left;

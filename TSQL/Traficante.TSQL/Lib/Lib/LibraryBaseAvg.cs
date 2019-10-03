@@ -36,4 +36,5 @@ namespace Traficante.TSQL.Plugins
                 parentGroup.Hit();
         }
     }
+
 }
