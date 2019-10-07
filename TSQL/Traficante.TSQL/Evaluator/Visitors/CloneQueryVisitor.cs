@@ -421,11 +421,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
         }
 
-        public virtual void Visit(InternalQueryNode node)
-        {
-            throw new NotSupportedException();
-        }
-
         public virtual void Visit(RootNode node)
         {
             Nodes.Push(new RootNode(Nodes.Pop()));

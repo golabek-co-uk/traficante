@@ -478,26 +478,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(InternalQueryNode node)
-        {
-            _walker = _walker.NextChild();
-            _visitor.SetScope(_walker.Scope);
-
-            _visitor.SetMethodAccessType(MethodAccessType.TransformingQuery);
-            _visitor.SetQueryIdentifier(node.From.Alias);
-            //node.Refresh?.Accept(this);
-            node.From.Accept(this);
-            node.Where?.Accept(this);
-            //node.Select.Accept(this);
-            node.Take?.Accept(this);
-            node.Skip?.Accept(this);
-            node.GroupBy?.Accept(this);
-            node.Select.Accept(this); //added
-            node.Accept(_visitor);
-
-            _walker = _walker.Parent();
-        }
-
         public void Visit(RootNode node)
         {
             node.Expression.Accept(this);

@@ -423,11 +423,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
         }
 
-        public void Visit(InternalQueryNode node)
-        {
-            throw new NotSupportedException();
-        }
-
         public void Visit(RootNode node)
         {
             RootScript = new RootNode(Nodes.Pop());

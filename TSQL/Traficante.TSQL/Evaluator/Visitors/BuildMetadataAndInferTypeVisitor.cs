@@ -640,11 +640,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _schemaFromArgs.Clear();
         }
 
-        public void Visit(InternalQueryNode node)
-        {
-            throw new NotSupportedException();
-        }
-
         public void Visit(RootNode node)
         {
             Nodes.Push(new RootNode(Nodes.Pop()));

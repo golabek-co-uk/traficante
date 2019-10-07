@@ -1094,48 +1094,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             ResultColumnsTypes[_queryAlias ?? ""] = node.Select.Fields.Select(x => x.ReturnType).ToArray();
         }
 
-        public void Visit(InternalQueryNode node)
-        {
-            Expression skip = node.Skip != null ? Nodes.Pop() : null;
-            Expression take = node.Take != null ? Nodes.Pop() : null;
-
-            Expression select = node.Select != null ? Nodes.Pop() : null;
-            Expression where = node.Where != null ? Nodes.Pop() : null;
-
-            Expression groupBy = node.GroupBy != null ? Nodes.Pop() : null;
-
-            Expression from = node.From != null ? Nodes.Pop() : null;
-
-
-            Expression last = from;
-
-            if (where != null)
-            {
-                last = Expression.Invoke(where, last);
-            }
-
-            if (skip != null)
-            {
-                last = Expression.Invoke(skip, last);
-            }
-
-            if (take != null)
-            {
-                last = Expression.Invoke(take, last);
-            }
-
-            if (groupBy != null)
-            {
-                last = Expression.Invoke(groupBy, last);
-            }
-
-            if (select != null)
-            {
-                last = Expression.Invoke(select, last);
-            }
-            Nodes.Push(last);
-        }
-
         public void Visit(RootNode node)
         {
             if (Nodes.Any())

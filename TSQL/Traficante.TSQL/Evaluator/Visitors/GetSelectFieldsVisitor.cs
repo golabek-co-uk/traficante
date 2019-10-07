@@ -282,10 +282,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(InternalQueryNode node)
-        {
-        }
-
         public void Visit(RootNode node)
         {
         }

@@ -515,10 +515,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(InternalQueryNode node)
-        {
-        }
-
         public void Visit(RootNode node)
         {
             node.Expression.Accept(this);
