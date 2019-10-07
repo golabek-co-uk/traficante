@@ -572,13 +572,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //}
         }
 
-        public void Visit(CreateTransformationTableNode node)
-        {
-            var fields = CreateFields(node.Fields);
-
-            Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, fields, node.ForGrouping));
-        }
-
         public void Visit(IntoNode node)
         {
             Nodes.Push(new IntoNode(node.Name));

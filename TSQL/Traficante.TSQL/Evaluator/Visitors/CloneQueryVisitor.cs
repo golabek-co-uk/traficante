@@ -364,16 +364,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new ExpressionFromNode(from));
         }
 
-        public virtual void Visit(CreateTransformationTableNode node)
-        {
-            var items = new FieldNode[node.Fields.Length];
-
-            for (var i = node.Fields.Length - 1; i >= 0; --i)
-                items[i] = (FieldNode) Nodes.Pop();
-
-            Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, items, node.ForGrouping));
-        }
-
         public virtual void Visit(IntoNode node)
         {
             Nodes.Push(new IntoNode(node.Name));

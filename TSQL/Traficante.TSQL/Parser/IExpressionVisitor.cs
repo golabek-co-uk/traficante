@@ -60,7 +60,6 @@ namespace Traficante.TSQL.Parser
         void Visit(InMemoryTableFromNode node);
         void Visit(JoinFromNode node);
         void Visit(ExpressionFromNode node);
-        void Visit(CreateTransformationTableNode node);
         void Visit(IntoNode node);
         void Visit(QueryScope node);
         void Visit(ShouldBePresentInTheTable node);

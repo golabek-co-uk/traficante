@@ -229,14 +229,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(CreateTransformationTableNode node)
-        {
-            foreach (var item in node.Fields)
-                item.Accept(this);
-
-            node.Accept(_visitor);
-        }
-
         public void Visit(IntoNode node)
         {
             node.Accept(_visitor);

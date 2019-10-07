@@ -250,10 +250,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(CreateTransformationTableNode node)
-        {
-        }
-
         public void Visit(IntoNode node)
         {
         }

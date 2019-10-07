@@ -361,13 +361,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, node.Alias));
         }
 
-        public void Visit(CreateTransformationTableNode node)
-        {
-            var fields = CreateFields(node.Fields);
-
-            Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, fields, node.ForGrouping));
-        }
-
         public void Visit(IntoNode node)
         {
             Nodes.Push(new IntoNode(node.Name));
