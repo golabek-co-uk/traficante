@@ -373,11 +373,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public virtual void Visit(ShouldBePresentInTheTable node)
-        {
-            Nodes.Push(new ShouldBePresentInTheTable(node.Table, node.ExpectedResult, node.Keys));
-        }
-
         public virtual void Visit(QueryNode node)
         {
             var orderBy = node.OrderBy != null ? Nodes.Pop() as OrderByNode : null;

@@ -258,10 +258,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(ShouldBePresentInTheTable node)
-        {
-        }
-
         public void Visit(QueryNode node)
         {
         }

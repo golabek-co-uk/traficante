@@ -239,11 +239,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(ShouldBePresentInTheTable node)
-        {
-            node.Accept(_visitor);
-        }
-
         public void Visit(QueryNode node)
         {
             _walker = _walker.NextChild();

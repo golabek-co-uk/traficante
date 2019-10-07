@@ -208,11 +208,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        public void Visit(ShouldBePresentInTheTable node)
-        {
-            node.Accept(Visitor);
-        }
-
         public virtual void Visit(QueryNode node)
         {
             node.From.Accept(this);

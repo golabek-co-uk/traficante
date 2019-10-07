@@ -370,11 +370,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(ShouldBePresentInTheTable node)
-        {
-            Nodes.Push(new ShouldBePresentInTheTable(node.Table, node.ExpectedResult, node.Keys));
-        }
-
         public void Visit(QueryNode node)
         {
             var orderBy = node.OrderBy != null ? Nodes.Pop() as OrderByNode : null;
