@@ -61,8 +61,6 @@ namespace Traficante.TSQL.Parser
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeCteExpression()), TokenType.Semicolon);
                 case TokenType.Table:
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeTable()), TokenType.Semicolon);
-                case TokenType.Couple:
-                    return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeCouple()), TokenType.Semicolon);
                 case TokenType.Declare:
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeDeclare()), TokenType.Semicolon);
                 case TokenType.Set:
@@ -105,26 +103,6 @@ namespace Traficante.TSQL.Parser
             {
                 return new DescNode(new SchemaTableFromNode(null, name.Value, string.Empty, string.Empty), DescForType.Schema);
             }
-        }
-
-        private CoupleNode ComposeCouple()
-        {
-            Consume(TokenType.Couple);
-
-            var from = ComposeSchemaMethod();
-
-            Consume(TokenType.With);
-            Consume(TokenType.Table);
-
-            var name = Current.Value;
-
-            Consume(Current.TokenType);
-
-            Consume(TokenType.As);
-
-            var identifierNode = (IdentifierNode)ComposeBaseTypes();
-
-            return new CoupleNode(from, name, identifierNode.Name);
         }
 
         private DeclareNode ComposeDeclare()
@@ -745,7 +723,7 @@ namespace Traficante.TSQL.Parser
                 var method = ComposeFunctionMethod(string.Empty);
                 alias = ComposeAlias();
 
-                return new AliasedFromNode(method.Name, method.Arguments, alias);
+                return new SchemaFunctionFromNode(null, null, method.Name, method.Arguments, alias);
             }
 
             var column = (IdentifierNode) ComposeBaseTypes();

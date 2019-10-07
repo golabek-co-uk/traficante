@@ -550,16 +550,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }
 
-        public void Visit(CoupleNode node)
-        {
-            Nodes.Push(new CoupleNode(node.SchemaMethodNode, node.TableName, node.MappedSchemaName));
-        }
-
-        public void Visit(AliasedFromNode node)
-        {
-            Nodes.Push(new AliasedFromNode(node.Identifier, node.Args, node.Alias));
-        }
-
         public void Visit(SchemaMethodFromNode node)
         {
             Nodes.Push(new SchemaMethodFromNode(node.Schema, node.Method));

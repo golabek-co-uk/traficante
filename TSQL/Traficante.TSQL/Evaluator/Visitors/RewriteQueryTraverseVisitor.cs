@@ -608,17 +608,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(CoupleNode node)
-        {
-            node.Accept(_visitor);
-        }
-
         public void Visit(SchemaMethodFromNode node)
-        {
-            node.Accept(_visitor);
-        }
-
-        public void Visit(AliasedFromNode node)
         {
             node.Accept(_visitor);
         }

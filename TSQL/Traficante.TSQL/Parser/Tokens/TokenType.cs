@@ -70,7 +70,6 @@
         LBracket,
         RBracket,
         Semicolon,
-        Couple,
         Case,
         When,
         Then,

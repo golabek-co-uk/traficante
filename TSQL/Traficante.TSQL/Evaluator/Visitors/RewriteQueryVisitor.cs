@@ -739,15 +739,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(CoupleNode node)
-        {
-        }
 
         public void Visit(SchemaMethodFromNode node)
-        {
-        }
-
-        public void Visit(AliasedFromNode node)
         {
         }
 

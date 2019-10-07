@@ -974,10 +974,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             ResultColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
         }
 
-        public void Visit(AliasedFromNode node)
-        {
-            throw new NotImplementedException();
-        }
+        //public void Visit(AliasedFromNode node)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         public void Visit(JoinSourcesTableFromNode node)
         {
@@ -1471,11 +1471,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
 
         public void Visit(CreateTableNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Visit(CoupleNode node)
         {
             throw new NotImplementedException();
         }

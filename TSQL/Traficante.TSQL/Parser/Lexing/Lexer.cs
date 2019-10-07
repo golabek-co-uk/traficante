@@ -120,8 +120,6 @@ namespace Traficante.TSQL.Parser.Lexing
                     return TokenType.RBracket;
                 case SemicolonToken.TokenText:
                     return TokenType.Semicolon;
-                case CoupleToken.TokenText:
-                    return TokenType.Couple;
                 case CaseToken.TokenText:
                     return TokenType.Case;
                 case WhenToken.TokenText:
@@ -266,7 +264,6 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KLeftBracket = "\\{";
             public static readonly string KRightBracket = "\\}";
             public static readonly string KSemicolon = "\\;";
-            public static readonly string KCouple = Format(Keyword, CoupleToken.TokenText);
             public static readonly string KCase = Format(Keyword, CaseToken.TokenText);
             public static readonly string KWhen = Format(Keyword, WhenToken.TokenText);
             public static readonly string KThen = Format(Keyword, ThenToken.TokenText);
@@ -360,7 +357,6 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KLeftBracket),
                 new TokenDefinition(TokenRegexDefinition.KRightBracket),
                 new TokenDefinition(TokenRegexDefinition.KSemicolon),
-                new TokenDefinition(TokenRegexDefinition.KCouple),
                 new TokenDefinition(TokenRegexDefinition.KCase),
                 new TokenDefinition(TokenRegexDefinition.KWhen),
                 new TokenDefinition(TokenRegexDefinition.KThen),
@@ -541,8 +537,6 @@ namespace Traficante.TSQL.Parser.Lexing
                     return new RBracketToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Semicolon:
                     return new SemicolonToken(new TextSpan(Position, tokenText.Length));
-                case TokenType.Couple:
-                    return new CoupleToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Case:
                     return new CaseToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.When:

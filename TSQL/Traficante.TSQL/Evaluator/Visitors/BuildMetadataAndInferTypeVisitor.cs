@@ -496,28 +496,28 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new SchemaMethodFromNode(node.Schema, node.Method));
         }
 
-        public void Visit(AliasedFromNode node)
-        {
-            var schemaInfo = _explicitlyUsedAliases[node.Identifier];
-            var tableName = _explicitlyCoupledTablesWithAliases[node.Identifier];
-            var table = _explicitlyDefinedTables[tableName];
+        //public void Visit(AliasedFromNode node)
+        //{
+        //    var schemaInfo = _explicitlyUsedAliases[node.Identifier];
+        //    var tableName = _explicitlyCoupledTablesWithAliases[node.Identifier];
+        //    var table = _explicitlyDefinedTables[tableName];
 
-            var schema = _engine.GetDatabase(null);
+        //    var schema = _engine.GetDatabase(null);
 
-            _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
-            _generatedAliases.Add(_queryAlias);
+        //    _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
+        //    _generatedAliases.Add(_queryAlias);
 
-            var tableSymbol = new TableSymbol(schemaInfo.Schema, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
-            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
-            _currentScope[node.Id] = _queryAlias;
+        //    var tableSymbol = new TableSymbol(schemaInfo.Schema, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+        //    _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
+        //    _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new SchemaFunctionFromNode(null, schemaInfo.Schema, schemaInfo.Method, node.Args, _queryAlias);
+        //    var aliasedSchemaFromNode = new SchemaFunctionFromNode(null, schemaInfo.Schema, schemaInfo.Method, node.Args, _queryAlias);
 
-            if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
-                InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
+        //    if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
+        //        InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
 
-            Nodes.Push(aliasedSchemaFromNode);
-        }
+        //    Nodes.Push(aliasedSchemaFromNode);
+        //}
 
         public void Visit(JoinSourcesTableFromNode node)
         {
@@ -1041,13 +1041,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _explicitlyDefinedTables.Add(node.Name, table);
 
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
-        }
-
-        public void Visit(CoupleNode node)
-        {
-            _explicitlyCoupledTablesWithAliases.Add(node.MappedSchemaName, node.TableName);
-            _explicitlyUsedAliases.Add(node.MappedSchemaName, node.SchemaMethodNode);
-            Nodes.Push(new CoupleNode(node.SchemaMethodNode, node.TableName, node.MappedSchemaName));
         }
 
         public void SetQueryPart(QueryPart part)

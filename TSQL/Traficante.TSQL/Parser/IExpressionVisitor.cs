@@ -59,7 +59,7 @@ namespace Traficante.TSQL.Parser
         void Visit(JoinInMemoryWithSourceTableFromNode node);
         void Visit(SchemaTableFromNode node);
         void Visit(SchemaFunctionFromNode node);
-        void Visit(AliasedFromNode node);
+        //void Visit(AliasedFromNode node);
         void Visit(JoinSourcesTableFromNode node);
         void Visit(InMemoryTableFromNode node);
         void Visit(JoinFromNode node);
@@ -92,7 +92,6 @@ namespace Traficante.TSQL.Parser
         void Visit(JoinNode node);
         void Visit(OrderByNode node);
         void Visit(CreateTableNode node);
-        void Visit(CoupleNode node);
         void Visit(CaseNode node);
         void Visit(TypeNode node);
     }
