@@ -35,6 +35,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(-1, result[0][0]);
         }
 
+        [Ignore]
         [TestMethod]
         public void Select_Function_WithDatabaseAndSchema()
         {
@@ -47,7 +48,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(true, result[0][0]);
         }
 
-
+        [Ignore]
         [TestMethod]
         public void Execute()
         {

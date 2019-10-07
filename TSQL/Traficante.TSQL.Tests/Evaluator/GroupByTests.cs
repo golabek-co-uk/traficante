@@ -68,7 +68,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void GroupByTwoSameAggregate()
         {
             var query =
-                @"select Sum(Money), Sum(Money) from #A.Entities() group by Month";
+                @"select Sum(Money) a, Sum(Money) b from #A.Entities() group by Month";
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {
                 {
@@ -626,7 +626,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void GroupByWithWhereTest()
         {
             var query =
-                "select Country, City as 'City', Count(City, 1), Count(City) as 'CountOfCities' from #A.Entities() where Country = 'POLAND' group by Country, City";
+                "select Country, City as 'City', Count(City) as 'CountOfCities' from #A.Entities() where Country = 'POLAND' group by Country, City";
 
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {
@@ -636,6 +636,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                         new BasicEntity("WARSAW", "POLAND", 500),
                         new BasicEntity("CZESTOCHOWA", "POLAND", 400),
                         new BasicEntity("KATOWICE", "POLAND", 250),
+                        new BasicEntity("KATOWICE", "POLAND", 350),
                         new BasicEntity("BERLIN", "GERMANY", 250),
                         new BasicEntity("MUNICH", "GERMANY", 350)
                     }
@@ -645,31 +646,26 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var vm = CreateAndRunVirtualMachine(query, sources);
             var table = vm.Run();
 
-            Assert.AreEqual(4, table.Columns.Count());
+            Assert.AreEqual(3, table.Columns.Count());
             Assert.AreEqual("Country", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("City", table.Columns.ElementAt(1).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(1).ColumnType);
-            Assert.AreEqual("Count(City, 1)", table.Columns.ElementAt(2).ColumnName);
+            Assert.AreEqual("CountOfCities", table.Columns.ElementAt(2).ColumnName);
             Assert.AreEqual(typeof(int), table.Columns.ElementAt(2).ColumnType);
-            Assert.AreEqual("CountOfCities", table.Columns.ElementAt(3).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(3).ColumnType);
 
             Assert.AreEqual(3, table.Count);
             Assert.AreEqual("POLAND", table[0].Values[0]);
             Assert.AreEqual("WARSAW", table[0].Values[1]);
-            Assert.AreEqual(Convert.ToInt32(3), table[0].Values[2]);
-            Assert.AreEqual(Convert.ToInt32(1), table[0].Values[3]);
+            Assert.AreEqual(Convert.ToInt32(1), table[0].Values[2]);
 
             Assert.AreEqual("POLAND", table[1].Values[0]);
             Assert.AreEqual("CZESTOCHOWA", table[1].Values[1]);
-            Assert.AreEqual(Convert.ToInt32(3), table[1].Values[2]);
-            Assert.AreEqual(Convert.ToInt32(1), table[1].Values[3]);
+            Assert.AreEqual(Convert.ToInt32(1), table[1].Values[2]);
 
             Assert.AreEqual("POLAND", table[2].Values[0]);
             Assert.AreEqual("KATOWICE", table[2].Values[1]);
-            Assert.AreEqual(Convert.ToInt32(3), table[2].Values[2]);
-            Assert.AreEqual(Convert.ToInt32(1), table[2].Values[3]);
+            Assert.AreEqual(Convert.ToInt32(2), table[2].Values[2]);
         }
 
         [TestMethod]
