@@ -244,13 +244,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(TranslatedSetTreeNode node)
-        {
-            foreach (var item in node.Nodes)
-                item.Accept(this);
-            node.Accept(_visitor);
-        }
-
         public void Visit(IntoNode node)
         {
             node.Accept(_visitor);
@@ -263,16 +256,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(ShouldBePresentInTheTable node)
         {
-            node.Accept(_visitor);
-        }
-
-        public void Visit(TranslatedSetOperatorNode node)
-        {
-            foreach (var item in node.CreateTableNodes)
-                item.Accept(_visitor);
-
-            node.FQuery.Accept(this);
-            node.SQuery.Accept(this);
             node.Accept(_visitor);
         }
 

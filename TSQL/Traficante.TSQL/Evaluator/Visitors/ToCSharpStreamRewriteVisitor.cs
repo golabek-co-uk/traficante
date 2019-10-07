@@ -1007,10 +1007,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(TranslatedSetTreeNode node)
-        {
-        }
-
         public void Visit(IntoNode node)
         {
         }
@@ -1020,10 +1016,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
 
         public void Visit(ShouldBePresentInTheTable node)
-        {
-        }
-
-        public void Visit(TranslatedSetOperatorNode node)
         {
         }
 

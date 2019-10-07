@@ -372,10 +372,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, fields, node.ForGrouping));
         }
 
-        public void Visit(TranslatedSetTreeNode node)
-        {
-        }
-
         public void Visit(IntoNode node)
         {
             Nodes.Push(new IntoNode(node.Name));
@@ -388,10 +384,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(ShouldBePresentInTheTable node)
         {
             Nodes.Push(new ShouldBePresentInTheTable(node.Table, node.ExpectedResult, node.Keys));
-        }
-
-        public void Visit(TranslatedSetOperatorNode node)
-        {
         }
 
         public void Visit(QueryNode node)
@@ -430,11 +422,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SingleSetNode node)
         {
-            var query = (InternalQueryNode) Nodes.Pop();
 
-            var nodes = new Node[] {new CreateTransformationTableNode(query.From.Alias, new string[0], query.Select.Fields, false), query};
-
-            Nodes.Push(new MultiStatementNode(nodes, null));
         }
 
         public void Visit(UnionNode node)

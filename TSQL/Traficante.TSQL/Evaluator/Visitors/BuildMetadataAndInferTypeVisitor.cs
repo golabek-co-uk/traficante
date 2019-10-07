@@ -586,10 +586,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, fields, node.ForGrouping));
         }
 
-        public void Visit(TranslatedSetTreeNode node)
-        {
-        }
-
         public void Visit(IntoNode node)
         {
             Nodes.Push(new IntoNode(node.Name));
@@ -602,10 +598,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(ShouldBePresentInTheTable node)
         {
             Nodes.Push(new ShouldBePresentInTheTable(node.Table, node.ExpectedResult, node.Keys));
-        }
-
-        public void Visit(TranslatedSetOperatorNode node)
-        {
         }
 
         public void Visit(QueryNode node)
