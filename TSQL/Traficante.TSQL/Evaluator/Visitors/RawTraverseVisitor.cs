@@ -20,12 +20,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 field.Accept(this);
             node.Accept(Visitor);
         }
-
-        public virtual void Visit(GroupSelectNode node)
-        {
-            node.Accept(Visitor);
-        }
-
         public virtual void Visit(StringNode node)
         {
             node.Accept(Visitor);

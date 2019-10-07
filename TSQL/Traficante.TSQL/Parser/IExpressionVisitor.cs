@@ -36,7 +36,6 @@ namespace Traficante.TSQL.Parser
         void Visit(FunctionNode node);
         void Visit(AccessRawIdentifierNode node);
         void Visit(IsNullNode node);
-        //void Visit(AccessRefreshAggreationScoreNode node);
         void Visit(AccessColumnNode node);
         void Visit(AllColumnsNode node);
         void Visit(IdentifierNode node);
@@ -50,7 +49,6 @@ namespace Traficante.TSQL.Parser
         void Visit(AccessCallChainNode node);
         void Visit(ArgsListNode node);
         void Visit(SelectNode node);
-        void Visit(GroupSelectNode node);
         void Visit(WhereNode node);
         void Visit(GroupByNode node);
         void Visit(HavingNode node);

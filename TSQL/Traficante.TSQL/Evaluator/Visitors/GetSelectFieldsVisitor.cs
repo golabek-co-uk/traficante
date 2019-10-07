@@ -205,10 +205,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(GroupSelectNode node)
-        {
-        }
-
         public void Visit(WhereNode node)
         {
         }

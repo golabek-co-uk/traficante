@@ -177,10 +177,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new SelectNode(fields.ToArray()));
         }
 
-        public void Visit(GroupSelectNode node)
-        {
-        }
-
         public void Visit(StringNode node)
         {
             Nodes.Push(new StringNode(node.Value));

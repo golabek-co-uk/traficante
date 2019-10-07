@@ -24,14 +24,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 field.Accept(this);
             node.Accept(_visitor);
         }
-
-        public void Visit(GroupSelectNode node)
-        {
-            foreach (var field in node.Fields)
-                field.Accept(this);
-            node.Accept(_visitor);
-        }
-
         public void Visit(StringNode node)
         {
             node.Accept(_visitor);

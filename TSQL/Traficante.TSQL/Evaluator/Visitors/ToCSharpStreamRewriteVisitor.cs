@@ -744,10 +744,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputItemType), "input");
         }
 
-        public void Visit(GroupSelectNode node)
-        {
-        }
-
         public void Visit(WhereNode node)
         {
             var predicate =  Nodes.Pop();

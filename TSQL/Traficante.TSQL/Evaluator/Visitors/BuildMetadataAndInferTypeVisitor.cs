@@ -203,13 +203,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new SelectNode(fields.ToArray()));
         }
 
-        public void Visit(GroupSelectNode node)
-        {
-            var fields = CreateFields(node.Fields);
-
-            Nodes.Push(new GroupSelectNode(fields.ToArray()));
-        }
-
         public void Visit(StringNode node)
         {
             Nodes.Push(new StringNode(node.Value));
