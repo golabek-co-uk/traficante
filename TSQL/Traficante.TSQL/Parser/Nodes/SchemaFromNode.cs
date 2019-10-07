@@ -1,8 +1,8 @@
 ﻿namespace Traficante.TSQL.Parser.Nodes
 {
-    public class SchemaFunctionFromNode : FromNode
+    public class FromFunctionNode : FromNode
     {
-        public SchemaFunctionFromNode(string database, string schema, string method, ArgsListNode parameters, string alias)
+        public FromFunctionNode(string database, string schema, string method, ArgsListNode parameters, string alias)
     : base(alias)
         {
             Database = database;
@@ -10,7 +10,7 @@
             Method = method;
             MethodParameters = parameters;
             var paramsId = parameters.Id;
-            Id = $"{nameof(SchemaFunctionFromNode)}{database}{schema}{method}{paramsId}{Alias}";
+            Id = $"{nameof(FromFunctionNode)}{database}{schema}{method}{paramsId}{Alias}";
         }
 
         public string Database { get; set; }
@@ -41,22 +41,22 @@
 
         public override bool Equals(object obj)
         {
-            if (obj is SchemaFunctionFromNode node)
+            if (obj is FromFunctionNode node)
                 return node.Id == Id;
 
             return base.Equals(obj);
         }
     }
 
-    public class SchemaTableFromNode : FromNode
+    public class FromTableNode : FromNode
     {
-        public SchemaTableFromNode(string database, string schema, string tableOrView, string alias)
+        public FromTableNode(string database, string schema, string tableOrView, string alias)
             : base(alias)
         {
             Database = database;
             Schema = schema;
             TableOrView = tableOrView;
-            Id = $"{nameof(SchemaTableFromNode)}{database}{schema}{tableOrView}{Alias}";
+            Id = $"{nameof(FromTableNode)}{database}{schema}{tableOrView}{Alias}";
         }
 
         public string Database { get; set; }
@@ -85,7 +85,7 @@
 
         public override bool Equals(object obj)
         {
-            if (obj is SchemaTableFromNode node)
+            if (obj is FromTableNode node)
                 return node.Id == Id;
 
             return base.Equals(obj);

@@ -434,7 +434,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new TakeNode((IntegerNode) node.Expression));
         }
 
-        public void Visit(SchemaFunctionFromNode node)
+        public void Visit(FromFunctionNode node)
         {
             var database = _engine.GetDatabase(node.Database);
 
@@ -456,7 +456,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new SchemaFunctionFromNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), _queryAlias);
+            var aliasedSchemaFromNode = new FromFunctionNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), _queryAlias);
 
             if(!InferredColumns.ContainsKey(aliasedSchemaFromNode))
                 InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
@@ -464,32 +464,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(aliasedSchemaFromNode);
         }
 
-        public void Visit(SchemaTableFromNode node)
-        {
-            var schema = _engine.GetDatabase(node.Database);
 
-            ITable table;
-            if (_currentScope.Name != "Desc")
-                table = schema.GetTableByName(node.Schema, node.TableOrView);
-            else
-                table = new DynamicTable(node.Schema, node.TableOrView, new IColumn[0]);
-
-            _schemaFromArgs.Clear();
-
-            _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
-            _generatedAliases.Add(_queryAlias);
-
-            var tableSymbol = new TableSymbol(node.Schema, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
-            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
-            _currentScope[node.Id] = _queryAlias;
-
-            var aliasedSchemaFromNode = new SchemaTableFromNode(node.Database, node.Schema, node.TableOrView, _queryAlias);
-
-            if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
-                InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
-
-            Nodes.Push(aliasedSchemaFromNode);
-        }
 
         public void Visit(SchemaMethodFromNode node)
         {
@@ -555,56 +530,58 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, _queryAlias));
         }
 
-        public void Visit(ReferentialFromNode node)
+        public void Visit(FromTableNode node)
         {
-            TableSymbol tableSymbol;
-            var schema = _engine.GetDatabase(null);
-            var table = schema.GetTableByName(null, node.Name);
-            if (table != null)
+            TableSymbol tableSymbol = null;
+            var schema = _engine.GetDatabase(node.Database);
+
+            ITable table;
+            if (_currentScope.Name != "Desc")
+                table = schema.GetTableByName(node.Schema, node.TableOrView);
+            else
+                table = new DynamicTable(node.Schema, node.TableOrView, new IColumn[0]);
+
+            _schemaFromArgs.Clear();
+
+            if (table == null)
             {
-                if (_currentScope.Name == "Desc")
-                    table = new DynamicTable("dbo", node.Name, new IColumn[0]);
-
-                _schemaFromArgs.Clear();
-
-                _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
+                _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.TableOrView : node.Alias;
                 _generatedAliases.Add(_queryAlias);
 
-                tableSymbol = new TableSymbol("dbo", _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
-                _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
+                if (_currentScope.Parent.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(node.TableOrView))
+                {
+                    tableSymbol = _currentScope.Parent.ScopeSymbolTable.GetSymbol<TableSymbol>(node.TableOrView);
+                }
+                else
+                {
+                    var scope = _currentScope;
+                    while (scope != null && scope.Name != "CTE") scope = scope.Parent;
+
+                    tableSymbol = scope.ScopeSymbolTable.GetSymbol<TableSymbol>(node.TableOrView);
+                }
+
+                var tableSchemaPair = tableSymbol.GetTableByAlias(node.TableOrView);
+                _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
+                    new TableSymbol(null, _queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
                 _currentScope[node.Id] = _queryAlias;
 
-                var aliasedSchemaFromNode = new SchemaTableFromNode(null, null, node.Name, _queryAlias);
-
-                if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
-                    InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
-
-                Nodes.Push(aliasedSchemaFromNode);
+                Nodes.Push(new InMemoryTableFromNode(node.TableOrView, _queryAlias));
                 return;
             }
 
-            tableSymbol = null;
-            _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.Name : node.Alias;
+            _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            if (_currentScope.Parent.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(node.Name))
-            {
-                tableSymbol = _currentScope.Parent.ScopeSymbolTable.GetSymbol<TableSymbol>(node.Name);
-            }
-            else
-            {
-                var scope = _currentScope;
-                while (scope != null && scope.Name != "CTE") scope = scope.Parent;
-
-                tableSymbol = scope.ScopeSymbolTable.GetSymbol<TableSymbol>(node.Name);
-            }
-
-            var tableSchemaPair = tableSymbol.GetTableByAlias(node.Name);
-            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
-                new TableSymbol(null, _queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
+            tableSymbol = new TableSymbol(node.Schema, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            Nodes.Push(new InMemoryTableFromNode(node.Name, _queryAlias));
+            var aliasedSchemaFromNode = new FromTableNode(node.Database, node.Schema, node.TableOrView, _queryAlias);
+
+            if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
+                InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
+
+            Nodes.Push(aliasedSchemaFromNode);
         }
 
         public void Visit(JoinFromNode node)
@@ -640,11 +617,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, fields, node.ForGrouping));
         }
-
-        //public void Visit(RenameTableNode node)
-        //{
-        //    Nodes.Push(new RenameTableNode(node.TableSourceName, node.TableDestinationName));
-        //}
 
         public void Visit(TranslatedSetTreeNode node)
         {
@@ -720,10 +692,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(SingleSetNode node)
         {
         }
-
-        //public void Visit(RefreshNode node)
-        //{
-        //}
 
         public void Visit(UnionNode node)
         {

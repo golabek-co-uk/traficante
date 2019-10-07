@@ -86,14 +86,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Visitor.SetQueryPart(QueryPart.None);
         }
 
-        public override void Visit(SchemaFunctionFromNode node)
+        public override void Visit(FromFunctionNode node)
         {
             Visitor.SetQueryPart(QueryPart.From);
             base.Visit(node);
             Visitor.SetQueryPart(QueryPart.None);
         }
 
-        public override void Visit(SchemaTableFromNode node)
+        public override void Visit(FromTableNode node)
         {
             Visitor.SetQueryPart(QueryPart.From);
             base.Visit(node);

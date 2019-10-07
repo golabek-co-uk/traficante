@@ -178,13 +178,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(SchemaFunctionFromNode node)
+        public void Visit(FromFunctionNode node)
         {
             node.MethodParameters.Accept(this);
             node.Accept(_visitor);
         }
 
-        public void Visit(SchemaTableFromNode node)
+        public void Visit(FromTableNode node)
         {
             node.Accept(_visitor);
         }
@@ -199,11 +199,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
 
         public void Visit(InMemoryTableFromNode node)
-        {
-            node.Accept(_visitor);
-        }
-
-        public void Visit(ReferentialFromNode node)
         {
             node.Accept(_visitor);
         }
@@ -255,11 +250,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             node.Accept(_visitor);
         }
-
-        //public void Visit(RenameTableNode node)
-        //{
-        //    node.Accept(_visitor);
-        //}
 
         public void Visit(TranslatedSetTreeNode node)
         {
@@ -526,14 +516,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             TraverseSetOperator(node);
         }
-
-        //public void Visit(RefreshNode node)
-        //{
-        //    foreach (var item in node.Nodes)
-        //        item.Accept(this);
-
-        //    node.Accept(_visitor);
-        //}
 
         public void Visit(IntersectNode node)
         {

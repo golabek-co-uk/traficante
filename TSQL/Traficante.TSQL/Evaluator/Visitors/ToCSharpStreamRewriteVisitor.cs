@@ -71,7 +71,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             if (node.Type == DescForType.SpecificConstructor)
             {
-                var fromNode = (SchemaFunctionFromNode)node.From;
+                var fromNode = (FromFunctionNode)node.From;
 
                 var table = _engine
                     .GetDatabase(null)
@@ -101,7 +101,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             if (node.Type == DescForType.Schema)
             {
-                var fromNode = (SchemaFunctionFromNode)node.From;
+                var fromNode = (FromFunctionNode)node.From;
 
                 var table = _engine
                     .GetDatabase(fromNode.Schema);
@@ -865,7 +865,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
 
         
-        public void Visit(SchemaFunctionFromNode node)
+        public void Visit(FromFunctionNode node)
         {
             //var rowSource = _schemaProvider.GetDatabase(null).GetRowSource(node.Schema, node.Method, _interCommunicator, new object[0]).Rows;
             var rowSource = _engine.GetDatabase(null).GetFunctionRowSource(node.Schema, node.Method, new object[0]).Rows;
@@ -920,7 +920,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             ResultColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
         }
 
-        public void Visit(SchemaTableFromNode node)
+        public void Visit(FromTableNode node)
         {
             var rowSource = _engine.GetDatabase(node.Database).GetTableRowSource(node.Schema, node.TableOrView).Rows;
 
@@ -999,11 +999,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputitemType), "input");
 
             Nodes.Push(table);
-        }
-
-        public void Visit(ReferentialFromNode node)
-        {
-            throw new NotImplementedException();
         }
 
         public void Visit(JoinFromNode node)
@@ -1252,10 +1247,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(call);
         }
-
-        //public void Visit(RefreshNode node)
-        //{
-        //}
 
         public void Visit(IntersectNode node)
         {

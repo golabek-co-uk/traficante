@@ -335,14 +335,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new TakeNode((IntegerNode) node.Expression));
         }
 
-        public virtual void Visit(SchemaFunctionFromNode node)
+        public virtual void Visit(FromFunctionNode node)
         {
-            Nodes.Push(new SchemaFunctionFromNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
+            Nodes.Push(new FromFunctionNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
         }
 
-        public virtual void Visit(SchemaTableFromNode node)
+        public virtual void Visit(FromTableNode node)
         {
-            Nodes.Push(new SchemaTableFromNode(node.Database, node.Schema, node.TableOrView, node.Alias));
+            Nodes.Push(new FromTableNode(node.Database, node.Schema, node.TableOrView, node.Alias));
         }
 
         public virtual void Visit(JoinSourcesTableFromNode node)
@@ -357,11 +357,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public virtual void Visit(InMemoryTableFromNode node)
         {
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, node.Alias));
-        }
-
-        public void Visit(ReferentialFromNode node)
-        {
-            Nodes.Push(new ReferentialFromNode(node.Name, node.Alias));
         }
 
         public virtual void Visit(JoinFromNode node)
@@ -388,11 +383,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, items, node.ForGrouping));
         }
-
-        //public virtual void Visit(RenameTableNode node)
-        //{
-        //    Nodes.Push(new RenameTableNode(node.TableSourceName, node.TableDestinationName));
-        //}
 
         public virtual void Visit(TranslatedSetTreeNode node)
         {
@@ -451,11 +441,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public virtual void Visit(SingleSetNode node)
         {
         }
-
-        //public virtual void Visit(RefreshNode node)
-        //{
-        //    Nodes.Push(new RefreshNode(node.Nodes));
-        //}
 
         public virtual void Visit(UnionNode node)
         {

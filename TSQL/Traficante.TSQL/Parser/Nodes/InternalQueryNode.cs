@@ -8,10 +8,7 @@ namespace Traficante.TSQL.Parser.Nodes
             OrderByNode orderBy, SkipNode skip, TakeNode take)
             : base(select, from, where, groupBy, orderBy, skip, take)
         {
-            //Refresh = refresh;
         }
-
-        //public RefreshNode Refresh { get; }
 
         public override Type ReturnType => null;
 

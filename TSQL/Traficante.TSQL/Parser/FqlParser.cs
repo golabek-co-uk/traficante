@@ -88,20 +88,20 @@ namespace Traficante.TSQL.Parser
                 {
                     var accessMethod = ComposeFunctionMethod(string.Empty);
 
-                    fromNode = new SchemaFunctionFromNode(null, name.Value, accessMethod.Name, accessMethod.Arguments, string.Empty);
+                    fromNode = new FromFunctionNode(null, name.Value, accessMethod.Name, accessMethod.Arguments, string.Empty);
                     return new DescNode(fromNode, DescForType.SpecificConstructor);
                 }
                 else
                 {
                     var table = new WordNode(ConsumeAndGetToken(TokenType.Property).Value);
 
-                    fromNode = new SchemaTableFromNode(null, name.Value, table.Value, string.Empty);
+                    fromNode = new FromTableNode(null, name.Value, table.Value, string.Empty);
                     return new DescNode(fromNode, DescForType.Constructors);
                 }
             }
             else
             {
-                return new DescNode(new SchemaTableFromNode(null, name.Value, string.Empty, string.Empty), DescForType.Schema);
+                return new DescNode(new FromTableNode(null, name.Value, string.Empty, string.Empty), DescForType.Schema);
             }
         }
 
@@ -687,32 +687,32 @@ namespace Traficante.TSQL.Parser
                             {
                                 var par3 = ConsumeAndGetToken(TokenType.Property).Value;
                                 alias = ComposeAlias();
-                                fromNode = new SchemaTableFromNode(part1, part2, par3, alias);
+                                fromNode = new FromTableNode(part1, part2, par3, alias);
                             }
                             else if (Current.TokenType == TokenType.Function)
                             {
                                 var part3 = ComposeFunctionMethod(string.Empty);
                                 alias = ComposeAlias();
-                                fromNode = new SchemaFunctionFromNode(part1, part2, part3.Name, part3.Arguments, alias);
+                                fromNode = new FromFunctionNode(part1, part2, part3.Name, part3.Arguments, alias);
                             }
                         }
                         else
                         {
                             alias = ComposeAlias();
-                            fromNode = new SchemaTableFromNode(null, part1, part2, alias);
+                            fromNode = new FromTableNode(null, part1, part2, alias);
                         }
                     }
                     else if (Current.TokenType == TokenType.Function)
                     {
                         var part2 = ComposeFunctionMethod(string.Empty);
                         alias = ComposeAlias();
-                        fromNode = new SchemaFunctionFromNode(null, part1, part2.Name, part2.Arguments, alias);
+                        fromNode = new FromFunctionNode(null, part1, part2.Name, part2.Arguments, alias);
                     }
                 }
                 else
                 {
                     alias = ComposeAlias();
-                    fromNode = new ReferentialFromNode(part1, alias);
+                    fromNode = new FromTableNode(null, null, part1, alias);
                 }
 
                 return fromNode;
@@ -723,7 +723,7 @@ namespace Traficante.TSQL.Parser
                 var method = ComposeFunctionMethod(string.Empty);
                 alias = ComposeAlias();
 
-                return new SchemaFunctionFromNode(null, null, method.Name, method.Arguments, alias);
+                return new FromFunctionNode(null, null, method.Name, method.Arguments, alias);
             }
 
             var column = (IdentifierNode) ComposeBaseTypes();

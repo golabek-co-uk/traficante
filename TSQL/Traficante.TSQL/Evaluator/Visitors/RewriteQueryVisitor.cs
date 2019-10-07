@@ -21,7 +21,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(DescNode node)
         {
-            var from = (SchemaFunctionFromNode) Nodes.Pop();
+            var from = (FromFunctionNode) Nodes.Pop();
             Nodes.Push(new DescNode(from, node.Type));
         }
 
@@ -228,11 +228,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));
         }
 
-        //public void Visit(AccessRefreshAggreationScoreNode node)
-        //{
-        //    VisitAccessMethod(node);
-        //}
-
         public virtual void Visit(AccessColumnNode node)
         {
             Nodes.Push(new AccessColumnNode(node.Name, node.Alias, node.ReturnType, node.Span));
@@ -337,14 +332,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new TakeNode((IntegerNode) node.Expression));
         }
 
-        public void Visit(SchemaFunctionFromNode node)
+        public void Visit(FromFunctionNode node)
         {
-            Nodes.Push(new SchemaFunctionFromNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
+            Nodes.Push(new FromFunctionNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
         }
 
-        public void Visit(SchemaTableFromNode node)
+        public void Visit(FromTableNode node)
         {
-            Nodes.Push(new SchemaTableFromNode(node.Database, node.Schema, node.TableOrView, node.Alias));
+            Nodes.Push(new FromTableNode(node.Database, node.Schema, node.TableOrView, node.Alias));
         }
 
         public void Visit(JoinSourcesTableFromNode node)
@@ -370,22 +365,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, node.Alias));
         }
 
-        public void Visit(ReferentialFromNode node)
-        {
-            Nodes.Push(new ReferentialFromNode(node.Name, node.Alias));
-        }
-
         public void Visit(CreateTransformationTableNode node)
         {
             var fields = CreateFields(node.Fields);
 
             Nodes.Push(new CreateTransformationTableNode(node.Name, node.Keys, fields, node.ForGrouping));
         }
-
-        //public void Visit(RenameTableNode node)
-        //{
-        //    Nodes.Push(new RenameTableNode(node.TableSourceName, node.TableDestinationName));
-        //}
 
         public void Visit(TranslatedSetTreeNode node)
         {
@@ -463,10 +448,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(new MultiStatementNode(nodes, null));
         }
-
-        //public void Visit(RefreshNode node)
-        //{
-        //}
 
         public void Visit(UnionNode node)
         {
@@ -677,64 +658,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return fields.ToArray();
         }
 
-        //private FieldNode[] CreateAndConcatFields(TableSymbol left, string lAlias, TableSymbol right, string rAlias,
-        //    Func<string, string, string> func)
-        //{
-        //    return CreateAndConcatFields(left, lAlias, right, rAlias, func, func, (name, alias) => name,
-        //        (name, alias) => name);
-        //}
-
-        //private FieldNode[] CreateAndConcatFields(TableSymbol left, string lAlias, TableSymbol right, string rAlias,
-        //    Func<string, string, string> lfunc, Func<string, string, string> rfunc, Func<string, string, string> lcfunc,
-        //    Func<string, string, string> rcfunc)
-        //{
-        //    var fields = new List<FieldNode>();
-
-        //    var i = 0;
-
-        //    foreach (var compoundTable in left.CompoundTables)
-        //    foreach (var column in left.GetColumns(compoundTable))
-        //        fields.Add(
-        //            new FieldNode(
-        //                new AccessColumnNode(
-        //                    lcfunc(column.ColumnName, compoundTable),
-        //                    lAlias,
-        //                    column.ColumnType,
-        //                    TextSpan.Empty),
-        //                i++,
-        //                lfunc(column.ColumnName, compoundTable)));
-
-        //    foreach (var compoundTable in right.CompoundTables)
-        //    foreach (var column in right.GetColumns(compoundTable))
-        //        fields.Add(
-        //            new FieldNode(
-        //                new AccessColumnNode(
-        //                    rcfunc(column.ColumnName, compoundTable),
-        //                    rAlias,
-        //                    column.ColumnType,
-        //                    TextSpan.Empty),
-        //                i++,
-        //                rfunc(column.ColumnName, compoundTable)));
-
-        //    return fields.ToArray();
-        //}
-
-        //private RefreshNode CreateRefreshMethods(IReadOnlyList<AccessMethodNode> refreshMethods)
-        //{
-        //    var methods = new List<AccessMethodNode>();
-
-        //    foreach (var method in refreshMethods)
-        //    {
-        //        if (method.Method.GetCustomAttribute<AggregateSetDoNotResolveAttribute>() != null)
-        //            continue;
-
-        //        if (!HasMethod(methods, method))
-        //            methods.Add(method);
-        //    }
-
-        //    return new RefreshNode(methods.ToArray());
-        //}
-
         public void Visit(CreateTableNode node)
         {
         }
@@ -743,11 +666,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(SchemaMethodFromNode node)
         {
         }
-
-        //private bool HasMethod(IEnumerable<AccessMethodNode> methods, AccessMethodNode node)
-        //{
-        //    return methods.Any(f => f.ToString() == node.ToString());
-        //}
 
         public void Visit(StatementsArrayNode node)
         {

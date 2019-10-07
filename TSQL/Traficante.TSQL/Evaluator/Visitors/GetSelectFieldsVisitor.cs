@@ -233,11 +233,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(SchemaFunctionFromNode node)
+        public void Visit(FromFunctionNode node)
         {
         }
 
-        public void Visit(SchemaTableFromNode node)
+        public void Visit(FromTableNode node)
         {
         }
 
@@ -246,10 +246,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
 
         public void Visit(InMemoryTableFromNode node)
-        {
-        }
-
-        public void Visit(ReferentialFromNode node)
         {
         }
 
@@ -264,10 +260,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(CreateTransformationTableNode node)
         {
         }
-
-        //public void Visit(RenameTableNode node)
-        //{
-        //}
 
         public void Visit(TranslatedSetTreeNode node)
         {
@@ -316,10 +308,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(ExceptNode node)
         {
         }
-
-        //public void Visit(RefreshNode node)
-        //{
-        //}
 
         public void Visit(IntersectNode node)
         {
