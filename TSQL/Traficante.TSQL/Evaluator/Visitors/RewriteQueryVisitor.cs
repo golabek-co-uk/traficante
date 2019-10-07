@@ -655,11 +655,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-
-        public void Visit(SchemaMethodFromNode node)
-        {
-        }
-
         public void Visit(StatementsArrayNode node)
         {
         }

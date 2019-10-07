@@ -1003,18 +1003,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(SchemaMethodFromNode node)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Visit(CreateTransformationTableNode node)
         {
         }
-
-        //public void Visit(RenameTableNode node)
-        //{
-        //}
 
         public void Visit(TranslatedSetTreeNode node)
         {

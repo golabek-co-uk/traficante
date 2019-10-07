@@ -513,12 +513,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        public void Visit(SchemaMethodFromNode node)
-        {
-            node.Accept(Visitor);
-        }
-
-
         public void Visit(StatementsArrayNode node)
         {
             foreach (var statement in node.Statements)

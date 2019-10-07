@@ -650,15 +650,6 @@ namespace Traficante.TSQL.Parser
             return node;
         }
 
-        private SchemaMethodFromNode ComposeSchemaMethod()
-        {
-            var schemaNode = ComposeWord();
-            Consume(TokenType.Dot);
-            var identifierNode = ((IdentifierNode)ComposeBaseTypes());
-
-            return new SchemaMethodFromNode(schemaNode.Value, identifierNode.Name);
-        }
-
         private FromNode ComposeFrom(bool fromBefore = true)
         {
             if (fromBefore)

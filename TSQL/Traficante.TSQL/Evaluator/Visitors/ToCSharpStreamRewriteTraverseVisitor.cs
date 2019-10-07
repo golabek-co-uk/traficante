@@ -604,11 +604,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(SchemaMethodFromNode node)
-        {
-            node.Accept(_visitor);
-        }
-
         public void Visit(StatementsArrayNode node)
         {
             foreach (var statement in node.Statements)

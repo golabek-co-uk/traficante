@@ -528,11 +528,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }
 
-        public void Visit(SchemaMethodFromNode node)
-        {
-            Nodes.Push(new SchemaMethodFromNode(node.Schema, node.Method));
-        }
-
         public void Visit(StatementsArrayNode node)
         {
             var statements = new StatementNode[node.Statements.Length];

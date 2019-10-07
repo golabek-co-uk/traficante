@@ -29,9 +29,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private FieldNode[] _generatedColumns = new FieldNode[0];
         private string _identifier;
         private string _queryAlias;
-        private IDictionary<string, ITable> _explicitlyDefinedTables = new Dictionary<string, ITable>();
-        private IDictionary<string, string> _explicitlyCoupledTablesWithAliases = new Dictionary<string, string>();
-        private IDictionary<string, SchemaMethodFromNode> _explicitlyUsedAliases = new Dictionary<string, SchemaMethodFromNode>();
+        
         private IDictionary<string, Type> _explicitlyDefinedVariables = new Dictionary<string, Type>();
 
         private int _setKey;
@@ -463,36 +461,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(aliasedSchemaFromNode);
         }
-
-
-
-        public void Visit(SchemaMethodFromNode node)
-        {
-            Nodes.Push(new SchemaMethodFromNode(node.Schema, node.Method));
-        }
-
-        //public void Visit(AliasedFromNode node)
-        //{
-        //    var schemaInfo = _explicitlyUsedAliases[node.Identifier];
-        //    var tableName = _explicitlyCoupledTablesWithAliases[node.Identifier];
-        //    var table = _explicitlyDefinedTables[tableName];
-
-        //    var schema = _engine.GetDatabase(null);
-
-        //    _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
-        //    _generatedAliases.Add(_queryAlias);
-
-        //    var tableSymbol = new TableSymbol(schemaInfo.Schema, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
-        //    _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
-        //    _currentScope[node.Id] = _queryAlias;
-
-        //    var aliasedSchemaFromNode = new SchemaFunctionFromNode(null, schemaInfo.Schema, schemaInfo.Method, node.Args, _queryAlias);
-
-        //    if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
-        //        InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
-
-        //    Nodes.Push(aliasedSchemaFromNode);
-        //}
 
         public void Visit(JoinSourcesTableFromNode node)
         {
@@ -999,7 +967,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             var table = new DynamicTable(null, node.Name, columns.ToArray());
-            _explicitlyDefinedTables.Add(node.Name, table);
+            //_explicitlyDefinedTables.Add(node.Name, table);
 
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }
