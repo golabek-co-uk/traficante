@@ -29,6 +29,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         //Type _itemType = null;
         ParameterExpression _item = null;// Expression.Parameter(typeof(IObjectResolver), "inputItem");
+        ParameterExpression _item_i = Expression.Parameter(typeof(int), "item_i");
         Dictionary<string, Expression> _alias2Item = new Dictionary<string, Expression>();
 
         //Type groupItemType = null;
@@ -504,6 +505,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                 }
 
+                if (node.Name == "RowNumber")
+                {
+                    Nodes.Push(Expression.Add(_item_i, Expression.Constant(1)));
+                    return;
+                }
+
                 var instance = node.Method.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
                 /// TODO: check if there can be more that one generic argument
                 var method = node.Method.IsGenericMethodDefinition ?
@@ -717,7 +724,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             else
             {
                 //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-                Expression expression = Expression.Lambda(initialization, _item);
+                Expression expression = Expression.Lambda(initialization, _item, _item_i);
 
                 var call = Expression.Call(
                     typeof(Queryable),
@@ -889,7 +896,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, rowOfDataSource);
+            Expression expression = Expression.Lambda(initialization, rowOfDataSource, _item_i);
 
             var queryableRowSource = Expression.Constant(rowSource.AsQueryable());
 
@@ -943,7 +950,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, rowOfDataSource);
+            Expression expression = Expression.Lambda(initialization, rowOfDataSource, _item_i);
 
             var queryableRowSource = Expression.Constant(rowSource.AsQueryable());
 
