@@ -421,13 +421,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
         }
 
-        public virtual void Visit(JoinInMemoryWithSourceTableFromNode node)
-        {
-            var exp = Nodes.Pop();
-            var from = (FromNode) Nodes.Pop();
-            Nodes.Push(new JoinInMemoryWithSourceTableFromNode(node.InMemoryTableAlias, from, exp));
-        }
-
         public virtual void Visit(InternalQueryNode node)
         {
             throw new NotSupportedException();

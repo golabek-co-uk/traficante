@@ -164,12 +164,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        public virtual void Visit(JoinInMemoryWithSourceTableFromNode node)
-        {
-            node.SourceTable.Accept(this);
-            node.Expression.Accept(this);
-            node.Accept(Visitor);
-        }
 
         public virtual void Visit(FromFunctionNode node)
         {

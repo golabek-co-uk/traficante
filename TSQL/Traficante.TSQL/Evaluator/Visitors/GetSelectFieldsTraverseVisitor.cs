@@ -72,13 +72,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Visitor.SetQueryPart(QueryPart.None);
         }
 
-        public override void Visit(JoinInMemoryWithSourceTableFromNode node)
-        {
-            Visitor.SetQueryPart(QueryPart.From);
-            base.Visit(node);
-            Visitor.SetQueryPart(QueryPart.None);
-        }
-
         public override void Visit(JoinSourcesTableFromNode node)
         {
             Visitor.SetQueryPart(QueryPart.From);

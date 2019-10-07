@@ -858,12 +858,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(Expression.Lambda(call, _input));
         }
-
-        public void Visit(JoinInMemoryWithSourceTableFromNode node)
-        {
-            throw new NotImplementedException();
-        }
-
         
         public void Visit(FromFunctionNode node)
         {

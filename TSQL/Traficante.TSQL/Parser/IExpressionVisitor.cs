@@ -56,7 +56,6 @@ namespace Traficante.TSQL.Parser
         void Visit(HavingNode node);
         void Visit(SkipNode node);
         void Visit(TakeNode node);
-        void Visit(JoinInMemoryWithSourceTableFromNode node);
         void Visit(FromTableNode node);
         void Visit(FromFunctionNode node);
         //void Visit(AliasedFromNode node);

@@ -229,9 +229,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(JoinInMemoryWithSourceTableFromNode node)
-        {
-        }
 
         public void Visit(FromFunctionNode node)
         {
