@@ -13,8 +13,6 @@ namespace Traficante.TSQL.Parser
         void Visit(HyphenNode node);
         void Visit(AndNode node);
         void Visit(OrNode node);
-        void Visit(ShortCircuitingNodeLeft node);
-        void Visit(ShortCircuitingNodeRight node);
         void Visit(EqualityNode node);
         void Visit(GreaterOrEqualNode node);
         void Visit(LessOrEqualNode node);

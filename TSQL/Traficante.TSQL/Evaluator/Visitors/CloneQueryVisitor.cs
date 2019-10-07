@@ -71,16 +71,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new OrNode(left, right));
         }
 
-        public virtual void Visit(ShortCircuitingNodeLeft node)
-        {
-            Nodes.Push(new ShortCircuitingNodeLeft(Nodes.Pop(), node.UsedFor));
-        }
-
-        public virtual void Visit(ShortCircuitingNodeRight node)
-        {
-            Nodes.Push(new ShortCircuitingNodeRight(Nodes.Pop(), node.UsedFor));
-        }
-
         public virtual void Visit(EqualityNode node)
         {
             var right = Nodes.Pop();

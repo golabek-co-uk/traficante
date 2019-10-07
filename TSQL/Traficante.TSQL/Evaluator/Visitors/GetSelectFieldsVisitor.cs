@@ -55,14 +55,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(ShortCircuitingNodeLeft node)
-        {
-        }
-
-        public void Visit(ShortCircuitingNodeRight node)
-        {
-        }
-
         public void Visit(EqualityNode node)
         {
         }

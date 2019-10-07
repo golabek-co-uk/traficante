@@ -227,18 +227,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        public virtual void Visit(ShortCircuitingNodeLeft node)
-        {
-            node.Expression.Accept(this);
-            node.Accept(Visitor);
-        }
-
-        public virtual void Visit(ShortCircuitingNodeRight node)
-        {
-            node.Expression.Accept(this);
-            node.Accept(Visitor);
-        }
-
         public virtual void Visit(HyphenNode node)
         {
             node.Left.Accept(this);

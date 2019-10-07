@@ -170,16 +170,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(Expression.Or(left, right));
         }
 
-        public void Visit(ShortCircuitingNodeLeft node)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Visit(ShortCircuitingNodeRight node)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Visit(EqualityNode node)
         {
             var right = Nodes.Pop();
