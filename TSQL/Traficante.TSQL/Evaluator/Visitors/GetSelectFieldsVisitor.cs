@@ -133,10 +133,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(AccessRawIdentifierNode node)
-        {
-        }
-
         public void Visit(IsNullNode node)
         {
         }

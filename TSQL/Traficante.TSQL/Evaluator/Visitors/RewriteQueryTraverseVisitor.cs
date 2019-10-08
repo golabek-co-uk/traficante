@@ -57,22 +57,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(AccessRawIdentifierNode node)
-        {
-            node.Accept(_visitor);
-        }
-
         public void Visit(IsNullNode node)
         {
             node.Expression.Accept(this);
             node.Accept(_visitor);
         }
-
-        //public void Visit(AccessRefreshAggreationScoreNode node)
-        //{
-        //    node.Arguments.Accept(this);
-        //    node.Accept(_visitor);
-        //}
 
         public void Visit(AccessColumnNode node)
         {

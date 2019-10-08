@@ -524,11 +524,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
-        public void Visit(AccessRawIdentifierNode node)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Visit(IsNullNode node)
         {
             var currentValue = Nodes.Pop();

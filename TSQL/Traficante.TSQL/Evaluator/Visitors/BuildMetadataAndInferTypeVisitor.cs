@@ -237,11 +237,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     new FunctionNode(token, node1 as ArgsListNode, exargs, arg3, alias));
         }
 
-        public void Visit(AccessRawIdentifierNode node)
-        {
-            Nodes.Push(new AccessRawIdentifierNode(node.Name, node.ReturnType));
-        }
-
         public void Visit(IsNullNode node)
         {
             Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));

@@ -204,11 +204,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             VisitAccessMethod(node);
         }
 
-        public void Visit(AccessRawIdentifierNode node)
-        {
-            Nodes.Push(new AccessRawIdentifierNode(node.Name, node.ReturnType));
-        }
-
         public void Visit(IsNullNode node)
         {
             Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));
