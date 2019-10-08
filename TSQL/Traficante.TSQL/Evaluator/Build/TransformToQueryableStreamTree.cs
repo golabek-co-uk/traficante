@@ -1,5 +1,4 @@
-﻿using Traficante.TSQL.Evaluator.TemporarySchemas;
-using Traficante.TSQL.Evaluator.Utils;
+﻿using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Evaluator.Visitors;
 using System.Linq;
 

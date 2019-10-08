@@ -1,10 +1,8 @@
-﻿using Traficante.TSQL.Schema;
-
-namespace Traficante.TSQL.Evaluator.TemporarySchemas
+﻿namespace Traficante.TSQL.Schema.DataSources
 {
-    public class DynamicTable : ITable
+    public class DatabaseTable : ITable
     {
-        public DynamicTable(string schema, string name, IColumn[] columns)
+        public DatabaseTable(string schema, string name, IColumn[] columns)
         {
             Schema = schema;
             Name = name;

@@ -5,7 +5,6 @@ using System.Reflection;
 using Traficante.TSQL.Evaluator.Exceptions;
 using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Evaluator.Tables;
-using Traficante.TSQL.Evaluator.TemporarySchemas;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Evaluator.Utils.Symbols;
 using Traficante.TSQL.Parser;
@@ -13,8 +12,6 @@ using Traficante.TSQL.Parser.Nodes;
 using Traficante.TSQL.Parser.Tokens;
 using Traficante.TSQL.Plugins.Attributes;
 using Traficante.TSQL.Schema;
-using Traficante.Sql.Evaluator.Resources;
-using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.DataSources;
 
 namespace Traficante.TSQL.Evaluator.Visitors
@@ -23,8 +20,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
     {
         private readonly IEngine _engine;
 
-        private readonly List<FunctionNode> _refreshMethods = new List<FunctionNode>();
-        private readonly List<object> _schemaFromArgs = new List<object>();
+        private readonly List<object> _fromFunctionNodeArgs = new List<object>();
 
         private Scope _currentScope;
         private readonly List<string> _generatedAliases = new List<string>();
@@ -44,8 +40,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
 
         protected Stack<Node> Nodes { get; } = new Stack<Node>();
-        public List<Assembly> Assemblies { get; } = new List<Assembly>();
-        public IDictionary<string, int[]> SetOperatorFieldPositions { get; } = new Dictionary<string, int[]>();
 
         public RootNode Root => (RootNode) Nodes.Peek();
 
@@ -195,31 +189,31 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(StringNode node)
         {
             Nodes.Push(new StringNode(node.Value));
-            _schemaFromArgs.Add(node.Value);
+            _fromFunctionNodeArgs.Add(node.Value);
         }
 
         public void Visit(DecimalNode node)
         {
             Nodes.Push(new DecimalNode(node.Value));
-            _schemaFromArgs.Add(node.Value);
+            _fromFunctionNodeArgs.Add(node.Value);
         }
 
         public void Visit(IntegerNode node)
         {
             Nodes.Push(new IntegerNode(node.ObjValue.ToString()));
-            _schemaFromArgs.Add(node.ObjValue);
+            _fromFunctionNodeArgs.Add(node.ObjValue);
         }
 
         public void Visit(BooleanNode node)
         {
             Nodes.Push(new BooleanNode(node.Value));
-            _schemaFromArgs.Add(node.Value);
+            _fromFunctionNodeArgs.Add(node.Value);
         }
 
         public void Visit(WordNode node)
         {
             Nodes.Push(new WordNode(node.Value));
-            _schemaFromArgs.Add(node.Value);
+            _fromFunctionNodeArgs.Add(node.Value);
         }
 
         public void Visit(ContainsNode node)
@@ -403,16 +397,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 
             }
 
-            //var ttable = new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, func())
-
 
             ITable table;
             if (_currentScope.Name != "Desc")
-                table = database.GetFunctionByName(node.Schema, node.Method, _schemaFromArgs.ToArray());
+                table = database.GetFunctionByName(node.Schema, node.Method, _fromFunctionNodeArgs.ToArray());
             else
-                table = new DynamicTable(node.Schema, node.Method, new IColumn[0]);
+                table = new DatabaseTable(node.Schema, node.Method, new IColumn[0]);
 
-            _schemaFromArgs.Clear();
+            _fromFunctionNodeArgs.Clear();
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
@@ -472,9 +464,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (_currentScope.Name != "Desc")
                 table = schema.GetTableByName(node.Schema, node.TableOrView);
             else
-                table = new DynamicTable(node.Schema, node.TableOrView, new IColumn[0]);
+                table = new DatabaseTable(node.Schema, node.TableOrView, new IColumn[0]);
 
-            _schemaFromArgs.Clear();
+            _fromFunctionNodeArgs.Clear();
 
             if (table == null)
             {
@@ -556,12 +548,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var orderBy = node.OrderBy != null ? Nodes.Pop() as OrderByNode : null;
             var groupBy = node.GroupBy != null ? Nodes.Pop() as GroupByNode : null;
 
-            if (groupBy == null && _refreshMethods.Count > 0)
-            {
-                groupBy = new GroupByNode(
-                    new[] { new FieldNode(new IntegerNode("1"), 0, string.Empty) }, null);
-            }
-
             var skip = node.Skip != null ? Nodes.Pop() as SkipNode : null;
             var take = node.Take != null ? Nodes.Pop() as TakeNode : null;
 
@@ -569,18 +555,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
             var from = node.From != null ? Nodes.Pop() as FromNode : null;
 
-            //_currentScope.ScopeSymbolTable.AddSymbol(from.Alias.ToRefreshMethodsSymbolName(),
-            //    new RefreshMethodsSymbol(_refreshMethods));
-            //_refreshMethods.Clear();
-
-            //if (_currentScope.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(string.Empty))
-            //    _currentScope.ScopeSymbolTable.UpdateSymbol(string.Empty, from.Alias);
-
             if (from != null)
                 Methods.Push(from.Alias);
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
 
-            _schemaFromArgs.Clear();
+            _fromFunctionNodeArgs.Clear();
         }
 
         public void Visit(RootNode node)
@@ -596,7 +575,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var key = CreateSetOperatorPositionKey();
             _currentScope["SetOperatorName"] = key;
-            SetOperatorFieldPositions.Add(key, CreateSetOperatorPositionIndexes((QueryNode) node.Left, node.Keys));
 
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -616,7 +594,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var key = CreateSetOperatorPositionKey();
             _currentScope["SetOperatorName"] = key;
-            SetOperatorFieldPositions.Add(key, CreateSetOperatorPositionIndexes((QueryNode) node.Left, node.Keys));
 
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -637,7 +614,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var key = CreateSetOperatorPositionKey();
             _currentScope["SetOperatorName"] = key;
-            SetOperatorFieldPositions.Add(key, CreateSetOperatorPositionIndexes((QueryNode) node.Left, node.Keys));
 
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -657,7 +633,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var key = CreateSetOperatorPositionKey();
             _currentScope["SetOperatorName"] = key;
-            SetOperatorFieldPositions.Add(key, CreateSetOperatorPositionIndexes((QueryNode) node.Left, node.Keys));
 
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -710,7 +685,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             set.Accept(traverser);
 
-            var table = new VariableTable(null, node.Name, collector.CollectedFieldNames);
+            var table = new DatabaseTable(null, node.Name, collector.CollectedFieldNames);
             _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
                 new TableSymbol(null, node.Name, new TransitionSchema(node.Name, table), table, false));
 
@@ -738,14 +713,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             _currentScope = scope;
         }
-
-        //private void AddAssembly(Assembly asm)
-        //{
-        //    if (Assemblies.Contains(asm))
-        //        return;
-
-        //    Assemblies.Add(asm);
-        //}
 
         private FieldNode[] CreateFields(FieldNode[] oldFields)
         {
@@ -904,7 +871,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 columns.Add(new Schema.DataSources.Column(typePair.ColumnName, i, type));
             }
 
-            var table = new DynamicTable(null, node.Name, columns.ToArray());
+            var table = new DatabaseTable(null, node.Name, columns.ToArray());
             //_explicitlyDefinedTables.Add(node.Name, table);
 
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));

@@ -8,7 +8,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class RewriteQueryVisitor : IScopeAwareExpressionVisitor
     {
-        private readonly List<JoinFromNode> _joinedTables = new List<JoinFromNode>();
         private Scope _scope;
 
         protected Stack<Node> Nodes { get; } = new Stack<Node>();
@@ -329,7 +328,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var right = (FromNode) Nodes.Pop();
             var left = (FromNode) Nodes.Pop();
             Nodes.Push(new JoinFromNode(left, right, exp, node.JoinType));
-            _joinedTables.Add(node);
         }
 
         public void Visit(ExpressionFromNode node)
@@ -476,103 +474,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _scope = scope;
         }
 
-        private bool IsQueryWithOnlyAggregateMethods(FieldNode[][] splitted)
-        {
-            return splitted[0].Length > 0 && splitted[0].Length == splitted[1].Length;
-        }
-
-        private bool IsQueryWithMixedAggregateAndNonAggregateMethods(FieldNode[][] splitted)
-        {
-            return splitted[0].Length > 0 && splitted[0].Length != splitted[1].Length;
-        }
-
-        private FieldNode[] ConcatAggregateFieldsWithGroupByFields(FieldNode[] selectFields, FieldNode[] groupByFields)
-        {
-            var fields = new List<FieldNode>(selectFields);
-            var nextOrder = -1;
-
-            if (selectFields.Length > 0)
-                nextOrder = selectFields.Max(f => f.FieldOrder);
-
-            foreach (var groupField in groupByFields)
-            {
-                var hasField =
-                    selectFields.Any(field => field.Expression.ToString() == groupField.Expression.ToString());
-
-                if (!hasField) fields.Add(new FieldNode(groupField.Expression, ++nextOrder, string.Empty));
-            }
-
-            return fields.ToArray();
-        }
-
         private void VisitAccessMethod(FunctionNode node)
         {
             var args = Nodes.Pop() as ArgsListNode;
 
             Nodes.Push(new FunctionNode(node.FToken, args, null, node.Method, node.Alias));
-        }
-
-        private FieldNode[][] SplitBetweenAggreateAndNonAggreagate(FieldNode[] fieldsToSplit, FieldNode[] groupByFields,
-            bool useOuterFields)
-        {
-            var nestedFields = new List<FieldNode>();
-            var outerFields = new List<FieldNode>();
-            var rawNestedFields = new List<FieldNode>();
-
-            var fieldOrder = 0;
-
-            foreach (var root in fieldsToSplit)
-            {
-                var subNodes = new Stack<Node>();
-
-                subNodes.Push(root.Expression);
-
-                while (subNodes.Count > 0)
-                {
-                    var subNode = subNodes.Pop();
-
-                    //if (subNode is AccessMethodNode aggregateMethod && aggregateMethod.IsAggregateMethod)
-                    //{
-                    //    var subNodeStr = subNode.ToString();
-                    //    if (nestedFields.Select(f => f.Expression.ToString()).Contains(subNodeStr))
-                    //        continue;
-
-                    //    var nameArg = (WordNode) aggregateMethod.Arguments.Args[0];
-                    //    nestedFields.Add(new FieldNode(subNode, fieldOrder, nameArg.Value));
-                    //    rawNestedFields.Add(new FieldNode(subNode, fieldOrder, string.Empty));
-                    //    fieldOrder += 1;
-                    //}
-                    //else 
-                    if (subNode is FunctionNode method)
-                    {
-                        foreach (var arg in method.Arguments.Args)
-                            subNodes.Push(arg);
-                    }
-                    else if (subNode is BinaryNode binary)
-                    {
-                        subNodes.Push(binary.Left);
-                        subNodes.Push(binary.Right);
-                    }
-                }
-
-                if (!useOuterFields)
-                    continue;
-
-                var rewriter = new RewriteFieldWithGroupMethodCall(groupByFields);
-                var traverser = new CloneTraverseVisitor(rewriter);
-
-                root.Accept(traverser);
-
-                outerFields.Add(rewriter.Expression);
-            }
-
-            var retFields = new FieldNode[3][];
-
-            retFields[0] = nestedFields.ToArray();
-            retFields[1] = outerFields.ToArray();
-            retFields[2] = rawNestedFields.ToArray();
-
-            return retFields;
         }
 
         private FieldNode[] CreateFields(FieldNode[] oldFields)

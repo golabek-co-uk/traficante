@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Traficante.TSQL.Evaluator.Tables;
-using Traficante.TSQL.Evaluator.TemporarySchemas;
 using Traficante.TSQL.Schema;
+using Traficante.TSQL.Schema.DataSources;
 
 namespace Traficante.TSQL.Evaluator.Utils.Symbols
 {
@@ -151,7 +151,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             }
 
             symbol._fullTableName = symbol._orders.Aggregate((a, b) => a + b);
-            symbol._fullTable = new DynamicTable(symbol.SchemaName, symbol._fullTableName, compundTableColumns.ToArray());
+            symbol._fullTable = new DatabaseTable(symbol.SchemaName, symbol._fullTableName, compundTableColumns.ToArray());
             symbol._fullSchema = new TransitionSchema(symbol._fullTableName, symbol._fullTable);
 
             return symbol;
