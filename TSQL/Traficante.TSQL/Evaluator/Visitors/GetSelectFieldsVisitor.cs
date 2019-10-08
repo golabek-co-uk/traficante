@@ -137,10 +137,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        //public void Visit(AccessRefreshAggreationScoreNode node)
-        //{
-        //}
-
         public void Visit(AccessColumnNode node)
         {
         }

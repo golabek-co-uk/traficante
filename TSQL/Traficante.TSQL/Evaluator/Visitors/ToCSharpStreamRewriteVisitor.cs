@@ -547,11 +547,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
-        //public void Visit(AccessRefreshAggreationScoreNode node)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
         public void Visit(AccessColumnNode node)
         {
             if (_item.Type.Name == "IGrouping`2")

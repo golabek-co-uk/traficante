@@ -201,10 +201,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));
         }
 
-        //public virtual void Visit(AccessRefreshAggreationScoreNode node)
-        //{
-        //}
-
         public virtual void Visit(AccessColumnNode node)
         {
             Nodes.Push(new AccessColumnNode(node.Name, node.Alias, node.ReturnType, node.Span));

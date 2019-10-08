@@ -59,12 +59,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        //public virtual void Visit(AccessRefreshAggreationScoreNode node)
-        //{
-        //    node.Arguments.Accept(this);
-        //    node.Accept(Visitor);
-        //}
-
         public virtual void Visit(AccessColumnNode node)
         {
             node.Accept(Visitor);
