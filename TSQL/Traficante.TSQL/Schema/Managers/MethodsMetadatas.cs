@@ -160,16 +160,6 @@ namespace Traficante.TSQL.Schema.Managers
             var methods = _methods[name];
 
 
-            //if (methodArgs.Count - 1 == 0)
-            //{
-            //    var methodWithNoPrameters = methods.FirstOrDefault(x => x.GetParameters().Length == 0);
-            //    if (methodWithNoPrameters != null) ;
-            //    {
-            //        index = methods.IndexOf(methodWithNoPrameters);
-            //        return true;
-            //    }
-            //}
-
             for (int i = 0, j = methods.Count; i < j; ++i)
             {
                 var methodInfo = methods[i];

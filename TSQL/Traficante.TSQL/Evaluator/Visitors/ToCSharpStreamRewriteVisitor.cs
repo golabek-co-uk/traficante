@@ -16,7 +16,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class ToCSharpStreamRewriteVisitor : IExpressionVisitor
     {
-        private readonly IDictionary<string, int[]> _setOperatorFieldIndexes;
+        //private readonly IDictionary<string, int[]> _setOperatorFieldIndexes;
 
         private int _setOperatorMethodIdentifier;
         private int _caseWhenMethodIndex = 0;
@@ -48,15 +48,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public IDictionary<string, Type[]> ResultColumnsTypes = new Dictionary<string, Type[]>();
 
 
-        private IDictionary<Node, IColumn[]> InferredColumns { get; }
+        //private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
         public ToCSharpStreamRewriteVisitor(
-            IEngine engine,
-            IDictionary<string, int[]> setOperatorFieldIndexes, 
-            IDictionary<Node, IColumn[]> inferredColumns)
+            IEngine engine
+            //,IDictionary<string, int[]> setOperatorFieldIndexes
+            )
         {
-            _setOperatorFieldIndexes = setOperatorFieldIndexes;
-            InferredColumns = inferredColumns;
+            //_setOperatorFieldIndexes = setOperatorFieldIndexes;
+            //InferredColumns = inferredColumns;
             Nodes = new Stack<System.Linq.Expressions.Expression>();
             _engine = engine;
             _interCommunicator = RuntimeContext.Empty;
@@ -1057,7 +1057,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 Expression last = Nodes.Pop();
                 Expression<Func<IEnumerable<object>>> toStream = Expression.Lambda<Func<IEnumerable<object>>>(last);
                 var compiledToStream = toStream.Compile();
-                ResultStream = compiledToStream().AsQueryable().Select(x => new AnonymousTypeResolver(x));
+                ResultStream = compiledToStream().AsQueryable().Select(x => new ObjectResolver(x));
             }
         }
 

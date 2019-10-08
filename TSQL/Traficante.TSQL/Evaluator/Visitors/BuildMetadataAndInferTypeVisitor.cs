@@ -14,6 +14,8 @@ using Traficante.TSQL.Parser.Tokens;
 using Traficante.TSQL.Plugins.Attributes;
 using Traficante.TSQL.Schema;
 using Traficante.Sql.Evaluator.Resources;
+using Traficante.TSQL.Schema.Helpers;
+using Traficante.TSQL.Schema.DataSources;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
@@ -44,9 +46,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         protected Stack<Node> Nodes { get; } = new Stack<Node>();
         public List<Assembly> Assemblies { get; } = new List<Assembly>();
         public IDictionary<string, int[]> SetOperatorFieldPositions { get; } = new Dictionary<string, int[]>();
-
-        public IDictionary<Node, IColumn[]> InferredColumns = new Dictionary<Node, IColumn[]>();
-
 
         public RootNode Root => (RootNode) Nodes.Peek();
 
@@ -258,7 +257,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var column = tuple.Table.Columns.SingleOrDefault(f => f.ColumnName == node.Name);
 
-            //AddAssembly(column.ColumnType.Assembly);
             node.ChangeReturnType(column.ColumnType);
 
             var accessColumn = new AccessColumnNode(column.ColumnName, tuple.TableName, column.ColumnType, node.Span);
@@ -399,16 +397,22 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var database = _engine.GetDatabase(node.Database);
 
+            var method = database.ResolveMethod(node.Schema, node.Method, node.MethodParameters.Args.Select(x => x.ReturnType).ToArray());
+            if (typeof(IEnumerable<>).IsAssignableFrom(method.ReturnType))
+            {
+                
+            }
+
+            //var ttable = new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, func())
+
 
             ITable table;
-            if(_currentScope.Name != "Desc")
+            if (_currentScope.Name != "Desc")
                 table = database.GetFunctionByName(node.Schema, node.Method, _schemaFromArgs.ToArray());
             else
                 table = new DynamicTable(node.Schema, node.Method, new IColumn[0]);
 
             _schemaFromArgs.Clear();
-
-            //AddAssembly(node.Schema, schema.GetType().Assembly);
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
@@ -419,8 +423,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var aliasedSchemaFromNode = new FromFunctionNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), _queryAlias);
 
-            if(!InferredColumns.ContainsKey(aliasedSchemaFromNode))
-                InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
 
             Nodes.Push(aliasedSchemaFromNode);
         }
@@ -509,8 +511,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var aliasedSchemaFromNode = new FromTableNode(node.Database, node.Schema, node.TableOrView, _queryAlias);
 
-            if (!InferredColumns.ContainsKey(aliasedSchemaFromNode))
-                InferredColumns.Add(aliasedSchemaFromNode, table.Columns);
 
             Nodes.Push(aliasedSchemaFromNode);
         }

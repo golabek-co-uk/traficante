@@ -86,24 +86,6 @@ namespace Traficante.TSQL.Schema.Helpers
             return parameters.Count(f => f.GetCustomAttribute<TType>() == null);
         }
 
-        /// <summary>
-        ///     Gets parameters that doesn't have annotation of type TType
-        /// </summary>
-        /// <typeparam name="TType">The annotation</typeparam>
-        /// <param name="parameters">Parameters to filter</param>
-        /// <returns>Parameters that fit the requirements.</returns>
-        //public static ParameterInfo[] GetParametersWithoutAttribute<TType>(this ParameterInfo[] parameters)
-        //    where TType : Attribute
-        //{
-        //    return parameters.Where(f => f.GetCustomAttribute<TType>() == null).ToArray();
-        //}
-
-        /// <summary>
-        ///     Gets the parameters that are annotated by some attribute
-        /// </summary>
-        /// <typeparam name="TType">The type.</typeparam>
-        /// <param name="parameters">Parameters that will be filtered.</param>
-        /// <returns>Array of parameters that specify condition.</returns>
         public static ParameterInfo[] GetParametersWithAttribute<TType>(this ParameterInfo[] parameters)
             where TType : Attribute
         {
@@ -160,44 +142,6 @@ namespace Traficante.TSQL.Schema.Helpers
                 Columns = columns.ToArray()
             };
         }
-
-        //public static (bool SupportsInterCommunicator, (string Name, Type Type)[] Parameters) GetParametersForConstructor(ConstructorInfo constructor)
-        //{
-        //    var parameters = constructor.GetParameters();
-        //    var filteredConstructors = new List<(string Name, Type Type)>();
-        //    var supportsInterCommunicator = false;
-
-        //    foreach(var param in parameters)
-        //    {
-        //        if (param.ParameterType != typeof(RuntimeContext))
-        //            filteredConstructors.Add((param.Name, param.ParameterType));
-        //        else
-        //            supportsInterCommunicator = true;
-        //    }
-
-        //    return (supportsInterCommunicator, filteredConstructors.ToArray());
-        //}
-
-        //public static Reflection.ConstructorInfo[] GetConstructorsFor<TType>()
-        //{
-        //    var constructors = new List<Reflection.ConstructorInfo>();
-
-        //    var type = typeof(TType);
-        //    var allConstructors = type.GetConstructors();
-
-        //    foreach (var constr in allConstructors)
-        //    {
-        //        var paramsInfo = GetParametersForConstructor(constr);
-        //        constructors.Add(new Reflection.ConstructorInfo(constr, type, paramsInfo.SupportsInterCommunicator, paramsInfo.Parameters));
-        //    }
-
-        //    return constructors.ToArray();
-        //}
-
-        //public static Reflection.SchemaMethodInfo[] GetSchemaMethodInfosForType<TType>(string typeIdentifier)
-        //{
-        //    return GetConstructorsFor<TType>().Select(constr => new Reflection.SchemaMethodInfo(typeIdentifier, constr)).ToArray();
-        //}
     }
 
     public class EntityMap<TType>

@@ -17,7 +17,6 @@ namespace Traficante.TSQL.Schema.DataSources
         public string DefaultSchema { get; set; }
         public List<(ITable Table, RowSource Source)> Tables { get; set; } = new List<(ITable Table, RowSource Source)>();
         public List<(ITable Table, RowSource Source)> Functions { get; set; } = new List<(ITable Table, RowSource Source)>();
-        public List<IFunction> Functions2 { get; set; } = new List<IFunction>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
         protected BaseDatabase(string name)
@@ -39,52 +38,41 @@ namespace Traficante.TSQL.Schema.DataSources
             Tables.Add((new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items)));
         }
 
-        public void AddFunction<TType>(string schema, string name, Func<IEnumerable<TType>> items)
+        public void AddFunction<TType>(string schema, string name, Func<IEnumerable<TType>> func)
         {
             var entityMap = TypeHelper.GetEntityMap<TType>();
-            Functions.Add((new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, items())));
+            this.MethodsManager.RegisterMethod(name, func.Method);
+            Functions.Add((new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, func())));
         }
 
         public void AddFunction<TResult>(string schema, string name, Func<TResult> func)
         {
-            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { });
             this.MethodsManager.RegisterMethod(name, func.Method);
-            Functions2.Add(function);
         }
 
         public void AddFunction<T1, TResult>(string schema, string name, Func<T1,TResult> func)
         {
-            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1) });
             this.MethodsManager.RegisterMethod(name, func.Method);
-            Functions2.Add(function);
         }
 
         public void AddFunction<T1, T2, TResult>(string schema, string name, Func<T1, T2, TResult> func)
         {
-            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1), typeof(T2) });
             this.MethodsManager.RegisterMethod(name, func.Method);
-            Functions2.Add(function);
         }
 
         public void AddFunction<T1, T2, T3, TResult>(string schema, string name, Func<T1, T2, T3, TResult> func)
         {
-            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1), typeof(T2), typeof(T3) });
             this.MethodsManager.RegisterMethod(name, func.Method);
-            Functions2.Add(function);
         }
 
         public void AddFunction<T1, T2, T3, T4, TResult>(string schema, string name, Func<T1, T2, T3, T4, TResult> func)
         {
-            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4) });
             this.MethodsManager.RegisterMethod(name, func.Method);
-            Functions2.Add(function);
         }
 
         public void AddFunction<T1, T2, T3, T4, T5, TResult>(string schema, string name, Func<T1, T2, T3, T4, T5, TResult> func)
         {
-            var function = new DatabaseFunction(schema ?? DefaultSchema, name, typeof(TResult), new Type[] { typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(T5) });
             this.MethodsManager.RegisterMethod(name, func.Method);
-            Functions2.Add(function);
         }
 
         public virtual ITable GetTableByName(string schema, string name)

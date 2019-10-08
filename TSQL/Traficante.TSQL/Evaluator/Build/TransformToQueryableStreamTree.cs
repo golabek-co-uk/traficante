@@ -30,7 +30,7 @@ namespace Traficante.TSQL.Converter.Build
 
             queryTree = rewriter.RootScript;
 
-            var csharpRewriter = new ToCSharpStreamRewriteVisitor(items.Engine, metadataInferer.SetOperatorFieldPositions, metadataInferer.InferredColumns);
+            var csharpRewriter = new ToCSharpStreamRewriteVisitor(items.Engine);//, metadataInferer.SetOperatorFieldPositions);
             var csharpRewriteTraverser = new ToCSharpStreamRewriteTraverseVisitor(csharpRewriter, new ScopeWalker(metadataInfererTraverser.Scope));
 
             queryTree.Accept(csharpRewriteTraverser);
