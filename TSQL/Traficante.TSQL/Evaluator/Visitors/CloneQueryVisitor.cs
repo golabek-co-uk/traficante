@@ -266,11 +266,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new DotNode(root, exp, node.IsOuter, string.Empty, exp.ReturnType));
         }
 
-        public virtual void Visit(AccessCallChainNode node)
-        {
-            Nodes.Push(new AccessCallChainNode(node.ColumnName, node.ReturnType, node.Props, node.Alias));
-        }
-
         public virtual void Visit(ArgsListNode node)
         {
             var args = new Node[node.Args.Length];

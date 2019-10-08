@@ -122,11 +122,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
-        public virtual void Visit(AccessCallChainNode node)
-        {
-            node.Accept(Visitor);
-        }
-
         public virtual void Visit(WhereNode node)
         {
             node.Expression.Accept(this);

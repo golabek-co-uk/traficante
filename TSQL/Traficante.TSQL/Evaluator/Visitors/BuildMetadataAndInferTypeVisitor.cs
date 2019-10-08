@@ -247,13 +247,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));
         }
 
-        //public void Visit(AccessRefreshAggreationScoreNode node)
-        //{
-        //    VisitAccessMethod(node,
-        //        (token, node1, exargs, arg3, alias) =>
-        //            new AccessRefreshAggreationScoreNode(token, node1 as ArgsListNode, exargs, arg3, alias));
-        //}
-
         public void Visit(AccessColumnNode node)
         {
             var identifier = _currentScope.ContainsAttribute("ProcessedQueryId")
@@ -362,14 +355,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new DotNode(root, exp, node.IsOuter, string.Empty, exp.ReturnType));
         }
 
-        public virtual void Visit(AccessCallChainNode node)
-        {
-            var chainPretend = Nodes.Pop();
-
-            Nodes.Push(chainPretend is AccessColumnNode
-                ? chainPretend
-                : new AccessCallChainNode(node.ColumnName, node.ReturnType, node.Props, node.Alias));
-        }
 
         public void Visit(ArgsListNode node)
         {

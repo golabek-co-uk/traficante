@@ -164,11 +164,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
-        public void Visit(AccessCallChainNode node)
-        {
-            node.Accept(_visitor);
-        }
-
         public virtual void Visit(WhereNode node)
         {
             SetQueryPart(QueryPart.Where);

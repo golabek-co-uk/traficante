@@ -663,10 +663,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(AccessCallChainNode node)
-        {
-        }
-
         public void Visit(ArgsListNode node)
         {
             //Nodes.Push(node);

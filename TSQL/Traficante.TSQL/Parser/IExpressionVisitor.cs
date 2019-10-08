@@ -44,7 +44,6 @@ namespace Traficante.TSQL.Parser
         void Visit(DeclareNode node);
         void Visit(SetNode node);
         void Visit(DotNode node);
-        void Visit(AccessCallChainNode node);
         void Visit(ArgsListNode node);
         void Visit(SelectNode node);
         void Visit(WhereNode node);

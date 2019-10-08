@@ -71,10 +71,5 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 base.Visit(node);
             }
         }
-
-        public override void Visit(AccessCallChainNode node)
-        {
-            Nodes.Push(new AccessColumnNode(node.ToString(), string.Empty, node.ReturnType, TextSpan.Empty));
-        }
     }
 }
