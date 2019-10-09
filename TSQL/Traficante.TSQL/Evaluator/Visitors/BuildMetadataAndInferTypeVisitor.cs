@@ -419,15 +419,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(aliasedSchemaFromNode);
         }
 
-        public void Visit(JoinSourcesTableFromNode node)
-        {
-            var exp = Nodes.Pop();
-            var b = (FromNode) Nodes.Pop();
-            var a = (FromNode) Nodes.Pop();
-
-            Nodes.Push(new JoinSourcesTableFromNode(a, b, exp));
-        }
-
         public void Visit(InMemoryTableFromNode node)
         {
             _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.VariableName : node.Alias;
@@ -522,16 +513,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var from = (FromNode) Nodes.Pop();
             _identifier = from.Alias;
             Nodes.Push(new ExpressionFromNode(from));
-
-            //var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(_identifier);
-
-            //foreach (var tableAlias in tableSymbol.CompoundTables)
-            //{
-            //    var tuple = tableSymbol.GetTableByAlias(tableAlias);
-
-            //    foreach (var column in tuple.Table.Columns)
-            //        AddAssembly(column.ColumnType.Assembly);
-            //}
         }
 
         public void Visit(IntoNode node)
@@ -872,7 +853,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             var table = new DatabaseTable(null, node.Name, columns.ToArray());
-            //_explicitlyDefinedTables.Add(node.Name, table);
 
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }

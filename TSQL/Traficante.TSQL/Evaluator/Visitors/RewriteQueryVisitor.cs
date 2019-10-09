@@ -318,10 +318,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new FromTableNode(node.Database, node.Schema, node.TableOrView, node.Alias));
         }
 
-        public void Visit(JoinSourcesTableFromNode node)
-        {
-        }
-
         public void Visit(JoinFromNode node)
         {
             var exp = Nodes.Pop();
@@ -359,7 +355,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var select = Nodes.Pop() as SelectNode;
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
-            var from = node.From != null ? Nodes.Pop() as ExpressionFromNode : null;
+            var from = node.From != null ? Nodes.Pop() as FromNode : null;
 
             if (groupBy == null)
             {

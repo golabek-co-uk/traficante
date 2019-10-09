@@ -214,10 +214,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
         }
 
-        public void Visit(JoinSourcesTableFromNode node)
-        {
-        }
-
         public void Visit(InMemoryTableFromNode node)
         {
         }

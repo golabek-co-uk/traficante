@@ -158,15 +158,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(JoinSourcesTableFromNode node)
-        {
-            node.Expression.Accept(this);
-            node.First.Accept(this);
-            node.Second.Accept(this);
-
-            node.Accept(_visitor);
-        }
-
         public void Visit(InMemoryTableFromNode node)
         {
             node.Accept(_visitor);
@@ -233,7 +224,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             node.From?.Accept(this);
             node.Where?.Accept(this);
-            //node.Select.Accept(this);
 
             node.GroupBy?.Accept(this);
             
@@ -242,7 +232,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             node.OrderBy?.Accept(this);
 
-            node.Select.Accept(this); //added
+            node.Select.Accept(this);
             node.Accept(_visitor);
             _walker = _walker.Parent();
         }

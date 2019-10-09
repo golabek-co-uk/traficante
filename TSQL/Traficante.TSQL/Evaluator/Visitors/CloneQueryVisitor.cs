@@ -311,15 +311,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new FromTableNode(node.Database, node.Schema, node.TableOrView, node.Alias));
         }
 
-        public virtual void Visit(JoinSourcesTableFromNode node)
-        {
-            var exp = Nodes.Pop();
-            var b = (FromNode) Nodes.Pop();
-            var a = (FromNode) Nodes.Pop();
-
-            Nodes.Push(new JoinSourcesTableFromNode(a, b, exp));
-        }
-
         public virtual void Visit(InMemoryTableFromNode node)
         {
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, node.Alias));

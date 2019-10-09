@@ -940,16 +940,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             ResultColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
         }
 
-        //public void Visit(AliasedFromNode node)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        public void Visit(JoinSourcesTableFromNode node)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Visit(InMemoryTableFromNode node)
         {
             var table = _cte[node.VariableName];
