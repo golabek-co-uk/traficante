@@ -8,34 +8,10 @@ namespace Traficante.TSQL.Plugins
     public partial class LibraryBase
     {
         [AggregationGetMethod]
-        public decimal SumIncome([InjectGroup] Group group, string name)
-            => SumIncome(group, name, 0);
-
-        [AggregationGetMethod]
-        public decimal SumIncome([InjectGroup] Group group, string name, int parent)
+        public decimal SumIncome(decimal name)
         {
-            var parentGroup = GetParentGroup(group, parent);
-            return parentGroup.GetRawValue<decimal>(name);
+            return default(decimal);
         }
 
-        [AggregationSetMethod]
-        public void SetSumIncome([InjectGroup] Group group, string name, long? number, int parent = 0)
-            => SetSumIncome(group, name, (decimal?)number, parent);
-
-        [AggregationSetMethod]
-        public void SetSumIncome([InjectGroup] Group group, string name, decimal? number, int parent = 0)
-        {
-            var parentGroup = GetParentGroup(group, parent);
-            if (!number.HasValue)
-            {
-                parentGroup.GetOrCreateValue<decimal>(name);
-                return;
-            }
-
-            var value = parentGroup.GetOrCreateValue<decimal>(name);
-
-            if (number >= 0)
-                parentGroup.SetValue(name, value + number);
-        }
     }
 }

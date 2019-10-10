@@ -9,14 +9,13 @@ namespace Traficante.TSQL.Parser.Nodes
     public class FunctionNode : Node
     {
         public FunctionNode(string database, string schema, string name, ArgsListNode args,
-            MethodInfo method = (MethodInfo) null, string alias = "")
+            MethodInfo method = (MethodInfo) null)
         {
             Name = name;
             Schema = schema;
             Database = database;
             Arguments = args;
             Method = method;
-            Alias = alias;
             Id = $"{nameof(FunctionNode)}{database}.{schema}.{name}{args.Id}";
         }
 
@@ -24,11 +23,9 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public ArgsListNode Arguments { get; }
 
-        public string Name { get; }
         public string Database { get; }
         public string Schema { get; }
-
-        public string Alias { get; }
+        public string Name { get; }
 
         public bool IsAggregateMethod =>
             Method != null && Method.GetCustomAttribute<AggregationMethodAttribute>() != null;

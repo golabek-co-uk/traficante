@@ -27,62 +27,62 @@ namespace Traficante.TSQL.Evaluator.Tests.Core.Schema
         //    return ".txt";
         //}
 
-        [BindableMethod]
-        public int RandomNumber()
-        {
-            return _random.Next(0, 100);
-        }
+        //[BindableMethod]
+        //public int RandomNumber()
+        //{
+        //    return _random.Next(0, 100);
+        //}
 
-        [BindableMethod]
-        public decimal GetOne()
-        {
-            return 1;
-        }
+        //[BindableMethod]
+        //public decimal GetOne()
+        //{
+        //    return 1;
+        //}
 
-        [BindableMethod]
-        public string GetTwo(decimal a, string b)
-        {
-            return 2.ToString();
-        }
+        //[BindableMethod]
+        //public string GetTwo(decimal a, string b)
+        //{
+        //    return 2.ToString();
+        //}
 
-        [BindableMethod]
-        public decimal Inc(decimal number)
-        {
-            return number + 1;
-        }
+        //[BindableMethod]
+        //public decimal Inc(decimal number)
+        //{
+        //    return number + 1;
+        //}
 
-        [BindableMethod]
-        public long Inc(long number)
-        {
-            return number + 1;
-        }
+        //[BindableMethod]
+        //public long Inc(long number)
+        //{
+        //    return number + 1;
+        //}
 
-        [BindableMethod]
-        public BasicEntity NothingToDo(BasicEntity entity)
-        {
-            return entity;
-        }
+        //[BindableMethod]
+        //public BasicEntity NothingToDo(BasicEntity entity)
+        //{
+        //    return entity;
+        //}
 
-        [BindableMethod]
-        public int? NullableMethod(int? value)
-        {
-            return value;
-        }
+        //[BindableMethod]
+        //public int? NullableMethod(int? value)
+        //{
+        //    return value;
+        //}
 
-        public new string ToString(object obj)
-        {
-            return obj.ToString();
-        }
+        //public new string ToString(object obj)
+        //{
+        //    return obj.ToString();
+        //}
 
-        [BindableMethod]
-        public int PrimitiveArgumentsMethod(long a, decimal b, bool tr, bool fl, string text)
-        {
-            Assert.AreEqual(1L, a);
-            Assert.AreEqual(2m, b);
-            Assert.AreEqual(true, tr);
-            Assert.AreEqual(false, fl);
-            Assert.AreEqual("text", text);
-            return 1;
-        }
+        //[BindableMethod]
+        //public int PrimitiveArgumentsMethod(long a, decimal b, bool tr, bool fl, string text)
+        //{
+        //    Assert.AreEqual(1L, a);
+        //    Assert.AreEqual(2m, b);
+        //    Assert.AreEqual(true, tr);
+        //    Assert.AreEqual(false, fl);
+        //    Assert.AreEqual("text", text);
+        //    return 1;
+        //}
     }
 }

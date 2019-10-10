@@ -27,7 +27,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             engine.AddFunction<int?, int?>(null, null, "NullableMethod", x => x);
             engine.AddFunction<int>(null, null, "RandomNumber", () => _random.Next(0, 100));
             engine.AddFunction<decimal>(null, null, "GetOne", () => 1);
-            engine.AddFunction<string,string,string>(null, null, "GetTwo", (a,b) => 2.ToString());
+            engine.AddFunction<decimal, string,string>(null, null, "GetTwo", (a,b) => 2.ToString());
             engine.AddFunction<decimal, decimal>(null, null, "Inc", (number) => number + 1);
             engine.AddFunction<long, long>(null, null, "Inc", (number) => number + 1);
             engine.AddFunction<BasicEntity, BasicEntity>(null, null, "NothingToDo", (entity) => entity);

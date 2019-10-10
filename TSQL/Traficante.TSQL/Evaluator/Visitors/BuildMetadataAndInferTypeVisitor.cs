@@ -226,9 +226,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(FunctionNode node)
         {
-            VisitAccessMethod(node,
-                (database, schema, name, args, method) =>
-                    new FunctionNode(database, schema, name, args as ArgsListNode, method));
+            var args = Nodes.Pop() as ArgsListNode;
+            var db = this._engine.GetDatabase(node.Database);
+            var methodInfo = db.ResolveMethod(node.Schema, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
+            FunctionNode functionMethod = new FunctionNode(node.Database, node.Schema, node.Name, args, methodInfo);
+            Nodes.Push(functionMethod);
+            //VisitAccessMethod(node,
+            //    (database, schema, name, args, method) =>
+            //        new FunctionNode(database, schema, name, args as ArgsListNode, method));
         }
 
         public void Visit(IsNullNode node)
@@ -413,7 +418,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new FromFunctionNode((FunctionNode)Nodes.Pop(), _queryAlias);
+            //var aliasedSchemaFromNode = new FromFunctionNode((FunctionNode)Nodes.Pop(), _queryAlias);
+            var aliasedSchemaFromNode = new FromFunctionNode(node.Function, _queryAlias);
 
             Nodes.Push(aliasedSchemaFromNode);
 
@@ -745,46 +751,46 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var args = Nodes.Pop() as ArgsListNode;
 
-            var groupArgs = new List<Type> {typeof(string)};
-            groupArgs.AddRange(args.Args.Skip(1).Select(f => f.ReturnType));
+            //var groupArgs = new List<Type> {typeof(string)};
+            //groupArgs.AddRange(args.Args.Skip(1).Select(f => f.ReturnType));
 
-            var alias = !string.IsNullOrEmpty(node.Alias) ? node.Alias : _identifier;
+            //var alias = !string.IsNullOrEmpty(node.Alias) ? node.Alias : _identifier;
 
-            var db = this._engine.GetDatabase(null);
-            if (db.TryResolveAggreationMethod(node.Name, args.Args.Skip(1).Select(f => f.ReturnType).ToArray(), out var buildinMethod))
-            {
-                FunctionNode buildInAccessMethod = func(node.Database, node.Schema, node.Name, args, buildinMethod);
-                node.ChangeMethod(buildinMethod);
-                Nodes.Push(buildInAccessMethod);
-                return;
-            }
+            var db = this._engine.GetDatabase(node.Database);
+            //if (db.TryResolveAggreationMethod(node.Name, args.Args.Skip(1).Select(f => f.ReturnType).ToArray(), out var buildinMethod))
+            //{
+            //    FunctionNode buildInAccessMethod = func(node.Database, node.Schema, node.Name, args, buildinMethod);
+            //    //node.ChangeMethod(buildinMethod);
+            //    Nodes.Push(buildInAccessMethod);
+            //    return;
+            //}
 
-            if (alias == null)
-            {
+            //if (alias == null)
+            //{
                 var methodInfo = db.ResolveMethod(node.Schema, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
                 FunctionNode functionMethod = new FunctionNode(node.Database, node.Schema, node.Name, args, methodInfo);
                 //node.ChangeMethod(buildinMethod);
                 Nodes.Push(functionMethod);
-                return;
-            }
+                //return;
+            //}
             //db.ResolveMethod()
 
 
-            var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(alias);
-            var schemaTablePair = tableSymbol.GetTableByAlias(alias);
-            if (!schemaTablePair.Schema.TryResolveAggreationMethod(node.Name, groupArgs.ToArray(), out var method))
-                method = schemaTablePair.Schema.ResolveMethod(tableSymbol.SchemaName, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
+            //var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(alias);
+            //var schemaTablePair = tableSymbol.GetTableByAlias(alias);
+            //if (!schemaTablePair.Schema.TryResolveAggreationMethod(node.Name, groupArgs.ToArray(), out var method))
+            //    method = schemaTablePair.Schema.ResolveMethod(tableSymbol.SchemaName, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
 
-            var isAggregateMethod = method.GetCustomAttribute<AggregationMethodAttribute>() != null;
+            //var isAggregateMethod = method.GetCustomAttribute<AggregationMethodAttribute>() != null;
 
-            FunctionNode accessMethod;
-            {
-                accessMethod = func(node.Database, node.Schema, node.Name, args, method);
-            }
+            //FunctionNode accessMethod;
+            //{
+            //    accessMethod = func(node.Database, node.Schema, node.Name, args, method);
+            //}
 
-            node.ChangeMethod(method);
+            //node.ChangeMethod(method);
 
-            Nodes.Push(accessMethod);
+            //Nodes.Push(accessMethod);
         }
 
         private int[] CreateSetOperatorPositionIndexes(QueryNode node, string[] keys)
