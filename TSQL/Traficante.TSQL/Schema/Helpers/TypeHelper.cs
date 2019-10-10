@@ -103,9 +103,6 @@ namespace Traficante.TSQL.Schema.Helpers
             var type = typeof(TType);
             foreach (var member in type.GetMembers())
             {
-                //if (member.GetCustomAttribute<EntityPropertyAttribute>() == null)
-                //    continue;
-
                 if(member.MemberType != MemberTypes.Property)
                     continue;
 
@@ -141,6 +138,27 @@ namespace Traficante.TSQL.Schema.Helpers
                 IndexToMethodAccessMap = indexToMethodAccess,
                 Columns = columns.ToArray()
             };
+        }
+
+        public static IColumn[] GetColumns(Type typ)
+        {
+            if (typeof(System.Collections.IEnumerable).IsAssignableFrom(typ))
+            {
+                var returnType = typ.GenericTypeArguments.FirstOrDefault();
+                var columnIndex = 0;
+                var columns = new List<IColumn>();
+                foreach (var member in returnType.GetMembers())
+                {
+                    if (member.MemberType != MemberTypes.Property)
+                        continue;
+                    var property = (PropertyInfo)member;
+                    columns.Add(new Traficante.TSQL.Schema.DataSources.Column(property.Name, columnIndex, property.PropertyType));
+                    columnIndex += 1;
+                }
+
+                return columns.ToArray();
+            }
+            return new Traficante.TSQL.Schema.DataSources.Column[0];
         }
     }
 

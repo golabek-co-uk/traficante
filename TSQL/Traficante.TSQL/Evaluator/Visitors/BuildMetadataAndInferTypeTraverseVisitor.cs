@@ -192,7 +192,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(FromFunctionNode node)
         {
             SetQueryPart(QueryPart.From);
-            node.MethodParameters.Accept(this);
+            node.Function.Accept(this);
             node.Accept(_visitor);
         }
 

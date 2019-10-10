@@ -10,6 +10,7 @@ using Traficante.TSQL.Parser.Nodes;
 using Traficante.TSQL.Parser.Tokens;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
+using Traficante.TSQL.Schema.Helpers;
 using TextSpan = Traficante.TSQL.Parser.TextSpan;
 
 namespace Traficante.TSQL.Evaluator.Visitors
@@ -75,7 +76,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
                 var table = _engine
                     .GetDatabase(null)
-                    .GetTableByName(fromNode.Schema, fromNode.Method);
+                    .GetTableByName(fromNode.Function.Schema, fromNode.Function.Name);
 
                 var descType = expressionHelper.CreateAnonymousType(new (string, Type)[3] {
                     ("Name", typeof(string)),
@@ -104,7 +105,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var fromNode = (FromFunctionNode)node.From;
 
                 var table = _engine
-                    .GetDatabase(fromNode.Schema);
+                    .GetDatabase(fromNode.Function.Database);
             }
         }
 
@@ -218,17 +219,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
         public void Visit(LikeNode node)
         {
-            Visit(new FunctionNode(
-                new FunctionToken(nameof(Operators.Like), TextSpan.Empty),
-                new ArgsListNode(new[] { node.Left, node.Right }), null,
+            Visit(new FunctionNode(null, null, nameof(Operators.Like),
+                new ArgsListNode(new[] { node.Left, node.Right }),
                 typeof(Operators).GetMethod(nameof(Operators.Like))));
         }
 
         public void Visit(RLikeNode node)
         {
-            Visit(new FunctionNode(
-                new FunctionToken(nameof(Operators.RLike), TextSpan.Empty),
-                new ArgsListNode(new[] { node.Left, node.Right }), null,
+            Visit(new FunctionNode(null, null, nameof(Operators.RLike),
+                new ArgsListNode(new[] { node.Left, node.Right }),
                 typeof(Operators).GetMethod(nameof(Operators.RLike))));
         }
 
@@ -833,12 +832,16 @@ namespace Traficante.TSQL.Evaluator.Visitors
         
         public void Visit(FromFunctionNode node)
         {
+            //var database = _engine.GetDatabase(node.Function.Database);
+            //var method = database.ResolveMethod(node.Function.Schema, node.Function.Name, _fromFunctionNodeArgs.Select(x => x.GetType()).ToArray());
+            //var columns = TypeHelper.GetColumns(method.ReturnType);
+
             //var rowSource = _schemaProvider.GetDatabase(null).GetRowSource(node.Schema, node.Method, _interCommunicator, new object[0]).Rows;
-            var rowSource = _engine.GetDatabase(null).GetFunctionRowSource(node.Schema, node.Method, new object[0]).Rows;
+            var rowSource = _engine.GetDatabase(node.Function.Database).GetFunctionRowSource(node.Function.Schema, node.Function.Name, new object[0]).Rows;
 
             var fields = _engine
                 .GetDatabase(null)
-                .GetFunctionByName(node.Schema, node.Method, new object[0])
+                .GetFunctionByName(node.Function.Schema, node.Function.Name, new object[0])
                 .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);

@@ -310,7 +310,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromFunctionNode node)
         {
-            Nodes.Push(new FromFunctionNode(node.Database, node.Schema, node.Method, (ArgsListNode)Nodes.Pop(), node.Alias));
+            Nodes.Push(new FromFunctionNode((FunctionNode)Nodes.Pop(), node.Alias));
         }
 
         public void Visit(FromTableNode node)
@@ -474,7 +474,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var args = Nodes.Pop() as ArgsListNode;
 
-            Nodes.Push(new FunctionNode(node.FToken, args, null, node.Method, node.Alias));
+            Nodes.Push(new FunctionNode(node.Database, node.Schema, node.Name, node.Arguments, node.Method));
         }
 
         private FieldNode[] CreateFields(FieldNode[] oldFields)

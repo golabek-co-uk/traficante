@@ -8,31 +8,30 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class FunctionNode : Node
     {
-        public readonly FunctionToken FToken;
-
-        public FunctionNode(FunctionToken fToken, ArgsListNode args, ArgsListNode extraAggregateArguments,
+        public FunctionNode(string database, string schema, string name, ArgsListNode args,
             MethodInfo method = (MethodInfo) null, string alias = "")
         {
-            FToken = fToken;
+            Name = name;
+            Schema = schema;
+            Database = database;
             Arguments = args;
-            ExtraAggregateArguments = extraAggregateArguments;
             Method = method;
             Alias = alias;
-            Id = $"{nameof(FunctionNode)}{alias}{fToken.Value}{args.Id}";
+            Id = $"{nameof(FunctionNode)}{database}.{schema}.{name}{args.Id}";
         }
 
         public MethodInfo Method { get; private set; }
 
         public ArgsListNode Arguments { get; }
 
-        public string Name => FToken.Value;
+        public string Name { get; }
+        public string Database { get; }
+        public string Schema { get; }
 
         public string Alias { get; }
 
         public bool IsAggregateMethod =>
             Method != null && Method.GetCustomAttribute<AggregationMethodAttribute>() != null;
-
-        public ArgsListNode ExtraAggregateArguments { get; }
 
         public int ArgsCount => Arguments.Args.Length;
 
@@ -94,7 +93,7 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public override string ToString()
         {
-            return ArgsCount > 0 ? $"{Name}({Arguments.ToString()})" : $"{Name}()";
+            return ArgsCount > 0 ? $"{Database}{Schema}{Name}({Arguments.ToString()})" : $"{Name}()";
         }
     }
 }

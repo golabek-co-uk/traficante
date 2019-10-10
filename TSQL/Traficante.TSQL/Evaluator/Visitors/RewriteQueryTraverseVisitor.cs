@@ -150,7 +150,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromFunctionNode node)
         {
-            node.MethodParameters.Accept(this);
+            node.Function.Accept(this);
             node.Accept(_visitor);
         }
 

@@ -2,24 +2,14 @@
 {
     public class FromFunctionNode : FromNode
     {
-        public FromFunctionNode(string database, string schema, string method, ArgsListNode parameters, string alias)
+        public FromFunctionNode(FunctionNode function, string alias)
     : base(alias)
         {
-            Database = database;
-            Schema = schema;
-            Method = method;
-            MethodParameters = parameters;
-            var paramsId = parameters.Id;
-            Id = $"{nameof(FromFunctionNode)}{database}{schema}{method}{paramsId}{Alias}";
+            Function = function;
+            Id = $"{nameof(FromFunctionNode)}{Function.Id}";
         }
 
-        public string Database { get; set; }
-
-        public string Schema { get; }
-
-        public string Method { get; }
-
-        public ArgsListNode MethodParameters { get; }
+        public FunctionNode Function { get; set; }
 
         public override string Id { get; }
         
@@ -31,7 +21,7 @@
         public override string ToString()
         {
 
-            return $"from {Database}.{Schema}.{Method}({MethodParameters.Id}) {Alias}";
+            return $"from {Function.ToString()} {Alias}";
         }
 
         public override int GetHashCode()
