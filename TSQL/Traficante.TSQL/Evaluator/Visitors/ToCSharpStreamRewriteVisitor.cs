@@ -560,13 +560,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var key = Expression.PropertyOrField(this._item, "Key");
                 if (key.Type.GetFields().Any(x => string.Equals(x.Name, fieldNameameWithAlias)))
                 {
-                    var properyOfKey = Expression.PropertyOrField(key, fieldNameameWithAlias);
+                    //var properyOfKey = Expression.PropertyOrField(key, fieldNameameWithAlias);
+                    var properyOfKey = this.expressionHelper.PropertyOrField(key, fieldNameameWithAlias, node.ReturnType);
                     Nodes.Push(properyOfKey);
                     return;
                 } else
                 if (key.Type.GetFields().Any(x => string.Equals(x.Name, node.Name)))
                 {
-                    var properyOfKey = Expression.PropertyOrField(key, node.Name);
+                    //var properyOfKey = Expression.PropertyOrField(key, node.Name);
+                    var properyOfKey = this.expressionHelper.PropertyOrField(key, node.Name, node.ReturnType);
                     Nodes.Push(properyOfKey);
                     return;
                 }
@@ -578,14 +580,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         var nameProperty = aliasProperty.FieldType.GetFields().FirstOrDefault(x => string.Equals(x.Name, node.Name));
                         if (nameProperty != null)
                         {
-                            Nodes.Push(
-                                Expression.PropertyOrField( 
-                                    Expression.PropertyOrField(this._itemInGroup, node.Alias),
-                                    node.Name));
+                            var alias = Expression.PropertyOrField(this._itemInGroup, node.Alias);
+                            var propertyInAlias = this.expressionHelper.PropertyOrField(alias, node.Name, node.ReturnType);
+                            Nodes.Push(propertyInAlias);
+                            //Nodes.Push(
+                            //    Expression.PropertyOrField(
+                            //        Expression.PropertyOrField(this._itemInGroup, node.Alias),
+                            //        node.Name));
                             return;
                         }
                     }
-                    var groupItemProperty = Expression.PropertyOrField(this._itemInGroup, node.Name);
+                    //var groupItemProperty = Expression.PropertyOrField(this._itemInGroup, node.Name);
+                    var groupItemProperty = this.expressionHelper.PropertyOrField(this._itemInGroup, node.Name, node.ReturnType);
                     Nodes.Push(groupItemProperty);
                     return;
                 }
@@ -598,7 +604,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             var item = _alias2Item[node.Alias];
-            var property = Expression.PropertyOrField(item, node.Name);
+            var property = this.expressionHelper.PropertyOrField(item, node.Name, node.ReturnType);
             Nodes.Push(property);
         }
 
@@ -1265,12 +1271,25 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         join.JoinExpression,
                         Expression.Lambda(join.OnExpression, (ParameterExpression)this._alias2Item[join.ItemAlias]));
 
+                    if (join.JoinNode.JoinType == JoinType.OuterLeft)
+                    {
+                        onCall = Expression.Call(
+                            typeof(Queryable),
+                            "DefaultIfEmpty",
+                            new Type[] { join.ItemType },
+                            onCall,
+                            Expression.Constant(null, join.ItemType));
+                    }
+
                     lastJoinExpression = Expression.Call(
                         typeof(Queryable),
                         "Select",
                         new Type[] { join.ItemType, outputItemType },
                         onCall,
                         expression);
+
+
+
                     lastJoinItemType = join.ItemType;
                     LastJoinItemAlias = join.ItemAlias;
                 }
@@ -1282,6 +1301,17 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         new Type[] { join.ItemType },
                         join.JoinExpression,
                         Expression.Lambda(join.OnExpression, (ParameterExpression)this._alias2Item[join.ItemAlias]));
+
+                    if (join.JoinNode.JoinType == JoinType.OuterLeft)
+                    {
+                        onCall = Expression.Call(
+                            typeof(Queryable),
+                            "DefaultIfEmpty",
+                            new Type[] { join.ItemType },
+                            onCall,
+                            Expression.Constant(null, join.ItemType));
+                    }
+
                     var selectLambda = Expression.Lambda(
                         Expression.Convert(lastJoinExpression, typeof(IEnumerable<>).MakeGenericType(outputItemType)),
                         (ParameterExpression)this._alias2Item[join.ItemAlias]);

@@ -402,7 +402,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //return Expression.Lambda(call, sequenceElement);
         }
 
-
+        public Expression PropertyOrField(Expression obj, string fieldName, Type fieldType)
+        {
+            return
+                Expression.Condition(
+                    Expression.Equal(obj, Expression.Default(obj.Type)),
+                    Expression.Default(fieldType),
+                    Expression.PropertyOrField(obj, fieldName));
+        }
     }
 
 

@@ -727,10 +727,11 @@ select p.Country, Count(p.Country) from p inner join x on p.Country = x.Country 
         }
 
         [TestMethod]
-        [Ignore]
         public void SimpleLeftJoinTest()
         {
-            var query = "select a.Id, b.Id from #A.entities()a left outer join #B.entities() b on a.Id = b.Id";
+            var query = @"
+select a.Id, b.Id from #A.entities() a 
+left outer join #B.entities() b on a.Id = b.Id";
 
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {
@@ -754,6 +755,45 @@ select p.Country, Count(p.Country) from p inner join x on p.Country = x.Country 
             var table = vm.Run();
 
             Assert.AreEqual(2, table.Columns.Count());
+            Assert.AreEqual(3, table.Count);
+        }
+
+        [TestMethod]
+        public void ThreeTablesLeftJoinTest()
+        {
+            var query = @"
+select a.Id, b.Id, c.Name from #A.entities() a 
+left outer join #B.entities() b on a.Id = b.Id
+left outer join #C.entities() c on b.Id = c.Id";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("Poland", "Krakow") {Id = 0},
+                        new BasicEntity("Germany", "Berlin") {Id = 1},
+                        new BasicEntity("Russia", "Moscow") {Id = 2}
+                    }
+                },
+                {
+                    "#B", new[]
+                    {
+                        new BasicEntity("Poland", "Krakow") {Id = 0}
+                    }
+                }
+                ,
+                {
+                    "#C", new BasicEntity[]
+                    {
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(3, table.Columns.Count());
             Assert.AreEqual(3, table.Count);
         }
     }
