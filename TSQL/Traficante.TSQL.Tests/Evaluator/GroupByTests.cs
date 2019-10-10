@@ -762,7 +762,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(Convert.ToDecimal(1750), table[0].Values[1]);
         }
 
-        [Ignore("Not implemented feature - requires join grouping table with source.")]
+        //[Ignore("Not implemented feature - requires join grouping table with source.")]
         [TestMethod]
         public void CountWithRowNumberAndWithoutGroupByTest()
         {
@@ -794,22 +794,21 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(5, table.Count);
 
             Assert.AreEqual(5, table[0].Values[0]);
-            Assert.AreEqual(1, table[0].Values[2]);
+            Assert.AreEqual(1, table[0].Values[1]);
 
-            Assert.AreEqual(5, table[0].Values[0]);
-            Assert.AreEqual(2, table[0].Values[2]);
+            Assert.AreEqual(5, table[1].Values[0]);
+            Assert.AreEqual(2, table[1].Values[1]);
 
-            Assert.AreEqual(5, table[0].Values[0]);
-            Assert.AreEqual(3, table[0].Values[2]);
+            Assert.AreEqual(5, table[2].Values[0]);
+            Assert.AreEqual(3, table[2].Values[1]);
 
-            Assert.AreEqual(5, table[0].Values[0]);
-            Assert.AreEqual(4, table[0].Values[2]);
+            Assert.AreEqual(5, table[3].Values[0]);
+            Assert.AreEqual(4, table[3].Values[1]);
 
-            Assert.AreEqual(5, table[0].Values[0]);
-            Assert.AreEqual(5, table[0].Values[2]);
+            Assert.AreEqual(5, table[4].Values[0]);
+            Assert.AreEqual(5, table[4].Values[1]);
         }
 
-        [Ignore("Not implemented feature - requires join grouping table with source.")]
         [TestMethod]
         public void SumWithoutGroupByAndWithNotGroupingField()
         {

@@ -113,36 +113,12 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 _whenChecked = whenChecked;
             }
 
-            //public override RowSource GetRowSource(string schema, string name, RuntimeContext communicator, params object[] parameters)
-            //{
-            //    if(_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(parameters);
-            //    return new EntitySource<TestEntity>(_entities);
-            //}
-
             public override ITable GetTableByName(string schema, string name)
             {
                 if (_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(new object[0]);
                 return new TestTable();
             }
 
-            //private static MethodsAggregator CreateLibrary()
-            //{
-            //    var methodManager = new MethodsManager();
-            //    //var propertiesManager = new PropertiesManager();
-
-            //    var lib = new TestLibrary();
-
-            //    //propertiesManager.RegisterProperties(lib);
-            //    methodManager.RegisterLibraries(lib);
-
-            //    return new MethodsAggregator(methodManager);//, propertiesManager);
-            //}
-
-            //public override SchemaMethodInfo[] GetConstructors(string schema)
-            //{
-            //    var methodInfos = new List<SchemaMethodInfo>();
-            //    return methodInfos.ToArray();
-            //}
         }
 
         private class TestTable : ITable

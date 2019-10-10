@@ -8,12 +8,12 @@ namespace Traficante.TSQL.Plugins
     [BindableClass]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     [SuppressMessage("ReSharper", "UnusedParameter.Global")]
-    public abstract partial class LibraryBase : UserMethodsLibrary
+    public abstract partial class LibraryBase
     {
         [BindableMethod]
-        public int RowNumber([InjectQueryStats] QueryStats info)
+        public int RowNumber()
         {
-            return info.RowNumber;
+            return default(int);
         }
 
         [BindableMethod]

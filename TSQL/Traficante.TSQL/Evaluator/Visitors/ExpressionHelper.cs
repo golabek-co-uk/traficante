@@ -402,21 +402,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //return Expression.Lambda(call, sequenceElement);
         }
 
-        //public Expression FirstOrDefault(Expression sequence, ParameterExpression sequenceElement, Ex)
-        //{
-        //    var predicateLambda = Expression.Lambda(predicate, sequenceElement);
-
-        //    MethodCallExpression call = Expression.Call(
-        //        typeof(Queryable),
-        //        "FirstOrDefault",
-        //        new Type[] { sequenceElement.Type },
-        //        sequence,
-        //        predicateLambda);
-
-        //    return call;
-        //    //return Expression.Lambda(call, sequenceElement);
-        //}
-
 
     }
 

@@ -166,7 +166,7 @@ namespace Traficante.TSQL.Schema.Managers
                 var parameters = methodInfo.GetParameters();
                 var optionalParametersCount = parameters.CountOptionalParameters();
                 var allParameters = parameters.Length;
-                var notAnnotatedParametersCount = parameters.CountWithoutParametersAnnotatedBy<InjectTypeAttribute>();
+                var notAnnotatedParametersCount = parameters.Count();//parameters.CountWithoutParametersAnnotatedBy<InjectTypeAttribute>();
                 var paramsParameter = parameters.GetParametersWithAttribute<ParamArrayAttribute>();
                 var parametersToInject = allParameters - notAnnotatedParametersCount;
 
