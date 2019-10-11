@@ -136,7 +136,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
         private CompiledQuery CreateAndRunVirtualMachine(string script, IEnumerable<TestEntity> source, Action<object[]> onGetTableOrRowSource, WhenCheckedParameters whenChecked)
         {
-            return InstanceCreator.CompileForExecution(script, new TestSchemaProvider(source, onGetTableOrRowSource, whenChecked));
+            return new CompiledQuery(new Runner().RunAndReturnTable(script, new TestSchemaProvider(source, onGetTableOrRowSource, whenChecked)));
+            //return InstanceCreator.CompileForExecution(script, new TestSchemaProvider(source, onGetTableOrRowSource, whenChecked));
         }
     }
 }

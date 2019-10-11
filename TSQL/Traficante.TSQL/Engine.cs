@@ -37,8 +37,9 @@ namespace Traficante.TSQL
 
         public Table Run(string script)
         {
-            var query = InstanceCreator.CompileForExecution(script, this);
-            return query.Run();
+            return new Runner().RunAndReturnTable(script, this);
+            //var query = InstanceCreator.CompileForExecution(script, this);
+            //return query.Run();
         }
 
         public void AddTable<T>(string table, IEnumerable<T> items)
@@ -159,14 +160,15 @@ namespace Traficante.TSQL
             else
                 return _databases.FirstOrDefault(x => string.Equals(x.Name, DefaultDatabase));
         }
-
+        [ThreadStaticAttribute]
+        public Engine eng;
         public Database GetDatabaseOrCreate(string database)
         {
             var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
             if (db == null)
             {
                 db = new Database(database, DefaultSchema, this);//, _library);
-
+                eng = this;
                 db.AddFunction<string, IEnumerable<object>>(null, "exec", (x) =>
                 {
                     var that = this;

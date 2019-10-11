@@ -35,22 +35,10 @@ namespace Traficante.TSQL.Converter.Build
             set => this["SCHEMA_PROVIDER"] = value;
         }
 
-        public IQueryable<IObjectResolver> Stream
+        public object Result
         {
-            get => (IQueryable<IObjectResolver>)this["Stream"];
-            set => this["Stream"] = value;
-        }
-
-        public string[] Columns
-        {
-            get => (string[])this["Columns"];
-            set => this["Columns"] = value;
-        }
-
-        public System.Type[] ColumnsTypes
-        {
-            get => (System.Type[])this["ColumnsTypes"];
-            set => this["ColumnsTypes"] = value;
+            get => (object)this["RESULT"];
+            set => this["RESULT"] = value;
         }
     }
 }

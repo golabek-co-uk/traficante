@@ -44,10 +44,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private IEngine _engine;
         private RuntimeContext _interCommunicator;
 
-        public IQueryable<IObjectResolver> ResultStream = null;
-        public IDictionary<string, string[]> ResultColumns = new Dictionary<string, string[]>();
-        public IDictionary<string, Type[]> ResultColumnsTypes = new Dictionary<string, Type[]>();
-
+        public object Result = null;
 
         //private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
@@ -96,8 +93,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
 
                 Nodes.Push(Expression.Constant(columns));
-                ResultColumns[fromNode.Alias] = descType.GetFields().Select(x => x.Name).ToArray();
-                ResultColumnsTypes[fromNode.Alias] = descType.GetFields().Select(x => x.FieldType).ToArray();
                 return;
             }
             if (node.Type == DescForType.Schema)
@@ -890,9 +885,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             //"IQueryable<AnonymousType> input"
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(entityType), "input");
-
-            ResultColumns[node.Alias] = fields.Select(x => x.Item1).ToArray();
-            ResultColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
         }
 
         public void Visit(FromTableNode node)
@@ -944,9 +936,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             //"IQueryable<AnonymousType> input"
             this._input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(entityType), "input");
-
-            ResultColumns[node.Alias] = fields.Select(x => x.Item1).ToArray();
-            ResultColumnsTypes[node.Alias] = fields.Select(x => x.Item2).ToArray();
         }
 
         public void Visit(InMemoryTableFromNode node)
@@ -1045,8 +1034,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             Nodes.Push(last);
-            ResultColumns[_queryAlias ?? ""] = node.Select.Fields.Select(x => x.FieldName).ToArray();
-            ResultColumnsTypes[_queryAlias ?? ""] = node.Select.Fields.Select(x => x.ReturnType).ToArray();
         }
 
         public void Visit(RootNode node)
@@ -1054,9 +1041,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (Nodes.Any())
             {
                 Expression last = Nodes.Pop();
-                Expression<Func<IEnumerable<object>>> toStream = Expression.Lambda<Func<IEnumerable<object>>>(last);
+                Expression<Func<object>> toStream = Expression.Lambda<Func<object>>(last);
                 var compiledToStream = toStream.Compile();
-                ResultStream = compiledToStream()?.AsQueryable()?.Select(x => new ObjectResolver(x));
+                Result = compiledToStream();
             }
         }
 

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Converter;
+using Traficante.TSQL.Evaluator.Tables;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 using Traficante.TSQL.Lib;
 using Traficante.TSQL.Schema;
@@ -15,6 +16,25 @@ using Environment = System.Environment;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
+    public class CompiledQuery
+    {
+        private Table _table;
+        public CompiledQuery(Table table)
+        {
+            _table = table;
+        }
+
+        public Table Run()
+        {
+            return _table;
+        }
+
+        public Table Run(CancellationToken token)
+        {
+            return _table;
+        }
+    }
+
     public class TestBase
     {
         protected CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
@@ -48,8 +68,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 engine.AddTable(null, source.Key, "entities", source.Value);
                 engine.AddFunction(null, source.Key, "Entities", () => source.Value);
             }
-
-            return InstanceCreator.CompileForExecution(script, engine);
+            return new CompiledQuery( new Runner().RunAndReturnTable(script, engine));
+            //return InstanceCreator.CompileForExecution(script, engine);
         }
 
         protected void TestMethodTemplate<TResult>(string operation, TResult score)

@@ -4,29 +4,23 @@ using Traficante.TSQL.Evaluator.Tables;
 
 namespace Traficante.TSQL.Evaluator
 {
-    [DebuggerStepThrough]
-    public class CompiledQuery
-    {
-        private readonly IRunnable _runnable;
+    //[DebuggerStepThrough]
+    //public class CompiledQuery
+    //{
 
-        public CompiledQuery(IRunnable runnable)
-        {
-            _runnable = runnable;
-        }
+    //    public Table Run()
+    //    {
+    //        using(var exitSourcesLoaderTokenSource = new CancellationTokenSource())
+    //        {
+    //            var table = Run(exitSourcesLoaderTokenSource.Token);
+    //            exitSourcesLoaderTokenSource.Cancel();
+    //            return table;
+    //        }
+    //    }
 
-        public Table Run()
-        {
-            using(var exitSourcesLoaderTokenSource = new CancellationTokenSource())
-            {
-                var table = Run(exitSourcesLoaderTokenSource.Token);
-                exitSourcesLoaderTokenSource.Cancel();
-                return table;
-            }
-        }
-
-        public Table Run(CancellationToken token)
-        {
-            return _runnable.Run(token);
-        }
-    }
+    //    public Table Run(CancellationToken token)
+    //    {
+    //        return null;
+    //    }
+    //}
 }
