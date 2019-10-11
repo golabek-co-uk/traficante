@@ -817,5 +817,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             Nodes.Push(new TypeNode(node.Name, node.Size));
         }
+
+        public void Visit(ExecuteNode node)
+        {
+            FunctionNode functionToRun = node.FunctionToRun != null ? (FunctionNode)Nodes.Pop() : null;
+            VariableNode variableToSet = node.VariableToSet != null ? (VariableNode)Nodes.Pop() : null;
+            Nodes.Push(new ExecuteNode(variableToSet, functionToRun));
+        }
     }
 }

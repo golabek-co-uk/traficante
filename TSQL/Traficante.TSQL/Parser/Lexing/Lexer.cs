@@ -152,8 +152,8 @@ namespace Traficante.TSQL.Parser.Lexing
                 return TokenType.NotLike;
             if (regex == TokenRegexDefinition.KRNotLike)
                 return TokenType.NotRLike;
-            if (regex == TokenRegexDefinition.KMethodAccess)
-                return TokenType.MethodAccess;
+            if (regex == TokenRegexDefinition.Function)
+                return TokenType.Function;
             if (regex == TokenRegexDefinition.KKeyObjectAccess)
                 return TokenType.KeyAccess;
             if (regex == TokenRegexDefinition.KNumericArrayAccess)
@@ -240,8 +240,7 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KNumericArrayAccess = "([\\w*?_]{1,})\\[([0-9]{1,})\\]";
             public static readonly string KKeyObjectAccess = "([\\w*?_]{1,})\\[([a-zA-Z0-9]{1,})\\]";
 
-            public static readonly string KMethodAccess =
-                "([a-zA-Z_-]{1,})(?=\\.[a-zA-Z_-]{1,}[a-zA-Z1-9_-]{1,}[\\d]*[\\(])";
+            public static readonly string KMethodAccess = @"[a-zA-Z_-]{1,}[a-zA-Z1-9_-]{1,}[\d]*(?=[\(])";
 
             public static readonly string KSkip = Format(Keyword, SkipToken.TokenText);
             public static readonly string KTake = Format(Keyword, TakeToken.TokenText);
@@ -512,9 +511,9 @@ namespace Traficante.TSQL.Parser.Lexing
                         : OuterJoinNode.OuterJoinType.Right;
 
                     return new OuterJoinToken(type, new TextSpan(Position, tokenText.Length));
-                case TokenType.MethodAccess:
-                    return new MethodAccessToken(match.Match.Groups[1].Value,
-                        new TextSpan(Position, match.Match.Groups[1].Value.Length));
+                //case TokenType.Function:
+                //    return new MethodAccessToken(match.Match.Groups[0].Value,
+                //        new TextSpan(Position, match.Match.Groups[0].Value.Length));
                 case TokenType.Is:
                     return new IsToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Null:

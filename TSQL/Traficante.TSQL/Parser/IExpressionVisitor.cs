@@ -31,6 +31,7 @@ namespace Traficante.TSQL.Parser
         void Visit(BooleanNode node);
         void Visit(WordNode node);
         void Visit(ContainsNode node);
+        void Visit(ExecuteNode node);
         void Visit(FunctionNode node);
         void Visit(IsNullNode node);
         void Visit(AccessColumnNode node);

@@ -138,6 +138,8 @@ namespace Traficante.TSQL.Parser
                 Consume(TokenType.Equality);
             }
 
+            
+
             string part1 = Current.TokenType == TokenType.Word ? ConsumeAndGetToken(TokenType.Word).Value : ConsumeAndGetToken(TokenType.Identifier).Value;
             string part2 = null;
             string part3 = null;
@@ -162,7 +164,7 @@ namespace Traficante.TSQL.Parser
 
             var args = ComposeExecuteArgs();
 
-            return new ExecuteNode(database, schema, method, args, variableNode);
+            return new ExecuteNode(variableNode, new FunctionNode(database, schema, method, args));
         }
 
         private TypeNode ComposeType()
@@ -836,11 +838,11 @@ namespace Traficante.TSQL.Parser
                     var numiercAccess = (NumericAccessToken) Current;
                     Consume(TokenType.NumericAccess);
                     return new AccessObjectArrayNode(numiercAccess);
-                case TokenType.MethodAccess:
-                    var methodAccess = (MethodAccessToken) Current;
-                    Consume(TokenType.MethodAccess);
-                    Consume(TokenType.Dot);
-                    return ComposeFunctionMethod(null, null);
+                //case TokenType.Function:
+                //    //var methodAccess = (MethodAccessToken) Current;
+                //    //Consume(TokenType.MethodAccess);
+                //    //Consume(TokenType.Dot);
+                //    return ComposeFunctionMethod(null, null);
                 case TokenType.Property:
                     token = ConsumeAndGetToken(TokenType.Property);
                     return new PropertyValueNode(token.Value);

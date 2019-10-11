@@ -4,25 +4,17 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class ExecuteNode : Node
     {
-        public ExecuteNode(string database, string schema, string method, ArgsListNode parameters, VariableNode variableToSet)
+        public ExecuteNode(VariableNode variableToSet, FunctionNode functionToExecute)
         {
-            Database = database;
-            Schema = schema;
-            Method = method;
-            MethodParameters = parameters;
-            var paramsId = parameters.Id;
-            Id = $"{nameof(ExecuteNode)}{database}{schema}{method}{paramsId}";
+            FunctionToRun = functionToExecute;
+            VariableToSet = variableToSet;
+            Id = $"{nameof(ExecuteNode)}{functionToExecute?.Id}{functionToExecute?.Id}";
         }
 
-        public string Database { get; set; }
-
-        public string Schema { get; }
-
-        public string Method { get; }
-
-        public ArgsListNode MethodParameters { get; }
+        
 
         public VariableNode VariableToSet { get; }
+        public FunctionNode FunctionToRun { get; }
 
         public override string Id { get; }
 
@@ -35,8 +27,10 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public override string ToString()
         {
-
-            return $"execute {Database}.{Schema}.{Method} {MethodParameters.Id}";
+            if (VariableToSet != null)
+                return $"execute {VariableToSet.ToString()} = {FunctionToRun.ToString()}";
+            else
+                return $"execute {FunctionToRun.ToString()}";
         }
 
         public override int GetHashCode()

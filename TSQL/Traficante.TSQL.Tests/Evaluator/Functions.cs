@@ -35,7 +35,6 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(-1, result[0][0]);
         }
 
-        [Ignore]
         [TestMethod]
         public void Select_Function_WithDatabaseAndSchema()
         {
@@ -44,13 +43,13 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             var result = sut.Run("SELECT msdb.dbo.fn_syspolicy_is_automation_enabled()");
             Assert.IsNotNull(result);
-            Assert.AreEqual("IsHadrEnabled", result.Columns.First().ColumnName);
+            Assert.AreEqual("msdb.dbo.fn_syspolicy_is_automation_enabled()", result.Columns.First().ColumnName);
             Assert.AreEqual(true, result[0][0]);
         }
 
-        [Ignore]
+
         [TestMethod]
-        public void Execute()
+        public void Execute_FunctionWithArguments_AssigneResultToVariable()
         {
             Engine sut = new Engine();
             sut.SetVariable("@alwayson", (int?)null);
@@ -61,6 +60,22 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var alwayson = sut.GetVariable("@alwayson");
             Assert.IsNotNull(alwayson);
             Assert.AreEqual(5, alwayson.Value);
+        }
+        static bool Execute_FunctionWithArguments_Flag = false;
+        [TestMethod]
+        public void Execute_FunctionWithArguments()
+        {
+            Engine sut = new Engine();
+            
+            sut.SetVariable("@@SERVICENAME", "Traficante");
+            sut.AddFunction<string, string, int>("master", "dbo", "xp_qv", (x, y) => 
+            {
+                Execute_FunctionWithArguments_Flag = true;
+                return default(int);
+            });
+
+            sut.Run("EXECUTE master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
+            Assert.IsTrue(Execute_FunctionWithArguments_Flag);
         }
     }
 }

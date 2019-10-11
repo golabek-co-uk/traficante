@@ -533,6 +533,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+        public void Visit(ExecuteNode node)
+        {
+            node.FunctionToRun?.Accept(this);
+            node.Accept(_visitor);
+        }
+
         private void TraverseSetOperator(SetOperatorNode node)
         {
             _walker = _walker.NextChild();

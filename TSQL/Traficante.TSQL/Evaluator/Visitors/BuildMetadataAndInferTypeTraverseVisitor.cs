@@ -5,6 +5,7 @@ using Traficante.TSQL.Evaluator.Utils.Symbols;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 using Traficante.Sql.Evaluator.Resources;
+using System.Linq;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
@@ -115,8 +116,29 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(DotNode node)
         {
-            var self = node;
+            if (node.Expression is FunctionNode)
+            {
+                List<string> accessors = new List<string>();
+                Node parentNode = node.Root;
+                while (parentNode is null == false)
+                {
+                    if (parentNode is IdentifierNode)
+                        accessors.Add(((IdentifierNode)parentNode).Name);
+                    if (parentNode is PropertyValueNode)
+                        accessors.Add(((PropertyValueNode)parentNode).Name);
+                    if (parentNode is DotNode)
+                        accessors.Add(((DotNode)parentNode).Name);
+                    parentNode = (parentNode as DotNode)?.Root;
+                }
 
+                FunctionNode function = node.Expression as FunctionNode;
+                string schema = accessors.ElementAtOrDefault(0);
+                string database = accessors.ElementAtOrDefault(1);
+                Visit(new FunctionNode(database, schema, function.Name, function.Arguments, function.Method));
+                return;
+            }
+
+            var self = node;
             var theMostInner = self;
             while (!(self is null))
             {
@@ -595,6 +617,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(TypeNode node)
         {
+            node.Accept(_visitor);
+        }
+
+        public void Visit(ExecuteNode node)
+        {
+            node.VariableToSet?.Accept(this);
+            node.FunctionToRun?.Accept(this);
             node.Accept(_visitor);
         }
     }

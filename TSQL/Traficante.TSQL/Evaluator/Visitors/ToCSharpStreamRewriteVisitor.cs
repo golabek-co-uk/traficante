@@ -1460,6 +1460,17 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             Nodes.Push(Expression.Constant(node.ReturnType));
         }
+
+        public void Visit(ExecuteNode node)
+        {
+            Expression valueExpression = Nodes.Pop();
+            var valueAsObjectExpression = Expression.Convert(valueExpression, typeof(object));
+            var value = Expression.Lambda<Func<object>>(valueAsObjectExpression).Compile()();
+            if (node.VariableToSet != null)
+            {
+                _engine.SetVariable(node.VariableToSet.Name, value);
+            }
+        }
     }
 
 }

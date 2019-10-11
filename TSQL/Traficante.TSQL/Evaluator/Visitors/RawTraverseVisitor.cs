@@ -468,6 +468,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(Visitor);
         }
 
+        public void Visit(ExecuteNode node)
+        {
+            node.VariableToSet?.Accept(Visitor);
+            node.FunctionToRun?.Accept(Visitor);
+            node.Accept(Visitor);
+        }
+
         private void TraverseSetOperator(SetOperatorNode node)
         {
             node.Left.Accept(this);

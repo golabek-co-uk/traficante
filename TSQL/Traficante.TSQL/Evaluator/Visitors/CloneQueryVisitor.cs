@@ -493,5 +493,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             Nodes.Push(new TypeNode(node.Name, node.Size));
         }
+
+        public void Visit(ExecuteNode node)
+        {
+            Nodes.Push(new ExecuteNode(node.VariableToSet, node.FunctionToRun));
+        }
     }
 }
