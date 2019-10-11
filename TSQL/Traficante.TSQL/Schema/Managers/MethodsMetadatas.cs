@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Traficante.TSQL.Plugins;
 using Traficante.TSQL.Plugins.Attributes;
 using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Schema.Managers
 {
-    public class MethodsMetadatas
+    public class MethodsManager
     {
         private static readonly Dictionary<Type, Type[]> TypeCompatibilityTable;
         private readonly Dictionary<string, List<MethodInfo>> _methods;
 
-        static MethodsMetadatas()
+        static MethodsManager()
         {
             TypeCompatibilityTable = new Dictionary<Type, Type[]>
             {
@@ -30,9 +31,18 @@ namespace Traficante.TSQL.Schema.Managers
         /// <summary>
         ///     Initialize object.
         /// </summary>
-        public MethodsMetadatas()
+        public MethodsManager()
         {
             _methods = new Dictionary<string, List<MethodInfo>>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public void RegisterLibraries(LibraryBase library)
+        {
+            var type = library.GetType();
+            var methods = type.GetMethods().Where(f => f.GetCustomAttribute<BindableMethodAttribute>() != null);
+
+            foreach (var methodInfo in methods)
+                RegisterMethod(methodInfo);
         }
 
         /// <summary>

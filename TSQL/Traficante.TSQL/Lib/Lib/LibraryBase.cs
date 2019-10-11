@@ -42,5 +42,6 @@ namespace Traficante.TSQL.Plugins
 
             return HashHelper.ComputeHash<MD5CryptoServiceProvider>(content);
         }
+
     }
 }

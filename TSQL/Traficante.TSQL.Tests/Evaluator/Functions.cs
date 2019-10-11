@@ -61,6 +61,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.IsNotNull(alwayson);
             Assert.AreEqual(5, alwayson.Value);
         }
+
         static bool Execute_FunctionWithArguments_Flag = false;
         [TestMethod]
         public void Execute_FunctionWithArguments()
@@ -76,6 +77,19 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             sut.Run("EXECUTE master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
             Assert.IsTrue(Execute_FunctionWithArguments_Flag);
+        }
+
+        [TestMethod]
+        public void Execute_exec()
+        {
+            Engine sut = new Engine();
+            sut.AddFunction<string, string>(null, null, "CONNECTIONPROPERTY", (x) => {
+                if (x == "net_transport")
+                    return "TCP";
+                return null;
+            });
+
+            var result = sut.Run("exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')");
         }
     }
 }

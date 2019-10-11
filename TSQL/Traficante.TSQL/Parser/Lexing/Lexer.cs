@@ -191,7 +191,7 @@ namespace Traficante.TSQL.Parser.Lexing
         private static class TokenRegexDefinition
         {
             private const string Keyword = @"(?<=[\s]{1,}|^){keyword}(?=[\s]{1,}|$)";
-            public const string Function = @"[a-zA-Z_-]{1,}[a-zA-Z1-9_-]{1,}[\d]*(?=[\(])";
+            public const string Function = @"[a-zA-Z_-]{1,}[a-zA-Z1-9_-]{1,}[\d]*\s?(?=[\(])";
 
             public static readonly string KAnd = Format(Keyword, AndToken.TokenText);
             public static readonly string KComma = CommaToken.TokenText;
@@ -239,8 +239,6 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KDecimal = @"[\-]?([0-9]+(\.[0-9]{1,})?)[dD]?";
             public static readonly string KNumericArrayAccess = "([\\w*?_]{1,})\\[([0-9]{1,})\\]";
             public static readonly string KKeyObjectAccess = "([\\w*?_]{1,})\\[([a-zA-Z0-9]{1,})\\]";
-
-            public static readonly string KMethodAccess = @"[a-zA-Z_-]{1,}[a-zA-Z1-9_-]{1,}[\d]*(?=[\(])";
 
             public static readonly string KSkip = Format(Keyword, SkipToken.TokenText);
             public static readonly string KTake = Format(Keyword, TakeToken.TokenText);
@@ -328,7 +326,6 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KContains, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KWhiteSpace),
                 new TokenDefinition(TokenRegexDefinition.KUnionAll, RegexOptions.IgnoreCase),
-                new TokenDefinition(TokenRegexDefinition.Function),
                 new TokenDefinition(TokenRegexDefinition.KWordBracketed, RegexOptions.ECMAScript),
                 new TokenDefinition(TokenRegexDefinition.KSelect, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KFrom, RegexOptions.IgnoreCase),
@@ -340,7 +337,7 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KSkip, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KTake, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KNumericArrayAccess),
-                new TokenDefinition(TokenRegexDefinition.KMethodAccess),
+                new TokenDefinition(TokenRegexDefinition.Function),
                 new TokenDefinition(TokenRegexDefinition.KKeyObjectAccess),
                 new TokenDefinition(TokenRegexDefinition.KInnerJoin, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KOuterJoin, RegexOptions.IgnoreCase),

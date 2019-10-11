@@ -24,7 +24,7 @@ namespace Traficante.TSQL
         public Engine()
         {
             _databases = new List<Database>();
-            _databases.Add(new Database(DefaultDatabase, DefaultSchema));
+            GetDatabaseOrCreate(DefaultDatabase);
             _variables = new List<DatabaseVariable>();
         }
 
@@ -50,12 +50,7 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema);
-                _databases.Add(db);
-            }
+            var db = GetDatabaseOrCreate(database);
             db.AddTable(schema, table, items);
         }
 
@@ -63,12 +58,7 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema);//, _library);
-                _databases.Add(db);
-            }
+            var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
         }
 
@@ -76,12 +66,7 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema);//, _library);
-                _databases.Add(db);
-            }
+            var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
         }
 
@@ -89,12 +74,7 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema);//, _library);
-                _databases.Add(db);
-            }
+            var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
         }
 
@@ -102,12 +82,7 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema);//, _library);
-                _databases.Add(db);
-            }
+            var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
         }
 
@@ -115,12 +90,7 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema);//, _library);
-                _databases.Add(db);
-            }
+            var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
         }
 
@@ -128,12 +98,7 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema);//, _library);
-                _databases.Add(db);
-            }
+            var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
         }
 
@@ -141,12 +106,7 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema);//, _library);
-                _databases.Add(db);
-            }
+            var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
         }
 
@@ -198,6 +158,23 @@ namespace Traficante.TSQL
                 return _databases.FirstOrDefault(x => string.Equals(x.Name, database, System.StringComparison.CurrentCultureIgnoreCase));
             else
                 return _databases.FirstOrDefault(x => string.Equals(x.Name, DefaultDatabase));
+        }
+
+        public Database GetDatabaseOrCreate(string database)
+        {
+            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
+            if (db == null)
+            {
+                db = new Database(database, DefaultSchema);//, _library);
+
+                db.AddFunction<string, IEnumerable<object>>(null, "exec", (x) => {
+                    var that = this;
+                    return null;
+                });
+
+                _databases.Add(db);
+            }
+            return db;
         }
     }
 }

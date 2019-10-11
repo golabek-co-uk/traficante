@@ -69,19 +69,6 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(score, table[0][0]);
         }
 
-        private static MethodsAggregator CreateLibrary()
-        {
-            var methodManager = new MethodsManager();
-            //var propertiesManager = new PropertiesManager();
-
-            var lib = new TestLibrary();
-
-            //propertiesManager.RegisterProperties(lib);
-            methodManager.RegisterLibraries(lib);
-
-            return new MethodsAggregator(methodManager);//, propertiesManager);
-        }
-
         static TestBase()
         {
             new Plugins.Environment().SetValue(Constants.NetStandardDllEnvironmentName, EnvironmentUtils.GetOrCreateEnvironmentVariable());

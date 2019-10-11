@@ -67,7 +67,8 @@ namespace Traficante.TSQL.Parser
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeSet()), TokenType.Semicolon);
                 case TokenType.Execute:
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeExecute()), TokenType.Semicolon);
-
+                case TokenType.Function:
+                    return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeFunctionMethod(null, null)), TokenType.Semicolon);
                 default:
                     throw new NotSupportedException($"{Current.TokenType} cannot be used here.");
             }
@@ -922,7 +923,7 @@ namespace Traficante.TSQL.Parser
 
             var args = isCastFunction ? ComposeCastArgs() : ComposeFunctionArgs();
 
-            return new FunctionNode(database, schema, func.Value, args);
+            return new FunctionNode(database, schema, func.Value.Trim(), args);
         }
 
         private Token ConsumeAndGetToken(TokenType expected)
