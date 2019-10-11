@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Traficante.TSQL.Plugins.Helpers
+namespace Traficante.TSQL.Lib.Helpers
 {
     public static class HashHelper
     {

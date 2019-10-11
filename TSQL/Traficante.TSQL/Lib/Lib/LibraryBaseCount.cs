@@ -1,9 +1,9 @@
 ﻿using System;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib.Attributes;
 
-namespace Traficante.TSQL.Plugins
+namespace Traficante.TSQL.Lib
 {
-    public partial class LibraryBase
+    public partial class Library
     {
         [AggregationGetMethod]
         public int Count(object name)

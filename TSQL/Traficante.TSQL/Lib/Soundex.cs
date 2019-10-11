@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Traficante.TSQL.Plugins
+namespace Traficante.TSQL.Lib
 {
     // The MIT License (MIT)
     // Copyright (c) 2015 Ravinder Singh

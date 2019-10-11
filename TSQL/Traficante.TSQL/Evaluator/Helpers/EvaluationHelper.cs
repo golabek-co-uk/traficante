@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Traficante.TSQL.Evaluator.Tables;
-using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Lib;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Reflection;

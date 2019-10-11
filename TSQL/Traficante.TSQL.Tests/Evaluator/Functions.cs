@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 using Traficante.TSQL.Tests;
@@ -90,6 +91,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             });
 
             var result = sut.Run("exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')");
+
+            sut.Run("saf");
         }
     }
 }

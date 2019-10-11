@@ -152,7 +152,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
 
             symbol._fullTableName = symbol._orders.Aggregate((a, b) => a + b);
             symbol._fullTable = new DatabaseTable(symbol.SchemaName, symbol._fullTableName, compundTableColumns.ToArray());
-            symbol._fullSchema = new TransitionSchema(symbol._fullTableName, symbol._fullTable);
+            symbol._fullSchema = new TransitionSchema(symbol._fullTableName, null, symbol._fullTable);
 
             return symbol;
         }

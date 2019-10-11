@@ -2,21 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Lib;
 
 namespace Traficante.TSQL.Schema.Managers
 {
     public class MethodsAggregator
     {
-        private readonly Dictionary<Type, LibraryBase> _instantiatedObjects;
         private readonly MethodsManager _methsManager;
-       // private readonly PropertiesManager _propsManager;
 
         public MethodsAggregator(MethodsManager methsManager)//, PropertiesManager propsManager)
         {
             _methsManager = methsManager;
-            //_propsManager = propsManager;
-            _instantiatedObjects = new Dictionary<Type, LibraryBase>();
         }
 
         public MethodInfo ResolveMethod(string name, Type[] args)

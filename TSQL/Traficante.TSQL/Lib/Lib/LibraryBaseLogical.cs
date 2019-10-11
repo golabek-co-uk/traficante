@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib.Attributes;
 
-namespace Traficante.TSQL.Plugins
+namespace Traficante.TSQL.Lib
 {
-    public partial class LibraryBase
+    public partial class Library
     {
         [BindableMethod]
         public T Choose<T>(int index, params T[] values)

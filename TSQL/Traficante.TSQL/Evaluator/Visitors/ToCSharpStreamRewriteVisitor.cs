@@ -1056,7 +1056,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 Expression last = Nodes.Pop();
                 Expression<Func<IEnumerable<object>>> toStream = Expression.Lambda<Func<IEnumerable<object>>>(last);
                 var compiledToStream = toStream.Compile();
-                ResultStream = compiledToStream().AsQueryable().Select(x => new ObjectResolver(x));
+                ResultStream = compiledToStream()?.AsQueryable()?.Select(x => new ObjectResolver(x));
             }
         }
 

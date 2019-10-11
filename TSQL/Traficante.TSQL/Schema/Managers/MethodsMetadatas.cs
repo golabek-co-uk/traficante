@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Traficante.TSQL.Plugins;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib;
+using Traficante.TSQL.Lib.Attributes;
 using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Schema.Managers
@@ -36,7 +36,7 @@ namespace Traficante.TSQL.Schema.Managers
             _methods = new Dictionary<string, List<MethodInfo>>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public void RegisterLibraries(LibraryBase library)
+        public void RegisterLibraries(Library library)
         {
             var type = library.GetType();
             var methods = type.GetMethods().Where(f => f.GetCustomAttribute<BindableMethodAttribute>() != null);

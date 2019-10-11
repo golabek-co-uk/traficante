@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using Traficante.TSQL.Evaluator.Exceptions;
-using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Lib;
 
 namespace Traficante.TSQL.Evaluator
 {

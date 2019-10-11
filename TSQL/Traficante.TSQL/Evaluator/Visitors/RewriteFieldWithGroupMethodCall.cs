@@ -4,7 +4,7 @@ using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 using Traficante.TSQL.Parser.Tokens;
-using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Lib;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {

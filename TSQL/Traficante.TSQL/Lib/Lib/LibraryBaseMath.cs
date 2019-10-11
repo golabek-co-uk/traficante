@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib.Attributes;
 
-namespace Traficante.TSQL.Plugins
+namespace Traficante.TSQL.Lib
 {
-    public partial class LibraryBase
+    public partial class Library
     {
         private readonly Random _rand = new Random();
 

@@ -8,7 +8,7 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Converter;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
-using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Lib;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.Managers;
 using Environment = System.Environment;
@@ -71,7 +71,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
         static TestBase()
         {
-            new Plugins.Environment().SetValue(Constants.NetStandardDllEnvironmentName, EnvironmentUtils.GetOrCreateEnvironmentVariable());
+            new Lib.Environment().SetValue(Constants.NetStandardDllEnvironmentName, EnvironmentUtils.GetOrCreateEnvironmentVariable());
         }
     }
 }

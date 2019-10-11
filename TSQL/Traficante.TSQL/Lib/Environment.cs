@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace Traficante.TSQL.Plugins
+namespace Traficante.TSQL.Lib
 {
     public class Environment
     {

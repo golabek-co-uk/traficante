@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Traficante.TSQL.Plugins.Tests
+namespace Traficante.TSQL.Lib.Tests
 {
     [TestClass]
     public class StringsTests : LibraryBaseBaseTests

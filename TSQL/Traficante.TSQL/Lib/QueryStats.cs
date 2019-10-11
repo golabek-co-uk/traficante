@@ -1,4 +1,4 @@
-﻿namespace Traficante.TSQL.Plugins
+﻿namespace Traficante.TSQL.Lib
 {
     public class QueryStats
     {

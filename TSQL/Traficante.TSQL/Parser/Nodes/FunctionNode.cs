@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Traficante.TSQL.Parser.Tokens;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib.Attributes;
 
 namespace Traficante.TSQL.Parser.Nodes
 {

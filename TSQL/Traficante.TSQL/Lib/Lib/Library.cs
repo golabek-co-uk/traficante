@@ -1,15 +1,21 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
-using Traficante.TSQL.Plugins.Attributes;
-using Traficante.TSQL.Plugins.Helpers;
+using Traficante.TSQL.Lib.Attributes;
+using Traficante.TSQL.Lib.Helpers;
+using Traficante.TSQL.Schema;
 
-namespace Traficante.TSQL.Plugins
+namespace Traficante.TSQL.Lib
 {
     [BindableClass]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     [SuppressMessage("ReSharper", "UnusedParameter.Global")]
-    public abstract partial class LibraryBase
+    public partial class Library
     {
+        public Library()
+        {
+
+        }
+
         [BindableMethod]
         public int RowNumber()
         {

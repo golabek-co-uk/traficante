@@ -106,7 +106,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             public TestSchema(IEnumerable<TestEntity> entities, Action<object[]> onGetTableOrRowSource,
                 WhenCheckedParameters whenChecked)
-                : base("test")//, CreateLibrary())
+                : base("test", null)//, CreateLibrary())
             {
                 _entities = entities;
                 _onGetTableOrRowSource = onGetTableOrRowSource;

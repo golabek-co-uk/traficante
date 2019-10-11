@@ -12,8 +12,8 @@ namespace Traficante.TSQL.Evaluator.Tables
     {
         private readonly ITable _table;
 
-        public TransitionSchema(string name, ITable table)
-            : base(name)
+        public TransitionSchema(string name, IEngine engine, ITable table)
+            : base(name, engine)
         {
             _table = table;
         }

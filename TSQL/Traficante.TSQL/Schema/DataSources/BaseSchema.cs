@@ -2,9 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using Traficante.TSQL.Lib;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib.Attributes;
 using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.Managers;
 using Traficante.TSQL.Schema.Reflection;
@@ -19,13 +20,13 @@ namespace Traficante.TSQL.Schema.DataSources
         public List<(ITable Table, RowSource Source)> Functions { get; set; } = new List<(ITable Table, RowSource Source)>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
-        protected BaseDatabase(string name)
+        protected BaseDatabase(string name, IEngine engine)
         {
             Name = name;
             MethodsManager.RegisterLibraries(new Library());
         }
 
-        protected BaseDatabase(string name, string defaultSchema)
+        protected BaseDatabase(string name, string defaultSchema, IEngine engine)
         {
             Name = name;
             DefaultSchema = defaultSchema;

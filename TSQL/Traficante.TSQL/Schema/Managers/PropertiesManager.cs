@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
-using Traficante.TSQL.Plugins;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib;
+using Traficante.TSQL.Lib.Attributes;
 
 namespace Traficante.TSQL.Schema.Managers
 {

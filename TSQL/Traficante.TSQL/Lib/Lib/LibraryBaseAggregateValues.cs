@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib.Attributes;
 
-namespace Traficante.TSQL.Plugins
+namespace Traficante.TSQL.Lib
 {
-    public partial class LibraryBase
+    public partial class Library
     {
         
         [AggregationGetMethod]

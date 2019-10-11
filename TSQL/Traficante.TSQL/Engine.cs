@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using Traficante.TSQL.Converter;
 using Traficante.TSQL.Evaluator.Tables;
-using Traficante.TSQL.Plugins;
+using Traficante.TSQL.Lib;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Managers;
@@ -15,7 +15,7 @@ namespace Traficante.TSQL
     public class Engine : IEngine
     {
         private List<Database> _databases;
-        private LibraryBase _library;
+        private Library _library;
         public List<DatabaseVariable> _variables { get; private set; }
 
         public string DefaultDatabase = "master";
@@ -28,7 +28,7 @@ namespace Traficante.TSQL
             _variables = new List<DatabaseVariable>();
         }
 
-        public Engine(LibraryBase library)
+        public Engine(Library library)
         {
             _databases = new List<Database>();
             _variables = new List<DatabaseVariable>();
@@ -165,11 +165,12 @@ namespace Traficante.TSQL
             var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
             if (db == null)
             {
-                db = new Database(database, DefaultSchema);//, _library);
+                db = new Database(database, DefaultSchema, this);//, _library);
 
-                db.AddFunction<string, IEnumerable<object>>(null, "exec", (x) => {
+                db.AddFunction<string, IEnumerable<object>>(null, "exec", (x) =>
+                {
                     var that = this;
-                    return null;
+                    return new List<object>();
                 });
 
                 _databases.Add(db);

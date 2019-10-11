@@ -10,7 +10,7 @@ using Traficante.TSQL.Evaluator.Utils.Symbols;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 using Traficante.TSQL.Parser.Tokens;
-using Traficante.TSQL.Plugins.Attributes;
+using Traficante.TSQL.Lib.Attributes;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Helpers;
@@ -668,7 +668,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var table = new DatabaseTable(null, node.Name, collector.CollectedFieldNames);
             _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
-                new TableSymbol(null, node.Name, new TransitionSchema(node.Name, table), table, false));
+                new TableSymbol(null, node.Name, new TransitionSchema(node.Name, _engine, table), table, false));
 
             Nodes.Push(new CteInnerExpressionNode(set, node.Name));
         }
