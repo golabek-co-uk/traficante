@@ -165,7 +165,7 @@ namespace Traficante.TSQL.Parser
 
             var args = ComposeExecuteArgs();
 
-            return new ExecuteNode(variableNode, new FunctionNode(database, schema, method, args));
+            return new ExecuteNode(variableNode, new FunctionNode(method, args, null, schema, database));
         }
 
         private TypeNode ComposeType()
@@ -923,7 +923,7 @@ namespace Traficante.TSQL.Parser
 
             var args = isCastFunction ? ComposeCastArgs() : ComposeFunctionArgs();
 
-            return new FunctionNode(database, schema, func.Value.Trim(), args);
+            return new FunctionNode(func.Value.Trim(), args, null, schema, database, null);
         }
 
         private Token ConsumeAndGetToken(TokenType expected)

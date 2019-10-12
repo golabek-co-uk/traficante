@@ -238,7 +238,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void JoinWithGroupByTest()
         {
             var query =
-                "select cities.Country, countries.Sum(population.Population) from #A.entities() countries inner join #B.entities() cities on countries.Country = cities.Country inner join #C.entities() population on cities.City = population.City group by cities.Country";
+                "select cities.Country, Sum(population.Population) from #A.entities() countries inner join #B.entities() cities on countries.Country = cities.Country inner join #C.entities() population on cities.City = population.City group by cities.Country";
 
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {

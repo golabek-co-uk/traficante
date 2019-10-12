@@ -214,14 +214,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
         public void Visit(LikeNode node)
         {
-            Visit(new FunctionNode(null, null, nameof(Operators.Like),
+            Visit(new FunctionNode(nameof(Operators.Like),
                 new ArgsListNode(new[] { node.Left, node.Right }),
                 typeof(Operators).GetMethod(nameof(Operators.Like))));
         }
 
         public void Visit(RLikeNode node)
         {
-            Visit(new FunctionNode(null, null, nameof(Operators.RLike),
+            Visit(new FunctionNode(nameof(Operators.RLike),
                 new ArgsListNode(new[] { node.Left, node.Right }),
                 typeof(Operators).GetMethod(nameof(Operators.RLike))));
         }

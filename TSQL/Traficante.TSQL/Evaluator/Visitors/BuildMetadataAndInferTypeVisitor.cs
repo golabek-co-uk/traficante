@@ -229,7 +229,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var args = Nodes.Pop() as ArgsListNode;
             var db = this._engine.GetDatabase(node.Database);
             var methodInfo = db.ResolveMethod(node.Schema, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
-            FunctionNode functionMethod = new FunctionNode(node.Database, node.Schema, node.Name, args, methodInfo);
+            FunctionNode functionMethod = new FunctionNode(node.Name, args, methodInfo, node.Schema, node.Database, node.Server);
             Nodes.Push(functionMethod);
         }
 

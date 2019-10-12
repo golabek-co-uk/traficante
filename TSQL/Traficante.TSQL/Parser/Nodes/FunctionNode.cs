@@ -8,21 +8,23 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class FunctionNode : Node
     {
-        public FunctionNode(string database, string schema, string name, ArgsListNode args,
-            MethodInfo method = (MethodInfo) null)
+        public FunctionNode(string name, ArgsListNode args,
+            MethodInfo method = (MethodInfo) null, string schema = null, string database = null, string server = null)
         {
             Name = name;
             Schema = schema;
             Database = database;
+            Server = server;
             Arguments = args;
             Method = method;
-            Id = $"{nameof(FunctionNode)}{database}.{schema}.{name}{args.Id}";
+            Id = $"{nameof(FunctionNode)}{server}.{database}.{schema}.{name}{args.Id}";
         }
 
         public MethodInfo Method { get; private set; }
 
         public ArgsListNode Arguments { get; }
 
+        public string Server { get; }
         public string Database { get; }
         public string Schema { get; }
         public string Name { get; }
@@ -90,7 +92,9 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public override string ToString()
         {
-            return ArgsCount > 0 ? $"{Database}{Schema}{Name}({Arguments.ToString()})" : $"{Name}()";
+            return ArgsCount > 0 ? 
+                $"{Name}({Arguments.ToString()})" : 
+                $"{Name}()";
         }
     }
 }
