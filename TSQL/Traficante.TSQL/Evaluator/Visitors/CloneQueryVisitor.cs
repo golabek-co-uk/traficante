@@ -308,7 +308,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(FromTableNode node)
         {
-            Nodes.Push(new FromTableNode(node.Database, node.Schema, node.TableOrView, node.Alias));
+            Nodes.Push(new FromTableNode(node.Table, node.Alias));
         }
 
         public virtual void Visit(InMemoryTableFromNode node)

@@ -889,11 +889,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromTableNode node)
         {
-            var rowSource = _engine.GetDatabase(node.Database).GetTableRowSource(node.Schema, node.TableOrView).Rows;
+            var rowSource = _engine.GetDatabase(node.Table.Database).GetTableRowSource(node.Table.Schema, node.Table.TableOrView).Rows;
 
             var fields = _engine
-                .GetDatabase(node.Database)
-                .GetTableByName(node.Schema, node.TableOrView)
+                .GetDatabase(node.Table.Database)
+                .GetTableByName(node.Table.Schema, node.Table.TableOrView)
                 .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);

@@ -2,20 +2,14 @@
 {
     public class FromTableNode : FromNode
     {
-        public FromTableNode(string database, string schema, string tableOrView, string alias)
+        public FromTableNode(TableNode table, string alias)
             : base(alias)
         {
-            Database = database;
-            Schema = schema;
-            TableOrView = tableOrView;
-            Id = $"{nameof(FromTableNode)}{database}{schema}{tableOrView}{Alias}";
+            Table = table;
+            Id = $"{nameof(FromTableNode)}{table.Id}{Alias}";
         }
 
-        public string Database { get; set; }
-
-        public string Schema { get; }
-
-        public string TableOrView { get; }
+        public TableNode Table { get; set; }
 
         public override string Id { get; }
 
@@ -27,7 +21,7 @@
         public override string ToString()
         {
 
-            return $"from {Database}.{Schema}.{TableOrView} {Alias}";
+            return $"from {Table} {Alias}";
         }
 
         public override int GetHashCode()
