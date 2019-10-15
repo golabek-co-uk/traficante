@@ -1,0 +1,40 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        Width="400" Height="200"
+        x:Class="Traficante.Studio.Views.ConnectToSqlServerWindow"
+        x:Name="ConnectToSqlServerWindow"
+        Title="Connect To SqlServer">
+  <Grid Margin="10">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock>Server name</TextBlock>
+    <TextBox Text="{Binding SqlServerConnectionString.Server}" IsEnabled="{Binding !IsConnecting}" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="1">Authentication </TextBlock>
+    <DropDown Grid.Row="1" Grid.Column="1" Margin="10,0,0,10" SelectedIndex="{Binding SqlServerConnectionString.Authentication}" IsEnabled="{Binding !IsConnecting}" >
+      <DropDownItem Name="Windows">Window Authentication</DropDownItem>
+      <DropDownItem Name="SqlServer">SqlServer Authentication</DropDownItem>
+    </DropDown>
+    <TextBlock Grid.Row="2">User name</TextBlock>
+    <TextBox Text="{Binding SqlServerConnectionString.UserId}" IsEnabled="{Binding !IsConnecting}"  Grid.Row="2" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="3">Password</TextBlock>
+    <TextBox Text="{Binding SqlServerConnectionString.Password}" IsEnabled="{Binding !IsConnecting}"  Grid.Row="3" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="4"></TextBlock>
+    <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,10">
+      <Button Command="{Binding ConnectCommand}">Connect</Button>
+      <Button Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=ConnectToSqlServerWindow}" Margin="10,0,0,0">Cancel</Button>
+    </StackPanel>
+    <TextBlock Text="{Binding ConnectError}" Grid.Row="5" Grid.Column="1"></TextBlock>
+  </Grid>
+</Window>

@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp3.0;</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="**\*.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <AvaloniaResource Include="**\*.xaml">
+      <SubType>Designer</SubType>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Assets\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Remove="Views\ConnectToMySqlWindow.xaml" />
+    <AvaloniaResource Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <AvaloniaResource Remove="Views\MainView.xaml" />
+    <AvaloniaResource Remove="Views\ObjectExplorerView.xaml" />
+    <AvaloniaResource Remove="Views\QueryWindowView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\ConnectToMySqlWindow.xaml" />
+    <None Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <None Remove="Views\MainView.xaml" />
+    <None Remove="Views\ObjectExplorerView.xaml" />
+    <None Remove="Views\QueryWindowView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.8.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.8.3" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.8.3" />
+    <PackageReference Include="Dock.Avalonia" Version="0.8.2" />
+    <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.8.2" />
+    <PackageReference Include="Dock.Model.ReactiveUI" Version="0.8.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ObjectExplorerView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\QueryWindowView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\MainView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ConnectToSqlServerWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ConnectToMySqlWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\ObjectExplorerView.xaml.cs">
+      <DependentUpon>ObjectExplorerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\QueryWindowView.xaml.cs">
+      <DependentUpon>QueryWindowView.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>
