@@ -26,18 +26,17 @@ namespace Traficante.Studio
         // container, etc.
         private static void AppMain(Application app, string[] args)
         {
-            var modelData = new ModelData();
+            var modelData = new AppData();
             var factory = new MainDockFactory(modelData);
             var layout = factory.CreateLayout();
             factory.InitLayout(layout);
 
-            var mainWindow = new MainWindow
+            var mainWindow = new MainWindow();
+            mainWindow.DataContext = new MainWindowViewModel()
             {
-                DataContext = new MainWindowViewModel()
-                {
-                    Factory = factory,
-                    Layout = layout
-                }
+                Factory = factory,
+                Layout = layout,
+                Window = mainWindow,
             };
             modelData.MainWindow = mainWindow;
             app.Run(mainWindow);

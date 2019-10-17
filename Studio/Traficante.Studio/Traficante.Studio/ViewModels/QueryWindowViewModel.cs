@@ -7,5 +7,6 @@ namespace Traficante.Studio.ViewModels
 {
     public class QueryWindowViewModel : DocumentTab
     {
+
     }
 }

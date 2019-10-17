@@ -7,16 +7,19 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Traficante.Studio.Models;
 using Traficante.Studio.Services;
 
 namespace Traficante.Studio.ViewModels
 {
     public class ConnectToSqlServerWindowViewModel : ViewModelBase
     {
-        public SqlServerConnectionString SqlServerConnectionString { get; set; } = new SqlServerConnectionString();
         public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
-        public ReactiveCommand<Window, Unit> CancelCommand { get; }
+        public ReactiveCommand<Unit, Unit> CancelCommand { get; }
+        public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
+        public SqlServerConnectionString ConnectionString { get; set; } = new SqlServerConnectionString();
+        public bool ConnectWasSuccesful { get; set; } = false;
         private string _connectError;
         public string ConnectError
         {
@@ -27,6 +30,12 @@ namespace Traficante.Studio.ViewModels
         private readonly ObservableAsPropertyHelper<bool> _isConnecting;
         public bool IsConnecting  => _isConnecting.Value;
 
+        private readonly ObservableAsPropertyHelper<bool> _canChangeServerAndAuthentication;
+        public bool CanChangeServerAndAuthentication => _canChangeServerAndAuthentication.Value;
+
+        private readonly ObservableAsPropertyHelper<bool> _canChangeUserIdAndPassword;
+        public bool CanChangeUserIdAndPassword => _canChangeUserIdAndPassword.Value;
+
         public ConnectToSqlServerWindowViewModel()
         {
             ConnectCommand = ReactiveCommand
@@ -36,17 +45,26 @@ namespace Traficante.Studio.ViewModels
                         .TakeUntil(this.CancelCommand));
 
             CancelCommand = ReactiveCommand
-                .Create<Window, Unit>(
-                    (w) => Cancel(w));
+                .CreateFromTask<Unit, Unit>(
+                    (w) => Cancel());
 
             ConnectCommand.IsExecuting
                 .ToProperty(this, x => x.IsConnecting, out _isConnecting);
+
+            ConnectCommand.IsExecuting
+                .Select(x => x == false)
+                .ToProperty(this, x => x.CanChangeServerAndAuthentication, out _canChangeServerAndAuthentication);
+
+            Observable.Merge(
+                    ConnectCommand.IsExecuting.Select(x => x == false), 
+                    this.ConnectionString.WhenAnyValue(x => x.Authentication).Select(x => x == SqlServerAuthentication.SqlServer))
+                .ToProperty(this, x => x.CanChangeUserIdAndPassword, out _canChangeUserIdAndPassword);
         }
 
-        private Unit Cancel(Window window)
+        private async Task<Unit> Cancel()
         {
             if (IsConnecting == false)
-                window.Close();
+                await CloseInteraction.Handle(Unit.Default);
             return Unit.Default;
         }
 
@@ -55,7 +73,9 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new SqlServerService().TryConnect(SqlServerConnectionString, ct);
+                await new SqlServerService().TryConnect(ConnectionString, ct);
+                ConnectWasSuccesful = true;
+                await CloseInteraction.Handle(Unit.Default);
             } catch(Exception ex)
             {
                 ConnectError = ex.Message;

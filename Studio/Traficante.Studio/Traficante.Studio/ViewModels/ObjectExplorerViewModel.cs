@@ -3,6 +3,8 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using Traficante.Studio.Models;
@@ -13,33 +15,33 @@ namespace Traficante.Studio.ViewModels
 {
     public class ObjectExplorerViewModel : ToolTab
     {
+        public ReactiveCommand<Unit, Unit> ConnectToSqlServerCommand { get; }
+        public ObservableCollection<ObjectModel> Objects => ((AppData)this.Context).Objects;
+
         public ObjectExplorerViewModel()
         {
-            Connect = ReactiveCommand.Create<string,string>(RunConnect);
-
-            var items = new SqlServerService().GetSchema(
-                new SqlServerConnectionString
-                {
-                    Server = ""
-                }, CancellationToken.None).Result;
-
-            DbSources = new ObservableCollection<RelationalDatabaseModel>(items);
+            ConnectToSqlServerCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToSqlServer);
+            
         }
 
-        public ReactiveCommand<string, string> Connect { get; }
-
-        public ObservableCollection<RelationalDatabaseModel> DbSources { get; set; }
-        
-
-        string RunConnect(string parameter)
+        private Unit ConnectToSqlServer(Unit arg)
         {
-
-
-            //new ConnectToSqlServerWindow()
-            //{
-            //    DataContext = new ConnectToSqlServerWindowViewModel()
-            //}.ShowDialog(((ModelData)this.Context).MainWindow);
-            return parameter;
+            Interactions.ConnectToSqlServer.Handle(null)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x =>
+                {
+                    if (x != null)
+                    {
+                        var model = new SqlServerObjectModel();
+                        model.Name = "SqlServer";
+                        model.ConnectionInfo = x;
+                        ((AppData)this.Context).Objects.Add(model);
+                    }
+                    
+                    //var items = new SqlServerService().GetSchema(x, CancellationToken.None).Result;
+                    //items.ForEach(x => Objects.Add(x));
+                });
+            return Unit.Default;
         }
     }
 }

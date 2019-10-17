@@ -1,10 +1,12 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using ReactiveUI;
+using Traficante.Studio.ViewModels;
 
 namespace Traficante.Studio.Views
 {
-    public class ConnectToMySqlWindow : Window
+    public class ConnectToMySqlWindow : ReactiveWindow<ConnectToMySqlWindowViewModel>
     {
         public ConnectToMySqlWindow()
         {
@@ -16,6 +18,11 @@ namespace Traficante.Studio.Views
 
         private void InitializeComponent()
         {
+            this.WhenActivated(disposables =>
+            {
+                
+            });
+
             AvaloniaXamlLoader.Load(this);
         }
     }

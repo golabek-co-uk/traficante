@@ -34,12 +34,12 @@ namespace Traficante.Studio
                 Views = CreateList<IView>()
             };
 
-            objectExplorer.Connect.Subscribe(x =>
+            objectExplorer.ConnectToSqlServerCommand.Subscribe(x =>
             {
                 var queryWindow = new QueryWindowViewModel()
                 {
                     Id = "QueryWindow",
-                    Title = x
+                    Title = "New query"
                 };
                 if (queryWindows.CurrentView != null)
                 {
@@ -135,7 +135,7 @@ namespace Traficante.Studio
                 [nameof(IDocumentTab)] = () => _context,
                 [nameof(IToolTab)] = () => _context,
                 ["ObjectExplorer"] = () => _context,
-                ["QueryWindow"] = () => new Traficante.Studio.Models.QueryWindow(),
+                ["QueryWindow"] = () => _context,
                 ["LeftPane"] = () => _context,
                 ["LeftPaneTop"] = () => _context,
                 ["LeftSplitter"] = () => _context,

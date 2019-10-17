@@ -4,25 +4,29 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Traficante.Studio.Views.ObjectExplorerView"
-             xmlns:services="clr-namespace:Traficante.Studio.Services">
+             xmlns:models="clr-namespace:Traficante.Studio.Models">
   <DockPanel>
     <StackPanel VerticalAlignment="Top" Orientation="Horizontal">
         <Menu>
           <MenuItem Header="_Connect">
-            <MenuItem Header="_SqlServer" Name="SqlServer" Command="{Binding Connect}" CommandParameter="SqlServer"/>
-            <MenuItem Header="_MySql" Name="MySql" Command="{Binding Connect}" CommandParameter="MySql"/>
+            <MenuItem Header="_SqlServer" Name="ConnectToSqlServer"/>
+            <MenuItem Header="_MySql" Name="ConnectToMySql"/>
           </MenuItem>
         </Menu>
     </StackPanel>
-    <TreeView Items="{Binding DbSources}">
+    
+    <TreeView Name="Objects">
       <TreeView.DataTemplates>
-        <TreeDataTemplate  DataType="services:RelationalDatabaseModel" ItemsSource="{Binding Items}">
+        <TreeDataTemplate DataType="models:SqlServerObjectModel" ItemsSource="{Binding Items}">
           <TextBlock Text="{Binding Name}" />
         </TreeDataTemplate>
-        <TreeDataTemplate  DataType="services:RelationalFolderModel" ItemsSource="{Binding Items}">
+        <TreeDataTemplate DataType="models:RelationalDatabaseModel" ItemsSource="{Binding Items}">
           <TextBlock Text="{Binding Name}" />
         </TreeDataTemplate>
-        <DataTemplate DataType="services:RelationalTableMode">
+        <TreeDataTemplate  DataType="models:RelationalFolderModel" ItemsSource="{Binding Items}">
+          <TextBlock Text="{Binding Name}" />
+        </TreeDataTemplate>
+        <DataTemplate DataType="models:RelationalTableMode">
           <TextBlock Text="{Binding NameWithSchema}" />
         </DataTemplate>
       </TreeView.DataTemplates>

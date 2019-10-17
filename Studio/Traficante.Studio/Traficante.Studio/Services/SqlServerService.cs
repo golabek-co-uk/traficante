@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
-using ReactiveUI;
+using Traficante.Studio.Models;
 
 namespace Traficante.Studio.Services
 {
@@ -68,7 +68,7 @@ namespace Traficante.Studio.Services
                                 var table = tables.FirstOrDefault(t => t.Schema == c["TABLE_SCHEMA"]?.ToString() && t.Name == c["TABLE_NAME"]?.ToString());
                                 if (table != null)
                                 {
-                                    table.Columns.Add(new ColumnModel
+                                    table.Columns.Add(new RelationalTableColumnModel
                                     {
                                         Name = c["COLUMN_NAME"]?.ToString(),
                                         DataType = c["DATA_TYPE"].ToString()
@@ -94,7 +94,7 @@ namespace Traficante.Studio.Services
                                 var table = views.FirstOrDefault(t => t.Schema == c["TABLE_SCHEMA"]?.ToString() && t.Name == c["TABLE_NAME"]?.ToString());
                                 if (table != null)
                                 {
-                                    table.Columns.Add(new ColumnModel
+                                    table.Columns.Add(new RelationalTableColumnModel
                                     {
                                         Name = c["COLUMN_NAME"]?.ToString(),
                                         DataType = c["DATA_TYPE"].ToString()
@@ -108,59 +108,5 @@ namespace Traficante.Studio.Services
             }
             return databases;
         }
-    }
-
-    public class RelationalDatabaseModel
-    {
-        public string Name { get; set; }
-        public ObservableCollection<RelationalFolderModel> Items { get; set; } = new ObservableCollection<RelationalFolderModel>();
-
-    }
-
-    public class RelationalFolderModel
-    {
-        public string Name { get; set; }
-        public ObservableCollection<object> Items { get; set; } = new ObservableCollection<object>();
-    }
-
-    public class RelationalTableMode
-    {
-        public string Name { get; set; }
-        public string Schema { get; set; }
-
-        public string NameWithSchema
-        {
-            get { return this.Schema + "." + this.Name; }
-        }
-
-        public List<ColumnModel> Columns { get; set; } = new List<ColumnModel>();
-    }
-
-    public class ColumnModel
-    {
-        public string Name { get; set; }
-        public string DataType { get; set; }
-    }
-
-    public class SqlServerConnectionString
-    {
-        public string Server { get; set; }
-        public string UserId { get; set; }
-        public string Password { get; set; }
-        public SqlServerAuthentication Authentication { get; set; } = SqlServerAuthentication.Windows;
-
-        public string ToConnectionString()
-        {
-            if (Authentication == SqlServerAuthentication.Windows)
-                return $"Server={Server};Database=master;Trusted_Connection=True;";
-            else
-                return $"Server={Server};Database=master;User Id={UserId};Password={Password};";
-        }
-    }
-
-    public enum SqlServerAuthentication : int
-    {
-        Windows = 0,
-        SqlServer = 1
     }
 }
