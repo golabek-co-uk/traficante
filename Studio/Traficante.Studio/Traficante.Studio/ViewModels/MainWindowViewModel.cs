@@ -19,7 +19,7 @@ namespace Traficante.Studio.ViewModels
                 {
                     var dataContext = new ConnectToSqlServerWindowViewModel
                     {
-                        ConnectionString = interaction.Input ?? new SqlServerConnectionString()
+                        ConnectionString = interaction.Input ?? new SqlServerConnectionInfo()
                     };
                     var dialog = new ConnectToSqlServerWindow()
                     {
@@ -30,6 +30,21 @@ namespace Traficante.Studio.ViewModels
                     if (dataContext.ConnectWasSuccesful)
                         interaction.SetOutput(dataContext.ConnectWasSuccesful ? dataContext.ConnectionString : null);
                 });
+
+            Interactions.Exceptions.RegisterHandler(
+                async interaction =>
+                {
+                    var dialog = new ExceptionWindow()
+                    {
+                        DataContext = new ExceptionWindowViewModel
+                        {
+                            Exception = interaction.Input
+                        }
+                    };
+                    await dialog.ShowDialog(Window);
+                    Window.Focus();
+                });
+
         }
 
         public IDockFactory Factory

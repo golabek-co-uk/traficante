@@ -32,14 +32,9 @@ namespace Traficante.Studio.ViewModels
                 {
                     if (x != null)
                     {
-                        var model = new SqlServerObjectModel();
-                        model.Name = "SqlServer";
-                        model.ConnectionInfo = x;
+                        var model = new SqlServerObjectModel(x);
                         ((AppData)this.Context).Objects.Add(model);
                     }
-                    
-                    //var items = new SqlServerService().GetSchema(x, CancellationToken.None).Result;
-                    //items.ForEach(x => Objects.Add(x));
                 });
             return Unit.Default;
         }

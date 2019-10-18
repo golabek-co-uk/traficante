@@ -15,6 +15,7 @@
   <ItemGroup>
     <AvaloniaResource Remove="Views\ConnectToMySqlWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <AvaloniaResource Remove="Views\ExceptionWindow.xaml" />
     <AvaloniaResource Remove="Views\MainView.xaml" />
     <AvaloniaResource Remove="Views\ObjectExplorerView.xaml" />
     <AvaloniaResource Remove="Views\QueryWindowView.xaml" />
@@ -22,6 +23,7 @@
   <ItemGroup>
     <None Remove="Views\ConnectToMySqlWindow.xaml" />
     <None Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <None Remove="Views\ExceptionWindow.xaml" />
     <None Remove="Views\MainView.xaml" />
     <None Remove="Views\ObjectExplorerView.xaml" />
     <None Remove="Views\QueryWindowView.xaml" />
@@ -36,6 +38,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Views\ExceptionWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\ObjectExplorerView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
@@ -61,6 +66,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\ExceptionWindow.xaml.cs">
+      <DependentUpon>ExceptionWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ObjectExplorerView.xaml.cs">
       <DependentUpon>ObjectExplorerView.xaml</DependentUpon>
     </Compile>

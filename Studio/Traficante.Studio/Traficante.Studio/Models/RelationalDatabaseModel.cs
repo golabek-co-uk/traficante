@@ -3,10 +3,13 @@ using System.Collections.ObjectModel;
 
 namespace Traficante.Studio.Models
 {
-    public class RelationalDatabaseModel
+    public class RelationalDatabaseModel : ObjectModel
     {
         public string Name { get; set; }
-        public ObservableCollection<RelationalFolderModel> Items { get; set; } = new ObservableCollection<RelationalFolderModel>();
+        public override void LoadItems()
+        {
+            Items.Add(new RelationalFolderModel { Name = "Tables" });
+        }
     }
 
     public class RelationalFolderModel

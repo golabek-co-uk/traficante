@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
@@ -37,9 +38,14 @@ namespace Traficante.Studio.Views
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.CancelCommand, x => x.Cancel)
                     .DisposeWith(disposables);
+
                 ViewModel.CloseInteraction.RegisterHandler(x =>
                 {
-                    Window.Close();
+                    try
+                    {
+                        this.Window.Close();
+                    }
+                    catch { }
                 });
 
                 this.Bind(ViewModel, x => x.ConnectionString.Server, x => x.ServerName.Text)

@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Reactive;
+using System.Reactive.Concurrency;
 using Avalonia;
 using Avalonia.Logging.Serilog;
 using Dock.Model;
+using ReactiveUI;
 using Traficante.Studio.Models;
 using Traficante.Studio.ViewModels;
 using Traficante.Studio.Views;
@@ -26,6 +30,8 @@ namespace Traficante.Studio
         // container, etc.
         private static void AppMain(Application app, string[] args)
         {
+            //RxApp.DefaultExceptionHandler = new MyCoolObservableExceptionHandler();
+       
             var modelData = new AppData();
             var factory = new MainDockFactory(modelData);
             var layout = factory.CreateLayout();
@@ -45,6 +51,29 @@ namespace Traficante.Studio
             {
                 dock.Close();
             }
+        }
+    }
+
+    public class MyCoolObservableExceptionHandler : IObserver<Exception>
+    {
+        public void OnNext(Exception value)
+        {
+            if (Debugger.IsAttached) Debugger.Break();
+
+            RxApp.MainThreadScheduler.Schedule(() => { Interactions.Exceptions.Handle(value).Subscribe(); });
+        }
+
+        public void OnError(Exception value)
+        {
+            if (Debugger.IsAttached) Debugger.Break();
+
+            RxApp.MainThreadScheduler.Schedule(() => { Interactions.Exceptions.Handle(value).Subscribe(); });
+        }
+
+        public void OnCompleted()
+        {
+            if (Debugger.IsAttached) Debugger.Break();
+            RxApp.MainThreadScheduler.Schedule(() => { throw new NotImplementedException(); });
         }
     }
 }

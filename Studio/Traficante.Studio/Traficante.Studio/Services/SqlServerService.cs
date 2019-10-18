@@ -13,7 +13,7 @@ namespace Traficante.Studio.Services
 {
     public class SqlServerService
     {
-        public async Task TryConnect(SqlServerConnectionString connectionString, CancellationToken ct)
+        public async Task TryConnectAsync(SqlServerConnectionInfo connectionString, CancellationToken ct)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
@@ -23,8 +23,19 @@ namespace Traficante.Studio.Services
 
         }
 
+        public void TryConnect(SqlServerConnectionInfo connectionString, string databaseName)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection())
+            {
+                sqlConnection.ConnectionString = connectionString.ToConnectionString();
+                sqlConnection.Open();
+                sqlConnection.ChangeDatabase(databaseName);
+            }
+
+        }
+
         // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql-server-schema-collections?view=netframework-4.8
-        public async Task<List<RelationalDatabaseModel>> GetSchema(SqlServerConnectionString connectionString, CancellationToken ct)
+        public async Task<List<RelationalDatabaseModel>> GetSchema(SqlServerConnectionInfo connectionString, CancellationToken ct)
         {
             List<RelationalDatabaseModel> databases = new List<RelationalDatabaseModel>();
             using (SqlConnection sqlConnection = new SqlConnection())
@@ -107,6 +118,49 @@ namespace Traficante.Studio.Services
                 
             }
             return databases;
+        }
+
+        public List<string> GetDatabases(SqlServerConnectionInfo connectionInfo)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection())
+            {
+                sqlConnection.ConnectionString = connectionInfo.ToConnectionString();
+                sqlConnection.Open();
+                var databasesNames = sqlConnection.GetSchema("Databases").AsEnumerable().Select(s => s[0].ToString()).ToList();
+                return databasesNames;
+            }
+        }
+
+        public List<(string schema, string name)> GetTables(SqlServerConnectionInfo connectionInfo, string database)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection())
+            {
+                sqlConnection.ConnectionString = connectionInfo.ToConnectionString();
+                sqlConnection.Open();
+                sqlConnection.ChangeDatabase(database);
+                var tables = sqlConnection.GetSchema("Tables")
+                    .AsEnumerable()
+                    .Where(x => x["TABLE_TYPE"]?.ToString() == "BASE TABLE")
+                    .Select(t => (t["TABLE_SCHEMA"]?.ToString(), t["TABLE_NAME"]?.ToString()))
+                    .ToList();
+                return tables;
+            }
+        }
+
+        public List<(string schema, string name)> GetViews(SqlServerConnectionInfo connectionInfo, string database)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection())
+            {
+                sqlConnection.ConnectionString = connectionInfo.ToConnectionString();
+                sqlConnection.Open();
+                sqlConnection.ChangeDatabase(database);
+                var views = sqlConnection.GetSchema("Tables")
+                    .AsEnumerable()
+                    .Where(x => x["TABLE_TYPE"]?.ToString() == "VIEW")
+                    .Select(t => (t["TABLE_SCHEMA"]?.ToString(), t["TABLE_NAME"]?.ToString()))
+                    .ToList();
+                return views;
+            }
         }
     }
 }

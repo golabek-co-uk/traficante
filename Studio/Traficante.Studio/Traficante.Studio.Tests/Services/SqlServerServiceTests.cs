@@ -11,7 +11,7 @@ namespace Traficante.Studio.Tests
         [TestMethod]
         public void GetSchema()
         {
-            new SqlServerService().GetSchema(new SqlServerConnectionString
+            new SqlServerService().GetSchema(new SqlServerConnectionInfo
             {
                 Server = ""
             }, CancellationToken.None).Wait();

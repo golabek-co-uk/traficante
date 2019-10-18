@@ -17,10 +17,25 @@
     
     <TreeView Name="Objects">
       <TreeView.DataTemplates>
+        <TreeDataTemplate DataType="models:LoadItemsObjectModel" ItemsSource="{Binding Items}">
+          <TextBlock Text="{Binding Name}" />
+        </TreeDataTemplate>
         <TreeDataTemplate DataType="models:SqlServerObjectModel" ItemsSource="{Binding Items}">
           <TextBlock Text="{Binding Name}" />
         </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:RelationalDatabaseModel" ItemsSource="{Binding Items}">
+        <TreeDataTemplate DataType="models:SqlServerDatabaseObjectModel" ItemsSource="{Binding Items}">
+          <TextBlock Text="{Binding Name}" />
+        </TreeDataTemplate>
+        <TreeDataTemplate DataType="models:SqlServerTablesObjectModel" ItemsSource="{Binding Items}">
+          <TextBlock Text="{Binding Name}" />
+        </TreeDataTemplate>
+        <TreeDataTemplate DataType="models:SqlServerTableObjectModel" ItemsSource="{Binding Items}">
+          <TextBlock Text="{Binding Name}" />
+        </TreeDataTemplate>
+        <TreeDataTemplate DataType="models:SqlServerViewsObjectModel" ItemsSource="{Binding Items}">
+          <TextBlock Text="{Binding Name}" />
+        </TreeDataTemplate>
+        <TreeDataTemplate DataType="models:SqlServerViewObjectModel" ItemsSource="{Binding Items}">
           <TextBlock Text="{Binding Name}" />
         </TreeDataTemplate>
         <TreeDataTemplate  DataType="models:RelationalFolderModel" ItemsSource="{Binding Items}">

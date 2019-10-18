@@ -18,7 +18,7 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        public SqlServerConnectionString ConnectionString { get; set; } = new SqlServerConnectionString();
+        public SqlServerConnectionInfo ConnectionString { get; set; } = new SqlServerConnectionInfo();
         public bool ConnectWasSuccesful { get; set; } = false;
         private string _connectError;
         public string ConnectError
@@ -39,14 +39,21 @@ namespace Traficante.Studio.ViewModels
         public ConnectToSqlServerWindowViewModel()
         {
             ConnectCommand = ReactiveCommand
-                .CreateFromObservable(
-                    () =>  Observable
+                .CreateFromObservable( () =>  
+                    Observable
                         .StartAsync(ct => Connect(ct))
                         .TakeUntil(this.CancelCommand));
 
             CancelCommand = ReactiveCommand
-                .CreateFromTask<Unit, Unit>(
-                    (w) => Cancel());
+                .CreateFromObservable(() =>
+                   Observable
+                       .StartAsync(ct => Cancel()));
+
+            //CancelCommand = ReactiveCommand
+            //    .CreateFromObservable(() =>
+            //        Observable
+            //            .ObserveOn(RxApp.MainThreadScheduler)
+            //            .StartAsync(ct => Cancel(ct)));
 
             ConnectCommand.IsExecuting
                 .ToProperty(this, x => x.IsConnecting, out _isConnecting);
@@ -73,7 +80,7 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new SqlServerService().TryConnect(ConnectionString, ct);
+                await new SqlServerService().TryConnectAsync(ConnectionString, ct);
                 ConnectWasSuccesful = true;
                 await CloseInteraction.Handle(Unit.Default);
             } catch(Exception ex)
