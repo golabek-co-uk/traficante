@@ -100,10 +100,4 @@ namespace Traficante.Studio.ViewModels
             return Unit.Default;
         }
     }
-
-    public class TestObj
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
 }

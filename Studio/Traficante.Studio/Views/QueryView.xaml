@@ -5,12 +5,11 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
-  <Grid RowDefinitions="Auto,*,Auto"  ColumnDefinitions="*">
-    
+  <Grid RowDefinitions="Auto,*,Auto,*"  ColumnDefinitions="*">
     <DockPanel Grid.Row="0" Margin="2 2 2 2">
       <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*,Auto">
-        <Button Name="Run" Grid.Column="0" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50" Height="20">Run</Button>
-        <DropDown Grid.Column="2" Name="Objects" MinWidth="100" Height="20">
+        <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Run</Button>
+        <DropDown Grid.Column="2" Name="Objects" MinWidth="100" Margin="2 0 2 0" Padding="0 0 0 0"  Height="20">
           <DropDown.ItemTemplate>
             <DataTemplate>
               <StackPanel>
@@ -21,10 +20,8 @@
         </DropDown>
       </Grid>
     </DockPanel>
-
     <TextBox Name="Text" Grid.Row="1" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
-
-    <dg:DataGrid Name="Results" Grid.Row="2" MinHeight="100">
-    </dg:DataGrid>
+    <GridSplitter Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
+    <dg:DataGrid Name="Results" Grid.Row="3" MinHeight="100"></dg:DataGrid>
   </Grid>
 </UserControl>
