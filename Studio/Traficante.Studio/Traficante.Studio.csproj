@@ -1,0 +1,103 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp3.0;</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="**\*.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
+    <AvaloniaResource Include="**\*.xaml">
+      <SubType>Designer</SubType>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Assets\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Remove="Views\ConnectToMySqlWindow.xaml" />
+    <AvaloniaResource Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <AvaloniaResource Remove="Views\ExceptionWindow.xaml" />
+    <AvaloniaResource Remove="Views\MainWindowBodyView.xaml" />
+    <AvaloniaResource Remove="Views\MainWindowMenuView.xaml" />
+    <AvaloniaResource Remove="Views\MainWindowToolBarView.xaml" />
+    <AvaloniaResource Remove="Views\ObjectExplorerView.xaml" />
+    <AvaloniaResource Remove="Views\QueryView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\ConnectToMySqlWindow.xaml" />
+    <None Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <None Remove="Views\ExceptionWindow.xaml" />
+    <None Remove="Views\MainWindowBodyView.xaml" />
+    <None Remove="Views\MainWindowMenuView.xaml" />
+    <None Remove="Views\MainWindowToolBarView.xaml" />
+    <None Remove="Views\ObjectExplorerView.xaml" />
+    <None Remove="Views\QueryView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.8.3" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.8.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.8.3" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.8.3" />
+    <PackageReference Include="Dock.Avalonia" Version="0.8.2" />
+    <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.8.2" />
+    <PackageReference Include="Dock.Model.ReactiveUI" Version="0.8.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ExceptionWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ObjectExplorerView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\QueryView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\MainWindowBodyView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ConnectToSqlServerWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ConnectToMySqlWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\MainWindowToolBarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\MainWindowMenuView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\ExceptionWindow.xaml.cs">
+      <DependentUpon>ExceptionWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MainWindowBodyView.xaml.cs">
+      <DependentUpon>MainWindowBodyView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MainWindowMenuView.xaml.cs">
+      <DependentUpon>MainWindowMenuView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ObjectExplorerView.xaml.cs">
+      <DependentUpon>ObjectExplorerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\QueryView.xaml.cs">
+      <DependentUpon>QueryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MainWindowToolBarView.xaml.cs">
+      <DependentUpon>MainWindowToolBarView.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>

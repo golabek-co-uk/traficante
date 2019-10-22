@@ -1,0 +1,28 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Traficante.Studio.Views.QueryView">
+  <Grid RowDefinitions="Auto,*,Auto"  ColumnDefinitions="*">
+    
+    <DockPanel Grid.Row="0" Margin="2 2 2 2">
+      <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*,Auto">
+        <Button Name="Run" Grid.Column="0" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50" Height="20">Run</Button>
+        <DropDown Grid.Column="2" Name="Objects" MinWidth="100" Height="20">
+          <DropDown.ItemTemplate>
+            <DataTemplate>
+              <StackPanel>
+                <TextBlock Text="{Binding Name}"/>
+              </StackPanel>
+            </DataTemplate>
+          </DropDown.ItemTemplate>
+        </DropDown>
+      </Grid>
+    </DockPanel>
+
+    <TextBox Name="Text" Grid.Row="1" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
+
+    <DataGrid Name="Results" AutoGenerateColumns="True"/>
+  </Grid>
+</UserControl>
