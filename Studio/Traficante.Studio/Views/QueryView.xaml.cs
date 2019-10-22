@@ -28,13 +28,15 @@ namespace Traficante.Studio.Views
                     .DisposeWith(disposables);
                 this.Bind(ViewModel, x => x.SelectedObject, x => x.Objects.SelectedItem)
                     .DisposeWith(disposables);
-                this.OneWayBind(ViewModel, x => x.Text, x => x.Text.Text)
+                this.Bind(ViewModel, x => x.Text, x => x.Text.Text)
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)
                     .DisposeWith(disposables);
                 this.OneWayBind(ViewModel, x => x.Results, x => x.Results.Items, x => (System.Collections.IEnumerable)x)
                     .DisposeWith(disposables);
-                
+                ViewModel.ResultsColumns = Results.Columns;
+                //this.OneWayBind(ViewModel, x => x.ResultsColumns, x => x.Results.Columns)
+                //    .DisposeWith(disposables);
             });
             AvaloniaXamlLoader.Load(this);
         }

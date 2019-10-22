@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
 using Dock.Model;
 using ReactiveUI;
@@ -24,14 +25,16 @@ namespace Traficante.Studio
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToDebug()
+                .UseDataGrid()
                 .UseReactiveUI();
 
         // Your application's entry point. Here you can initialize your MVVM framework, DI
         // container, etc.
         private static void AppMain(Application app, string[] args)
         {
+            DataGrid dg = new DataGrid();
             //RxApp.DefaultExceptionHandler = new MyCoolObservableExceptionHandler();
-       
+
             var modelData = new AppData();
             var factory = new MainWindowDockFactory(modelData);
             var layout = factory.CreateLayout();

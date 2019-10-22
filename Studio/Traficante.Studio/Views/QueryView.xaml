@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
   <Grid RowDefinitions="Auto,*,Auto"  ColumnDefinitions="*">
     
@@ -23,6 +24,7 @@
 
     <TextBox Name="Text" Grid.Row="1" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
 
-    <DataGrid Name="Results" AutoGenerateColumns="True"/>
+    <dg:DataGrid Name="Results" Grid.Row="2" MinHeight="100">
+    </dg:DataGrid>
   </Grid>
 </UserControl>

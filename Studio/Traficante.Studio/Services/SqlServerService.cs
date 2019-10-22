@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Traficante.Studio.Models;
+using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.Studio.Services
 {
@@ -32,7 +33,7 @@ namespace Traficante.Studio.Services
             }
         }
 
-        public void Run(SqlServerConnectionInfo connectionString, string text)
+        public IEnumerable<object> Run(SqlServerConnectionInfo connectionString, string text, Action<Type> returnTypeCreated)
         {
             using (var sqlConnection = new SqlConnection())
             {
@@ -43,11 +44,30 @@ namespace Traficante.Studio.Services
                 {
                     using (var sqlReader = sqlCommand.ExecuteReader())
                     {
-                        
+                        List<(string name, Type type)> fields = new List<(string name, Type type)>();
+                        for (int i = 0; i < sqlReader.FieldCount; i++)
+                        {
+                            var name = sqlReader.GetName(i);
+                            var type = sqlReader.GetFieldType(i);
+                            fields.Add((name, type));
+                        }
+                        Type returnType = new ExpressionHelper().CreateAnonymousType(fields);
+                        returnTypeCreated(returnType);
+                        while (sqlReader.Read())
+                        {
+                            var item = Activator.CreateInstance(returnType);
+                            for (int i = 0; i < sqlReader.FieldCount; i++)
+                            {
+                                var name = sqlReader.GetName(i);
+                                returnType.GetField(name).SetValue(item, sqlReader.GetValue(i));
+                            }
+                            yield return item;
+                        }
                     }
                 }
             }
         }
+
 
         // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql-server-schema-collections?view=netframework-4.8
 

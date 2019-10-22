@@ -81,6 +81,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\TSQL\Traficante.TSQL\Traficante.TSQL.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Views\ExceptionWindow.xaml.cs">
       <DependentUpon>ExceptionWindow.xaml</DependentUpon>
     </Compile>

@@ -260,5 +260,36 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var areEquals = (bool)equals.Invoke(comparer, new[] { obj1, obj2 });
             Assert.IsFalse(areEquals);
         }
+
+        [TestMethod]
+        public void CreateWrapperTypeFor()
+        {
+            ExpressionHelper sut = new ExpressionHelper();
+            Type type = sut.CreateAnonymousType(new[] {
+                ("Id", typeof(int)),
+                ("Name", typeof(string))
+            });
+            var obj = type.GetConstructors()[0].Invoke(new object[0]);
+            type.GetField("Id").SetValue(obj, (int)123);
+            type.GetField("Name").SetValue(obj, "daniel");
+
+            Type wrapperType = sut.CreateWrapperTypeFor(type);
+            var wrapperObj = wrapperType.GetConstructors()[0].Invoke(new object[0]);
+            wrapperType
+                .GetFields()
+                .FirstOrDefault(x => x.Name == "_inner")
+                .SetValue(wrapperObj, obj);
+
+            var id = (int)wrapperType
+                .GetProperty("Id")
+                .GetValue(wrapperObj);
+            var name = (string)wrapperType
+                .GetProperty("Name")
+                .GetValue(wrapperObj);
+
+            Assert.AreEqual(123, id);
+            Assert.AreEqual("daniel", name);
+
+        }
     }
 }

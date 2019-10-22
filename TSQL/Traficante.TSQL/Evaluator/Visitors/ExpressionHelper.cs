@@ -30,6 +30,35 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return newType;
         }
 
+        public Type CreateWrapperTypeFor(Type type)
+        {
+            TypeBuilder dynamicTypeBuilder = dynamicModule.DefineType(GenerateAnonymousTypeName(), TypeAttributes.Public);
+
+            var fields = type.GetFields();
+            var innerField = dynamicTypeBuilder.DefineField("_inner", type, FieldAttributes.Public);
+            foreach (var field in fields)
+            {
+                PropertyBuilder propertyBuilder = dynamicTypeBuilder.DefineProperty(field.Name, PropertyAttributes.None, field.FieldType, Type.EmptyTypes);
+
+                MethodBuilder getterBuilder = dynamicTypeBuilder.DefineMethod(
+                    "get_" + field.Name,
+                    MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
+                    field.FieldType,
+                    Type.EmptyTypes);
+                ILGenerator getterIL = getterBuilder.GetILGenerator();
+                getterIL.Emit(OpCodes.Ldarg_0);
+                getterIL.Emit(OpCodes.Ldfld, innerField);
+                getterIL.Emit(OpCodes.Ldfld, field);
+                getterIL.Emit(OpCodes.Ret);
+                propertyBuilder.SetGetMethod(getterBuilder);
+            }
+
+            var dynamicType = dynamicTypeBuilder.CreateTypeInfo();
+            _anonymousTypes.Add(dynamicType);
+
+            return dynamicType;
+        }
+
         public Type CreateAnonymousType(IEnumerable<(string, Type)> fields)
         {
             TypeBuilder dynamicTypeBuilder = dynamicModule.DefineType(GenerateAnonymousTypeName(), TypeAttributes.Public);
