@@ -37,11 +37,11 @@ namespace Traficante.Studio.Models
 
     public class SqlServerDatabaseObjectModel : ObjectModel
     {
-        public SqlServerObjectModel SqlServer { get; }
+        public SqlServerObjectModel Server { get; }
 
         public SqlServerDatabaseObjectModel(SqlServerObjectModel sqlServer, string name)
         {
-            SqlServer = sqlServer;
+            Server = sqlServer;
             Name = name;
         }
 
@@ -50,7 +50,7 @@ namespace Traficante.Studio.Models
             Observable
                 .FromAsync(() => new TaskFactory().StartNew(() =>
                 {
-                    new SqlServerService().TryConnect(SqlServer.ConnectionInfo, Name);
+                    new SqlServerService().TryConnect(Server.ConnectionInfo, Name);
                     return new object[] {
                         new SqlServerTablesObjectModel(this),
                         new SqlServerViewsObjectModel(this)
@@ -80,7 +80,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerService().GetTables(Database.SqlServer.ConnectionInfo, Database.Name)))
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerService().GetTables(Database.Server.ConnectionInfo, Database.Name)))
                 .SelectMany(x => x)
                 .Select(x => new SqlServerTableObjectModel(Database, x.schema, x.name))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -125,7 +125,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerService().GetViews(Database.SqlServer.ConnectionInfo, Database.Name)))
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerService().GetViews(Database.Server.ConnectionInfo, Database.Name)))
                 .SelectMany(x => x)
                 .Select(x => new SqlServerViewObjectModel(Database, x.schema, x.name))
                 .ObserveOn(RxApp.MainThreadScheduler)

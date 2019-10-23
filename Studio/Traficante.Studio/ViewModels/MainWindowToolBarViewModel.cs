@@ -12,15 +12,15 @@ namespace Traficante.Studio.ViewModels
     public class MainWindowToolBarViewModel : ViewModelBase
     {
         public object Context { get; set; }
-
         public ReactiveCommand<Unit, Unit> ConnectToSqlServerCommand { get; }
+        public ReactiveCommand<Unit, Unit> ConnectToMySqlCommand { get; }
         public ReactiveCommand<Unit, Unit> NewQueryCommand { get; }
-
         public AppData AppData => ((AppData)this.Context);
 
         public MainWindowToolBarViewModel()
         {
             ConnectToSqlServerCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToSqlServer);
+            ConnectToMySqlCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToMySql);
             NewQueryCommand = ReactiveCommand.Create<Unit, Unit>(NewQuery);
         }
 
@@ -36,6 +36,15 @@ namespace Traficante.Studio.ViewModels
         private Unit ConnectToSqlServer(Unit arg)
         {
             Interactions.ConnectToSqlServer.Handle(null)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe();
+
+            return Unit.Default;
+        }
+
+        private Unit ConnectToMySql(Unit arg)
+        {
+            Interactions.ConnectToMySql.Handle(null)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe();
 

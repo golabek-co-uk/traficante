@@ -11,7 +11,7 @@ namespace Traficante.Studio.Tests
         [TestMethod]
         public void GetSchema()
         {
-
+            
         }
     }
 }

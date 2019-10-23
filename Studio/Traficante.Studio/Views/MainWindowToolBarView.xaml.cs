@@ -31,6 +31,8 @@ namespace Traficante.Studio.Views
                     this.ViewModel.Context = mainView.ViewModel.Context;
                     this.BindCommand(ViewModel, x => x.ConnectToSqlServerCommand, x => x.ConnectToSqlServer)
                         .DisposeWith(disposables);
+                    this.BindCommand(ViewModel, x => x.ConnectToMySqlCommand, x => x.ConnectToMySql)
+                        .DisposeWith(disposables);
                     this.BindCommand(ViewModel, x => x.NewQueryCommand, x => x.NewQuery)
                         .DisposeWith(disposables);
                 }

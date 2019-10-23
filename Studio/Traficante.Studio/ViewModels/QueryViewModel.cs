@@ -46,11 +46,11 @@ namespace Traficante.Studio.ViewModels
             set => this.RaiseAndSetIfChanged(ref _resultsData, value);
         }
 
-        private ObservableCollection<DataGridColumn> _resultsColumns = new ObservableCollection<DataGridColumn>();
+        private ObservableCollection<DataGridColumn> _resultsDataColumns = new ObservableCollection<DataGridColumn>();
         public ObservableCollection<DataGridColumn> ResultsDataColumns
         {
-            get => _resultsColumns;
-            set => this.RaiseAndSetIfChanged(ref _resultsColumns, value);
+            get => _resultsDataColumns;
+            set => this.RaiseAndSetIfChanged(ref _resultsDataColumns, value);
         }
 
         public ReactiveCommand<Unit, Unit> RunCommand { get; }
@@ -105,6 +105,48 @@ namespace Traficante.Studio.ViewModels
                     //this.Results.Add(new TestObj { Id = 1, Name = "asdf" });
                 }
             }
+
+            if (SelectedObject is MySqlObjectModel)
+            {
+                this.ResultsAreVisible = true;
+                this.ResultsData.Clear();
+                this.ResultsDataColumns.Clear();
+
+                MySqlObjectModel mySql = (MySqlObjectModel)SelectedObject;
+
+                var results = new MySqlService().Run(mySql.ConnectionInfo, Text,
+                    itemType =>
+                    {
+                        itemType.GetFields().ToList().ForEach(x =>
+                        {
+                            this.ResultsDataColumns.Add(new DataGridTextColumn
+                            {
+                                Header = x.Name,
+                                Binding = new Binding(x.Name)
+                            });
+                        });
+
+                    });
+
+                Type itemType = null;
+                Type itemWrapperType = null;
+                foreach (var item in results)
+                {
+                    if (itemType == null)
+                    {
+                        itemType = item.GetType();
+                        itemWrapperType = new ExpressionHelper().CreateWrapperTypeFor(itemType);
+                    }
+                    var itemWrapper = Activator.CreateInstance(itemWrapperType);
+                    itemWrapperType
+                        .GetFields()
+                        .FirstOrDefault(x => x.Name == "_inner")
+                        .SetValue(itemWrapper, item);
+                    this.ResultsData.Add(itemWrapper);
+                    //this.Results.Add(new TestObj { Id = 1, Name = "asdf" });
+                }
+            }
+
             return Unit.Default;
         }
     }

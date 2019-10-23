@@ -13,7 +13,6 @@ namespace Traficante.Studio.Views
 {
     public class ConnectToSqlServerWindow : ReactiveWindow<ConnectToSqlServerWindowViewModel>
     {
-        
         public Window Window => this.FindControl<Window>("Window");
         public Button Connect => this.FindControl<Button>("Connect");
         public Button Cancel => this.FindControl<Button>("Cancel");

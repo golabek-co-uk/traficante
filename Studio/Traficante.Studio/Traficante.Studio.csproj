@@ -40,7 +40,8 @@
     <PackageReference Include="Dock.Avalonia" Version="0.8.2" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.8.2" />
     <PackageReference Include="Dock.Model.ReactiveUI" Version="0.8.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19269.1" />
+    <PackageReference Include="MySqlConnector" Version="0.60.2" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\ExceptionWindow.xaml">

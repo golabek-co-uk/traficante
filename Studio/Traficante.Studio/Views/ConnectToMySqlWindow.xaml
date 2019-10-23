@@ -2,8 +2,35 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        Width="400" Height="200"
         x:Class="Traficante.Studio.Views.ConnectToMySqlWindow"
         Title="ConnectToMySqlWindow">
-    Welcome to Avalonia!
+  <Grid Margin="10">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock Grid.Row="0">Server name</TextBlock>
+    <TextBox Grid.Row="0" Name="ServerName" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="1">User name</TextBlock>
+    <TextBox Name="UserId" Grid.Row="1" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="2">Password</TextBlock>
+    <TextBox Name="Password" Grid.Row="2" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="3"></TextBlock>
+    <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,10">
+      <Button Name="Connect">Connect</Button>
+      <Button Name="Cancel" Margin="10,0,0,0">Cancel</Button>
+    </StackPanel>
+    <TextBlock Grid.Row="4"></TextBlock>
+    <TextBlock Text="{Binding ConnectError}" Grid.Row="4" Grid.Column="1"></TextBlock>
+  </Grid>
 </Window>

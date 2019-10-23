@@ -25,6 +25,16 @@ namespace Traficante.Studio.ViewModels
                     interaction.SetOutput(dataContext.Output);
                 });
 
+            Interactions.ConnectToMySql.RegisterHandler(
+                async interaction =>
+                {
+                    var dataContext = new ConnectToMySqlWindowViewModel(interaction.Input, _appData);
+                    var dialog = new ConnectToMySqlWindow() { DataContext = dataContext };
+                    await dialog.ShowDialog(Window);
+                    Window.Focus();
+                    interaction.SetOutput(dataContext.Output);
+                });
+
             Interactions.Exceptions.RegisterHandler(
                 async interaction =>
                 {
