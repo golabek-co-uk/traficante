@@ -40,9 +40,9 @@ namespace Traficante.Studio
                 var queryWindow = new QueryViewModel()
                 {
                     Id = "Query",
-                    Title = "New query",
-                    Context = _context
+                    Title = "New query"
                 };
+
                 if (documentsWindows.CurrentView != null)
                 {
                     documentsWindows.Views.Insert(
@@ -54,9 +54,10 @@ namespace Traficante.Studio
                     documentsWindows.Views.Add(queryWindow);
                 }
                 documentsWindows.CurrentView = queryWindow;
+                this.InitLayout(queryWindow);
+                this.InitLayout(documentsWindows);
                 x.SetOutput(Unit.Default);
             });
-
 
             var bodyLayout = new LayoutDock
             {
