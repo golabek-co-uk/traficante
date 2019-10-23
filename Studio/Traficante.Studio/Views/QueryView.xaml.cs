@@ -9,12 +9,14 @@ namespace Traficante.Studio.Views
 {
     public class QueryView : ReactiveUserControl<QueryViewModel>
     {
+        public Grid Grid => this.FindControl<Grid>("Grid");
         public Button Run => this.FindControl<Button>("Run");
         public DropDown Objects => this.FindControl<DropDown>("Objects");
         public TextBox Text => this.FindControl<TextBox>("Text");
-        public DataGrid Results => this.FindControl<DataGrid>("Results");
+        public TabControl Results => this.FindControl<TabControl>("Results");
+        public DataGrid ResultsData => this.FindControl<DataGrid>("ResultsData");
+        public GridSplitter ResultsSplitter => this.FindControl<GridSplitter>("ResultsSplitter");
         
-
         public QueryView()
         {
             this.InitializeComponent();
@@ -32,9 +34,18 @@ namespace Traficante.Studio.Views
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)
                     .DisposeWith(disposables);
-                this.OneWayBind(ViewModel, x => x.Results, x => x.Results.Items, x => (System.Collections.IEnumerable)x)
+                this.OneWayBind(ViewModel, x => x.ResultsData, x => x.ResultsData.Items, x => (System.Collections.IEnumerable)x)
                     .DisposeWith(disposables);
-                ViewModel.ResultsColumns = Results.Columns;
+                this.Bind(ViewModel, x => x.ResultsAreVisible, x => x.Results.IsVisible)
+                    .DisposeWith(disposables);
+                this.Bind(ViewModel, x => x.ResultsAreVisible, x => x.ResultsSplitter.IsVisible)
+                    .DisposeWith(disposables);
+                this.OneWayBind(ViewModel, x => x.ResultsAreVisible, x => x.Grid.RowDefinitions[3].Height, x => x ? new GridLength(1, GridUnitType.Star) : new GridLength(0, GridUnitType.Auto))
+                    .DisposeWith(disposables);
+                this.ViewModel.ResultsDataColumns = this.ResultsData.Columns;
+
+                //var resultRow = this.Grid.RowDefinitions[3].Height.IsAbsolute;
+
                 //this.OneWayBind(ViewModel, x => x.ResultsColumns, x => x.Results.Columns)
                 //    .DisposeWith(disposables);
             });

@@ -5,7 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
-  <Grid RowDefinitions="Auto,*,Auto,*"  ColumnDefinitions="*">
+  <Grid Name="Grid" RowDefinitions="Auto,*,Auto,*" ColumnDefinitions="*">
     <DockPanel Grid.Row="0" Margin="2 2 2 2">
       <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*,Auto">
         <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Run</Button>
@@ -21,7 +21,22 @@
       </Grid>
     </DockPanel>
     <TextBox Name="Text" Grid.Row="1" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
-    <GridSplitter Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
-    <dg:DataGrid Name="Results" Grid.Row="3" MinHeight="100"></dg:DataGrid>
+    <GridSplitter Name="ResultsSplitter" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
+    <TabControl Name="Results" Grid.Row="3">
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Results</TextBlock>
+        </TabItem.Header>
+        <DockPanel>
+          <dg:DataGrid Name="ResultsData"></dg:DataGrid>
+        </DockPanel>
+      </TabItem>
+      <TabItem>
+        <TabItem.Header>
+          <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Messages</TextBlock>
+        </TabItem.Header>
+        <TextBlock Name="ResultsMessages" Text=" asdfsdf asfasdf " />
+      </TabItem>
+    </TabControl>
   </Grid>
 </UserControl>

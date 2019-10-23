@@ -18,20 +18,6 @@ namespace Traficante.Studio.ViewModels
     {
         public ObservableCollection<ObjectModel> Objects => ((AppData)this.Context).Objects;
 
-        private ObservableCollection<object> _results = new ObservableCollection<object>();
-        public ObservableCollection<object> Results
-        {
-            get => _results;
-            set => this.RaiseAndSetIfChanged(ref _results, value);
-        }
-
-        private ObservableCollection<DataGridColumn> _resultsColumns = new ObservableCollection<DataGridColumn>();
-        public ObservableCollection<DataGridColumn> ResultsColumns
-        {
-            get => _resultsColumns;
-            set => this.RaiseAndSetIfChanged(ref _resultsColumns, value);
-        }
-
         private ObjectModel _selectedObject;
         public ObjectModel SelectedObject
         {
@@ -44,6 +30,27 @@ namespace Traficante.Studio.ViewModels
         {
             get => _text;
             set => this.RaiseAndSetIfChanged(ref _text, value);
+        }
+
+        private bool _resultsAreVisible;
+        public bool ResultsAreVisible
+        {
+            get => _resultsAreVisible;
+            set => this.RaiseAndSetIfChanged(ref _resultsAreVisible, value);
+        }
+
+        private ObservableCollection<object> _resultsData = new ObservableCollection<object>();
+        public ObservableCollection<object> ResultsData
+        {
+            get => _resultsData;
+            set => this.RaiseAndSetIfChanged(ref _resultsData, value);
+        }
+
+        private ObservableCollection<DataGridColumn> _resultsColumns = new ObservableCollection<DataGridColumn>();
+        public ObservableCollection<DataGridColumn> ResultsDataColumns
+        {
+            get => _resultsColumns;
+            set => this.RaiseAndSetIfChanged(ref _resultsColumns, value);
         }
 
         public ReactiveCommand<Unit, Unit> RunCommand { get; }
@@ -60,8 +67,9 @@ namespace Traficante.Studio.ViewModels
             
             if (SelectedObject is SqlServerObjectModel)
             {
-                this.Results.Clear();
-                this.ResultsColumns.Clear();
+                this.ResultsAreVisible = true;
+                this.ResultsData.Clear();
+                this.ResultsDataColumns.Clear();
 
                 SqlServerObjectModel sqlServer = (SqlServerObjectModel)SelectedObject;
 
@@ -70,7 +78,7 @@ namespace Traficante.Studio.ViewModels
                     {
                         itemType.GetFields().ToList().ForEach(x =>
                         {
-                            this.ResultsColumns.Add(new DataGridTextColumn
+                            this.ResultsDataColumns.Add(new DataGridTextColumn
                             {
                                 Header = x.Name,
                                 Binding = new Binding(x.Name)
@@ -93,7 +101,7 @@ namespace Traficante.Studio.ViewModels
                         .GetFields()
                         .FirstOrDefault(x => x.Name == "_inner")
                         .SetValue(itemWrapper, item);
-                    this.Results.Add(itemWrapper);
+                    this.ResultsData.Add(itemWrapper);
                     //this.Results.Add(new TestObj { Id = 1, Name = "asdf" });
                 }
             }
