@@ -42,6 +42,7 @@
     <PackageReference Include="Dock.Model.ReactiveUI" Version="0.8.2" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19269.1" />
     <PackageReference Include="MySqlConnector" Version="0.60.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\ExceptionWindow.xaml">

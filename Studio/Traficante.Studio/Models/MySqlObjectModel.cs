@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Traficante.Studio.Services;
 
@@ -10,12 +11,18 @@ namespace Traficante.Studio.Models
 {
     public class MySqlObjectModel : ObjectModel
     {
+        [DataMember]
         public MySqlConnectionInfo ConnectionInfo { get; set; }
+        public override string Name { get => this.ConnectionInfo.Server; set { } }
+
+        public MySqlObjectModel()
+        {
+            ConnectionInfo = new MySqlConnectionInfo();
+        }
 
         public MySqlObjectModel(MySqlConnectionInfo connectionString)
         {
             ConnectionInfo = connectionString;
-            Name = connectionString.Server;
         }
 
         public override void LoadItems()
@@ -148,10 +155,14 @@ namespace Traficante.Studio.Models
         }
     }
 
+    [DataContract]
     public class MySqlConnectionInfo : ReactiveObject
     {
+        [DataMember]
         public string Server { get; set; }
+        [DataMember]
         public string UserId { get; set; }
+        [DataMember]
         public string Password { get; set; }
 
         public string ToConnectionString()

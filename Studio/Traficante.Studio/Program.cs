@@ -1,7 +1,14 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
@@ -35,8 +42,24 @@ namespace Traficante.Studio
             DataGrid dg = new DataGrid();
             //RxApp.DefaultExceptionHandler = new MyCoolObservableExceptionHandler();
 
-            var modelData = new AppData();
-            var factory = new MainWindowDockFactory(modelData);
+            var appData = new AppData();
+            try
+            {
+                var objectsJson = File.ReadAllText("Objects");
+                var objects = new AppDataSerializer().DerializeObjects(objectsJson);
+                appData.Objects = new ObservableCollection<ObjectModel>(objects);
+            }
+            catch { }
+            
+            appData
+                .Objects
+                .CollectionChanged += (s, x) =>
+                {
+                    var objects = appData.Objects.ToList();
+                    var objectsJson = new AppDataSerializer().SerializeObjects(objects);
+                    File.WriteAllText("Objects", objectsJson);
+                };
+            var factory = new MainWindowDockFactory(appData);
             var layout = factory.CreateLayout();
             factory.InitLayout(layout);
 
@@ -46,9 +69,9 @@ namespace Traficante.Studio
                 Factory = factory,
                 Layout = layout,
                 Window = mainWindow,
-                AppData = modelData
+                AppData = appData
             };
-            modelData.MainWindow = mainWindow;
+            appData.MainWindow = mainWindow;
             app.Run(mainWindow);
 
             if (layout is IDock dock)
@@ -78,4 +101,7 @@ namespace Traficante.Studio
             RxApp.MainThreadScheduler.Schedule(() => { throw new NotImplementedException(); });
         }
     }
+
+    
+
 }

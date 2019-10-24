@@ -3,6 +3,7 @@ using System;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Studio.Services;
@@ -11,14 +12,20 @@ namespace Traficante.Studio.Models
 {
     public class SqlServerObjectModel : ObjectModel
     {
+        [DataMember]
         public SqlServerConnectionInfo ConnectionInfo { get; set; }
+        public override string Name { get => this.ConnectionInfo.Server; set { } }
 
+        public SqlServerObjectModel()
+        {
+            ConnectionInfo = new SqlServerConnectionInfo();
+        }
+        
         public SqlServerObjectModel(SqlServerConnectionInfo connectionString)
         {
             ConnectionInfo = connectionString;
-            Name = connectionString.Server;
         }
-
+        
         public override void LoadItems()
         {
             Observable
@@ -137,7 +144,6 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
     }
-
     public class SqlServerViewObjectModel : ObjectModel
     {
         public SqlServerDatabaseObjectModel Databse { get; }
@@ -157,13 +163,19 @@ namespace Traficante.Studio.Models
         }
     }
 
+
+    [DataContract]
     public class SqlServerConnectionInfo : ReactiveObject
     {
+        [DataMember]
         public string Server { get; set; }
+        [DataMember]
         public string UserId { get; set; }
+        [DataMember]
         public string Password { get; set; }
 
         private SqlServerAuthentication _authentication = SqlServerAuthentication.Windows;
+        [DataMember]
         public SqlServerAuthentication Authentication
         {
             get => _authentication;

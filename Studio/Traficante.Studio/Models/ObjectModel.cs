@@ -9,7 +9,7 @@ namespace Traficante.Studio.Models
 {
     public class ObjectModel : ReactiveObject
     {
-        public string Name { get; set; }
+        public virtual string Name { get; set; }
 
         private ObservableCollection<object> _items;
         public ObservableCollection<object> Items

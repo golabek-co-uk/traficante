@@ -10,7 +10,7 @@ namespace Traficante.Studio.Models
     {
         public MainWindow MainWindow { get; set; }
         public ObservableCollection<ObjectModel> Objects { get; set; } = new ObservableCollection<ObjectModel>();
-
         public ObservableCollection<QueryModel> Queries { get; set; } = new ObservableCollection<QueryModel>();
+
     }
 }
