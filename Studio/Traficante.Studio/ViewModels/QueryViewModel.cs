@@ -32,6 +32,21 @@ namespace Traficante.Studio.ViewModels
             set => this.RaiseAndSetIfChanged(ref _text, value);
         }
 
+        private string _resultsError;
+        public string ResultsError
+        {
+            get => _resultsError;
+            set => this.RaiseAndSetIfChanged(ref _resultsError, value);
+        }
+
+        private string _resultsMessage;
+        public string ResultsMessage
+        {
+            get => _resultsError;
+            set => this.RaiseAndSetIfChanged(ref _resultsMessage, value);
+        }
+        
+
         private bool _resultsAreVisible;
         public bool ResultsAreVisible
         {
@@ -64,8 +79,13 @@ namespace Traficante.Studio.ViewModels
         {
             if (SelectedObject == null)
                 return Unit.Default;
-            
-            if (SelectedObject is SqlServerObjectModel)
+
+            ResultsMessage = string.Empty;
+            ResultsError = string.Empty;
+
+            try
+            {
+                if (SelectedObject is SqlServerObjectModel)
             {
                 this.ResultsAreVisible = true;
                 this.ResultsData.Clear();
@@ -106,7 +126,7 @@ namespace Traficante.Studio.ViewModels
                 }
             }
 
-            if (SelectedObject is MySqlObjectModel)
+                if (SelectedObject is MySqlObjectModel)
             {
                 this.ResultsAreVisible = true;
                 this.ResultsData.Clear();
@@ -145,6 +165,11 @@ namespace Traficante.Studio.ViewModels
                     this.ResultsData.Add(itemWrapper);
                     //this.Results.Add(new TestObj { Id = 1, Name = "asdf" });
                 }
+            }
+            } catch(Exception ex)
+            {
+                ResultsError = ex.Message;
+                return Unit.Default;
             }
 
             return Unit.Default;

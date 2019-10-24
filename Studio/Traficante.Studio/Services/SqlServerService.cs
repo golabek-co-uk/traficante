@@ -58,13 +58,29 @@ namespace Traficante.Studio.Services
                             var item = Activator.CreateInstance(returnType);
                             for (int i = 0; i < sqlReader.FieldCount; i++)
                             {
+                                
                                 var name = sqlReader.GetName(i);
-                                returnType.GetField(name).SetValue(item, sqlReader.GetValue(i));
+                                var field = returnType.GetField(name);
+                                var value = sqlReader.GetValue(i);
+                                if (value is DBNull)
+                                    value = GetDefaultValue(field.FieldType);
+                                field.SetValue(item, value);
                             }
                             yield return item;
                         }
                     }
                 }
+            }
+        }
+        public object GetDefaultValue(Type t)
+        {
+            if (t.IsValueType && Nullable.GetUnderlyingType(t) == null)
+            {
+                return Activator.CreateInstance(t);
+            }
+            else
+            {
+                return null;
             }
         }
 

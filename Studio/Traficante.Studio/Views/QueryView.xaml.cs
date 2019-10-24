@@ -15,6 +15,9 @@ namespace Traficante.Studio.Views
         public TextBox Text => this.FindControl<TextBox>("Text");
         public TabControl Results => this.FindControl<TabControl>("Results");
         public DataGrid ResultsData => this.FindControl<DataGrid>("ResultsData");
+
+        public TextBlock ResultsError => this.FindControl<TextBlock>("ResultsError");
+        public TextBlock ResultsMessage => this.FindControl<TextBlock>("ResultsMessage");
         public GridSplitter ResultsSplitter => this.FindControl<GridSplitter>("ResultsSplitter");
         
         public QueryView()
@@ -35,6 +38,10 @@ namespace Traficante.Studio.Views
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)
                     .DisposeWith(disposables);
                 this.OneWayBind(ViewModel, x => x.ResultsData, x => x.ResultsData.Items, x => (System.Collections.IEnumerable)x)
+                    .DisposeWith(disposables);
+                this.Bind(ViewModel, x => x.ResultsError, x => x.ResultsError.Text)
+                    .DisposeWith(disposables);
+                this.Bind(ViewModel, x => x.ResultsMessage, x => x.ResultsMessage.Text)
                     .DisposeWith(disposables);
                 this.Bind(ViewModel, x => x.ResultsAreVisible, x => x.Results.IsVisible)
                     .DisposeWith(disposables);
