@@ -55,9 +55,13 @@ namespace Traficante.Studio
                 .Objects
                 .CollectionChanged += (s, x) =>
                 {
-                    var objects = appData.Objects.ToList();
-                    var objectsJson = new AppDataSerializer().SerializeObjects(objects);
-                    File.WriteAllText("Objects", objectsJson);
+                    try
+                    {
+                        var objects = appData.Objects.ToList();
+                        var objectsJson = new AppDataSerializer().SerializeObjects(objects);
+                        File.WriteAllText("Objects", objectsJson);
+                    }
+                    catch { }
                 };
             var factory = new MainWindowDockFactory(appData);
             var layout = factory.CreateLayout();
