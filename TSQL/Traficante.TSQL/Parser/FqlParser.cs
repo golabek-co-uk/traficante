@@ -146,9 +146,9 @@ namespace Traficante.TSQL.Parser
                   Current.TokenType == TokenType.Property)
             {
                 if (Current.TokenType == TokenType.Word)
-                    accessors.Add(ConsumeAndGetToken(TokenType.Identifier).Value);
-                else if (Current.TokenType == TokenType.Identifier)
                     accessors.Add(ConsumeAndGetToken(TokenType.Word).Value);
+                else if (Current.TokenType == TokenType.Identifier)
+                    accessors.Add(ConsumeAndGetToken(TokenType.Identifier).Value);
                 else if (Current.TokenType == TokenType.Property)
                     accessors.Add(ConsumeAndGetToken(TokenType.Property).Value);
                 if (Current.TokenType == TokenType.Dot)

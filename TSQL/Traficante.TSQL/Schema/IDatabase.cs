@@ -27,9 +27,9 @@ namespace Traficante.TSQL.Schema
 
         //RowSource GetRowSource(string schema, string name, RuntimeContext interCommunicator, params object[] parameters);
 
-        MethodInfo ResolveMethod(string schema, string method, Type[] parameters);
+        //MethodInfo ResolveMethod(string schema, string method, Type[] parameters);
 
-        bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
+        //bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
         
     }
 }

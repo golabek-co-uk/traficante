@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using Traficante.TSQL.Converter;
 using Traficante.TSQL.Evaluator.Tables;
 using Traficante.TSQL.Lib;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
+using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.Managers;
 
 namespace Traficante.TSQL
@@ -16,6 +18,11 @@ namespace Traficante.TSQL
     {
         private List<Database> _databases;
         private Library _library;
+
+        public List<(DbTable Table, RowSource Source)> Tables { get; set; } = new List<(DbTable Table, RowSource Source)>();
+        public List<(DbTable Table, RowSource Source)> Functions { get; set; } = new List<(DbTable Table, RowSource Source)>();
+        public MethodsManager MethodsManager { get; set; } = new MethodsManager();
+
         public List<DatabaseVariable> _variables { get; private set; }
 
         public string DefaultDatabase = "master";
@@ -26,6 +33,7 @@ namespace Traficante.TSQL
             _databases = new List<Database>();
             GetDatabaseOrCreate(DefaultDatabase);
             _variables = new List<DatabaseVariable>();
+            MethodsManager.RegisterLibraries(new Library());
         }
 
         public Engine(Library library)
@@ -33,13 +41,12 @@ namespace Traficante.TSQL
             _databases = new List<Database>();
             _variables = new List<DatabaseVariable>();
             _library = library;
+            MethodsManager.RegisterLibraries(library);
         }
 
         public Table Run(string script)
         {
             return new Runner().RunAndReturnTable(script, this);
-            //var query = InstanceCreator.CompileForExecution(script, this);
-            //return query.Run();
         }
 
         public void AddTable<T>(string table, IEnumerable<T> items)
@@ -53,6 +60,8 @@ namespace Traficante.TSQL
             schema = schema ?? DefaultSchema;
             var db = GetDatabaseOrCreate(database);
             db.AddTable(schema, table, items);
+            var entityMap = TypeHelper.GetEntityMap<T>();
+            Tables.Add((new DbTable(table, new string[1] { schema }, entityMap.Columns), new EntitySource<T>(entityMap, items)));
         }
 
         public void AddFunction<T>(string database, string schema, string name, Func<IEnumerable<T>> function)
@@ -61,54 +70,39 @@ namespace Traficante.TSQL
             schema = schema ?? DefaultSchema;
             var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
+            var entityMap = TypeHelper.GetEntityMap<T>();
+            Functions.Add((new DbTable(schema, new string[1] { schema }, entityMap.Columns), new EntitySource<T>(entityMap, function())));
+            this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
         public void AddFunction<TResult>(string database, string schema, string name, Func<TResult> function)
         {
-            database = database ?? DefaultDatabase;
-            schema = schema ?? DefaultSchema;
-            var db = GetDatabaseOrCreate(database);
-            db.AddFunction(schema, name, function);
+            this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
         public void AddFunction<T1, TResult>(string database, string schema, string name, Func<T1, TResult> function)
         {
-            database = database ?? DefaultDatabase;
-            schema = schema ?? DefaultSchema;
-            var db = GetDatabaseOrCreate(database);
-            db.AddFunction(schema, name, function);
+            this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
         public void AddFunction<T1, T2, TResult>(string database, string schema, string name, Func<T1, T2, TResult> function)
         {
-            database = database ?? DefaultDatabase;
-            schema = schema ?? DefaultSchema;
-            var db = GetDatabaseOrCreate(database);
-            db.AddFunction(schema, name, function);
+            this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
         public void AddFunction<T1, T2, T3, TResult>(string database, string schema, string name, Func<T1, T2, T3, TResult> function)
         {
-            database = database ?? DefaultDatabase;
-            schema = schema ?? DefaultSchema;
-            var db = GetDatabaseOrCreate(database);
-            db.AddFunction(schema, name, function);
+            this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
         public void AddFunction<T1, T2, T3, T4, TResult>(string database, string schema, string name, Func<T1, T2, T3, T4, TResult> function)
         {
-            database = database ?? DefaultDatabase;
-            schema = schema ?? DefaultSchema;
-            var db = GetDatabaseOrCreate(database);
-            db.AddFunction(schema, name, function);
+            this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
         public void AddFunction<T1, T2, T3, T4, T5, TResult>(string database, string schema, string name, Func<T1, T2, T3, T4, T5, TResult> function)
         {
-            database = database ?? DefaultDatabase;
-            schema = schema ?? DefaultSchema;
-            var db = GetDatabaseOrCreate(database);
-            db.AddFunction(schema, name, function);
+            this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
 
@@ -160,6 +154,7 @@ namespace Traficante.TSQL
             else
                 return _databases.FirstOrDefault(x => string.Equals(x.Name, DefaultDatabase));
         }
+
         [ThreadStaticAttribute]
         public Engine eng;
         public Database GetDatabaseOrCreate(string database)
@@ -169,15 +164,38 @@ namespace Traficante.TSQL
             {
                 db = new Database(database, DefaultSchema, this);//, _library);
                 eng = this;
-                db.AddFunction<string, IEnumerable<object>>(null, "exec", (x) =>
-                {
-                    var that = this;
-                    return new List<object>();
-                });
+                //db.AddFunction<string, IEnumerable<object>>(null, "exec", (x) =>
+                //{
+                //    var that = this;
+                //    return new List<object>();
+                //});
 
                 _databases.Add(db);
             }
             return db;
         }
+
+        public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
+        {
+            return MethodsManager.TryGetMethod(method, parameters, out methodInfo);
+        }
+
+        public MethodInfo ResolveMethod(string schema, string method, Type[] parameters)
+        {
+            return MethodsManager.GetMethod(method, parameters);
+        }
+    }
+
+    public class DbTable
+    {
+        public DbTable(string name, string[] path, IColumn[] columns)
+        {
+            Name = name;
+            Path = path;
+            Columns = columns;
+        }
+        string Name { get; }
+        string[] Path { get; }
+        IColumn[] Columns { get; }
     }
 }

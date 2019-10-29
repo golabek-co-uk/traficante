@@ -46,36 +46,6 @@ namespace Traficante.TSQL.Schema.DataSources
             Functions.Add((new DatabaseTable(schema ?? DefaultSchema, name, entityMap.Columns), new EntitySource<TType>(entityMap, func())));
         }
 
-        public void AddFunction<TResult>(string schema, string name, Func<TResult> func)
-        {
-            this.MethodsManager.RegisterMethod(name, func.Method);
-        }
-
-        public void AddFunction<T1, TResult>(string schema, string name, Func<T1,TResult> func)
-        {
-            this.MethodsManager.RegisterMethod(name, func.Method);
-        }
-
-        public void AddFunction<T1, T2, TResult>(string schema, string name, Func<T1, T2, TResult> func)
-        {
-            this.MethodsManager.RegisterMethod(name, func.Method);
-        }
-
-        public void AddFunction<T1, T2, T3, TResult>(string schema, string name, Func<T1, T2, T3, TResult> func)
-        {
-            this.MethodsManager.RegisterMethod(name, func.Method);
-        }
-
-        public void AddFunction<T1, T2, T3, T4, TResult>(string schema, string name, Func<T1, T2, T3, T4, TResult> func)
-        {
-            this.MethodsManager.RegisterMethod(name, func.Method);
-        }
-
-        public void AddFunction<T1, T2, T3, T4, T5, TResult>(string schema, string name, Func<T1, T2, T3, T4, T5, TResult> func)
-        {
-            this.MethodsManager.RegisterMethod(name, func.Method);
-        }
-
         public virtual ITable GetTableByName(string schema, string name)
         {
             return Tables.FirstOrDefault(x => 
@@ -108,15 +78,6 @@ namespace Traficante.TSQL.Schema.DataSources
                 .Source;
         }
 
-        public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
-        {
-            return MethodsManager.TryGetMethod(method, parameters, out methodInfo);
-        }
-
-        public MethodInfo ResolveMethod(string schema, string method, Type[] parameters)
-        {
-            return MethodsManager.GetMethod(method, parameters);
-        }
     }
 
     public class DatabaseFunction : IFunction

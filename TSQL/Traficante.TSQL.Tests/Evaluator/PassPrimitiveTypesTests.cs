@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Converter;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
@@ -76,6 +77,11 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 throw new NotImplementedException();
             }
 
+            public MethodInfo ResolveMethod(string schema, string method, Type[] parameters)
+            {
+                throw new NotImplementedException();
+            }
+
             public void SetVariable<T>(string name, T value)
             {
                 throw new NotImplementedException();
@@ -92,6 +98,11 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             }
 
             public void SetVariable(string database, string schema, string name, Type type, object value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
             {
                 throw new NotImplementedException();
             }

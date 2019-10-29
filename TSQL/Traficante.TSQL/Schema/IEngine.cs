@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Traficante.TSQL.Schema
 {
@@ -10,5 +11,9 @@ namespace Traficante.TSQL.Schema
         void SetVariable<T>(string database, string schema, string name, T value);
         void SetVariable(string name, Type type, object value);
         void SetVariable(string database, string schema, string name, Type type, object value);
+
+        bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
+        MethodInfo ResolveMethod(string schema, string method, Type[] parameters);
+        
     }
 }

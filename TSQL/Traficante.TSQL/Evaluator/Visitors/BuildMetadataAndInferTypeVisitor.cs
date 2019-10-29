@@ -231,7 +231,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var database = node.Path.Reverse().ElementAtOrDefault(1);
 
             var db = this._engine.GetDatabase(database);
-            var methodInfo = db.ResolveMethod(schema, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
+            var methodInfo = this._engine.ResolveMethod(schema, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
             FunctionNode functionMethod = new FunctionNode(node.Name, args, node.Path, methodInfo);
             Nodes.Push(functionMethod);
         }
@@ -406,7 +406,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             else
             {
-                var method = database.ResolveMethod(schemaName, node.Function.Name, _fromFunctionNodeArgs.Select(x => x.GetType()).ToArray());
+                var method = _engine.ResolveMethod(schemaName, node.Function.Name, _fromFunctionNodeArgs.Select(x => x.GetType()).ToArray());
                 var columns = TypeHelper.GetColumns(method.ReturnType);
                 table = new DatabaseTable(schemaName, node.Function.Name, columns);
             }
