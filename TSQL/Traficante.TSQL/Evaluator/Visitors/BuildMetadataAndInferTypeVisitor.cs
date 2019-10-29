@@ -227,9 +227,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public virtual void Visit(FunctionNode node)
         {
             var args = Nodes.Pop() as ArgsListNode;
-            var db = this._engine.GetDatabase(node.Database);
-            var methodInfo = db.ResolveMethod(node.Schema, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
-            FunctionNode functionMethod = new FunctionNode(node.Name, args, methodInfo, node.Schema, node.Database, node.Server);
+            var schema = node.Path.Reverse().ElementAtOrDefault(0);
+            var database = node.Path.Reverse().ElementAtOrDefault(1);
+
+            var db = this._engine.GetDatabase(database);
+            var methodInfo = db.ResolveMethod(schema, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
+            FunctionNode functionMethod = new FunctionNode(node.Name, args, node.Path, methodInfo);
             Nodes.Push(functionMethod);
         }
 
@@ -392,18 +395,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromFunctionNode node)
         {
-            var database = _engine.GetDatabase(node.Function.Database);
+            var schemaName = node.Function.Path.Reverse().ElementAtOrDefault(0);
+            var databaseName = node.Function.Path.Reverse().ElementAtOrDefault(1);
+            var database = _engine.GetDatabase(databaseName);
 
             ITable table = null;
             if (_currentScope.Name == "Desc")
             {
-                table = new DatabaseTable(node.Function.Schema, node.Function.Name, new IColumn[0]);
+                table = new DatabaseTable(schemaName, node.Function.Name, new IColumn[0]);
             }
             else
             {
-                var method = database.ResolveMethod(node.Function.Schema, node.Function.Name, _fromFunctionNodeArgs.Select(x => x.GetType()).ToArray());
+                var method = database.ResolveMethod(schemaName, node.Function.Name, _fromFunctionNodeArgs.Select(x => x.GetType()).ToArray());
                 var columns = TypeHelper.GetColumns(method.ReturnType);
-                table = new DatabaseTable(node.Function.Schema, node.Function.Name, columns);
+                table = new DatabaseTable(schemaName, node.Function.Name, columns);
             }
 
             _fromFunctionNodeArgs.Clear();
@@ -411,7 +416,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            var tableSymbol = new TableSymbol(node.Function.Schema, _queryAlias, database, table, !string.IsNullOrEmpty(node.Alias));
+            var tableSymbol = new TableSymbol(schemaName, _queryAlias, database, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 

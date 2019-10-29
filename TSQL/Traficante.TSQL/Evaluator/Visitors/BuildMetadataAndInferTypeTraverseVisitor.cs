@@ -132,10 +132,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
 
                 FunctionNode function = node.Expression as FunctionNode;
-                string schema = accessors.ElementAtOrDefault(0);
-                string database = accessors.ElementAtOrDefault(1);
-                string server = accessors.ElementAtOrDefault(2);
-                Visit(new FunctionNode(function.Name, function.Arguments, function.Method, schema, database, server));
+                Visit(new FunctionNode(function.Name, function.Arguments, accessors.ToArray(), function.Method));
                 return;
             }
 

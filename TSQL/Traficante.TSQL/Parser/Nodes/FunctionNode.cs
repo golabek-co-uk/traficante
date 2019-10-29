@@ -8,25 +8,21 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class FunctionNode : Node
     {
-        public FunctionNode(string name, ArgsListNode args,
-            MethodInfo method = (MethodInfo) null, string schema = null, string database = null, string server = null)
+        public FunctionNode(string name, ArgsListNode args, string[] path,
+            MethodInfo method = (MethodInfo) null)
         {
             Name = name;
-            Schema = schema;
-            Database = database;
-            Server = server;
             Arguments = args;
             Method = method;
-            Id = $"{nameof(FunctionNode)}{server}.{database}.{schema}.{name}{args.Id}";
+            Path = path;
+            Id = $"{nameof(FunctionNode)}.{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}.{name}{args.Id}";
         }
 
         public MethodInfo Method { get; private set; }
 
         public ArgsListNode Arguments { get; }
 
-        public string Server { get; }
-        public string Database { get; }
-        public string Schema { get; }
+        public string[] Path { get; }
         public string Name { get; }
 
         public bool IsAggregateMethod =>
@@ -93,8 +89,8 @@ namespace Traficante.TSQL.Parser.Nodes
         public override string ToString()
         {
             return ArgsCount > 0 ? 
-                $"{Name}({Arguments.ToString()})" : 
-                $"{Name}()";
+                $"{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}{Name}({Arguments.ToString()})" : 
+                $"{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}{Name}()";
         }
     }
 }

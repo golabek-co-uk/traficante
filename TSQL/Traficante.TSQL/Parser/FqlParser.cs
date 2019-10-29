@@ -68,7 +68,7 @@ namespace Traficante.TSQL.Parser
                 case TokenType.Execute:
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeExecute()), TokenType.Semicolon);
                 case TokenType.Function:
-                    return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeFunctionMethod(null, null)), TokenType.Semicolon);
+                    return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeFunctionMethod(new string[0])), TokenType.Semicolon);
                 default:
                     throw new NotSupportedException($"{Current.TokenType} cannot be used here.");
             }
@@ -87,7 +87,7 @@ namespace Traficante.TSQL.Parser
 
                 if ((Current is FunctionToken func))
                 {
-                    var function = ComposeFunctionMethod(null, name.Value);
+                    var function = ComposeFunctionMethod(new string[1] { name.Value });
 
                     fromNode = new FromFunctionNode(function, string.Empty);
                     return new DescNode(fromNode, DescForType.SpecificConstructor);
@@ -139,33 +139,28 @@ namespace Traficante.TSQL.Parser
                 Consume(TokenType.Equality);
             }
 
-            
 
-            string part1 = Current.TokenType == TokenType.Word ? ConsumeAndGetToken(TokenType.Word).Value : ConsumeAndGetToken(TokenType.Identifier).Value;
-            string part2 = null;
-            string part3 = null;
-
-            if (Current.TokenType == TokenType.Dot)
+            List<string> accessors = new List<string>();
+            while (Current.TokenType == TokenType.Word ||
+                  Current.TokenType == TokenType.Identifier ||
+                  Current.TokenType == TokenType.Property)
             {
-                Consume(TokenType.Dot);
-                if (Current.TokenType == TokenType.Property)
-                {
-                    part2 = ConsumeAndGetToken(TokenType.Property).Value;
-                    if (Current.TokenType == TokenType.Dot)
-                    {
-                        Consume(TokenType.Dot);
-                        part3 = ConsumeAndGetToken(TokenType.Property).Value;
-                    }
-                }
+                if (Current.TokenType == TokenType.Word)
+                    accessors.Add(ConsumeAndGetToken(TokenType.Identifier).Value);
+                else if (Current.TokenType == TokenType.Identifier)
+                    accessors.Add(ConsumeAndGetToken(TokenType.Word).Value);
+                else if (Current.TokenType == TokenType.Property)
+                    accessors.Add(ConsumeAndGetToken(TokenType.Property).Value);
+                if (Current.TokenType == TokenType.Dot)
+                    Consume(TokenType.Dot);
+                else
+                    break;
             }
-
-            var method = part3 ?? part2 ?? part1;
-            var schema = part2;
-            var database = part1;
-
+            
             var args = ComposeExecuteArgs();
-
-            return new ExecuteNode(variableNode, new FunctionNode(method, args, null, schema, database));
+            var method = accessors.Last();
+            var path = accessors.Take(accessors.Count - 1);
+            return new ExecuteNode(variableNode, new FunctionNode(method, args, accessors.ToArray(), null));
         }
 
         private TypeNode ComposeType()
@@ -668,7 +663,7 @@ namespace Traficante.TSQL.Parser
                 var part1 = Current.TokenType == TokenType.Word ? ConsumeAndGetToken(TokenType.Word).Value : ConsumeAndGetToken(TokenType.Identifier).Value;
 
                 FromNode fromNode = null;
-                if(Current.TokenType == TokenType.Dot)
+                if (Current.TokenType == TokenType.Dot)
                 {
                     Consume(TokenType.Dot);
                     if (Current.TokenType == TokenType.Property)
@@ -685,7 +680,7 @@ namespace Traficante.TSQL.Parser
                             }
                             else if (Current.TokenType == TokenType.Function)
                             {
-                                var function = ComposeFunctionMethod(part1, part2);
+                                var function = ComposeFunctionMethod(new string[2] { part1, part2 });
                                 alias = ComposeAlias();
                                 fromNode = new FromFunctionNode(function, alias);
                             }
@@ -698,7 +693,7 @@ namespace Traficante.TSQL.Parser
                     }
                     else if (Current.TokenType == TokenType.Function)
                     {
-                        var function = ComposeFunctionMethod(null, part1);
+                        var function = ComposeFunctionMethod(new string[1] { part1 });
                         alias = ComposeAlias();
                         fromNode = new FromFunctionNode(function, alias);
                     }
@@ -711,10 +706,10 @@ namespace Traficante.TSQL.Parser
 
                 return fromNode;
             }
-            else if(Current.TokenType == TokenType.Function)
+            else if (Current.TokenType == TokenType.Function)
             {
 
-                var function = ComposeFunctionMethod(null, null);
+                var function = ComposeFunctionMethod(new string[0]);
                 alias = ComposeAlias();
 
                 return new FromFunctionNode(function, alias);
@@ -822,7 +817,7 @@ namespace Traficante.TSQL.Parser
                 case TokenType.Word:
                     return ComposeWord();
                 case TokenType.Function:
-                    return ComposeFunctionMethod(null, null);
+                    return ComposeFunctionMethod(new string[0]);
                 case TokenType.Identifier:
 
                     if (!(Current is ColumnToken column))
@@ -912,7 +907,7 @@ namespace Traficante.TSQL.Parser
             return new WordNode(ConsumeAndGetToken(TokenType.Identifier).Value);
         }
 
-        private FunctionNode ComposeFunctionMethod(string database, string schema)
+        private FunctionNode ComposeFunctionMethod(string[] path)
         {
             if (!(Current is FunctionToken func))
                 throw new ArgumentNullException($"Expected token is {TokenType.Function} but {Current.TokenType} received");
@@ -923,7 +918,7 @@ namespace Traficante.TSQL.Parser
 
             var args = isCastFunction ? ComposeCastArgs() : ComposeFunctionArgs();
 
-            return new FunctionNode(func.Value.Trim(), args, null, schema, database, null);
+            return new FunctionNode(func.Value.Trim(), args, path, null);
         }
 
         private Token ConsumeAndGetToken(TokenType expected)
