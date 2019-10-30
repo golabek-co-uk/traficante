@@ -230,7 +230,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var schema = node.Path.Reverse().ElementAtOrDefault(0);
             var database = node.Path.Reverse().ElementAtOrDefault(1);
 
-            var db = this._engine.GetDatabase(database);
             var methodInfo = this._engine.ResolveMethod(schema, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
             FunctionNode functionMethod = new FunctionNode(node.Name, args, node.Path, methodInfo);
             Nodes.Push(functionMethod);
@@ -454,13 +453,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(FromTableNode node)
         {
             TableSymbol tableSymbol = null;
-            var schema = _engine.GetDatabase(node.Table.Database);
+            var schemaName = node.Table.Path.Reverse().ElementAtOrDefault(0);
+            var databaseName = node.Table.Path.Reverse().ElementAtOrDefault(1);
+            var schema = _engine.GetDatabase(databaseName);
 
             ITable table;
             if (_currentScope.Name != "Desc")
-                table = schema.GetTableByName(node.Table.Schema, node.Table.TableOrView);
+                table = schema.GetTableByName(schemaName, node.Table.TableOrView);
             else
-                table = new DatabaseTable(node.Table.Schema, node.Table.TableOrView, new IColumn[0]);
+                table = new DatabaseTable(schemaName, node.Table.TableOrView, new IColumn[0]);
 
             _fromFunctionNodeArgs.Clear();
 
@@ -493,7 +494,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            tableSymbol = new TableSymbol(node.Table.Schema, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+            tableSymbol = new TableSymbol(schemaName, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 

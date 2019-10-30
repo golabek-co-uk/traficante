@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -70,6 +71,11 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             public IDatabase GetDatabase(string schema)
             {
                 return new TestSchema(_entities, _onGetTableOrRowSource, _whenChecked);
+            }
+
+            public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path)
+            {
+                throw new NotImplementedException();
             }
 
             public IVariable GetVariable(string name)

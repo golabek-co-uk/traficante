@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Reflection;
 
 namespace Traficante.TSQL.Schema
@@ -14,6 +15,8 @@ namespace Traficante.TSQL.Schema
 
         bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
         MethodInfo ResolveMethod(string schema, string method, Type[] parameters);
-        
+
+        (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path);
+
     }
 }

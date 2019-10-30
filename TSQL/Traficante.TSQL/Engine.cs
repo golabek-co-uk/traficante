@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -19,7 +20,7 @@ namespace Traficante.TSQL
         private List<Database> _databases;
         private Library _library;
 
-        public List<(DbTable Table, RowSource Source)> Tables { get; set; } = new List<(DbTable Table, RowSource Source)>();
+        public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Tables { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
         public List<(DbTable Table, RowSource Source)> Functions { get; set; } = new List<(DbTable Table, RowSource Source)>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
@@ -54,14 +55,31 @@ namespace Traficante.TSQL
             AddTable(null, null, table, items);
         }
 
-        public void AddTable<T>(string database, string schema, string table, IEnumerable<T> items)
+        public void AddTable<T>(string database, string schema, string name, IEnumerable<T> items)
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
             var db = GetDatabaseOrCreate(database);
-            db.AddTable(schema, table, items);
-            var entityMap = TypeHelper.GetEntityMap<T>();
-            Tables.Add((new DbTable(table, new string[1] { schema }, entityMap.Columns), new EntitySource<T>(entityMap, items)));
+            db.AddTable(schema, name, items);
+            
+            Tables.Add((name, new string[2] { database, schema }, items, typeof(T)));
+        }
+
+        public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path)
+        {
+            return Tables
+                .Where(x => x.Name == name)
+                .Where(x =>
+                {
+                    var pathOfX = x.Path.Reverse().ToList();
+                    var pathToFind = path.Reverse().ToList();
+                    for (int i = 0; i < pathToFind.Count; i++)
+                    {
+                        if (pathOfX.ElementAtOrDefault(i) != pathToFind.ElementAtOrDefault(i))
+                            return false;
+                    }
+                    return true;
+                }).FirstOrDefault();
         }
 
         public void AddFunction<T>(string database, string schema, string name, Func<IEnumerable<T>> function)
@@ -71,6 +89,7 @@ namespace Traficante.TSQL
             var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
             var entityMap = TypeHelper.GetEntityMap<T>();
+            
             Functions.Add((new DbTable(schema, new string[1] { schema }, entityMap.Columns), new EntitySource<T>(entityMap, function())));
             this.MethodsManager.RegisterMethod(name, function.Method);
         }

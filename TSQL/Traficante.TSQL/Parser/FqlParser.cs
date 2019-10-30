@@ -96,13 +96,13 @@ namespace Traficante.TSQL.Parser
                 {
                     var table = new WordNode(ConsumeAndGetToken(TokenType.Property).Value);
 
-                    fromNode = new FromTableNode(new TableNode(table.Value, name.Value), string.Empty);
+                    fromNode = new FromTableNode(new TableNode(table.Value, new string[1] { name.Value }), string.Empty);
                     return new DescNode(fromNode, DescForType.Constructors);
                 }
             }
             else
             {
-                return new DescNode(new FromTableNode(new TableNode(string.Empty, name.Value), string.Empty), DescForType.Schema);
+                return new DescNode(new FromTableNode(new TableNode(string.Empty, new string[1] { name.Value }), string.Empty), DescForType.Schema);
             }
         }
 
@@ -676,7 +676,7 @@ namespace Traficante.TSQL.Parser
                             {
                                 var par3 = ConsumeAndGetToken(TokenType.Property).Value;
                                 alias = ComposeAlias();
-                                fromNode = new FromTableNode(new TableNode(par3, part2, part1), alias);
+                                fromNode = new FromTableNode(new TableNode(par3, new string[2] { part1, part2 }), alias);
                             }
                             else if (Current.TokenType == TokenType.Function)
                             {
@@ -688,7 +688,7 @@ namespace Traficante.TSQL.Parser
                         else
                         {
                             alias = ComposeAlias();
-                            fromNode = new FromTableNode(new TableNode(part2, part1), alias);
+                            fromNode = new FromTableNode(new TableNode(part2, new string[1] { part1 }), alias);
                         }
                     }
                     else if (Current.TokenType == TokenType.Function)
@@ -701,7 +701,7 @@ namespace Traficante.TSQL.Parser
                 else
                 {
                     alias = ComposeAlias();
-                    fromNode = new FromTableNode(new TableNode(part1), alias);
+                    fromNode = new FromTableNode(new TableNode(part1, new string[0]), alias);
                 }
 
                 return fromNode;

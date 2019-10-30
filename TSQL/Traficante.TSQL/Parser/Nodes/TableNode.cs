@@ -4,18 +4,16 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class TableNode : Node
     {
-        public TableNode(string tableOrView, string schema = null, string database = null, string server = null)
+        public TableNode(string tableOrView, string[] path)
                     : base()
         {
-            Database = database;
-            Schema = schema;
+            Path = path;
             TableOrView = tableOrView;
-            Id = $"{nameof(TableNode)}{server}{database}{schema}{tableOrView}";
+            Id = $"{nameof(TableNode)}.{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}{tableOrView}";
         }
 
-        public string Database { get; set; }
 
-        public string Schema { get; }
+        public string[] Path { get; }
 
         public string TableOrView { get; }
 
@@ -30,7 +28,7 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public override string ToString()
         {
-            return $"{TableOrView}";
+            return $"{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}{TableOrView}";
         }
 
         public override int GetHashCode()

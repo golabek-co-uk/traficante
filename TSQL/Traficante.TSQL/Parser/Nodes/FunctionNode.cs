@@ -15,7 +15,7 @@ namespace Traficante.TSQL.Parser.Nodes
             Arguments = args;
             Method = method;
             Path = path;
-            Id = $"{nameof(FunctionNode)}.{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}.{name}{args.Id}";
+            Id = $"{nameof(FunctionNode)}.{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}{name}{args.Id}";
         }
 
         public MethodInfo Method { get; private set; }
