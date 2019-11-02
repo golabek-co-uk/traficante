@@ -73,6 +73,11 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 return new TestSchema(_entities, _onGetTableOrRowSource, _whenChecked);
             }
 
+            public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetFunction(string name, string[] path)
+            {
+                throw new NotImplementedException();
+            }
+
             public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path)
             {
                 throw new NotImplementedException();

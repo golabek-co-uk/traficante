@@ -21,7 +21,7 @@ namespace Traficante.TSQL
         private Library _library;
 
         public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Tables { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
-        public List<(DbTable Table, RowSource Source)> Functions { get; set; } = new List<(DbTable Table, RowSource Source)>();
+        public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Functions { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
         public List<DatabaseVariable> _variables { get; private set; }
@@ -68,7 +68,24 @@ namespace Traficante.TSQL
         public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path)
         {
             return Tables
-                .Where(x => x.Name == name)
+                .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
+                .Where(x =>
+                {
+                    var pathOfX = x.Path.Reverse().ToList();
+                    var pathToFind = path.Reverse().ToList();
+                    for (int i = 0; i < pathToFind.Count; i++)
+                    {
+                        if (pathOfX.ElementAtOrDefault(i) != pathToFind.ElementAtOrDefault(i))
+                            return false;
+                    }
+                    return true;
+                }).FirstOrDefault();
+        }
+
+        public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetFunction(string name, string[] path)
+        {
+            return Functions
+                .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
                 .Where(x =>
                 {
                     var pathOfX = x.Path.Reverse().ToList();
@@ -89,9 +106,9 @@ namespace Traficante.TSQL
             var db = GetDatabaseOrCreate(database);
             db.AddFunction(schema, name, function);
             var entityMap = TypeHelper.GetEntityMap<T>();
-            
-            Functions.Add((new DbTable(schema, new string[1] { schema }, entityMap.Columns), new EntitySource<T>(entityMap, function())));
+
             this.MethodsManager.RegisterMethod(name, function.Method);
+            Functions.Add((name, new string[2] { database, schema }, function(), typeof(T)));
         }
 
         public void AddFunction<TResult>(string database, string schema, string name, Func<TResult> function)

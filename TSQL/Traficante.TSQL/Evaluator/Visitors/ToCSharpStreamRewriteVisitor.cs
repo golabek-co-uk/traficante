@@ -842,27 +842,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
         
         public void Visit(FromFunctionNode node)
         {
-            var schema = node.Function.Path.Reverse().ElementAtOrDefault(0);
-            var database = node.Function.Path.Reverse().ElementAtOrDefault(1);
-
-            var rowSource = _engine.GetDatabase(database).GetFunctionRowSource(schema, node.Function.Name, new object[0]).Rows;
-
-            var fields = _engine
-                .GetDatabase(database)
-                .GetFunctionByName(schema, node.Function.Name, new object[0])
-                .Columns.Select(x => (x.ColumnName, x.ColumnType)).ToArray();
+            var function = _engine.GetFunction(node.Function.Name, node.Function.Path);
+            var fields = function.ItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);
-
-            var rowOfDataSource = Expression.Parameter(typeof(IObjectResolver), "rowOfDataSource");
+            var rowOfDataSource = Expression.Parameter(function.ItemsType, "rowOfDataSource");
 
             List<MemberBinding> bindings = new List<MemberBinding>();
             foreach (var field in fields)
             {
                 //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
                 MemberBinding assignment = Expression.Bind(
-                    entityType.GetField(field.Item1), 
-                    Expression.Convert(Expression.Call(rowOfDataSource, "GetValue", new Type[] {}, new[] { Expression.Constant(field.Item1)}), field.Item2));
+                    entityType.GetField(field.Item1),
+                    Expression.PropertyOrField(rowOfDataSource, field.Name)
+                    );
                 bindings.Add(assignment);
             }
 
@@ -875,12 +868,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             Expression expression = Expression.Lambda(initialization, rowOfDataSource, _item_i);
 
-            var queryableRowSource = Expression.Constant(rowSource.AsQueryable());
+            var queryableRowSource = Expression.Constant(function.Items.AsQueryable());
 
             var call = Expression.Call(
                 typeof(Queryable),
                 "Select",
-                new Type[] { typeof(IObjectResolver), entityType },
+                new Type[] { function.ItemsType, entityType },
                 queryableRowSource,
                 expression);
 
@@ -909,7 +902,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 MemberBinding assignment = Expression.Bind(
                     entityType.GetField(field.Item1),
                     Expression.PropertyOrField(rowOfDataSource, field.Name)
-                    //Expression.Convert(Expression.Call(rowOfDataSource, "GetValue", new Type[] { }, new[] { Expression.Constant(field.Item1) }), field.Item2)
                     );
                 bindings.Add(assignment);
             }

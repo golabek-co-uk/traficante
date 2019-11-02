@@ -18,5 +18,9 @@ namespace Traficante.TSQL.Schema
 
         (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path);
 
+        (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetFunction(string name, string[] path);
+
+        
+
     }
 }
