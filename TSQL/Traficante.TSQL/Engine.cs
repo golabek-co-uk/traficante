@@ -21,14 +21,14 @@ namespace Traficante.TSQL
         public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Functions { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
-        public List<DatabaseVariable> _variables { get; private set; }
+        public List<Variable> _variables { get; private set; }
 
         public string DefaultDatabase = "master";
         public string DefaultSchema = "dbo";        
 
         public Engine()
         {
-            _variables = new List<DatabaseVariable>();
+            _variables = new List<Variable>();
             MethodsManager.RegisterLibraries(new Library());
         }
 
@@ -136,7 +136,7 @@ namespace Traficante.TSQL
             }
             else
             {
-                _variables.Add(new DatabaseVariable(schema, name, typeof(T), value));
+                _variables.Add(new Variable(schema, name, typeof(T), value));
             }
         }
 
@@ -154,7 +154,7 @@ namespace Traficante.TSQL
             }
             else
             {
-                _variables.Add(new DatabaseVariable(schema, name, type, value));
+                _variables.Add(new Variable(schema, name, type, value));
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Traficante.TSQL.Schema.DataSources;
 
 namespace Traficante.TSQL.Parser.Nodes
@@ -12,6 +13,6 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public virtual string Alias { get; }
 
-        public override Type ReturnType => typeof(RowSource);
+        public override Type ReturnType => typeof(IEnumerable);
     }
 }

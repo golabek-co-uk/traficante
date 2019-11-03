@@ -12,31 +12,9 @@ using Traficante.TSQL.Schema.Reflection;
 
 namespace Traficante.TSQL.Schema.DataSources
 {
-
-    public class DatabaseFunction : IFunction
+    public class Variable : IVariable
     {
-        public DatabaseFunction(string schema, string name, Type returnType, Type[] argumentsTypes)
-        {
-            Schema = schema;
-            Name = name;
-            ReturnType = returnType;
-            ArgumentsTypes = argumentsTypes;
-        }
-
-        public IColumn[] Columns { get; }
-
-        public string Name { get; }
-
-        public string Schema { get; }
-
-        public Type ReturnType { get; set; }
-
-        public Type[] ArgumentsTypes {get; set;}
-    }
-
-    public class DatabaseVariable : IVariable
-    {
-        public DatabaseVariable(string schema, string name, Type type, object value)
+        public Variable(string schema, string name, Type type, object value)
         {
             Schema = schema;
             Name = name;
