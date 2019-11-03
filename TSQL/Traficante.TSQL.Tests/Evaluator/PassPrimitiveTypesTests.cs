@@ -68,10 +68,10 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 _onGetTableOrRowSource = onGetTableOrRowSource;
                 _whenChecked = whenChecked;
             }
-            public IDatabase GetDatabase(string schema)
-            {
-                return new TestSchema(_entities, _onGetTableOrRowSource, _whenChecked);
-            }
+            //public IDatabase GetDatabase(string schema)
+            //{
+            //    return new TestSchema(_entities, _onGetTableOrRowSource, _whenChecked);
+            //}
 
             public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetFunction(string name, string[] path)
             {
@@ -119,29 +119,29 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             }
         }
 
-        private class TestSchema : BaseDatabase
-        {
+        //private class TestSchema : BaseDatabase
+        //{
 
-            private readonly IEnumerable<TestEntity> _entities;
-            private readonly Action<object[]> _onGetTableOrRowSource;
-            private readonly WhenCheckedParameters _whenChecked;
+        //    private readonly IEnumerable<TestEntity> _entities;
+        //    private readonly Action<object[]> _onGetTableOrRowSource;
+        //    private readonly WhenCheckedParameters _whenChecked;
 
-            public TestSchema(IEnumerable<TestEntity> entities, Action<object[]> onGetTableOrRowSource,
-                WhenCheckedParameters whenChecked)
-                : base("test", null)//, CreateLibrary())
-            {
-                _entities = entities;
-                _onGetTableOrRowSource = onGetTableOrRowSource;
-                _whenChecked = whenChecked;
-            }
+        //    public TestSchema(IEnumerable<TestEntity> entities, Action<object[]> onGetTableOrRowSource,
+        //        WhenCheckedParameters whenChecked)
+        //        : base("test", null)//, CreateLibrary())
+        //    {
+        //        _entities = entities;
+        //        _onGetTableOrRowSource = onGetTableOrRowSource;
+        //        _whenChecked = whenChecked;
+        //    }
 
-            public override ITable GetTableByName(string schema, string name)
-            {
-                if (_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(new object[0]);
-                return new TestTable();
-            }
+        //    //public override ITable GetTableByName(string schema, string name)
+        //    //{
+        //    //    if (_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(new object[0]);
+        //    //    return new TestTable();
+        //    //}
 
-        }
+        //}
 
         private class TestTable : ITable
         {

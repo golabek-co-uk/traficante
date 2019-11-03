@@ -683,7 +683,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var table = new DatabaseTable(null, node.Name, collector.CollectedFieldNames);
             _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
-                new TableSymbol(null, node.Name, new TransitionSchema(node.Name, _engine, table), table, false));
+                new TableSymbol(null, node.Name, null, table, false));
 
             Nodes.Push(new CteInnerExpressionNode(set, node.Name));
         }

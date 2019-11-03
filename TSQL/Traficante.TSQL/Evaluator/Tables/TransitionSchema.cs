@@ -8,19 +8,19 @@ using Traficante.TSQL.Schema.Reflection;
 
 namespace Traficante.TSQL.Evaluator.Tables
 {
-    internal class TransitionSchema : BaseDatabase
-    {
-        private readonly ITable _table;
+    //internal class TransitionSchema : BaseDatabase
+    //{
+    //    private readonly ITable _table;
 
-        public TransitionSchema(string name, IEngine engine, ITable table)
-            : base(name, engine)
-        {
-            _table = table;
-        }
+    //    public TransitionSchema(string name, IEngine engine, ITable table)
+    //        : base(name, engine)
+    //    {
+    //        _table = table;
+    //    }
 
-        public override ITable GetTableByName(string schema, string name)
-        {
-            return _table;
-        }
-    }
+    ////    public override ITable GetTableByName(string schema, string name)
+    ////    {
+    ////        return _table;
+    ////    }
+    //}
 }

@@ -6,15 +6,15 @@ namespace Traficante.TSQL.Schema
 {
     public interface IDatabase
     {
-        string Name { get; }
+        //string Name { get; }
 
-        ITable GetTableByName(string schema, string name);
+        //ITable GetTableByName(string schema, string name);
 
-        RowSource GetTableRowSource(string schema, string name);
+        //RowSource GetTableRowSource(string schema, string name);
 
-        ITable GetFunctionByName(string schema, string name, object[] parameters);
+        //ITable GetFunctionByName(string schema, string name, object[] parameters);
 
-        RowSource GetFunctionRowSource(string schema, string name, object[] parameters);
+        //RowSource GetFunctionRowSource(string schema, string name, object[] parameters);
 
 
         //Reflection.SchemaMethodInfo[] GetConstructors(string schema, string methodName);
