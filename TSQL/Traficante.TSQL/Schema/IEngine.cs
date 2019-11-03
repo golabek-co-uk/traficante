@@ -13,7 +13,7 @@ namespace Traficante.TSQL.Schema
         void SetVariable(string database, string schema, string name, Type type, object value);
 
         bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
-        MethodInfo ResolveMethod(string schema, string method, Type[] parameters);
+        MethodInfo ResolveMethod(string[] path, string method, Type[] parameters);
 
         (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path);
 

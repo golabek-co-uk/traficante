@@ -88,7 +88,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 throw new NotImplementedException();
             }
 
-            public MethodInfo ResolveMethod(string schema, string method, Type[] parameters)
+            public MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
             {
                 throw new NotImplementedException();
             }
@@ -149,7 +149,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             public string Name { get; }
 
-            public string Schema { get; }
+            public string[] Path { get; }
         }
 
         private class TestEntity

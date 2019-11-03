@@ -2,9 +2,9 @@
 {
     public class DatabaseTable : ITable
     {
-        public DatabaseTable(string schema, string name, IColumn[] columns)
+        public DatabaseTable(string name, string[] path, IColumn[] columns)
         {
-            Schema = schema;
+            Path = Path;
             Name = name;
             Columns = columns;
         }
@@ -13,6 +13,6 @@
 
         public string Name { get; }
 
-        public string Schema { get; }
+        public string[] Path { get; }
     }
 }

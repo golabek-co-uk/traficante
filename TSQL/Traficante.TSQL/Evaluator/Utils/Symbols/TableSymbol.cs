@@ -15,19 +15,17 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             new Dictionary<string, ITable>();
 
         private string _fullTableName;
-
         private ITable _fullTable;
         
-        public string SchemaName { get; }
+        public string[] Path { get; }
 
-        public TableSymbol(string schemaName, string alias, ITable table, bool hasAlias)
+        public TableSymbol(string[] path, string alias, ITable table, bool hasAlias)
         {
             _tables.Add(alias, table);
             _orders.Add(alias);
             HasAlias = hasAlias;
-            SchemaName = schemaName;
+            Path = path;
             _fullTableName = alias;
-
             _fullTable = table;
         }
 
@@ -149,8 +147,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             }
 
             symbol._fullTableName = symbol._orders.Aggregate((a, b) => a + b);
-            symbol._fullTable = new DatabaseTable(symbol.SchemaName, symbol._fullTableName, compundTableColumns.ToArray());
-            //symbol._fullSchema = new TransitionSchema(symbol._fullTableName, null, symbol._fullTable);
+            symbol._fullTable = new DatabaseTable(symbol._fullTableName, symbol.Path, compundTableColumns.ToArray());
 
             return symbol;
         }

@@ -3,7 +3,7 @@
     public interface ITable
     {
         string Name { get; }
-        string Schema { get; }
+        string[] Path { get; }
         IColumn[] Columns { get; }
     }
 }

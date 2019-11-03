@@ -72,9 +72,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var fromNode = (FromFunctionNode)node.From;
 
-                var schema = fromNode.Function.Path.Reverse().ElementAtOrDefault(0);
-                var database = fromNode.Function.Path.Reverse().ElementAtOrDefault(1);
-
                 var function = _engine.GetFunction(fromNode.Function.Name, fromNode.Function.Path);
                 var functionColumns = TypeHelper.GetColumns(function.ItemsType);
                 var descType = expressionHelper.CreateAnonymousType(new (string, Type)[3] {
@@ -100,10 +97,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (node.Type == DescForType.Schema)
             {
                 var fromNode = (FromFunctionNode)node.From;
-
-                var schema = fromNode.Function.Path.Reverse().ElementAtOrDefault(0);
-                var database = fromNode.Function.Path.Reverse().ElementAtOrDefault(1);
-
 
             }
         }

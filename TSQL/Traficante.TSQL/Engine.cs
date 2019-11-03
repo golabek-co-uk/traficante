@@ -168,8 +168,9 @@ namespace Traficante.TSQL
             return MethodsManager.TryGetMethod(method, parameters, out methodInfo);
         }
 
-        public MethodInfo ResolveMethod(string schema, string method, Type[] parameters)
+        public MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
         {
+            var schema = path.Reverse().ElementAtOrDefault(0);
             return MethodsManager.GetMethod(method, parameters);
         }
     }
