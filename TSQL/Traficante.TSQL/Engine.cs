@@ -17,8 +17,8 @@ namespace Traficante.TSQL
 {
     public class Engine : IEngine
     {
-        public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Tables { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
-        public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Functions { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
+        public List<TableDef> Tables { get; set; } = new List<TableDef>();
+        public List<FunctionDef> Functions { get; set; } = new List<FunctionDef>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
         public List<Variable> _variables { get; private set; }
@@ -32,7 +32,7 @@ namespace Traficante.TSQL
             MethodsManager.RegisterLibraries(new Library());
         }
 
-        public Table Run(string script)
+        public Evaluator.Tables.Table Run(string script)
         {
             return new Runner().RunAndReturnTable(script, this);
         }
@@ -46,10 +46,10 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            Tables.Add((name, new string[2] { database, schema }, items, typeof(T)));
+            Tables.Add(new TableDef(name, new string[2] { database, schema }, items, typeof(T)));
         }
 
-        public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path)
+        public TableDef GetTable(string name, string[] path)
         {
             return Tables
                 .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
@@ -66,7 +66,7 @@ namespace Traficante.TSQL
                 }).FirstOrDefault();
         }
 
-        public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetFunction(string name, string[] path)
+        public FunctionDef GetFunction(string name, string[] path)
         {
             return Functions
                 .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
@@ -88,7 +88,7 @@ namespace Traficante.TSQL
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
             this.MethodsManager.RegisterMethod(name, function.Method);
-            Functions.Add((name, new string[2] { database, schema }, function(), typeof(T)));
+            Functions.Add(new FunctionDef(name, new string[2] { database, schema }, function(), typeof(T)));
         }
 
         public void AddFunction<TResult>(string database, string schema, string name, Func<TResult> function)
@@ -175,4 +175,39 @@ namespace Traficante.TSQL
         }
     }
 
+    public class FunctionDef
+    {
+        public FunctionDef()
+        {
+        }
+        public FunctionDef(string name, string[] path, IEnumerable items, Type itemsType)
+        {
+            this.Name = name;
+            this.Path = path;
+            this.Items = items;
+            this.ItemsType = itemsType;
+        }
+        public string Name { get; set; }
+        public string[] Path { get; set; }
+        public IEnumerable Items { get; set; }
+        public Type ItemsType { get; set; }
+    }
+
+    public class TableDef
+    {
+        public TableDef()
+        {
+        }
+        public TableDef(string name, string[] path, IEnumerable items, Type itemsType)
+        {
+            this.Name = name;
+            this.Path = path;
+            this.Items = items;
+            this.ItemsType = itemsType;
+        }
+        public string Name { get; set; }
+        public string[] Path { get; set; }
+        public IEnumerable Items { get; set; }
+        public Type ItemsType { get; set; }
+    }
 }

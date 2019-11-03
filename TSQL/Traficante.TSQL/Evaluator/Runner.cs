@@ -36,8 +36,6 @@ namespace Traficante.TSQL.Converter
 
         public Table RunAndReturnTable(string script, IEngine engine)
         {
-            
-
             object result = Run(script, engine);
             if (result is System.Collections.IEnumerable enumerableResult)
             {
@@ -51,7 +49,7 @@ namespace Traficante.TSQL.Converter
                     index++;
                 }
 
-                Evaluator.Tables.Table t = new Evaluator.Tables.Table("entities", columns2.ToArray());
+                Table t = new Table("entities", columns2.ToArray());
                 foreach (var row in enumerableResult)
                 {
                     object[] values = new object[columns2.Count];

@@ -68,20 +68,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 _onGetTableOrRowSource = onGetTableOrRowSource;
                 _whenChecked = whenChecked;
             }
-            //public IDatabase GetDatabase(string schema)
-            //{
-            //    return new TestSchema(_entities, _onGetTableOrRowSource, _whenChecked);
-            //}
 
-            public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetFunction(string name, string[] path)
-            {
-                throw new NotImplementedException();
-            }
-
-            public (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path)
-            {
-                throw new NotImplementedException();
-            }
 
             public IVariable GetVariable(string name)
             {
@@ -114,6 +101,16 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             }
 
             public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
+            {
+                throw new NotImplementedException();
+            }
+
+            FunctionDef IEngine.GetFunction(string name, string[] path)
+            {
+                throw new NotImplementedException();
+            }
+
+            TableDef IEngine.GetTable(string name, string[] path)
             {
                 throw new NotImplementedException();
             }

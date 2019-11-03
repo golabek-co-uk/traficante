@@ -452,7 +452,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (_currentScope.Name != "Desc")
             {
                 var dbTable = _engine.GetTable(node.Table.TableOrView, node.Table.Path);
-                if (dbTable.Name != null)
+                if (dbTable != null)
                 {
                     var schemaTable = new DatabaseTable(dbTable.Name, node.Table.Path, TypeHelper.GetColumns(dbTable.ItemsType));
                     table = schemaTable;

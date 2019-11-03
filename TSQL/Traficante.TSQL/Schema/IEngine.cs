@@ -15,11 +15,7 @@ namespace Traficante.TSQL.Schema
         bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
         MethodInfo ResolveMethod(string[] path, string method, Type[] parameters);
 
-        (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetTable(string name, string[] path);
-
-        (string Name, string[] Path, IEnumerable Items, Type ItemsType) GetFunction(string name, string[] path);
-
-        
-
+        TableDef GetTable(string name, string[] path);
+        FunctionDef GetFunction(string name, string[] path);
     }
 }
