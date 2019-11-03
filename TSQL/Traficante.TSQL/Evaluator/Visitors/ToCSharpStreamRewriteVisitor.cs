@@ -75,10 +75,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var schema = fromNode.Function.Path.Reverse().ElementAtOrDefault(0);
                 var database = fromNode.Function.Path.Reverse().ElementAtOrDefault(1);
 
-                var table = _engine
-                    .GetDatabase(null)
-                    .GetTableByName(schema, fromNode.Function.Name);
-
+                var function = _engine.GetFunction(fromNode.Function.Name, fromNode.Function.Path);
+                var functionColumns = TypeHelper.GetColumns(function.ItemsType);
                 var descType = expressionHelper.CreateAnonymousType(new (string, Type)[3] {
                     ("Name", typeof(string)),
                     ("Index", typeof(int)),
@@ -87,12 +85,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
                 var columnsType = typeof(List<>).MakeGenericType(descType);
                 var columns = columnsType.GetConstructors()[0].Invoke(new object[0]);
-                for (int i = 0; i < table.Columns.Length; i++)
+                for (int i = 0; i < functionColumns.Length; i++)
                 {
                     var descObj = descType.GetConstructors()[0].Invoke(new object[0]);
-                    descType.GetField("Name").SetValue(descObj, table.Columns[i].ColumnName);
-                    descType.GetField("Index").SetValue(descObj, table.Columns[i].ColumnIndex);
-                    descType.GetField("Type").SetValue(descObj, table.Columns[i].ColumnType.ToString());
+                    descType.GetField("Name").SetValue(descObj, functionColumns[i].ColumnName);
+                    descType.GetField("Index").SetValue(descObj, functionColumns[i].ColumnIndex);
+                    descType.GetField("Type").SetValue(descObj, functionColumns[i].ColumnType.ToString());
                     columnsType.GetMethod("Add", new Type[] { descType }).Invoke(columns, new object[] { descObj });
                 }
 
@@ -106,8 +104,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var schema = fromNode.Function.Path.Reverse().ElementAtOrDefault(0);
                 var database = fromNode.Function.Path.Reverse().ElementAtOrDefault(1);
 
-                var table = _engine
-                    .GetDatabase(database);
+
             }
         }
 

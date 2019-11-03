@@ -142,23 +142,26 @@ namespace Traficante.TSQL.Schema.Helpers
 
         public static IColumn[] GetColumns(Type typ)
         {
-            if (typeof(System.Collections.IEnumerable).IsAssignableFrom(typ))
-            {
-                var returnType = typ.GenericTypeArguments.FirstOrDefault();
-                var columnIndex = 0;
-                var columns = new List<IColumn>();
-                foreach (var member in returnType.GetMembers())
-                {
-                    if (member.MemberType != MemberTypes.Property)
-                        continue;
-                    var property = (PropertyInfo)member;
-                    columns.Add(new Traficante.TSQL.Schema.DataSources.Column(property.Name, columnIndex, property.PropertyType));
-                    columnIndex += 1;
-                }
+            var columns = new List<IColumn>();
+            Type returnType = null;
 
-                return columns.ToArray();
+            if (typeof(System.Collections.IEnumerable).IsAssignableFrom(typ))
+                returnType = typ.GenericTypeArguments.FirstOrDefault();
+            else
+                returnType = typ;
+            var columnIndex = 0;
+            foreach (var member in returnType.GetMembers())
+            {
+                if (member.MemberType != MemberTypes.Property &&
+                    member.MemberType != MemberTypes.Field)
+                    continue;
+
+                var property = (PropertyInfo)member;
+                columns.Add(new Traficante.TSQL.Schema.DataSources.Column(property.Name, columnIndex, property.PropertyType));
+                columnIndex += 1;
             }
-            return new Traficante.TSQL.Schema.DataSources.Column[0];
+
+            return columns.ToArray();
         }
     }
 

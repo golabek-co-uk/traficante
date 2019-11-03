@@ -17,7 +17,6 @@ namespace Traficante.TSQL
 {
     public class Engine : IEngine
     {
-        private List<Database> _databases;
         private Library _library;
 
         public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Tables { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
@@ -31,15 +30,12 @@ namespace Traficante.TSQL
 
         public Engine()
         {
-            _databases = new List<Database>();
-            GetDatabaseOrCreate(DefaultDatabase);
             _variables = new List<DatabaseVariable>();
             MethodsManager.RegisterLibraries(new Library());
         }
 
         public Engine(Library library)
         {
-            _databases = new List<Database>();
             _variables = new List<DatabaseVariable>();
             _library = library;
             MethodsManager.RegisterLibraries(library);
@@ -59,9 +55,6 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = GetDatabaseOrCreate(database);
-            db.AddTable(schema, name, items);
-            
             Tables.Add((name, new string[2] { database, schema }, items, typeof(T)));
         }
 
@@ -103,10 +96,6 @@ namespace Traficante.TSQL
         {
             database = database ?? DefaultDatabase;
             schema = schema ?? DefaultSchema;
-            var db = GetDatabaseOrCreate(database);
-            db.AddFunction(schema, name, function);
-            var entityMap = TypeHelper.GetEntityMap<T>();
-
             this.MethodsManager.RegisterMethod(name, function.Method);
             Functions.Add((name, new string[2] { database, schema }, function(), typeof(T)));
         }
@@ -181,34 +170,6 @@ namespace Traficante.TSQL
         public IVariable GetVariable(string name)
         {
             return _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
-        }
-
-        public IDatabase GetDatabase(string database)
-        {
-            if (database != null)
-                return _databases.FirstOrDefault(x => string.Equals(x.Name, database, System.StringComparison.CurrentCultureIgnoreCase));
-            else
-                return _databases.FirstOrDefault(x => string.Equals(x.Name, DefaultDatabase));
-        }
-
-        [ThreadStaticAttribute]
-        public Engine eng;
-        public Database GetDatabaseOrCreate(string database)
-        {
-            var db = _databases.FirstOrDefault(x => string.Equals(x.Name, database, StringComparison.CurrentCultureIgnoreCase));
-            if (db == null)
-            {
-                db = new Database(database, DefaultSchema, this);//, _library);
-                eng = this;
-                //db.AddFunction<string, IEnumerable<object>>(null, "exec", (x) =>
-                //{
-                //    var that = this;
-                //    return new List<object>();
-                //});
-
-                _databases.Add(db);
-            }
-            return db;
         }
 
         public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)

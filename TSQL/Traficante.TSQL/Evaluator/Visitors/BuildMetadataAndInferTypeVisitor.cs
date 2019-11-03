@@ -396,7 +396,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var schemaName = node.Function.Path.Reverse().ElementAtOrDefault(0);
             var databaseName = node.Function.Path.Reverse().ElementAtOrDefault(1);
-            var database = _engine.GetDatabase(databaseName);
+            //var database = _engine.GetDatabase(databaseName);
 
             ITable table = null;
             if (_currentScope.Name == "Desc")
@@ -415,7 +415,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            var tableSymbol = new TableSymbol(schemaName, _queryAlias, database, table, !string.IsNullOrEmpty(node.Alias));
+            var tableSymbol = new TableSymbol(schemaName, _queryAlias, null, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
@@ -455,11 +455,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
             TableSymbol tableSymbol = null;
             var schemaName = node.Table.Path.Reverse().ElementAtOrDefault(0);
             var databaseName = node.Table.Path.Reverse().ElementAtOrDefault(1);
-            var schema = _engine.GetDatabase(databaseName);
+            //var schema = _engine.GetDatabase(databaseName);
 
             ITable table;
             if (_currentScope.Name != "Desc")
-                table = schema.GetTableByName(schemaName, node.Table.TableOrView);
+            {
+                var dbTable = _engine.GetTable(node.Table.TableOrView, node.Table.Path);
+                if (dbTable.Name != null)
+                {
+                    var schemaTable = new DatabaseTable(databaseName, dbTable.Name, TypeHelper.GetColumns(dbTable.ItemsType));
+                    table = schemaTable;
+                }
+                else
+                    table = null;
+            }
             else
                 table = new DatabaseTable(schemaName, node.Table.TableOrView, new IColumn[0]);
 
@@ -494,7 +503,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            tableSymbol = new TableSymbol(schemaName, _queryAlias, schema, table, !string.IsNullOrEmpty(node.Alias));
+            tableSymbol = new TableSymbol(schemaName, _queryAlias, null, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
