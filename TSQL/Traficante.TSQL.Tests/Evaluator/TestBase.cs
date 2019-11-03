@@ -44,16 +44,16 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         {
             var engine = new Engine();
             //new TestLibrary()
-            engine.AddFunction<int?, int?>(null, null, "NullableMethod", x => x);
-            engine.AddFunction<int>(null, null, "RandomNumber", () => _random.Next(0, 100));
-            engine.AddFunction<decimal>(null, null, "GetOne", () => 1);
-            engine.AddFunction<decimal, string,string>(null, null, "GetTwo", (a,b) => 2.ToString());
-            engine.AddFunction<decimal, decimal>(null, null, "Inc", (number) => number + 1);
-            engine.AddFunction<long, long>(null, null, "Inc", (number) => number + 1);
-            engine.AddFunction<BasicEntity, BasicEntity>(null, null, "NothingToDo", (entity) => entity);
-            engine.AddFunction<int?, int?>(null, null, "NullableMethod", (value) => value);
-            engine.AddFunction<object, string>(null, null, "ToString", (obj) => obj.ToString());
-            engine.AddFunction<long, decimal, bool, bool, string, int>(null, null, "PrimitiveArgumentsMethod", (a, b, tr, fl, text) =>
+            engine.AddFunction<int?, int?>("NullableMethod", null, x => x);
+            engine.AddFunction<int>("RandomNumber", () => _random.Next(0, 100));
+            engine.AddFunction<decimal>("GetOne", () => 1);
+            engine.AddFunction<decimal, string,string>("GetTwo", (a,b) => 2.ToString());
+            engine.AddFunction<decimal, decimal>("Inc", (number) => number + 1);
+            engine.AddFunction<long, long>("Inc", (number) => number + 1);
+            engine.AddFunction<BasicEntity, BasicEntity>("NothingToDo", (entity) => entity);
+            engine.AddFunction<int?, int?>("NullableMethod", (value) => value);
+            engine.AddFunction<object, string>("ToString", (obj) => obj.ToString());
+            engine.AddFunction<long, decimal, bool, bool, string, int>("PrimitiveArgumentsMethod", (a, b, tr, fl, text) =>
             {
                 Assert.AreEqual(1L, a);
                 Assert.AreEqual(2m, b);
@@ -65,8 +65,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             foreach (var source in sources)
             {
-                engine.AddTable(null, source.Key, "entities", source.Value);
-                engine.AddFunction(null, source.Key, "Entities", () => source.Value);
+                engine.AddTable("entities", new string[1] { source.Key }, source.Value);
+                engine.AddFunction("Entities", new string[1] { source.Key }, () => source.Value);
             }
             return new CompiledQuery( new Runner().RunAndReturnTable(script, engine));
             //return InstanceCreator.CompileForExecution(script, engine);

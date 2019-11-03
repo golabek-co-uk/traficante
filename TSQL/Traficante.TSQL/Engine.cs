@@ -22,10 +22,6 @@ namespace Traficante.TSQL
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
         public List<Variable> _variables { get; private set; }
-
-        public string DefaultDatabase = "master";
-        public string DefaultSchema = "dbo";        
-
         public Engine()
         {
             _variables = new List<Variable>();
@@ -37,16 +33,14 @@ namespace Traficante.TSQL
             return new Runner().RunAndReturnTable(script, this);
         }
 
-        public void AddTable<T>(string table, IEnumerable<T> items)
+        public void AddTable<T>(string name, IEnumerable<T> items)
         {
-            AddTable(null, null, table, items);
+            AddTable(name, new string[0],  items);
         }
 
-        public void AddTable<T>(string database, string schema, string name, IEnumerable<T> items)
+        public void AddTable<T>(string name, string[] path, IEnumerable<T> items)
         {
-            database = database ?? DefaultDatabase;
-            schema = schema ?? DefaultSchema;
-            Tables.Add(new TableDef(name, new string[2] { database, schema }, items, typeof(T)));
+            Tables.Add(new TableDef(name, path ?? new string[0], items, typeof(T)));
         }
 
         public TableDef GetTable(string name, string[] path)
@@ -83,44 +77,77 @@ namespace Traficante.TSQL
                 }).FirstOrDefault();
         }
 
-        public void AddFunction<T>(string database, string schema, string name, Func<IEnumerable<T>> function)
-        {
-            database = database ?? DefaultDatabase;
-            schema = schema ?? DefaultSchema;
-            this.MethodsManager.RegisterMethod(name, function.Method);
-            Functions.Add(new FunctionDef(name, new string[2] { database, schema }, function(), typeof(T)));
-        }
-
-        public void AddFunction<TResult>(string database, string schema, string name, Func<TResult> function)
+        public void AddFunction<T>(string name, string[] path, Func<IEnumerable<T>> function)
         {
             this.MethodsManager.RegisterMethod(name, function.Method);
+            Functions.Add(new FunctionDef(name, path ?? new string[0], function(), typeof(T)));
         }
 
-        public void AddFunction<T1, TResult>(string database, string schema, string name, Func<T1, TResult> function)
+        public void AddFunction<T>(string name, Func<IEnumerable<T>> function)
         {
             this.MethodsManager.RegisterMethod(name, function.Method);
+            Functions.Add(new FunctionDef(name, new string[0], function(), typeof(T)));
         }
 
-        public void AddFunction<T1, T2, TResult>(string database, string schema, string name, Func<T1, T2, TResult> function)
+        public void AddFunction<TResult>(string name, string[] path, Func<TResult> function)
         {
             this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
-        public void AddFunction<T1, T2, T3, TResult>(string database, string schema, string name, Func<T1, T2, T3, TResult> function)
+        public void AddFunction<TResult>(string name, Func<TResult> function)
         {
             this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
-        public void AddFunction<T1, T2, T3, T4, TResult>(string database, string schema, string name, Func<T1, T2, T3, T4, TResult> function)
+        public void AddFunction<T1, TResult>(string name, string[] path, Func<T1, TResult> function)
         {
             this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
-        public void AddFunction<T1, T2, T3, T4, T5, TResult>(string database, string schema, string name, Func<T1, T2, T3, T4, T5, TResult> function)
+        public void AddFunction<T1, TResult>(string name, Func<T1, TResult> function)
         {
             this.MethodsManager.RegisterMethod(name, function.Method);
         }
 
+        public void AddFunction<T1, T2, TResult>(string name, string[] path, Func<T1, T2, TResult> function)
+        {
+            this.MethodsManager.RegisterMethod(name, function.Method);
+        }
+
+        public void AddFunction<T1, T2, TResult>(string name, Func<T1, T2, TResult> function)
+        {
+            this.MethodsManager.RegisterMethod(name, function.Method);
+        }
+
+        public void AddFunction<T1, T2, T3, TResult>(string name, string[] path, Func<T1, T2, T3, TResult> function)
+        {
+            this.MethodsManager.RegisterMethod(name, function.Method);
+        }
+
+        public void AddFunction<T1, T2, T3, TResult>(string name, Func<T1, T2, T3, TResult> function)
+        {
+            this.MethodsManager.RegisterMethod(name, function.Method);
+        }
+
+        public void AddFunction<T1, T2, T3, T4, TResult>(string name, string[] path, Func<T1, T2, T3, T4, TResult> function)
+        {
+            this.MethodsManager.RegisterMethod(name, function.Method);
+        }
+
+        public void AddFunction<T1, T2, T3, T4, TResult>(string name, Func<T1, T2, T3, T4, TResult> function)
+        {
+            this.MethodsManager.RegisterMethod(name, function.Method);
+        }
+
+        public void AddFunction<T1, T2, T3, T4, T5, TResult>(string name, string[] path, Func<T1, T2, T3, T4, T5, TResult> function)
+        {
+            this.MethodsManager.RegisterMethod(name, function.Method);
+        }
+
+        public void AddFunction<T1, T2, T3, T4, T5, TResult>(string name, Func<T1, T2, T3, T4, T5, TResult> function)
+        {
+            this.MethodsManager.RegisterMethod(name, function.Method);
+        }
 
         public void SetVariable<T>(string name, T value)
         {

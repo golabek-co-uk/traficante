@@ -16,7 +16,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void Select_Function_Cast()
         {
             Engine sut = new Engine();
-            sut.AddFunction<string, bool>(null, null, "SERVERPROPERTY", x => true);
+            sut.AddFunction<string, bool>("SERVERPROPERTY", x => true);
 
             var result = sut.Run("SELECT CAST(SERVERPROPERTY(N'IsHadrEnabled') AS bit) AS [IsHadrEnabled]");
             Assert.IsNotNull(result);
@@ -40,7 +40,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void Select_Function_WithDatabaseAndSchema()
         {
             Engine sut = new Engine();
-            sut.AddFunction<bool>("msdb", "dbo", "fn_syspolicy_is_automation_enabled", () => true);
+            sut.AddFunction<bool>("fn_syspolicy_is_automation_enabled", new string[2] { "msdb", "dbo" }, () => true);
 
             var result = sut.Run("SELECT msdb.dbo.fn_syspolicy_is_automation_enabled()");
             Assert.IsNotNull(result);
@@ -55,7 +55,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Engine sut = new Engine();
             sut.SetVariable("@alwayson", (int?)null);
             sut.SetVariable("@@SERVICENAME", "Traficante");
-            sut.AddFunction<string, string, int>("master", "dbo", "xp_qv", (x, y) => 5);
+            sut.AddFunction<string, string, int>("xp_qv", new string[2]{"master", "dbo"}, (x, y) => 5);
 
             var result = sut.Run("EXECUTE @alwayson = master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
             var alwayson = sut.GetVariable("@alwayson");
@@ -70,7 +70,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Engine sut = new Engine();
             
             sut.SetVariable("@@SERVICENAME", "Traficante");
-            sut.AddFunction<string, string, int>("master", "dbo", "xp_qv", (x, y) => 
+            sut.AddFunction<string, string, int>("xp_qv", new string[2] { "master", "dbo" }, (x, y) => 
             {
                 Execute_FunctionWithArguments_Flag = true;
                 return default(int);
@@ -78,21 +78,6 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             sut.Run("EXECUTE master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
             Assert.IsTrue(Execute_FunctionWithArguments_Flag);
-        }
-
-        [TestMethod]
-        public void Execute_exec()
-        {
-            Engine sut = new Engine();
-            sut.AddFunction<string, string>(null, null, "CONNECTIONPROPERTY", (x) => {
-                if (x == "net_transport")
-                    return "TCP";
-                return null;
-            });
-
-            var result = sut.Run("exec ('select CONVERT(nvarchar(40),CONNECTIONPROPERTY(''net_transport'')) as ConnectionProtocol')");
-
-            sut.Run("saf");
         }
     }
 }
