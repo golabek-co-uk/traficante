@@ -17,8 +17,6 @@ namespace Traficante.TSQL
 {
     public class Engine : IEngine
     {
-        private Library _library;
-
         public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Tables { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
         public List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)> Functions { get; set; } = new List<(string Name, string[] Path, IEnumerable Items, Type ItemsType)>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
@@ -32,13 +30,6 @@ namespace Traficante.TSQL
         {
             _variables = new List<DatabaseVariable>();
             MethodsManager.RegisterLibraries(new Library());
-        }
-
-        public Engine(Library library)
-        {
-            _variables = new List<DatabaseVariable>();
-            _library = library;
-            MethodsManager.RegisterLibraries(library);
         }
 
         public Table Run(string script)
@@ -183,16 +174,4 @@ namespace Traficante.TSQL
         }
     }
 
-    public class DbTable
-    {
-        public DbTable(string name, string[] path, IColumn[] columns)
-        {
-            Name = name;
-            Path = path;
-            Columns = columns;
-        }
-        string Name { get; }
-        string[] Path { get; }
-        IColumn[] Columns { get; }
-    }
 }
