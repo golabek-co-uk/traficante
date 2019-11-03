@@ -248,7 +248,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(identifier);
 
-            (IDatabase Schema, ITable Table, string TableName) tuple;
+            (ITable Table, string TableName) tuple;
             if (!string.IsNullOrEmpty(node.Alias))
                 tuple = tableSymbol.GetTableByAlias(node.Alias);
             else
@@ -415,7 +415,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            var tableSymbol = new TableSymbol(schemaName, _queryAlias, null, table, !string.IsNullOrEmpty(node.Alias));
+            var tableSymbol = new TableSymbol(schemaName, _queryAlias, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
@@ -444,7 +444,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var tableSchemaPair = tableSymbol.GetTableByAlias(node.VariableName);
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
-                new TableSymbol(null, _queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
+                new TableSymbol(null, _queryAlias, tableSchemaPair.Table, node.Alias == _queryAlias));
             _currentScope[node.Id] = _queryAlias;
 
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, _queryAlias));
@@ -493,7 +493,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
                 var tableSchemaPair = tableSymbol.GetTableByAlias(node.Table.TableOrView);
                 _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
-                    new TableSymbol(null, _queryAlias, tableSchemaPair.Schema, tableSchemaPair.Table, node.Alias == _queryAlias));
+                    new TableSymbol(null, _queryAlias, tableSchemaPair.Table, node.Alias == _queryAlias));
                 _currentScope[node.Id] = _queryAlias;
 
                 Nodes.Push(new InMemoryTableFromNode(node.Table.TableOrView, _queryAlias));
@@ -503,7 +503,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            tableSymbol = new TableSymbol(schemaName, _queryAlias, null, table, !string.IsNullOrEmpty(node.Alias));
+            tableSymbol = new TableSymbol(schemaName, _queryAlias, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
@@ -683,7 +683,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var table = new DatabaseTable(null, node.Name, collector.CollectedFieldNames);
             _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
-                new TableSymbol(null, node.Name, null, table, false));
+                new TableSymbol(null, node.Name, table, false));
 
             Nodes.Push(new CteInnerExpressionNode(set, node.Name));
         }

@@ -11,25 +11,23 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
     {
         private readonly List<string> _orders = new List<string>();
 
-        private readonly Dictionary<string, Tuple<IDatabase, ITable>> _tables =
-            new Dictionary<string, Tuple<IDatabase, ITable>>();
+        private readonly Dictionary<string, ITable> _tables =
+            new Dictionary<string, ITable>();
 
         private string _fullTableName;
 
         private ITable _fullTable;
-        private IDatabase _fullSchema;
-
+        
         public string SchemaName { get; }
 
-        public TableSymbol(string schemaName, string alias, IDatabase schema, ITable table, bool hasAlias)
+        public TableSymbol(string schemaName, string alias, ITable table, bool hasAlias)
         {
-            _tables.Add(alias, new Tuple<IDatabase, ITable>(schema, table));
+            _tables.Add(alias, table);
             _orders.Add(alias);
             HasAlias = hasAlias;
             SchemaName = schemaName;
             _fullTableName = alias;
 
-            _fullSchema = schema;
             _fullTable = table;
         }
 
@@ -42,28 +40,28 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
 
         public string[] CompoundTables => _orders.ToArray();
 
-        public (IDatabase Schema, ITable Table, string TableName) GetTableByColumnName(string column)
+        public (ITable Table, string TableName) GetTableByColumnName(string column)
         {
-            (IDatabase, ITable, string) score = (null, null, null);
+            (ITable, string) score = (null, null);
 
             foreach (var table in _tables)
             {
-                var col = table.Value.Item2.Columns.SingleOrDefault(c => c.ColumnName == column);
+                var col = table.Value.Columns.SingleOrDefault(c => c.ColumnName == column);
 
                 if (col == null)
                     throw new NotSupportedException($"Unrecognized column ({column})");
 
-                score = (table.Value.Item1, table.Value.Item2, table.Key);
+                score = (table.Value, table.Key);
             }
 
             return score;
         }
 
-        public (IDatabase Schema, ITable Table, string TableName) GetTableByAlias(string alias)
+        public (ITable Table, string TableName) GetTableByAlias(string alias)
         {
             if (_fullTableName == alias)
-                return (_fullSchema, _fullTable, alias);
-            return (_tables[alias].Item1, _tables[alias].Item2, alias);
+                return (_fullTable, alias);
+            return (_tables[alias], alias);
         }
 
         public IColumn GetColumnByAliasAndName(string alias, string columnName)
@@ -71,7 +69,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             if (_fullTableName == alias)
                 return _fullTable.Columns.Single(c => c.ColumnName == columnName);
 
-            return _tables[alias].Item2.Columns.Single(c => c.ColumnName == columnName);
+            return _tables[alias].Columns.Single(c => c.ColumnName == columnName);
         }
 
         public IColumn GetColumn(string columnName)
@@ -79,7 +77,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             IColumn column = null;
             foreach (var table in _orders)
             {
-                var tmpColumn = _tables[table].Item2.Columns.SingleOrDefault(col => col.ColumnName == columnName);
+                var tmpColumn = _tables[table].Columns.SingleOrDefault(col => col.ColumnName == columnName);
 
                 if (column != null)
                     throw new NotSupportedException("Multiple column with the same identifier");
@@ -98,7 +96,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
 
         public IColumn[] GetColumns(string alias)
         {
-            return _tables[alias].Item2.Columns;
+            return _tables[alias].Columns;
         }
 
         public IColumn[] GetColumns()
@@ -115,11 +113,11 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             var count = 0;
             while (_orders[i] != alias)
             {
-                count += _tables[_orders[i]].Item2.Columns.Length;
+                count += _tables[_orders[i]].Columns.Length;
                 i++;
             }
 
-            var columns = _tables[_orders[i]].Item2.Columns;
+            var columns = _tables[_orders[i]].Columns;
             var j = 0;
             for (; j < columns.Length; j++)
                 if (columns[j].ColumnName == columnName)
@@ -139,7 +137,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
                 symbol._tables.Add(item.Key, item.Value);
                 symbol._orders.Add(item.Key);
 
-                compundTableColumns.AddRange(item.Value.Item2.Columns);
+                compundTableColumns.AddRange(item.Value.Columns);
             }
 
             foreach (var item in other._tables)
@@ -147,7 +145,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
                 symbol._tables.Add(item.Key, item.Value);
                 symbol._orders.Add(item.Key);
 
-                compundTableColumns.AddRange(item.Value.Item2.Columns);
+                compundTableColumns.AddRange(item.Value.Columns);
             }
 
             symbol._fullTableName = symbol._orders.Aggregate((a, b) => a + b);
