@@ -15,6 +15,7 @@ using Avalonia.Logging.Serilog;
 using Dock.Model;
 using ReactiveUI;
 using Traficante.Studio.Models;
+using Traficante.Studio.Services;
 using Traficante.Studio.ViewModels;
 using Traficante.Studio.Views;
 
@@ -42,27 +43,7 @@ namespace Traficante.Studio
             DataGrid dg = new DataGrid();
             //RxApp.DefaultExceptionHandler = new MyCoolObservableExceptionHandler();
 
-            var appData = new AppData();
-            try
-            {
-                var objectsJson = File.ReadAllText("Objects");
-                var objects = new AppDataSerializer().DerializeObjects(objectsJson);
-                appData.Objects = new ObservableCollection<ObjectModel>(objects);
-            }
-            catch { }
-            
-            appData
-                .Objects
-                .CollectionChanged += (s, x) =>
-                {
-                    try
-                    {
-                        var objects = appData.Objects.ToList();
-                        var objectsJson = new AppDataSerializer().SerializeObjects(objects);
-                        File.WriteAllText("Objects", objectsJson);
-                    }
-                    catch { }
-                };
+            var appData = new AppDataService().Load();
             var factory = new MainWindowDockFactory(appData);
             var layout = factory.CreateLayout();
             factory.InitLayout(layout);

@@ -12,9 +12,7 @@
         <DropDown Grid.Column="2" Name="Objects" MinWidth="100" Margin="2 0 2 0" Padding="0 0 0 0"  Height="20">
           <DropDown.ItemTemplate>
             <DataTemplate>
-              <StackPanel>
                 <TextBlock Text="{Binding Name}"/>
-              </StackPanel>
             </DataTemplate>
           </DropDown.ItemTemplate>
         </DropDown>
@@ -28,7 +26,7 @@
           <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Results</TextBlock>
         </TabItem.Header>
         <DockPanel>
-          <dg:DataGrid Name="ResultsData"></dg:DataGrid>
+          <dg:DataGrid Name="ResultsData" Height="300"></dg:DataGrid>
         </DockPanel>
       </TabItem>
       <TabItem>

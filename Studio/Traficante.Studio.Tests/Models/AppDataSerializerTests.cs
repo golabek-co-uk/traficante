@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using Traficante.Studio.Models;
+using Traficante.Studio.Services;
 
 namespace Traficante.Studio.Tests.Models
 {
@@ -13,7 +14,7 @@ namespace Traficante.Studio.Tests.Models
         [TestMethod]
         public void SerializeObjects()
         {
-            AppDataSerializer sut = new AppDataSerializer();
+            AppDataService sut = new AppDataService();
             var items = new ObservableCollection<ObjectModel>();
             items.Add(new SqlServerObjectModel(new SqlServerConnectionInfo{ Server = "server1.com" }) 
             {

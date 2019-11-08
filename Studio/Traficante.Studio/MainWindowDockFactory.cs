@@ -7,14 +7,23 @@ using Dock.Model.Controls;
 using Traficante.Studio.Views;
 using Traficante.Studio.ViewModels;
 using System.Reactive;
+using ReactiveUI.Legacy;
+using ReactiveUI;
+using System.Collections.Specialized;
+using System.Collections.ObjectModel;
+using Traficante.Studio.Models;
+using System.Linq;
+using System.Reactive.Linq;
+using DynamicData.Binding;
+using DynamicData;
 
 namespace Traficante.Studio
 {
     public class MainWindowDockFactory : DockFactory
     {
-        private object _context;
+        private AppData _context;
 
-        public MainWindowDockFactory(object context)
+        public MainWindowDockFactory(AppData context)
         {
             _context = context;
         }
@@ -35,30 +44,111 @@ namespace Traficante.Studio
                 Views = CreateList<IView>()
             };
 
+            _context
+                .Queries
+                .ToObservableChangeSet()
+                .Transform(x =>
+                {
+                    return new QueryViewModel(x.Id, "New query", _context);
+                })
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .ActOnEveryObject(
+                    added =>
+                    {
+                        bool exists = documentsWindows.Views
+                            .Select(x => (QueryViewModel)x)
+                            .Any(x => x.Id == added.Id);
+                        if (exists == false)
+                        {
+                            if (documentsWindows.CurrentView != null)
+                            {
+                                documentsWindows.Views.Insert(
+                                    documentsWindows.Views.IndexOf(documentsWindows.CurrentView) + 1,
+                                    added);
+                            }
+                            else
+                            {
+                                documentsWindows.Views.Add(added);
+                            }
+                            this.InitLayout(added);
+                            this.InitLayout(documentsWindows);
+                            documentsWindows.CurrentView = added;
+                        }
+                    },
+                    removed =>
+                    {
+                        bool exists = documentsWindows.Views
+                            .Select(x => (QueryViewModel)x)
+                            .Any(x => x.Id == removed.Id);
+                        if (exists)
+                            documentsWindows.Views.Remove(removed);
+                    }
+                );
+
+            ((INotifyCollectionChanged)documentsWindows.Views).CollectionChanged += new NotifyCollectionChangedEventHandler(
+                (object sender, NotifyCollectionChangedEventArgs e) =>
+                {
+                    if (e.OldItems != null)
+                    {
+                        foreach (QueryViewModel view in e.OldItems)
+                        {
+                            var queryModel = _context.Queries.FirstOrDefault(x => x.Id == view.Id);
+                            if (queryModel != null)
+                                _context.Queries.Remove(queryModel);
+                        }
+                    }
+                });
+
             Interactions.NewQuery.RegisterHandler(x =>
             {
-                var queryWindow = new QueryViewModel()
+                _context.Queries.Add(new QueryModel
                 {
-                    Id = "Query",
-                    Title = "New query",
-                    Context = _context
-                };
-
-                if (documentsWindows.CurrentView != null)
-                {
-                    documentsWindows.Views.Insert(
-                        documentsWindows.Views.IndexOf(documentsWindows.CurrentView) + 1,
-                        queryWindow);
-                }
-                else
-                {
-                    documentsWindows.Views.Add(queryWindow);
-                }
-                this.InitLayout(queryWindow);
-                this.InitLayout(documentsWindows);
-                documentsWindows.CurrentView = queryWindow;
+                    Id = Guid.NewGuid().ToString()
+                });
                 x.SetOutput(Unit.Default);
             });
+            //    .Select(x => new QueryViewModel()
+            //    {
+            //        Id = x.Id,
+            //        Title = "New query",
+            //        Context = _context
+            //    })
+            //    .ObserveOn(RxApp.MainThreadScheduler)
+            //    .ToObservableChangeSet(x => x.Id)
+            //    .Transform(x =>
+            //    {
+            //        this.InitLayout(x);
+            //        this.InitLayout(documentsWindows);
+            //        return x;
+            //    })
+            //    .Bind(out queriesView);
+
+            //documentsWindows.Views = queriesView;
+            //Interactions.NewQuery.RegisterHandler(x =>
+            //{
+            //    var queryWindow = new QueryViewModel()
+            //    {
+            //        Id = "Query",
+            //        Title = "New query",
+            //        Context = _context
+            //    };
+
+            //    if (documentsWindows.CurrentView != null)
+            //    {
+            //        documentsWindows.Views.Insert(
+            //            documentsWindows.Views.IndexOf(documentsWindows.CurrentView) + 1,
+            //            queryWindow);
+            //    }
+            //    else
+            //    {
+            //        documentsWindows.Views.Add(queryWindow);
+            //    }
+            //    this.InitLayout(queryWindow);
+            //    this.InitLayout(documentsWindows);
+            //    documentsWindows.CurrentView = queryWindow;
+            //    x.SetOutput(Unit.Default);
+            //});
+
 
             var bodyLayout = new LayoutDock
             {

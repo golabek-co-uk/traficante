@@ -37,11 +37,12 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.8.3" />
     <PackageReference Include="Avalonia.Desktop" Version="0.8.3" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.8.3" />
+    <PackageReference Include="CsvHelper" Version="12.1.3" />
     <PackageReference Include="Dock.Avalonia" Version="0.8.2" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.8.2" />
     <PackageReference Include="Dock.Model.ReactiveUI" Version="0.8.2" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19269.1" />
-    <PackageReference Include="MySqlConnector" Version="0.60.2" />
+    <PackageReference Include="MySqlConnector" Version="0.60.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
   <ItemGroup>
