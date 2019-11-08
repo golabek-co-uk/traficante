@@ -34,7 +34,7 @@ namespace Traficante.Studio.Services
             }
         }
 
-        public IEnumerable<object> Run(MySqlConnectionInfo connectionString, string text, Action<Type> returnTypeCreated)
+        public IEnumerable<object> Run(MySqlConnectionInfo connectionString, string text, Action<Type> returnTypeCreated = null)
         {
             using (var connection = new MySqlConnection())
             {
@@ -53,7 +53,7 @@ namespace Traficante.Studio.Services
                             fields.Add((name, type));
                         }
                         Type returnType = new ExpressionHelper().CreateAnonymousType(fields);
-                        returnTypeCreated(returnType);
+                        returnTypeCreated?.Invoke(returnType);
                         while (sqlReader.Read())
                         {
                             var item = Activator.CreateInstance(returnType);

@@ -33,7 +33,7 @@ namespace Traficante.Studio.Services
             }
         }
 
-        public IEnumerable<object> Run(SqlServerConnectionInfo connectionString, string text, Action<Type> returnTypeCreated)
+        public IEnumerable<object> Run(SqlServerConnectionInfo connectionString, string text, Action<Type> returnTypeCreated = null)
         {
             using (var sqlConnection = new SqlConnection())
             {
@@ -52,7 +52,7 @@ namespace Traficante.Studio.Services
                             fields.Add((name, type));
                         }
                         Type returnType = new ExpressionHelper().CreateAnonymousType(fields);
-                        returnTypeCreated(returnType);
+                        returnTypeCreated?.Invoke(returnType);
                         while (sqlReader.Read())
                         {
                             var item = Activator.CreateInstance(returnType);
@@ -72,6 +72,7 @@ namespace Traficante.Studio.Services
                 }
             }
         }
+
         public object GetDefaultValue(Type t)
         {
             if (t.IsValueType && Nullable.GetUnderlyingType(t) == null)

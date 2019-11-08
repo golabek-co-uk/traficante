@@ -26,7 +26,7 @@
           <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Results</TextBlock>
         </TabItem.Header>
         <DockPanel>
-          <dg:DataGrid Name="ResultsData" Height="300"></dg:DataGrid>
+          <dg:DataGrid Name="ResultsData"></dg:DataGrid>
         </DockPanel>
       </TabItem>
       <TabItem>

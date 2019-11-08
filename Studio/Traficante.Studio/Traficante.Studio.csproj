@@ -41,6 +41,7 @@
     <PackageReference Include="Dock.Avalonia" Version="0.8.2" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.8.2" />
     <PackageReference Include="Dock.Model.ReactiveUI" Version="0.8.2" />
+    <PackageReference Include="DynamicData" Version="6.13.21" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19269.1" />
     <PackageReference Include="MySqlConnector" Version="0.60.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
