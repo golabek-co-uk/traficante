@@ -99,6 +99,22 @@ namespace Traficante.Studio
                     }
                 });
 
+            documentsWindows
+                .WhenAnyValue(x => x.CurrentView)
+                .Subscribe(x => {
+                    if (x != null)
+                        _context.SelectedQueryIndex = documentsWindows.Views.IndexOf(x);
+                    else
+                        _context.SelectedQueryIndex = -1;
+                });
+            _context
+                .WhenAnyValue(x => x.SelectedQueryIndex)
+                .Subscribe(x => {
+                    var view = documentsWindows.Views.ElementAtOrDefault(x);
+                    if (view != null)
+                        documentsWindows.CurrentView = view;
+                });
+
             Interactions.NewQuery.RegisterHandler(x =>
             {
                 _context.Queries.Add(new QueryModel
@@ -107,48 +123,6 @@ namespace Traficante.Studio
                 });
                 x.SetOutput(Unit.Default);
             });
-            //    .Select(x => new QueryViewModel()
-            //    {
-            //        Id = x.Id,
-            //        Title = "New query",
-            //        Context = _context
-            //    })
-            //    .ObserveOn(RxApp.MainThreadScheduler)
-            //    .ToObservableChangeSet(x => x.Id)
-            //    .Transform(x =>
-            //    {
-            //        this.InitLayout(x);
-            //        this.InitLayout(documentsWindows);
-            //        return x;
-            //    })
-            //    .Bind(out queriesView);
-
-            //documentsWindows.Views = queriesView;
-            //Interactions.NewQuery.RegisterHandler(x =>
-            //{
-            //    var queryWindow = new QueryViewModel()
-            //    {
-            //        Id = "Query",
-            //        Title = "New query",
-            //        Context = _context
-            //    };
-
-            //    if (documentsWindows.CurrentView != null)
-            //    {
-            //        documentsWindows.Views.Insert(
-            //            documentsWindows.Views.IndexOf(documentsWindows.CurrentView) + 1,
-            //            queryWindow);
-            //    }
-            //    else
-            //    {
-            //        documentsWindows.Views.Add(queryWindow);
-            //    }
-            //    this.InitLayout(queryWindow);
-            //    this.InitLayout(documentsWindows);
-            //    documentsWindows.CurrentView = queryWindow;
-            //    x.SetOutput(Unit.Default);
-            //});
-
 
             var bodyLayout = new LayoutDock
             {

@@ -1,4 +1,5 @@
-﻿using DynamicData.Binding;
+﻿using DynamicData;
+using DynamicData.Binding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -17,113 +18,64 @@ namespace Traficante.Studio.Services
     {
         public AppData Load()
         {
-            var appData = new AppData();
-            appData.Objects = LoadObjects();
+            var appData = LoadFromFile();
             appData
                 .Objects
                 .ToObservableChangeSet()
                 .Subscribe(x =>
                 {
-                    SaveObjects(appData.Objects);
+                    SaveToFile(appData);
                 });
-            appData.Queries = LoadQueries();
-            
             appData
                 .Queries
                 .ToObservableChangeSet()
                 .Subscribe(x =>
                 {
-                    SaveQueries(appData.Queries);
+                    SaveToFile(appData);
                 });
             return appData;
         }
 
-        public ObservableCollection<QueryModel> LoadQueries()
+        public void SaveToFile(AppData appData)
         {
             try
             {
-                var queriesJson = File.ReadAllText("Queries");
-                var queries = new AppDataSerializer().DerializeQueries(queriesJson);
-                queries.ForEach(x =>
-                {
-                    if (string.IsNullOrEmpty(x.Id))
-                        x.Id = Guid.NewGuid().ToString();
-                });
-                return new ObservableCollection<QueryModel>(queries);
-            }
-            catch { }
-            return new ObservableCollection<QueryModel>();
+                var json = new AppDataSerializer().Serialize(appData);
+                File.WriteAllText("AppData", json);
+            } catch { }
         }
 
-        public void SaveQueries(ObservableCollection<QueryModel> queriesCollection)
+        public AppData LoadFromFile()
         {
             try
             {
-                var queries = queriesCollection.ToList();
-                var queriesJson = new AppDataSerializer().SerializeQueries(queries);
-                File.WriteAllText("Queries", queriesJson);
+                var json = File.ReadAllText("AppData");
+                return new AppDataSerializer().Derialize(json);
             }
             catch { }
+            return new AppData();
         }
 
-        public ObservableCollection<ObjectModel> LoadObjects()
-        {
-            try
-            {
-                var objectsJson = File.ReadAllText("Objects");
-                var objects = new AppDataSerializer().DerializeObjects(objectsJson);
-                return new ObservableCollection<ObjectModel>(objects);
-            }
-            catch { }
-            return new ObservableCollection<ObjectModel>();
-        }
-
-        public void SaveObjects(ObservableCollection<ObjectModel> objectsCollection)
-        {
-            try
-            {
-                var objects = objectsCollection.ToList();
-                var objectsJson = new AppDataSerializer().SerializeObjects(objects);
-                File.WriteAllText("Objects", objectsJson);
-            }
-            catch { }
-        }
+        
     }
 
     public class AppDataSerializer
     {
-        public string SerializeObjects(List<ObjectModel> objects)
+        public string Serialize(AppData appData)
         {
             return JsonConvert.SerializeObject(
-                objects,
+                appData,
                 Formatting.Indented,
                 new StringEnumConverter(),
                 new TypeConverter<ObjectModel>());
         }
 
-        public List<ObjectModel> DerializeObjects(string json)
+        public AppData Derialize(string json)
         {
-            return JsonConvert.DeserializeObject<List<ObjectModel>>(
+            return JsonConvert.DeserializeObject<AppData>(
                 json,
                 new StringEnumConverter(),
                 new TypeConverter<ObjectModel>());
-        }
-
-        public string SerializeQueries(List<QueryModel> queries)
-        {
-            return JsonConvert.SerializeObject(
-                queries,
-                Formatting.Indented,
-                new StringEnumConverter(),
-                new TypeConverter<QueryModel>());
-        }
-
-        public List<QueryModel> DerializeQueries(string json)
-        {
-            return JsonConvert.DeserializeObject<List<QueryModel>>(
-                json,
-                new StringEnumConverter(),
-                new TypeConverter<QueryModel>());
         }
     }
 

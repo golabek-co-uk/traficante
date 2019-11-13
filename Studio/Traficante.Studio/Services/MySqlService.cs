@@ -69,7 +69,6 @@ namespace Traficante.Studio.Services
             }
         }
 
-
         public List<string> GetDatabases(MySqlConnectionInfo connectionInfo)
         {
             using (MySqlConnection connection = new MySqlConnection())

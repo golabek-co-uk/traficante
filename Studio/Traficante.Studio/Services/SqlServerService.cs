@@ -85,7 +85,6 @@ namespace Traficante.Studio.Services
             }
         }
 
-
         // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql-server-schema-collections?view=netframework-4.8
 
         public List<string> GetDatabases(SqlServerConnectionInfo connectionInfo)
