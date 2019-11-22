@@ -400,13 +400,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             else
             {
-                var method = _engine.ResolveMethod(function.Path, function.Name, _fromFunctionNodeArgs.Select(x => x.GetType()).ToArray());
+                var method = _engine.ResolveMethod(function.Path, function.Name, function.ArgumentsTypes);
                 function = new FunctionNode(function.Name, function.Arguments, function.Path, method.MethodInfo, method.Delegate);
                 var columns = TypeHelper.GetColumns(method.MethodInfo.ReturnType);
                 table = new DatabaseTable(function.Name, function.Path, columns);
             }
 
-            _fromFunctionNodeArgs.Clear();
+           // _fromFunctionNodeArgs.Clear();
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);

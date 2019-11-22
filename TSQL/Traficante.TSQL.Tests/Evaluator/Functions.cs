@@ -79,5 +79,45 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             sut.Run("EXECUTE master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
             Assert.IsTrue(Execute_FunctionWithArguments_Flag);
         }
+
+        [TestMethod]
+        public void Select_From_FunctionWithoutArguments()
+        {
+            Engine sut = new Engine();
+            sut.AddFunction("get_entities", () =>
+            {
+                return new[]
+                    {
+                        new BasicEntity("may"),
+                        new BasicEntity("june")
+                    }.AsEnumerable();
+            });
+
+            var table = sut.Run("select * from get_entities()");
+            
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual("may", table[0][0]);
+            Assert.AreEqual("june", table[1][0]);
+        }
+
+        [TestMethod]
+        public void Select_From_FunctionArguments()
+        {
+            Engine sut = new Engine();
+            sut.AddFunction("get_entities", (int a, string b) =>
+            {
+                return new[]
+                    {
+                        new BasicEntity(a.ToString()),
+                        new BasicEntity(b)
+                    }.AsEnumerable();
+            });
+
+            var table = sut.Run("select * from get_entities(3, 'june')");
+
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual("3", table[0][0]);
+            Assert.AreEqual("june", table[1][0]);
+        }
     }
 }

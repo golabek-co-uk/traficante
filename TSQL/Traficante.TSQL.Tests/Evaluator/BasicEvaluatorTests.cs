@@ -1239,6 +1239,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.IsTrue(table[1][0] is DateTimeOffset);
         }
 
+
         [TestMethod]
         public void Select_Function_WithoutFrom()
         {

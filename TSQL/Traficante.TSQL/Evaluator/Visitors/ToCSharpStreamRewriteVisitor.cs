@@ -840,29 +840,35 @@ namespace Traficante.TSQL.Evaluator.Visitors
         
         public void Visit(FromFunctionNode node)
         {
-            var method = node.Function.Method;
-            var @delegate = node.Function.Delegate;
+            var function = node.Function;
             Type itemsType = null;
-            IEnumerable items = null;
-            if  (typeof(IEnumerable).IsAssignableFrom(method.ReturnType))
+            if (typeof(IEnumerable).IsAssignableFrom(function.Method.ReturnType))
             {
-                itemsType = method.ReturnType.GetGenericArguments().FirstOrDefault();
-                items = @delegate.DynamicInvoke() as IEnumerable;
+                itemsType = function.Method.ReturnType.GetGenericArguments().FirstOrDefault();
             }
 
+            List<Expression> functionExpressionArgumetns = new List<Expression>();
+            for (int i = 0; i < function.ArgsCount; i++)
+                functionExpressionArgumetns.Add(this.Nodes.Pop());
+            functionExpressionArgumetns.Reverse();
+            var callFunction = Expression.Call(Expression.Constant(function.Delegate.Target), function.Method, functionExpressionArgumetns);
+            var entitySource = Expression.Call(
+                typeof(Queryable),
+                "AsQueryable",
+                new Type[] { itemsType },
+                callFunction);
 
-            var fields = itemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
-
-            Type entityType = expressionHelper.CreateAnonymousType(fields);
-            var rowOfDataSource = Expression.Parameter(itemsType, "rowOfDataSource");
+            var entityFields = itemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
+            Type entityType = expressionHelper.CreateAnonymousType(entityFields);
+            var entityItem = Expression.Parameter(itemsType, "entityItem");
 
             List<MemberBinding> bindings = new List<MemberBinding>();
-            foreach (var field in fields)
+            foreach (var field in entityFields)
             {
                 //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
                 MemberBinding assignment = Expression.Bind(
                     entityType.GetField(field.Item1),
-                    Expression.PropertyOrField(rowOfDataSource, field.Name)
+                    Expression.PropertyOrField(entityItem, field.Name)
                     );
                 bindings.Add(assignment);
             }
@@ -874,15 +880,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, rowOfDataSource, _item_i);
-
-            var queryableRowSource = Expression.Constant(items.AsQueryable());
+            Expression expression = Expression.Lambda(initialization, entityItem, _item_i);
 
             var call = Expression.Call(
                 typeof(Queryable),
                 "Select",
                 new Type[] { itemsType, entityType },
-                queryableRowSource,
+                entitySource,
                 expression);
 
             Nodes.Push(call);
