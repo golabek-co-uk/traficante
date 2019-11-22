@@ -127,12 +127,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     if (parentNode is PropertyValueNode)
                         accessors.Add(((PropertyValueNode)parentNode).Name);
                     if (parentNode is DotNode)
-                        accessors.Add(((DotNode)parentNode).Name);
+                    {
+                        var dot = (DotNode)parentNode;
+                        if (dot.Expression is IdentifierNode)
+                            accessors.Add(((IdentifierNode)dot.Expression).Name);
+                        if (parentNode is PropertyValueNode)
+                            accessors.Add(((PropertyValueNode)dot.Expression).Name);
+                    }
                     parentNode = (parentNode as DotNode)?.Root;
                 }
 
+                accessors.Reverse();
+
                 FunctionNode function = node.Expression as FunctionNode;
-                Visit(new FunctionNode(function.Name, function.Arguments, accessors.ToArray(), function.Method));
+                Visit(new FunctionNode(function.Name, function.Arguments, accessors.ToArray(), function.Method, function.Delegate));
                 return;
             }
 

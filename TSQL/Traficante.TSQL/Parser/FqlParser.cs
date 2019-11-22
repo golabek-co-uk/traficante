@@ -160,7 +160,7 @@ namespace Traficante.TSQL.Parser
             var args = ComposeExecuteArgs();
             var method = accessors.Last();
             var path = accessors.Take(accessors.Count - 1);
-            return new ExecuteNode(variableNode, new FunctionNode(method, args, accessors.ToArray(), null));
+            return new ExecuteNode(variableNode, new FunctionNode(method, args, path.ToArray(), null, null));
         }
 
         private TypeNode ComposeType()
@@ -918,7 +918,7 @@ namespace Traficante.TSQL.Parser
 
             var args = isCastFunction ? ComposeCastArgs() : ComposeFunctionArgs();
 
-            return new FunctionNode(func.Value.Trim(), args, path, null);
+            return new FunctionNode(func.Value.Trim(), args, path, null, null);
         }
 
         private Token ConsumeAndGetToken(TokenType expected)

@@ -17,8 +17,7 @@ namespace Traficante.TSQL
 {
     public class Engine : IEngine
     {
-        public List<TableDef> Tables { get; set; } = new List<TableDef>();
-        public List<TableValuedFunctionDef> TableValuedFunctions { get; set; } = new List<TableValuedFunctionDef>();
+        public List<TableInfo> Tables { get; set; } = new List<TableInfo>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
 
         public List<Variable> _variables { get; private set; }
@@ -40,10 +39,10 @@ namespace Traficante.TSQL
 
         public void AddTable<T>(string name, string[] path, IEnumerable<T> items)
         {
-            Tables.Add(new TableDef(name, path ?? new string[0], items, typeof(T)));
+            Tables.Add(new TableInfo(name, path ?? new string[0], items, typeof(T)));
         }
 
-        public TableDef GetTable(string name, string[] path)
+        public TableInfo ResolveTable(string name, string[] path)
         {
             return Tables
                 .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
@@ -60,93 +59,74 @@ namespace Traficante.TSQL
                 }).FirstOrDefault();
         }
 
-        public TableValuedFunctionDef GetTableValuedFunction(string name, string[] path)
-        {
-            return TableValuedFunctions
-                .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
-                .Where(x =>
-                {
-                    var pathOfX = x.Path.Reverse().ToList();
-                    var pathToFind = path.Reverse().ToList();
-                    for (int i = 0; i < pathToFind.Count; i++)
-                    {
-                        if (pathOfX.ElementAtOrDefault(i) != pathToFind.ElementAtOrDefault(i))
-                            return false;
-                    }
-                    return true;
-                }).FirstOrDefault();
-        }
-
         public void AddFunction<T>(string name, string[] path, Func<IEnumerable<T>> function)
         {
-            this.MethodsManager.RegisterMethod(name, function.Method);
-            TableValuedFunctions.Add(new TableValuedFunctionDef(name, path ?? new string[0], function(), typeof(T)));
+            this.MethodsManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T>(string name, Func<IEnumerable<T>> function)
         {
-            this.MethodsManager.RegisterMethod(name, function.Method);
-            TableValuedFunctions.Add(new TableValuedFunctionDef(name, new string[0], function(), typeof(T)));
+            this.MethodsManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<TResult>(string name, string[] path, Func<TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function.Method);
+            this.MethodsManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<TResult>(string name, Func<TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function.Method);
+            this.MethodsManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, TResult>(string name, string[] path, Func<T1, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function.Method);
+            this.MethodsManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, TResult>(string name, Func<T1, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function.Method);
+            this.MethodsManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, T2, TResult>(string name, string[] path, Func<T1, T2, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function.Method);
+            this.MethodsManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, TResult>(string name, Func<T1, T2, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function.Method);
+            this.MethodsManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, T2, T3, TResult>(string name, string[] path, Func<T1, T2, T3, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function.Method);
+            this.MethodsManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, T3, TResult>(string name, Func<T1, T2, T3, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function.Method);
+            this.MethodsManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, T2, T3, T4, TResult>(string name, string[] path, Func<T1, T2, T3, T4, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function.Method);
+            this.MethodsManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, T3, T4, TResult>(string name, Func<T1, T2, T3, T4, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function.Method);
+            this.MethodsManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, T2, T3, T4, T5, TResult>(string name, string[] path, Func<T1, T2, T3, T4, T5, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function.Method);
+            this.MethodsManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, T3, T4, T5, TResult>(string name, Func<T1, T2, T3, T4, T5, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function.Method);
+            this.MethodsManager.RegisterMethod(name, function);
         }
 
         public void SetVariable<T>(string name, T value)
@@ -190,36 +170,18 @@ namespace Traficante.TSQL
             return _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
         }
 
-        public MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
+        public (MethodInfo MethodInfo, Delegate Delegate) ResolveMethod(string[] path, string method, Type[] parameters)
         {
-            return MethodsManager.GetMethod(method, parameters);
+            return MethodsManager.GetMethod(method, path, parameters);
         }
     }
 
-    public class TableValuedFunctionDef
+    public class TableInfo
     {
-        public TableValuedFunctionDef()
+        public TableInfo()
         {
         }
-        public TableValuedFunctionDef(string name, string[] path, IEnumerable items, Type itemsType)
-        {
-            this.Name = name;
-            this.Path = path;
-            this.Items = items;
-            this.ItemsType = itemsType;
-        }
-        public string Name { get; set; }
-        public string[] Path { get; set; }
-        public IEnumerable Items { get; set; }
-        public Type ItemsType { get; set; }
-    }
-
-    public class TableDef
-    {
-        public TableDef()
-        {
-        }
-        public TableDef(string name, string[] path, IEnumerable items, Type itemsType)
+        public TableInfo(string name, string[] path, IEnumerable items, Type itemsType)
         {
             this.Name = name;
             this.Path = path;

@@ -105,40 +105,17 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 throw new NotImplementedException();
             }
 
-            TableValuedFunctionDef IEngine.GetTableValuedFunction(string name, string[] path)
+            (MethodInfo MethodInfo, Delegate Delegate) IEngine.ResolveMethod(string[] path, string method, Type[] parameters)
             {
                 throw new NotImplementedException();
             }
 
-            TableDef IEngine.GetTable(string name, string[] path)
+            TableInfo IEngine.ResolveTable(string name, string[] path)
             {
                 throw new NotImplementedException();
             }
         }
 
-        //private class TestSchema : BaseDatabase
-        //{
-
-        //    private readonly IEnumerable<TestEntity> _entities;
-        //    private readonly Action<object[]> _onGetTableOrRowSource;
-        //    private readonly WhenCheckedParameters _whenChecked;
-
-        //    public TestSchema(IEnumerable<TestEntity> entities, Action<object[]> onGetTableOrRowSource,
-        //        WhenCheckedParameters whenChecked)
-        //        : base("test", null)//, CreateLibrary())
-        //    {
-        //        _entities = entities;
-        //        _onGetTableOrRowSource = onGetTableOrRowSource;
-        //        _whenChecked = whenChecked;
-        //    }
-
-        //    //public override ITable GetTableByName(string schema, string name)
-        //    //{
-        //    //    if (_whenChecked == WhenCheckedParameters.OnSchemaTableOrRowSourceGet) _onGetTableOrRowSource(new object[0]);
-        //    //    return new TestTable();
-        //    //}
-
-        //}
 
         private class TestTable : ITable
         {

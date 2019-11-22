@@ -11,7 +11,7 @@ namespace Traficante.TSQL.Schema.Managers
     public class MethodsManager
     {
         private static readonly Dictionary<Type, Type[]> TypeCompatibilityTable;
-        private readonly Dictionary<(string Name, string[] Path), List<MethodInfo>> _methods;
+        private readonly List<MethodDef> _methods;
 
         static MethodsManager()
         {
@@ -30,7 +30,7 @@ namespace Traficante.TSQL.Schema.Managers
 
         public MethodsManager()
         {
-            _methods = new Dictionary<(string Name, string[] Path), List<MethodInfo>>();
+            _methods = new List<MethodDef>();
         }
 
         public void RegisterLibraries(Library library)
@@ -42,21 +42,21 @@ namespace Traficante.TSQL.Schema.Managers
                 RegisterMethod(methodInfo);
         }
 
-        public MethodInfo GetMethod(string name, Type[] args)
+        public (MethodInfo, Delegate) GetMethod(string name, Type[] args)
         {
             return GetMethod(name, new string[0], args);
         }
 
-        public MethodInfo GetMethod(string name, string[] path, Type[] methodArgs)
+        public (MethodInfo MethodInfo, Delegate Delegate) GetMethod(string name, string[] path, Type[] methodArgs)
         {
-            var methods = MatchMethods(name, path).Value;
+            var methods = MatchMethods(name, path);
             if (methods == null)
-                return null;
+                return (null, null);
 
 
-            for (int i = 0, j = methods.Count; i < j; ++i)
+            for (int i = 0, j = methods.Methods.Count; i < j; ++i)
             {
-                var methodInfo = methods[i];
+                var methodInfo = methods.Methods[i].Method;
                 var parameters = methodInfo.GetParameters();
                 var optionalParametersCount = parameters.CountOptionalParameters();
                 var allParameters = parameters.Length;
@@ -99,9 +99,9 @@ namespace Traficante.TSQL.Schema.Managers
                 if (!hasMatchedArgTypes)
                     continue;
 
-                return methods[i];
+                return methods.Methods[i];
             }
-            return null;
+            return (null, null);
         }
 
         private bool CanBeAssignedFromGeneric(Type paramType, Type arrayType)
@@ -131,22 +131,40 @@ namespace Traficante.TSQL.Schema.Managers
             RegisterMethod(name, new string[0], methodInfo);
         }
 
-        public void RegisterMethod(string name, string[] path, MethodInfo methodInfo)
+        public void RegisterMethod(string name, Delegate @delegate)
         {
-            KeyValuePair<(string Name, string[] Path), List<MethodInfo>> existingMethod = MatchMethods(name, path, true);
-            if (existingMethod.Value != null)
-                existingMethod.Value.Add(methodInfo);
-            else
-                _methods.Add((name, path ?? new string[0]), new List<MethodInfo> { methodInfo });
+            RegisterMethod(name, new string[0], @delegate.Method, @delegate);
         }
 
-        public KeyValuePair<(string Name, string[] Path), List<MethodInfo>> MatchMethods(string name, string[] path, bool exact = false)
+        public void RegisterMethod(string name, string[] path, Delegate @delegate)
+        {
+            RegisterMethod(name, path, @delegate.Method, @delegate);
+        }
+
+        public void RegisterMethod(string name, string[] path, MethodInfo methodInfo, Delegate @delegate = null)
+        {
+            var existingMethod = MatchMethods(name, path, true);
+            if (existingMethod != null)
+            {
+                existingMethod.Methods.Add((methodInfo, null));
+            }
+            else
+            {
+                MethodDef methodDef = new MethodDef();
+                methodDef.Name = name;
+                methodDef.Path = path ?? new string[0];
+                methodDef.Methods.Add((methodInfo, @delegate));
+                _methods.Add(methodDef);
+            }
+        }
+
+        public MethodDef MatchMethods(string name, string[] path, bool exact = false)
         {
             return _methods
-                .Where(x => string.Equals(x.Key.Name, name, StringComparison.InvariantCultureIgnoreCase))
+                .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
                 .Where(x =>
                 {
-                    var pathOfX = x.Key.Path.Reverse().ToList();
+                    var pathOfX = x.Path.Reverse().ToList();
                     var pathToFind = path.Reverse().ToList();
                     if (exact && pathOfX.Count != pathToFind.Count)
                         return false;
@@ -166,5 +184,12 @@ namespace Traficante.TSQL.Schema.Managers
                 return TypeCompatibilityTable[to].Any(f => f == from);
             return to == from || to.IsAssignableFrom(from);
         }
+    }
+
+    public class MethodDef
+    {
+        public string Name { get; set; }
+        public string[] Path { get; set; }
+        public List<(MethodInfo Method, Delegate Delegate)> Methods { get; set; } = new List<(MethodInfo Method, Delegate Delegate)>();
     }
 }

@@ -3,24 +3,28 @@ using System.Collections.Generic;
 using System.Reflection;
 using Traficante.TSQL.Parser.Tokens;
 using Traficante.TSQL.Lib.Attributes;
+using System.Linq;
 
 namespace Traficante.TSQL.Parser.Nodes
 {
     public class FunctionNode : Node
     {
         public FunctionNode(string name, ArgsListNode args, string[] path,
-            MethodInfo method = (MethodInfo) null)
+            MethodInfo method = (MethodInfo)null, Delegate @delegate = (Delegate)null)
         {
             Name = name;
             Arguments = args;
             Method = method;
+            Delegate = @delegate;
             Path = path;
             Id = $"{nameof(FunctionNode)}.{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}{name}{args.Id}";
         }
 
         public MethodInfo Method { get; private set; }
-
+        public Delegate Delegate { get; private set; }
         public ArgsListNode Arguments { get; }
+
+        public Type[] ArgumentsTypes => Arguments.Args.Select(x => x.ReturnType).ToArray();
 
         public string[] Path { get; }
         public string Name { get; }

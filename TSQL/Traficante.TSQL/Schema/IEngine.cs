@@ -12,9 +12,8 @@ namespace Traficante.TSQL.Schema
         void SetVariable(string name, Type type, object value);
         void SetVariable(string database, string schema, string name, Type type, object value);
 
-        MethodInfo ResolveMethod(string[] path, string method, Type[] parameters);
+        (MethodInfo MethodInfo, Delegate Delegate) ResolveMethod(string[] path, string method, Type[] parameters);
 
-        TableDef GetTable(string name, string[] path);
-        TableValuedFunctionDef GetTableValuedFunction(string name, string[] path);
+        TableInfo ResolveTable(string name, string[] path);
     }
 }

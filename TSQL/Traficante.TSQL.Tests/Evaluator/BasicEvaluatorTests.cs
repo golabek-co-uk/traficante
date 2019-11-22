@@ -1126,8 +1126,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var query = "select " +
                 "   (case " +
                 "       when Population > 100d" +
-                "       then entities.GetOne()" +
-                "       else entities.Inc(entities.GetOne())" +
+                "       then GetOne()" +
+                "       else Inc(GetOne())" +
                 "   end)" +
                 "from #A.entities() entities";
 
@@ -1157,13 +1157,13 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var query = "select " +
                 "   (case " +
                 "       when Population > 100d" +
-                "       then entities.GetOne()" +
-                "       else entities.Inc(entities.GetOne())" +
+                "       then GetOne()" +
+                "       else Inc(GetOne())" +
                 "   end)," +
                 "   (case " +
                 "       when Population <= 100d" +
-                "       then entities.GetOne()" +
-                "       else entities.Inc(entities.GetOne())" +
+                "       then GetOne()" +
+                "       else Inc(GetOne())" +
                 "   end)" +
                 "from #A.entities() entities";
 

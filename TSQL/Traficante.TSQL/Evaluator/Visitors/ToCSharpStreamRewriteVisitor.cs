@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -72,8 +73,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var fromNode = (FromFunctionNode)node.From;
 
-                var function = _engine.GetTableValuedFunction(fromNode.Function.Name, fromNode.Function.Path);
-                var functionColumns = TypeHelper.GetColumns(function.ItemsType);
+                var method = _engine.ResolveMethod(fromNode.Function.Path, fromNode.Function.Name, fromNode.Function.ArgumentsTypes);
+                Type itemsType = null;
+                if (typeof(IEnumerable).IsAssignableFrom(method.MethodInfo.ReturnType))
+                {
+                    itemsType = method.MethodInfo.ReturnType.GetGenericArguments().FirstOrDefault();
+                }
+
+
+                var functionColumns = TypeHelper.GetColumns(itemsType);
                 var descType = expressionHelper.CreateAnonymousType(new (string, Type)[3] {
                     ("Name", typeof(string)),
                     ("Index", typeof(int)),
@@ -832,11 +840,21 @@ namespace Traficante.TSQL.Evaluator.Visitors
         
         public void Visit(FromFunctionNode node)
         {
-            var function = _engine.GetTableValuedFunction(node.Function.Name, node.Function.Path);
-            var fields = function.ItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
+            var method = node.Function.Method;
+            var @delegate = node.Function.Delegate;
+            Type itemsType = null;
+            IEnumerable items = null;
+            if  (typeof(IEnumerable).IsAssignableFrom(method.ReturnType))
+            {
+                itemsType = method.ReturnType.GetGenericArguments().FirstOrDefault();
+                items = @delegate.DynamicInvoke() as IEnumerable;
+            }
+
+
+            var fields = itemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);
-            var rowOfDataSource = Expression.Parameter(function.ItemsType, "rowOfDataSource");
+            var rowOfDataSource = Expression.Parameter(itemsType, "rowOfDataSource");
 
             List<MemberBinding> bindings = new List<MemberBinding>();
             foreach (var field in fields)
@@ -858,12 +876,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             Expression expression = Expression.Lambda(initialization, rowOfDataSource, _item_i);
 
-            var queryableRowSource = Expression.Constant(function.Items.AsQueryable());
+            var queryableRowSource = Expression.Constant(items.AsQueryable());
 
             var call = Expression.Call(
                 typeof(Queryable),
                 "Select",
-                new Type[] { function.ItemsType, entityType },
+                new Type[] { itemsType, entityType },
                 queryableRowSource,
                 expression);
 
@@ -879,7 +897,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromTableNode node)
         {
-            var table = _engine.GetTable(node.Table.TableOrView, node.Table.Path);
+            var table = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
             var fields = table.ItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);

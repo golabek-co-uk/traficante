@@ -193,7 +193,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(FunctionNode node)
         {
-            Nodes.Push(new FunctionNode(node.Name, (ArgsListNode) Nodes.Pop(), node.Path, node.Method));
+            Nodes.Push(new FunctionNode(node.Name, (ArgsListNode) Nodes.Pop(), node.Path, node.Method, node.Delegate));
         }
 
         public virtual void Visit(IsNullNode node)

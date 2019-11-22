@@ -474,7 +474,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var args = Nodes.Pop() as ArgsListNode;
 
-            Nodes.Push(new FunctionNode(node.Name, node.Arguments, node.Path, node.Method));
+            Nodes.Push(new FunctionNode(node.Name, node.Arguments, node.Path, node.Method, node.Delegate));
         }
 
         private FieldNode[] CreateFields(FieldNode[] oldFields)

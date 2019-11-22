@@ -88,7 +88,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void JoinWithCaseWhen2Test()
         {
             var query =
-                "select countries.Country, (case when population.Population > 400 then cities.ToUpperInvariant(cities.City) else cities.City end) as 'cities.City', population.Population from #A.entities() countries inner join #B.entities() cities on countries.Country = cities.Country inner join #C.entities() population on cities.City = population.City";
+                "select countries.Country, (case when population.Population > 400 then ToUpperInvariant(cities.City) else cities.City end) as 'cities.City', population.Population from #A.entities() countries inner join #B.entities() cities on countries.Country = cities.Country inner join #C.entities() population on cities.City = population.City";
 
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {
