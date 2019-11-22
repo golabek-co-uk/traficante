@@ -12,10 +12,9 @@ namespace Traficante.TSQL.Schema
         void SetVariable(string name, Type type, object value);
         void SetVariable(string database, string schema, string name, Type type, object value);
 
-        bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo);
         MethodInfo ResolveMethod(string[] path, string method, Type[] parameters);
 
         TableDef GetTable(string name, string[] path);
-        FunctionDef GetFunction(string name, string[] path);
+        TableValuedFunctionDef GetTableValuedFunction(string name, string[] path);
     }
 }

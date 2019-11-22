@@ -72,7 +72,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var fromNode = (FromFunctionNode)node.From;
 
-                var function = _engine.GetFunction(fromNode.Function.Name, fromNode.Function.Path);
+                var function = _engine.GetTableValuedFunction(fromNode.Function.Name, fromNode.Function.Path);
                 var functionColumns = TypeHelper.GetColumns(function.ItemsType);
                 var descType = expressionHelper.CreateAnonymousType(new (string, Type)[3] {
                     ("Name", typeof(string)),
@@ -832,7 +832,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         
         public void Visit(FromFunctionNode node)
         {
-            var function = _engine.GetFunction(node.Function.Name, node.Function.Path);
+            var function = _engine.GetTableValuedFunction(node.Function.Name, node.Function.Path);
             var fields = function.ItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
 
             Type entityType = expressionHelper.CreateAnonymousType(fields);

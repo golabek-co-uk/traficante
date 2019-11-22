@@ -11,7 +11,7 @@ namespace Traficante.TSQL.Schema.Managers
     public class MethodsManager
     {
         private static readonly Dictionary<Type, Type[]> TypeCompatibilityTable;
-        private readonly Dictionary<string, List<MethodInfo>> _methods;
+        private readonly Dictionary<(string Name, string[] Path), List<MethodInfo>> _methods;
 
         static MethodsManager()
         {
@@ -28,12 +28,9 @@ namespace Traficante.TSQL.Schema.Managers
             };
         }
 
-        /// <summary>
-        ///     Initialize object.
-        /// </summary>
         public MethodsManager()
         {
-            _methods = new Dictionary<string, List<MethodInfo>>(StringComparer.OrdinalIgnoreCase);
+            _methods = new Dictionary<(string Name, string[] Path), List<MethodInfo>>();
         }
 
         public void RegisterLibraries(Library library)
@@ -45,129 +42,16 @@ namespace Traficante.TSQL.Schema.Managers
                 RegisterMethod(methodInfo);
         }
 
-        /// <summary>
-        ///     Gets retrun type of function.
-        /// </summary>
-        /// <param name="function">Function name</param>
-        /// <param name="args">Function args</param>
-        /// <returns>Returned type of function.</returns>
-        public Type GetReturnType(string function, Type[] args)
+        public MethodInfo GetMethod(string name, Type[] args)
         {
-            var method = GetMethod(function, args);
-            return method.ReturnType;
+            return GetMethod(name, new string[0], args);
         }
 
-        /// <summary>
-        ///     Gets method that fits name and types of arguments passed.
-        /// </summary>
-        /// <param name="name">Function name</param>
-        /// <param name="methodArgs">Types of method arguments</param>
-        /// <returns>Method that fits requirements.</returns>
-        public MethodInfo GetMethod(string name, Type[] methodArgs)
+        public MethodInfo GetMethod(string name, string[] path, Type[] methodArgs)
         {
-            if (!TryGetAnnotatedMethod(name, methodArgs, out var index))
-            {
-                var args = methodArgs.Length == 0 ? string.Empty : methodArgs.Select(arg => arg.Name).Aggregate((a, b) => a + ", " + b);
-                throw new MissingMethodException("Unresolvable", $"{name}({args})");
-            }
-
-            return _methods[name][index];
-        }
-
-        /// <summary>
-        ///     Gets the registered method if exists.
-        /// </summary>
-        /// <param name="name">The method name.</param>
-        /// <param name="methodArgs">The types of arguments methods contains.</param>
-        /// <param name="result">Method metadas of founded method.</param>
-        /// <returns>True if method exists, otherwise false.</returns>
-        public bool TryGetMethod(string name, Type[] methodArgs, out MethodInfo result)
-        {
-            if (!TryGetAnnotatedMethod(name, methodArgs, out var index))
-            {
-                result = null;
-                return false;
-            }
-
-            result = _methods[name][index];
-            return true;
-        }
-
-        /// <summary>
-        ///     Determine if manager registered function with passed names and types of arguments.
-        /// </summary>
-        /// <param name="name">Function name</param>
-        /// <param name="methodArgs">Types of method arguments</param>
-        /// <returns>True if some method fits, else false.</returns>
-        public bool HasMethod(string name, Type[] methodArgs)
-        {
-            int index;
-            return TryGetAnnotatedMethod(name, methodArgs, out index) || TryGetRawMethod(name, methodArgs, out index);
-        }
-
-        /// <summary>
-        ///     Tries match function as if it weren't annotated. Assume that method specified parameters explicitly.
-        /// </summary>
-        /// <param name="name">Function name</param>
-        /// <param name="methodArgs">Types of method arguments</param>
-        /// <param name="index">Index of method that fits requirements.</param>
-        /// <returns>True if some method fits, else false.</returns>
-        private bool TryGetRawMethod(string name, Type[] methodArgs, out int index)
-        {
-            if (!_methods.ContainsKey(name))
-            {
-                index = -1;
-                return false;
-            }
-
-            var methods = _methods[name];
-
-            for (var i = 0; i < methods.Count; ++i)
-            {
-                var method = methods[i];
-                var parameters = method.GetParameters();
-
-                if (parameters.Length != methodArgs.Length)
-                    continue;
-
-                var hasMatchedArgTypes = true;
-
-                for (var j = 0; j < parameters.Length; ++j)
-                {
-                    if (parameters[j].ParameterType.GetUnderlyingNullable() == methodArgs[j])
-                        continue;
-
-                    hasMatchedArgTypes = false;
-                    break;
-                }
-
-                if (!hasMatchedArgTypes)
-                    continue;
-
-                index = i;
-                return true;
-            }
-
-            index = -1;
-            return false;
-        }
-
-        /// <summary>
-        ///     Determine if there are registered functions with specific names and types of arguments.
-        /// </summary>
-        /// <param name="name">Function name</param>
-        /// <param name="methodArgs">Types of method arguments</param>
-        /// <param name="index">Index of method that fits requirements.</param>
-        /// <returns>True if some method fits, else false.</returns>
-        private bool TryGetAnnotatedMethod(string name, IReadOnlyList<Type> methodArgs, out int index)
-        {
-            if (!_methods.ContainsKey(name))
-            {
-                index = -1;
-                return false;
-            }
-
-            var methods = _methods[name];
+            var methods = MatchMethods(name, path).Value;
+            if (methods == null)
+                return null;
 
 
             for (int i = 0, j = methods.Count; i < j; ++i)
@@ -189,7 +73,7 @@ namespace Traficante.TSQL.Schema.Managers
                 var parametersToSkip = parametersToInject;
 
                 var hasMatchedArgTypes = true;
-                for (int f = 0, g = paramsParameter.HasParameters() ? Math.Min(methodArgs.Count - (parameters.Length - 1), parameters.Length) : methodArgs.Count; f < g; ++f)
+                for (int f = 0, g = paramsParameter.HasParameters() ? Math.Min(methodArgs.Length - (parameters.Length - 1), parameters.Length) : methodArgs.Length; f < g; ++f)
                 {
                     //1. When constant value, it won't be nullable<type> but type.
                     //So it is possible to call function with such value. 
@@ -215,12 +99,9 @@ namespace Traficante.TSQL.Schema.Managers
                 if (!hasMatchedArgTypes)
                     continue;
 
-                index = i;
-                return true;
+                return methods[i];
             }
-
-            index = -1;
-            return false;
+            return null;
         }
 
         private bool CanBeAssignedFromGeneric(Type paramType, Type arrayType)
@@ -247,21 +128,37 @@ namespace Traficante.TSQL.Schema.Managers
 
         public void RegisterMethod(string name, MethodInfo methodInfo)
         {
-            if (_methods.ContainsKey(name))
-                _methods[name].Add(methodInfo);
-            else
-                _methods.Add(name, new List<MethodInfo> {methodInfo});
+            RegisterMethod(name, new string[0], methodInfo);
         }
 
-        public void RegisterMethods<TType>(string methodName)
+        public void RegisterMethod(string name, string[] path, MethodInfo methodInfo)
         {
-            var type = typeof(TType);
-            var typeInfo = type.GetTypeInfo();
-            var methods = typeInfo.GetDeclaredMethods(methodName);
-
-            foreach (var m in methods)
-                RegisterMethod(m.Name, m);
+            KeyValuePair<(string Name, string[] Path), List<MethodInfo>> existingMethod = MatchMethods(name, path, true);
+            if (existingMethod.Value != null)
+                existingMethod.Value.Add(methodInfo);
+            else
+                _methods.Add((name, path ?? new string[0]), new List<MethodInfo> { methodInfo });
         }
+
+        public KeyValuePair<(string Name, string[] Path), List<MethodInfo>> MatchMethods(string name, string[] path, bool exact = false)
+        {
+            return _methods
+                .Where(x => string.Equals(x.Key.Name, name, StringComparison.InvariantCultureIgnoreCase))
+                .Where(x =>
+                {
+                    var pathOfX = x.Key.Path.Reverse().ToList();
+                    var pathToFind = path.Reverse().ToList();
+                    if (exact && pathOfX.Count != pathToFind.Count)
+                        return false;
+                    for (int i = 0; i < pathToFind.Count; i++)
+                    {
+                        if (pathOfX.ElementAtOrDefault(i) != pathToFind.ElementAtOrDefault(i))
+                            return false;
+                    }
+                    return true;
+                }).FirstOrDefault();
+        }
+
 
         public static bool IsTypePossibleToConvert(Type to, Type from)
         {

@@ -14,19 +14,19 @@ namespace Traficante.Studio.Tests.Models
         [TestMethod]
         public void SerializeObjects()
         {
-            AppDataService sut = new AppDataService();
-            var items = new ObservableCollection<ObjectModel>();
-            items.Add(new SqlServerObjectModel(new SqlServerConnectionInfo{ Server = "server1.com" }) 
+            AppDataSerializer sut = new AppDataSerializer();
+            AppData appData = new AppData();
+            appData.Objects.Add(new SqlServerObjectModel(new SqlServerConnectionInfo{ Server = "server1.com" }) 
             {
                 Name = "server1"
             });
-            items.Add(new MySqlObjectModel(new MySqlConnectionInfo { Server = "server2.com" } )
+            appData.Objects.Add(new MySqlObjectModel(new MySqlConnectionInfo { Server = "server2.com" } )
             {
                 Name = "server2"
             });
-            var json =  sut.SerializeObjects(items);
-            var itemsCopy = sut.DerializeObjects(json);
-            CollectionAssert.Equals(items, itemsCopy);
+            var json =  sut.Serialize(appData);
+            var appDataCopy = sut.Derialize(json);
+            CollectionAssert.Equals(appData.Objects, appDataCopy.Objects);
         }
     }
 }

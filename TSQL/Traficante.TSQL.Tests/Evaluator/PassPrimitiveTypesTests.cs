@@ -105,7 +105,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 throw new NotImplementedException();
             }
 
-            FunctionDef IEngine.GetFunction(string name, string[] path)
+            TableValuedFunctionDef IEngine.GetTableValuedFunction(string name, string[] path)
             {
                 throw new NotImplementedException();
             }
