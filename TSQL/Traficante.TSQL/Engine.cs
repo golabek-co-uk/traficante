@@ -12,6 +12,7 @@ using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.Managers;
+using FieldInfo = Traficante.TSQL.Schema.Managers.FieldInfo;
 using MethodInfo = Traficante.TSQL.Schema.Managers.MethodInfo;
 
 namespace Traficante.TSQL
@@ -85,14 +86,14 @@ namespace Traficante.TSQL
             this.MethodsManager.RegisterMethod(name, path, function);
         }
 
-        public void AddFunction<T1, TResult>(string name, Func<T1, TResult> function)
+        public void AddFunction<T1, TResult>(string name, Func<T1, TResult> results, Func<T1, FieldInfo[]> fields = null)
         {
-            this.MethodsManager.RegisterMethod(name, function);
+            this.MethodsManager.RegisterMethod(name, results, fields);
         }
 
-        public void AddFunction<T1, T2, TResult>(string name, string[] path, Func<T1, T2, TResult> function)
+        public void AddFunction<T1, T2, TResult>(string name, string[] path, Func<T1, T2, TResult> results, Func<T1, FieldInfo[]> fields = null)
         {
-            this.MethodsManager.RegisterMethod(name, path, function);
+            this.MethodsManager.RegisterMethod(name, path, results, fields);
         }
 
         public void AddFunction<T1, T2, TResult>(string name, Func<T1, T2, TResult> function)

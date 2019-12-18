@@ -56,7 +56,7 @@ namespace Traficante.TSQL.Schema.Managers
 
             for (int i = 0, j = methods.Methods.Count; i < j; ++i)
             {
-                var methodInfo = methods.Methods[i].Method;
+                var methodInfo = methods.Methods[i].ResultsMethod;
                 var parameters = methodInfo.GetParameters();
                 var optionalParametersCount = parameters.CountOptionalParameters();
                 var allParameters = parameters.Length;
@@ -126,34 +126,52 @@ namespace Traficante.TSQL.Schema.Managers
             RegisterMethod(methodInfo.Name, methodInfo);
         }
 
-        public void RegisterMethod(string name, System.Reflection.MethodInfo methodInfo)
+        public void RegisterMethod(string name, System.Reflection.MethodInfo results)
         {
-            RegisterMethod(name, new string[0], methodInfo);
+            MethodInfo method = new MethodInfo
+            {
+                ResultsMethod = results
+            };
+            RegisterMethod(name, new string[0], method);
         }
 
-        public void RegisterMethod(string name, Delegate @delegate)
+        public void RegisterMethod(string name, Delegate results, Delegate fields = null)
         {
-            RegisterMethod(name, new string[0], @delegate.Method, @delegate);
+            MethodInfo method = new MethodInfo
+            {
+                ResultsDelegate = results,
+                ResultsMethod = results?.Method,
+                FieldsDelegate = fields,
+                FieldsMethod = fields?.Method,
+            };
+            RegisterMethod(name, new string[0], method);
         }
 
-        public void RegisterMethod(string name, string[] path, Delegate @delegate)
+        public void RegisterMethod(string name, string[] path, Delegate results, Delegate fields = null)
         {
-            RegisterMethod(name, path, @delegate.Method, @delegate);
+            MethodInfo method = new MethodInfo
+            {
+                ResultsDelegate = results,
+                ResultsMethod = results?.Method,
+                FieldsDelegate = fields,
+                FieldsMethod = fields?.Method,
+            };
+            RegisterMethod(name, path, method);
         }
 
-        public void RegisterMethod(string name, string[] path, System.Reflection.MethodInfo methodInfo, Delegate @delegate = null)
+        public void RegisterMethod(string name, string[] path, MethodInfo method)
         {
             var existingMethod = MatchMethods(name, path, true);
             if (existingMethod != null)
             {
-                existingMethod.Methods.Add(new MethodInfo { Method = methodInfo });
+                existingMethod.Methods.Add(method);
             }
             else
             {
                 MethodGroupInfo methodDef = new MethodGroupInfo();
                 methodDef.Name = name;
                 methodDef.Path = path ?? new string[0];
-                methodDef.Methods.Add(new MethodInfo { Method = methodInfo, Delegate = @delegate });
+                methodDef.Methods.Add(method);
                 _methods.Add(methodDef);
             }
         }
@@ -195,8 +213,16 @@ namespace Traficante.TSQL.Schema.Managers
 
     public class MethodInfo
     {
-        public string Name => Method.Name;
-        public System.Reflection.MethodInfo Method { get; set; }
-        public Delegate Delegate { get; set; }
+        public string Name => ResultsMethod.Name;
+        public System.Reflection.MethodInfo ResultsMethod { get; set; }
+        public Delegate ResultsDelegate { get; set; }
+        public Delegate FieldsDelegate { get; internal set; }
+        public System.Reflection.MethodInfo FieldsMethod { get; internal set; }
+    }
+
+    public class FieldInfo
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
     }
 }

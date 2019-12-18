@@ -401,7 +401,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             else
             {
                 var method = _engine.ResolveMethod(functionNode.Path, functionNode.Name, functionNode.ArgumentsTypes);
-                var returnType = method.Method.ReturnType;
+                var returnType = method.ResultsMethod.ReturnType;
                 functionNode = new FunctionNode(functionNode.Name, functionNode.Arguments, functionNode.Path, method);
                 var columns = TypeHelper.GetColumns(returnType);
                 table = new DatabaseTable(functionNode.Name, functionNode.Path, columns);
@@ -727,24 +727,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             return fields.ToArray();
-        }
-
-        private int[] CreateSetOperatorPositionIndexes(QueryNode node, string[] keys)
-        {
-            var indexes = new int[keys.Length];
-
-            var fieldIndex = 0;
-            var index = 0;
-
-            foreach (var field in node.Select.Fields)
-            {
-                if (keys.Contains(field.FieldName))
-                    indexes[index++] = fieldIndex;
-
-                fieldIndex += 1;
-            }
-
-            return indexes;
         }
 
         private string CreateSetOperatorPositionKey()

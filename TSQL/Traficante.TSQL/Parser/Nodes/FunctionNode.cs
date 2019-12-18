@@ -27,7 +27,7 @@ namespace Traficante.TSQL.Parser.Nodes
         public string Name { get; }
 
         public bool IsAggregateMethod =>
-            Method != null && Method.Method.GetCustomAttribute<AggregationMethodAttribute>() != null;
+            Method != null && Method.ResultsMethod.GetCustomAttribute<AggregationMethodAttribute>() != null;
 
         public int ArgsCount => Arguments.Args.Length;
 
@@ -42,15 +42,15 @@ namespace Traficante.TSQL.Parser.Nodes
 
         private Type ResolveGenericMethodReturnType()
         {
-            if (!Method.Method.ReturnType.IsGenericParameter)
-                return Method.Method.ReturnType;
+            if (!Method.ResultsMethod.ReturnType.IsGenericParameter)
+                return Method.ResultsMethod.ReturnType;
 
             int paramIndex = 0;
             var types = new List<Type>();
 
-            foreach (var param in Method.Method.GetParameters())
+            foreach (var param in Method.ResultsMethod.GetParameters())
             {
-                if (param.ParameterType.IsGenericParameter && Method.Method.ReturnType == param.ParameterType)
+                if (param.ParameterType.IsGenericParameter && Method.ResultsMethod.ReturnType == param.ParameterType)
                 {
                     types.Add(Arguments.Args[paramIndex].ReturnType);
                 }
