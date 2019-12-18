@@ -140,7 +140,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 accessors.Reverse();
 
                 FunctionNode function = node.Expression as FunctionNode;
-                Visit(new FunctionNode(function.Name, function.Arguments, accessors.ToArray(), function.Method, function.Delegate));
+                Visit(new FunctionNode(function.Name, function.Arguments, accessors.ToArray(), function.Method));
                 return;
             }
 

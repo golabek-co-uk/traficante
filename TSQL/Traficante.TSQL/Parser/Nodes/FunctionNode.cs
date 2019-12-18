@@ -9,19 +9,16 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class FunctionNode : Node
     {
-        public FunctionNode(string name, ArgsListNode args, string[] path,
-            MethodInfo method = (MethodInfo)null, Delegate @delegate = (Delegate)null)
+        public FunctionNode(string name, ArgsListNode args, string[] path, Traficante.TSQL.Schema.Managers.MethodInfo method)
         {
             Name = name;
             Arguments = args;
             Method = method;
-            Delegate = @delegate;
             Path = path;
             Id = $"{nameof(FunctionNode)}.{string.Join(".", Path)}{(Path.Length > 0 ? "." : "")}{name}{args.Id}";
         }
 
-        public MethodInfo Method { get; private set; }
-        public Delegate Delegate { get; private set; }
+        public Traficante.TSQL.Schema.Managers.MethodInfo Method { get; private set; }
         public ArgsListNode Arguments { get; }
 
         public Type[] ArgumentsTypes => Arguments.Args.Select(x => x.ReturnType).ToArray();
@@ -30,7 +27,7 @@ namespace Traficante.TSQL.Parser.Nodes
         public string Name { get; }
 
         public bool IsAggregateMethod =>
-            Method != null && Method.GetCustomAttribute<AggregationMethodAttribute>() != null;
+            Method != null && Method.Method.GetCustomAttribute<AggregationMethodAttribute>() != null;
 
         public int ArgsCount => Arguments.Args.Length;
 
@@ -45,15 +42,15 @@ namespace Traficante.TSQL.Parser.Nodes
 
         private Type ResolveGenericMethodReturnType()
         {
-            if (!Method.ReturnType.IsGenericParameter)
-                return Method.ReturnType;
+            if (!Method.Method.ReturnType.IsGenericParameter)
+                return Method.Method.ReturnType;
 
             int paramIndex = 0;
             var types = new List<Type>();
 
-            foreach (var param in Method.GetParameters())
+            foreach (var param in Method.Method.GetParameters())
             {
-                if (param.ParameterType.IsGenericParameter && Method.ReturnType == param.ParameterType)
+                if (param.ParameterType.IsGenericParameter && Method.Method.ReturnType == param.ParameterType)
                 {
                     types.Add(Arguments.Args[paramIndex].ReturnType);
                 }
@@ -85,7 +82,7 @@ namespace Traficante.TSQL.Parser.Nodes
             return ret;
         }
 
-        public void ChangeMethod(MethodInfo method)
+        public void ChangeMethod(Traficante.TSQL.Schema.Managers.MethodInfo method)
         {
             Method = method;
         }

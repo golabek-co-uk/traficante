@@ -229,7 +229,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var args = Nodes.Pop() as ArgsListNode;
 
             var methodInfo = this._engine.ResolveMethod(node.Path, node.Name, args.Args.Select(f => f.ReturnType).ToArray());
-            FunctionNode functionMethod = new FunctionNode(node.Name, args, node.Path, methodInfo.Method, methodInfo.Delegate);
+            FunctionNode functionMethod = new FunctionNode(node.Name, args, node.Path, methodInfo);
             Nodes.Push(functionMethod);
         }
 
@@ -402,7 +402,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var method = _engine.ResolveMethod(functionNode.Path, functionNode.Name, functionNode.ArgumentsTypes);
                 var returnType = method.Method.ReturnType;
-                functionNode = new FunctionNode(functionNode.Name, functionNode.Arguments, functionNode.Path, method.Method, method.Delegate);
+                functionNode = new FunctionNode(functionNode.Name, functionNode.Arguments, functionNode.Path, method);
                 var columns = TypeHelper.GetColumns(returnType);
                 table = new DatabaseTable(functionNode.Name, functionNode.Path, columns);
             }

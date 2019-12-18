@@ -195,6 +195,7 @@ namespace Traficante.TSQL.Schema.Managers
 
     public class MethodInfo
     {
+        public string Name => Method.Name;
         public System.Reflection.MethodInfo Method { get; set; }
         public Delegate Delegate { get; set; }
     }
