@@ -75,9 +75,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
                 var method = _engine.ResolveMethod(fromNode.Function.Path, fromNode.Function.Name, fromNode.Function.ArgumentsTypes);
                 Type itemsType = null;
-                if (typeof(IEnumerable).IsAssignableFrom(method.MethodInfo.ReturnType))
+                if (typeof(IEnumerable).IsAssignableFrom(method.Method.ReturnType))
                 {
-                    itemsType = method.MethodInfo.ReturnType.GetGenericArguments().FirstOrDefault();
+                    itemsType = method.Method.ReturnType.GetGenericArguments().FirstOrDefault();
                 }
 
 

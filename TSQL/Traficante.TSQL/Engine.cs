@@ -12,6 +12,7 @@ using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.Managers;
+using MethodInfo = Traficante.TSQL.Schema.Managers.MethodInfo;
 
 namespace Traficante.TSQL
 {
@@ -170,7 +171,7 @@ namespace Traficante.TSQL
             return _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
         }
 
-        public (MethodInfo MethodInfo, Delegate Delegate) ResolveMethod(string[] path, string method, Type[] parameters)
+        public MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
         {
             return MethodsManager.GetMethod(method, path, parameters);
         }

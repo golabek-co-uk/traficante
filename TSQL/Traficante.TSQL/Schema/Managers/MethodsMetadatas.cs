@@ -11,7 +11,7 @@ namespace Traficante.TSQL.Schema.Managers
     public class MethodsManager
     {
         private static readonly Dictionary<Type, Type[]> TypeCompatibilityTable;
-        private readonly List<MethodDef> _methods;
+        private readonly List<MethodGroupInfo> _methods;
 
         static MethodsManager()
         {
@@ -30,7 +30,7 @@ namespace Traficante.TSQL.Schema.Managers
 
         public MethodsManager()
         {
-            _methods = new List<MethodDef>();
+            _methods = new List<MethodGroupInfo>();
         }
 
         public void RegisterLibraries(Library library)
@@ -42,16 +42,16 @@ namespace Traficante.TSQL.Schema.Managers
                 RegisterMethod(methodInfo);
         }
 
-        public (MethodInfo, Delegate) GetMethod(string name, Type[] args)
+        public MethodInfo GetMethod(string name, Type[] args)
         {
             return GetMethod(name, new string[0], args);
         }
 
-        public (MethodInfo MethodInfo, Delegate Delegate) GetMethod(string name, string[] path, Type[] methodArgs)
+        public MethodInfo GetMethod(string name, string[] path, Type[] methodArgs)
         {
             var methods = MatchMethods(name, path);
             if (methods == null)
-                return (null, null);
+                return null;
 
 
             for (int i = 0, j = methods.Methods.Count; i < j; ++i)
@@ -101,7 +101,7 @@ namespace Traficante.TSQL.Schema.Managers
 
                 return methods.Methods[i];
             }
-            return (null, null);
+            return null;
         }
 
         private bool CanBeAssignedFromGeneric(Type paramType, Type arrayType)
@@ -121,12 +121,12 @@ namespace Traficante.TSQL.Schema.Managers
             return methodArgs.Count > parametersCount;
         }
 
-        public void RegisterMethod(MethodInfo methodInfo)
+        public void RegisterMethod(System.Reflection.MethodInfo methodInfo)
         {
             RegisterMethod(methodInfo.Name, methodInfo);
         }
 
-        public void RegisterMethod(string name, MethodInfo methodInfo)
+        public void RegisterMethod(string name, System.Reflection.MethodInfo methodInfo)
         {
             RegisterMethod(name, new string[0], methodInfo);
         }
@@ -141,24 +141,24 @@ namespace Traficante.TSQL.Schema.Managers
             RegisterMethod(name, path, @delegate.Method, @delegate);
         }
 
-        public void RegisterMethod(string name, string[] path, MethodInfo methodInfo, Delegate @delegate = null)
+        public void RegisterMethod(string name, string[] path, System.Reflection.MethodInfo methodInfo, Delegate @delegate = null)
         {
             var existingMethod = MatchMethods(name, path, true);
             if (existingMethod != null)
             {
-                existingMethod.Methods.Add((methodInfo, null));
+                existingMethod.Methods.Add(new MethodInfo { Method = methodInfo });
             }
             else
             {
-                MethodDef methodDef = new MethodDef();
+                MethodGroupInfo methodDef = new MethodGroupInfo();
                 methodDef.Name = name;
                 methodDef.Path = path ?? new string[0];
-                methodDef.Methods.Add((methodInfo, @delegate));
+                methodDef.Methods.Add(new MethodInfo { Method = methodInfo, Delegate = @delegate });
                 _methods.Add(methodDef);
             }
         }
 
-        public MethodDef MatchMethods(string name, string[] path, bool exact = false)
+        public MethodGroupInfo MatchMethods(string name, string[] path, bool exact = false)
         {
             return _methods
                 .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
@@ -186,10 +186,16 @@ namespace Traficante.TSQL.Schema.Managers
         }
     }
 
-    public class MethodDef
+    public class MethodGroupInfo
     {
         public string Name { get; set; }
         public string[] Path { get; set; }
-        public List<(MethodInfo Method, Delegate Delegate)> Methods { get; set; } = new List<(MethodInfo Method, Delegate Delegate)>();
+        public List<MethodInfo> Methods { get; set; } = new List<MethodInfo>();
+    }
+
+    public class MethodInfo
+    {
+        public System.Reflection.MethodInfo Method { get; set; }
+        public Delegate Delegate { get; set; }
     }
 }

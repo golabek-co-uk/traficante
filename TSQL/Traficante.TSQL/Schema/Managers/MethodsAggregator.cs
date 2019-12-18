@@ -15,7 +15,7 @@ namespace Traficante.TSQL.Schema.Managers
             _methsManager = methsManager;
         }
 
-        public (MethodInfo MethodInfo, Delegate Delegate) ResolveMethod(string name, Type[] args)
+        public MethodInfo ResolveMethod(string name, Type[] args)
         {
             return _methsManager.GetMethod(name, args);
         }

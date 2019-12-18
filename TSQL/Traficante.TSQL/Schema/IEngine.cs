@@ -12,7 +12,7 @@ namespace Traficante.TSQL.Schema
         void SetVariable(string name, Type type, object value);
         void SetVariable(string database, string schema, string name, Type type, object value);
 
-        (MethodInfo MethodInfo, Delegate Delegate) ResolveMethod(string[] path, string method, Type[] parameters);
+        Traficante.TSQL.Schema.Managers.MethodInfo ResolveMethod(string[] path, string method, Type[] parameters);
 
         TableInfo ResolveTable(string name, string[] path);
     }

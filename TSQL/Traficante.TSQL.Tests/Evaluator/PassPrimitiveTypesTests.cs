@@ -75,7 +75,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 throw new NotImplementedException();
             }
 
-            public MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
+            public TSQL.Schema.Managers.MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
             {
                 throw new NotImplementedException();
             }
@@ -105,7 +105,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 throw new NotImplementedException();
             }
 
-            (System.Reflection.MethodInfo MethodInfo, Delegate Delegate) IEngine.ResolveMethod(string[] path, string method, Type[] parameters)
+            Traficante.TSQL.Schema.Managers.MethodInfo IEngine.ResolveMethod(string[] path, string method, Type[] parameters)
             {
                 throw new NotImplementedException();
             }
