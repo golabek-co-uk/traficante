@@ -21,8 +21,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
     {
         private readonly IEngine _engine;
 
-        private readonly List<object> _fromFunctionNodeArgs = new List<object>();
-
         private Scope _currentScope;
         private readonly List<string> _generatedAliases = new List<string>();
         private FieldNode[] _generatedColumns = new FieldNode[0];
@@ -190,31 +188,26 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(StringNode node)
         {
             Nodes.Push(new StringNode(node.Value));
-            _fromFunctionNodeArgs.Add(node.Value);
         }
 
         public void Visit(DecimalNode node)
         {
             Nodes.Push(new DecimalNode(node.Value));
-            _fromFunctionNodeArgs.Add(node.Value);
         }
 
         public void Visit(IntegerNode node)
         {
             Nodes.Push(new IntegerNode(node.ObjValue.ToString()));
-            _fromFunctionNodeArgs.Add(node.ObjValue);
         }
 
         public void Visit(BooleanNode node)
         {
             Nodes.Push(new BooleanNode(node.Value));
-            _fromFunctionNodeArgs.Add(node.Value);
         }
 
         public void Visit(WordNode node)
         {
             Nodes.Push(new WordNode(node.Value));
-            _fromFunctionNodeArgs.Add(node.Value);
         }
 
         public void Visit(ContainsNode node)
@@ -407,8 +400,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 table = new DatabaseTable(functionNode.Name, functionNode.Path, columns);
             }
 
-           // _fromFunctionNodeArgs.Clear();
-
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
@@ -465,8 +456,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             else
                 table = new DatabaseTable(node.Table.TableOrView, node.Table.Path, new IColumn[0]);
-
-            _fromFunctionNodeArgs.Clear();
 
             if (table == null)
             {
@@ -548,8 +537,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (from != null)
                 Methods.Push(from.Alias);
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
-
-            _fromFunctionNodeArgs.Clear();
         }
 
         public void Visit(RootNode node)
