@@ -27,8 +27,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private string _identifier;
         private string _queryAlias;
         
-        private IDictionary<string, Type> _explicitlyDefinedVariables = new Dictionary<string, Type>();
-
         private int _setKey;
 
         private Stack<string> Methods { get; } = new Stack<string>();
@@ -306,11 +304,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(VariableNode node)
         {
-            if (_explicitlyDefinedVariables.ContainsKey(node.Id))
-            {
-                Nodes.Push(new VariableNode(node.Name, _explicitlyDefinedVariables[node.Id]));
-                return;
-            }
             var variable = _engine.GetVariable(node.Name);
             if (variable == null)
                 throw new Exception("Variable is not declare: " + node.Name);
@@ -319,7 +312,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(DeclareNode node)
         {
-            _explicitlyDefinedVariables.Add(node.Variable.Id, node.Type.ReturnType);
+            _engine.SetVariable(node.Variable.Name, node.Type.ReturnType, null);
             Nodes.Push(new DeclareNode(node.Variable, node.Type));
         }
 
