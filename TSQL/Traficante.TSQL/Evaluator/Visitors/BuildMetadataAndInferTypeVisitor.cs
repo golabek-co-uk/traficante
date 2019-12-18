@@ -392,18 +392,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromFunctionNode node)
         {
-            var function = node.Function;
+            var functionNode = node.Function;
             ITable table = null;
             if (_currentScope.Name == "Desc")
             {
-                table = new DatabaseTable(function.Name, function.Path, new IColumn[0]);
+                table = new DatabaseTable(functionNode.Name, functionNode.Path, new IColumn[0]);
             }
             else
             {
-                var method = _engine.ResolveMethod(function.Path, function.Name, function.ArgumentsTypes);
-                function = new FunctionNode(function.Name, function.Arguments, function.Path, method.MethodInfo, method.Delegate);
-                var columns = TypeHelper.GetColumns(method.MethodInfo.ReturnType);
-                table = new DatabaseTable(function.Name, function.Path, columns);
+                var method = _engine.ResolveMethod(functionNode.Path, functionNode.Name, functionNode.ArgumentsTypes);
+                var returnType = method.MethodInfo.ReturnType;
+                functionNode = new FunctionNode(functionNode.Name, functionNode.Arguments, functionNode.Path, method.MethodInfo, method.Delegate);
+                var columns = TypeHelper.GetColumns(returnType);
+                table = new DatabaseTable(functionNode.Name, functionNode.Path, columns);
             }
 
            // _fromFunctionNodeArgs.Clear();
@@ -411,11 +412,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
-            var tableSymbol = new TableSymbol(function.Path, _queryAlias, table, !string.IsNullOrEmpty(node.Alias));
+            var tableSymbol = new TableSymbol(functionNode.Path, _queryAlias, table, !string.IsNullOrEmpty(node.Alias));
             _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
             _currentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new FromFunctionNode(function, _queryAlias);
+            var aliasedSchemaFromNode = new FromFunctionNode(functionNode, _queryAlias);
             Nodes.Push(aliasedSchemaFromNode);
         }
 

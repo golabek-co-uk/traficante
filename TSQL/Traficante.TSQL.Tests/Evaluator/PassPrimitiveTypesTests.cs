@@ -100,12 +100,12 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 throw new NotImplementedException();
             }
 
-            public bool TryResolveAggreationMethod(string method, Type[] parameters, out MethodInfo methodInfo)
+            public bool TryResolveAggreationMethod(string method, Type[] parameters, out System.Reflection.MethodInfo methodInfo)
             {
                 throw new NotImplementedException();
             }
 
-            (MethodInfo MethodInfo, Delegate Delegate) IEngine.ResolveMethod(string[] path, string method, Type[] parameters)
+            (System.Reflection.MethodInfo MethodInfo, Delegate Delegate) IEngine.ResolveMethod(string[] path, string method, Type[] parameters)
             {
                 throw new NotImplementedException();
             }
