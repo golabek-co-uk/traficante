@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Traficante.TSQL.Schema.DataSources
 {
     [DebuggerDisplay("{ColumnType.FullName} {ColumnName}: {ColumnIndex}")]
-    public class Column : IColumn
+    public class Column
     {
         public Column(string columnName, int columnIndex, Type columnType)
         {

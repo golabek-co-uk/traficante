@@ -1,15 +1,15 @@
 ﻿namespace Traficante.TSQL.Schema.DataSources
 {
-    public class DatabaseTable : ITable
+    public class Table
     {
-        public DatabaseTable(string name, string[] path, IColumn[] columns)
+        public Table(string name, string[] path, Schema.DataSources.Column[] columns)
         {
             Path = Path;
             Name = name;
             Columns = columns;
         }
 
-        public IColumn[] Columns { get; }
+        public Schema.DataSources.Column[] Columns { get; }
 
         public string Name { get; }
 

@@ -12,13 +12,13 @@ using Traficante.TSQL.Evaluator;
 using Traficante.TSQL.Evaluator.Tables;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
-using Column = Traficante.TSQL.Evaluator.Tables.Column;
+using DataColumn = Traficante.TSQL.Evaluator.Tables.DataColumn;
 
 namespace Traficante.TSQL.Converter
 {
     public class Runner
     {
-        public object Run(string script, IEngine engine)
+        public object Run(string script, Engine engine)
         {
             var items = new BuildItems
             {
@@ -34,22 +34,22 @@ namespace Traficante.TSQL.Converter
             return items.Result;
         }
 
-        public Table RunAndReturnTable(string script, IEngine engine)
+        public DataTable RunAndReturnTable(string script, Engine engine)
         {
             object result = Run(script, engine);
             if (result is System.Collections.IEnumerable enumerableResult)
             {
                 var itemType = result.GetType().GenericTypeArguments.FirstOrDefault();
 
-                List<Column> columns2 = new List<Column>();
+                List<DataColumn> columns2 = new List<DataColumn>();
                 int index = 0;
                 foreach (var field in itemType.GetFields())
                 {
-                    columns2.Add(new Column(field.Name, field.FieldType, index));
+                    columns2.Add(new DataColumn(field.Name, field.FieldType, index));
                     index++;
                 }
 
-                Table t = new Table("entities", columns2.ToArray());
+                DataTable t = new DataTable("entities", columns2.ToArray());
                 foreach (var row in enumerableResult)
                 {
                     object[] values = new object[columns2.Count];

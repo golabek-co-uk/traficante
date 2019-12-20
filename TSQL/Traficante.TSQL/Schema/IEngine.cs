@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Reflection;
+using Traficante.TSQL.Schema.DataSources;
 
 namespace Traficante.TSQL.Schema
 {
     public interface IEngine
     {
-        IVariable GetVariable(string name);
+        Variable GetVariable(string name);
         void SetVariable<T>(string name, T value);
-        void SetVariable<T>(string database, string schema, string name, T value);
         void SetVariable(string name, Type type, object value);
-        void SetVariable(string database, string schema, string name, Type type, object value);
 
         Traficante.TSQL.Schema.Managers.MethodInfo ResolveMethod(string[] path, string method, Type[] parameters);
 

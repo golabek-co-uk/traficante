@@ -9,10 +9,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class GetSelectFieldsVisitor : IQueryPartAwareExpressionVisitor
     {
-        private readonly List<IColumn> _collectedFieldNames = new List<IColumn>();
+        private readonly List<Schema.DataSources.Column> _collectedFieldNames = new List<Schema.DataSources.Column>();
         private QueryPart _queryPart;
 
-        public IColumn[] CollectedFieldNames => _collectedFieldNames.ToArray();
+        public Schema.DataSources.Column[] CollectedFieldNames => _collectedFieldNames.ToArray();
 
         public void SetQueryPart(QueryPart part)
         {

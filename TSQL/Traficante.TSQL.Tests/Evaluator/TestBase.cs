@@ -18,18 +18,18 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     public class CompiledQuery
     {
-        private Table _table;
-        public CompiledQuery(Table table)
+        private DataTable _table;
+        public CompiledQuery(DataTable table)
         {
             _table = table;
         }
 
-        public Table Run()
+        public DataTable Run()
         {
             return _table;
         }
 
-        public Table Run(CancellationToken token)
+        public DataTable Run(CancellationToken token)
         {
             return _table;
         }

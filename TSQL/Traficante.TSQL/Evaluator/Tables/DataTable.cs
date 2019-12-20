@@ -6,26 +6,26 @@ using System.Linq;
 
 namespace Traficante.TSQL.Evaluator.Tables
 {
-    public class Table : IndexedList<Key, Row>, IEnumerable<Row>, IReadOnlyTable
+    public class DataTable : IndexedList<Key, Row>, IEnumerable<Row>, IReadOnlyTable
     {
-        private readonly Dictionary<int, Column> _columnsByIndex;
-        private readonly Dictionary<string, Column> _columnsByName;
+        private readonly Dictionary<int, DataColumn> _columnsByIndex;
+        private readonly Dictionary<string, DataColumn> _columnsByName;
         private readonly Dictionary<int, TableIndex[]> _indexes;
 
-        public Table(string name, Column[] columns)
+        public DataTable(string name, DataColumn[] columns)
         {
             Name = name;
 
             _indexes = new Dictionary<int, TableIndex[]>();
-            _columnsByIndex = new Dictionary<int, Column>();
-            _columnsByName = new Dictionary<string, Column>();
+            _columnsByIndex = new Dictionary<int, DataColumn>();
+            _columnsByName = new Dictionary<string, DataColumn>();
 
             AddColumns(columns);
         }
 
         public string Name { get; }
 
-        public IEnumerable<Column> Columns => _columnsByIndex.Values;
+        public IEnumerable<DataColumn> Columns => _columnsByIndex.Values;
 
         public IEnumerator<Row> CurrentEnumerator { get; private set; }
 
@@ -42,7 +42,7 @@ namespace Traficante.TSQL.Evaluator.Tables
             return GetEnumerator();
         }
 
-        public void AddColumns(params Column[] columns)
+        public void AddColumns(params DataColumn[] columns)
         {
             for (var i = 0; i < columns.Length; i++)
             {
@@ -69,7 +69,7 @@ namespace Traficante.TSQL.Evaluator.Tables
             return _indexes.ContainsKey(hash);
         }
 
-        public Column GetColumn(string name)
+        public DataColumn GetColumn(string name)
         {
             return _columnsByName[name];
         }
@@ -99,7 +99,7 @@ namespace Traficante.TSQL.Evaluator.Tables
             foreach (var index in _indexes)
             {
                 var array = index.Value.Select((f, i) => _columnsByName[f.ColumnName]);
-                var enumerable = array as Column[] ?? array.ToArray();
+                var enumerable = array as DataColumn[] ?? array.ToArray();
                 var indexes = enumerable.Select(f => f.ColumnIndex).ToArray();
 
                 var objects = new object[indexes.Length];

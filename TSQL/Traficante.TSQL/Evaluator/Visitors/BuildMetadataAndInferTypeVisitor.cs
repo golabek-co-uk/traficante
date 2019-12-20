@@ -19,7 +19,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class BuildMetadataAndInferTypeVisitor : IAwareExpressionVisitor
     {
-        private readonly IEngine _engine;
+        private readonly Engine _engine;
 
         private Scope _currentScope;
         private readonly List<string> _generatedAliases = new List<string>();
@@ -27,11 +27,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private string _identifier;
         private string _queryAlias;
         
-        private int _setKey;
 
         private Stack<string> Methods { get; } = new Stack<string>();
 
-        public BuildMetadataAndInferTypeVisitor(IEngine engine)
+        public BuildMetadataAndInferTypeVisitor(Engine engine)
         {
             _engine = engine;
         }
@@ -237,7 +236,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(identifier);
 
-            (ITable Table, string TableName) tuple;
+            (Table Table, string TableName) tuple;
             if (!string.IsNullOrEmpty(node.Alias))
                 tuple = tableSymbol.GetTableByAlias(node.Alias);
             else
@@ -379,10 +378,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(FromFunctionNode node)
         {
             var functionNode = node.Function;
-            ITable table = null;
+            Table table = null;
             if (_currentScope.Name == "Desc")
             {
-                table = new DatabaseTable(functionNode.Name, functionNode.Path, new IColumn[0]);
+                table = new Table(functionNode.Name, functionNode.Path, new Schema.DataSources.Column[0]);
             }
             else
             {
@@ -390,7 +389,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var returnType = method.ResultsMethod.ReturnType;
                 functionNode = new FunctionNode(functionNode.Name, functionNode.Arguments, functionNode.Path, method);
                 var columns = TypeHelper.GetColumns(returnType);
-                table = new DatabaseTable(functionNode.Name, functionNode.Path, columns);
+                table = new Table(functionNode.Name, functionNode.Path, columns);
             }
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
@@ -435,20 +434,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             TableSymbol tableSymbol = null;
 
-            ITable table;
+            Table table;
             if (_currentScope.Name != "Desc")
             {
                 var dbTable = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
                 if (dbTable != null)
                 {
-                    var schemaTable = new DatabaseTable(dbTable.Name, node.Table.Path, TypeHelper.GetColumns(dbTable.ItemsType));
+                    var schemaTable = new Table(dbTable.Name, node.Table.Path, TypeHelper.GetColumns(dbTable.ItemsType));
                     table = schemaTable;
                 }
                 else
                     table = null;
             }
             else
-                table = new DatabaseTable(node.Table.TableOrView, node.Table.Path, new IColumn[0]);
+                table = new Table(node.Table.TableOrView, node.Table.Path, new Schema.DataSources.Column[0]);
 
             if (table == null)
             {
@@ -644,7 +643,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             set.Accept(traverser);
 
-            var table = new DatabaseTable(node.Name, new string[0], collector.CollectedFieldNames);
+            var table = new Table(node.Name, new string[0], collector.CollectedFieldNames);
             _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
                 new TableSymbol(null, node.Name, table, false));
 
@@ -710,7 +709,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(CreateTableNode node)
         {
-            var columns = new List<IColumn>();
+            var columns = new List<Schema.DataSources.Column>();
 
             for (int i = 0; i < node.TableTypePairs.Length; i++)
             {
@@ -726,7 +725,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 columns.Add(new Schema.DataSources.Column(typePair.ColumnName, i, type));
             }
 
-            var table = new DatabaseTable(node.Name, new string[0], columns.ToArray());
+            var table = new Table(node.Name, new string[0], columns.ToArray());
 
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }

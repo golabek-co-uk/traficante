@@ -56,75 +56,6 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             OnMethodCall
         }
 
-        private class TestSchemaProvider : IEngine
-        {
-            private readonly IEnumerable<TestEntity> _entities;
-            private readonly Action<object[]> _onGetTableOrRowSource;
-            private readonly WhenCheckedParameters _whenChecked;
-
-            public TestSchemaProvider(IEnumerable<TestEntity> entities, Action<object[]> onGetTableOrRowSource, WhenCheckedParameters whenChecked)
-            {
-                _entities = entities;
-                _onGetTableOrRowSource = onGetTableOrRowSource;
-                _whenChecked = whenChecked;
-            }
-
-
-            public IVariable GetVariable(string name)
-            {
-                throw new NotImplementedException();
-            }
-
-            public TSQL.Schema.Managers.MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetVariable<T>(string name, T value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetVariable<T>(string database, string schema, string name, T value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetVariable(string name, Type type, object value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetVariable(string database, string schema, string name, Type type, object value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool TryResolveAggreationMethod(string method, Type[] parameters, out System.Reflection.MethodInfo methodInfo)
-            {
-                throw new NotImplementedException();
-            }
-
-            Traficante.TSQL.Schema.Managers.MethodInfo IEngine.ResolveMethod(string[] path, string method, Type[] parameters)
-            {
-                throw new NotImplementedException();
-            }
-
-            TableInfo IEngine.ResolveTable(string name, string[] path)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-
-        private class TestTable : ITable
-        {
-            public IColumn[] Columns => new IColumn[0];
-
-            public string Name { get; }
-
-            public string[] Path { get; }
-        }
 
         private class TestEntity
         {
@@ -132,8 +63,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
         private CompiledQuery CreateAndRunVirtualMachine(string script, IEnumerable<TestEntity> source, Action<object[]> onGetTableOrRowSource, WhenCheckedParameters whenChecked)
         {
-            return new CompiledQuery(new Runner().RunAndReturnTable(script, new TestSchemaProvider(source, onGetTableOrRowSource, whenChecked)));
-            //return InstanceCreator.CompileForExecution(script, new TestSchemaProvider(source, onGetTableOrRowSource, whenChecked));
+            return new CompiledQuery(new Runner().RunAndReturnTable(script, new Engine()));
         }
     }
 }

@@ -50,7 +50,7 @@ namespace Traficante.TSQL.Schema.Helpers
 
             var nameToIndexMap = new Dictionary<string, int>();
             var indexToMethodAccess = new Dictionary<int, Func<TType, object>>();
-            var columns = new List<IColumn>();
+            var columns = new List<Column>();
 
             var type = typeof(TType);
             foreach (var member in type.GetMembers())
@@ -92,9 +92,9 @@ namespace Traficante.TSQL.Schema.Helpers
             };
         }
 
-        public static IColumn[] GetColumns(Type typ)
+        public static Column[] GetColumns(Type typ)
         {
-            var columns = new List<IColumn>();
+            var columns = new List<Column>();
             Type returnType = null;
 
             if (typeof(System.Collections.IEnumerable).IsAssignableFrom(typ))
@@ -121,6 +121,6 @@ namespace Traficante.TSQL.Schema.Helpers
     {
         public IDictionary<string, int> NameToIndexMap { get; set; }
         public IDictionary<int, Func<TType, object>> IndexToMethodAccessMap { get; set; }
-        public IColumn[] Columns { get; set; }
+        public Column[] Columns { get; set; }
     }
 }

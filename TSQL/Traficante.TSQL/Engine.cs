@@ -17,7 +17,7 @@ using MethodInfo = Traficante.TSQL.Schema.Managers.MethodInfo;
 
 namespace Traficante.TSQL
 {
-    public class Engine : IEngine
+    public class Engine
     {
         public List<TableInfo> Tables { get; set; } = new List<TableInfo>();
         public MethodsManager MethodsManager { get; set; } = new MethodsManager();
@@ -29,7 +29,7 @@ namespace Traficante.TSQL
             MethodsManager.RegisterLibraries(new Library());
         }
 
-        public Evaluator.Tables.Table Run(string script)
+        public Evaluator.Tables.DataTable Run(string script)
         {
             return new Runner().RunAndReturnTable(script, this);
         }
@@ -133,41 +133,31 @@ namespace Traficante.TSQL
 
         public void SetVariable<T>(string name, T value)
         {
-            SetVariable(null, null, name, value);
-        }
-
-        public void SetVariable<T>(string database, string schema, string name, T value)
-        {
-            var variable = _variables.FirstOrDefault(x => string.Equals(x.Schema, schema, StringComparison.CurrentCultureIgnoreCase) && string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
+            var variable = _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
             if (variable != null)
             {
                 variable.Value = value;
             }
             else
             {
-                _variables.Add(new Variable(schema, name, typeof(T), value));
+                _variables.Add(new Variable(name, typeof(T), value));
             }
         }
 
         public void SetVariable(string name, Type type, object value)
         {
-            SetVariable(null, null, name, type, value);
-        }
-
-        public void SetVariable(string database, string schema, string name, Type type, object value)
-        {
-            var variable = _variables.FirstOrDefault(x => string.Equals(x.Schema, schema, StringComparison.CurrentCultureIgnoreCase) && string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
+            var variable = _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
             if (variable != null)
             {
                 variable.Value = value;
             }
             else
             {
-                _variables.Add(new Variable(schema, name, type, value));
+                _variables.Add(new Variable(name, type, value));
             }
         }
 
-        public IVariable GetVariable(string name)
+        public Variable GetVariable(string name)
         {
             return _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
         }

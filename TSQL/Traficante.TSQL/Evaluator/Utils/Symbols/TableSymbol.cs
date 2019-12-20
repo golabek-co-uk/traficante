@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Traficante.TSQL.Evaluator.Tables;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
 
@@ -11,15 +10,15 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
     {
         private readonly List<string> _orders = new List<string>();
 
-        private readonly Dictionary<string, ITable> _tables =
-            new Dictionary<string, ITable>();
+        private readonly Dictionary<string, Table> _tables =
+            new Dictionary<string, Table>();
 
         private string _fullTableName;
-        private ITable _fullTable;
+        private Table _fullTable;
         
         public string[] Path { get; }
 
-        public TableSymbol(string[] path, string alias, ITable table, bool hasAlias)
+        public TableSymbol(string[] path, string alias, Table table, bool hasAlias)
         {
             _tables.Add(alias, table);
             _orders.Add(alias);
@@ -38,9 +37,9 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
 
         public string[] CompoundTables => _orders.ToArray();
 
-        public (ITable Table, string TableName) GetTableByColumnName(string column)
+        public (Table Table, string TableName) GetTableByColumnName(string column)
         {
-            (ITable, string) score = (null, null);
+            (Table, string) score = (null, null);
 
             foreach (var table in _tables)
             {
@@ -55,14 +54,14 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             return score;
         }
 
-        public (ITable Table, string TableName) GetTableByAlias(string alias)
+        public (Table Table, string TableName) GetTableByAlias(string alias)
         {
             if (_fullTableName == alias)
                 return (_fullTable, alias);
             return (_tables[alias], alias);
         }
 
-        public IColumn GetColumnByAliasAndName(string alias, string columnName)
+        public Schema.DataSources.Column GetColumnByAliasAndName(string alias, string columnName)
         {
             if (_fullTableName == alias)
                 return _fullTable.Columns.Single(c => c.ColumnName == columnName);
@@ -70,9 +69,9 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             return _tables[alias].Columns.Single(c => c.ColumnName == columnName);
         }
 
-        public IColumn GetColumn(string columnName)
+        public Schema.DataSources.Column GetColumn(string columnName)
         {
-            IColumn column = null;
+            Schema.DataSources.Column column = null;
             foreach (var table in _orders)
             {
                 var tmpColumn = _tables[table].Columns.SingleOrDefault(col => col.ColumnName == columnName);
@@ -92,14 +91,14 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             return column;
         }
 
-        public IColumn[] GetColumns(string alias)
+        public Schema.DataSources.Column[] GetColumns(string alias)
         {
             return _tables[alias].Columns;
         }
 
-        public IColumn[] GetColumns()
+        public Schema.DataSources.Column[] GetColumns()
         {
-            var columns = new List<IColumn>();
+            var columns = new List<Schema.DataSources.Column>();
             foreach (var table in _orders) columns.AddRange(GetColumns(table));
 
             return columns.ToArray();
@@ -128,7 +127,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
         {
             var symbol = new TableSymbol();
 
-            var compundTableColumns = new List<IColumn>();
+            var compundTableColumns = new List<Schema.DataSources.Column>();
 
             foreach (var item in _tables)
             {
@@ -147,7 +146,7 @@ namespace Traficante.TSQL.Evaluator.Utils.Symbols
             }
 
             symbol._fullTableName = symbol._orders.Aggregate((a, b) => a + b);
-            symbol._fullTable = new DatabaseTable(symbol._fullTableName, symbol.Path, compundTableColumns.ToArray());
+            symbol._fullTable = new Table(symbol._fullTableName, symbol.Path, compundTableColumns.ToArray());
 
             return symbol;
         }

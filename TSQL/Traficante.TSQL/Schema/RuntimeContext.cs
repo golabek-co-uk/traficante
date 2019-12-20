@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Traficante.TSQL.Schema.DataSources;
 
 namespace Traficante.TSQL.Schema
 {
@@ -8,17 +9,17 @@ namespace Traficante.TSQL.Schema
     {
         public CancellationToken EndWorkToken { get; }
 
-        public IReadOnlyCollection<IColumn> AllColumns { get; }
+        public IReadOnlyCollection<Column> AllColumns { get; }
 
-        public IReadOnlyCollection<IColumn> UsedColumns { get; }
+        public IReadOnlyCollection<Column> UsedColumns { get; }
 
-        public RuntimeContext(CancellationToken endWorkToken, IReadOnlyCollection<IColumn> originallyInferedColumns, IReadOnlyCollection<IColumn> usedColumns = null)
+        public RuntimeContext(CancellationToken endWorkToken, IReadOnlyCollection<Column> originallyInferedColumns, IReadOnlyCollection<Column> usedColumns = null)
         {
             EndWorkToken = endWorkToken;
             AllColumns = originallyInferedColumns;
             UsedColumns = usedColumns;
         }
 
-        public static RuntimeContext Empty => new RuntimeContext(CancellationToken.None, new IColumn[0], new IColumn[0]);
+        public static RuntimeContext Empty => new RuntimeContext(CancellationToken.None, new Column[0], new Column[0]);
     }
 }

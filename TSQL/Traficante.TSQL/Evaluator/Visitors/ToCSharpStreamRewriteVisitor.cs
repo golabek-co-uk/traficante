@@ -43,7 +43,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
-        private IEngine _engine;
+        private Engine _engine;
         private RuntimeContext _interCommunicator;
 
         public object Result = null;
@@ -51,7 +51,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         //private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
         public ToCSharpStreamRewriteVisitor(
-            IEngine engine
+            Engine engine
             //,IDictionary<string, int[]> setOperatorFieldIndexes
             )
         {

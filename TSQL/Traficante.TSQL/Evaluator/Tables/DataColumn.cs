@@ -6,9 +6,9 @@ using System.Diagnostics;
 namespace Traficante.TSQL.Evaluator.Tables
 {
     [DebuggerDisplay("{ColumnIndex}. {ColumnName}: {ColumnType.Name}")]
-    public class Column : IEquatable<Column>, IColumn
+    public class DataColumn : IEquatable<DataColumn>
     {
-        public Column(string name, Type columnType, int columnOrder)
+        public DataColumn(string name, Type columnType, int columnOrder)
         {
             ColumnName = name;
             ColumnType = columnType;
@@ -21,7 +21,7 @@ namespace Traficante.TSQL.Evaluator.Tables
 
         public int ColumnIndex { get; }
 
-        public bool Equals(Column other)
+        public bool Equals(DataColumn other)
         {
             return other != null &&
                    ColumnName == other.ColumnName &&
@@ -31,7 +31,7 @@ namespace Traficante.TSQL.Evaluator.Tables
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as Column);
+            return Equals(obj as DataColumn);
         }
 
         public override int GetHashCode()
