@@ -543,9 +543,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(UnionNode node)
         {
-            var key = CreateSetOperatorPositionKey();
-            _currentScope["SetOperatorName"] = key;
-
             var right = Nodes.Pop();
             var left = Nodes.Pop();
 
@@ -562,9 +559,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(UnionAllNode node)
         {
-            var key = CreateSetOperatorPositionKey();
-            _currentScope["SetOperatorName"] = key;
-
             var right = Nodes.Pop();
             var left = Nodes.Pop();
 
@@ -582,9 +576,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(ExceptNode node)
         {
-            var key = CreateSetOperatorPositionKey();
-            _currentScope["SetOperatorName"] = key;
-
             var right = Nodes.Pop();
             var left = Nodes.Pop();
 
@@ -601,8 +592,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(IntersectNode node)
         {
-            var key = CreateSetOperatorPositionKey();
-            _currentScope["SetOperatorName"] = key;
 
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -707,12 +696,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             return fields.ToArray();
-        }
-
-        private string CreateSetOperatorPositionKey()
-        {
-            var key = _setKey++;
-            return key.ToString().ToSetOperatorKey(key.ToString());
         }
 
         public void Visit(OrderByNode node)
