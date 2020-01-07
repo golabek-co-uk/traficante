@@ -645,7 +645,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var table = new Table(node.Name, new string[0], collector.CollectedFieldNames);
             _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
-                new TableSymbol(null, node.Name, table, false));
+                new TableSymbol(new string[0], node.Name, table, false));
 
             Nodes.Push(new CteInnerExpressionNode(set, node.Name));
         }
