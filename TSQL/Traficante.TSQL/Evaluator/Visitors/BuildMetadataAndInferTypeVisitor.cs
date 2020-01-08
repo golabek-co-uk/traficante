@@ -378,19 +378,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(FromFunctionNode node)
         {
             var functionNode = node.Function;
-            Table table = null;
-            if (_currentScope.Name == "Desc")
-            {
-                table = new Table(functionNode.Name, functionNode.Path, new Schema.DataSources.Column[0]);
-            }
-            else
-            {
-                var method = _engine.ResolveMethod(functionNode.Path, functionNode.Name, functionNode.ArgumentsTypes);
-                var returnType = method.FunctionMethod.ReturnType;
-                functionNode = new FunctionNode(functionNode.Name, functionNode.Arguments, functionNode.Path, method);
-                var columns = TypeHelper.GetColumns(returnType);
-                table = new Table(functionNode.Name, functionNode.Path, columns);
-            }
+            var method = _engine.ResolveMethod(functionNode.Path, functionNode.Name, functionNode.ArgumentsTypes);
+            var returnType = method.FunctionMethod.ReturnType;
+            functionNode = new FunctionNode(functionNode.Name, functionNode.Arguments, functionNode.Path, method);
+            var columns = TypeHelper.GetColumns(returnType);
+            Table table = new Table(functionNode.Name, functionNode.Path, columns);
 
             _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
@@ -434,22 +426,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             TableSymbol tableSymbol = null;
 
-            Table table;
-            if (_currentScope.Name != "Desc")
+            Table table = null;
+            var dbTable = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
+            if (dbTable != null)
             {
-                var dbTable = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
-                if (dbTable != null)
-                {
-                    var schemaTable = new Table(dbTable.Name, node.Table.Path, TypeHelper.GetColumns(dbTable.ItemsType));
-                    table = schemaTable;
-                }
-                else
-                    table = null;
+                table = new Table(dbTable.Name, node.Table.Path, TypeHelper.GetColumns(dbTable.ItemsType));
             }
             else
-                table = new Table(node.Table.TableOrView, node.Table.Path, new Schema.DataSources.Column[0]);
-
-            if (table == null)
             {
                 _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.Table.TableOrView : node.Alias;
                 _generatedAliases.Add(_queryAlias);
@@ -709,7 +692,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(CreateTableNode node)
         {
-            var columns = new List<Schema.DataSources.Column>();
+            var columns = new List<Column>();
 
             for (int i = 0; i < node.TableTypePairs.Length; i++)
             {
@@ -722,10 +705,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 if (type == null)
                     throw new TypeNotFoundException($"Type '{remappedType}' could not be found.");
 
-                columns.Add(new Schema.DataSources.Column(typePair.ColumnName, i, type));
+                columns.Add(new Column(typePair.ColumnName, i, type));
             }
-
-            var table = new Table(node.Name, new string[0], columns.ToArray());
 
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }
