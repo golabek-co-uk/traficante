@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -56,7 +57,7 @@ namespace Traficante.TSQL.Schema.Managers
 
             for (int i = 0, j = methods.Methods.Count; i < j; ++i)
             {
-                var methodInfo = methods.Methods[i].ResultsMethod;
+                var methodInfo = methods.Methods[i].FunctionMethod;
                 var parameters = methodInfo.GetParameters();
                 var optionalParametersCount = parameters.CountOptionalParameters();
                 var allParameters = parameters.Length;
@@ -126,52 +127,48 @@ namespace Traficante.TSQL.Schema.Managers
             RegisterMethod(methodInfo.Name, methodInfo);
         }
 
-        public void RegisterMethod(string name, System.Reflection.MethodInfo results)
+        public void RegisterMethod(string name, System.Reflection.MethodInfo methodInfo)
         {
             MethodInfo method = new MethodInfo
             {
-                ResultsMethod = results
+                FunctionMethod = methodInfo
             };
             RegisterMethod(name, new string[0], method);
         }
 
-        public void RegisterMethod(string name, Delegate results, Delegate fields = null)
+        public void RegisterMethod(string name, Delegate @delegate)
         {
             MethodInfo method = new MethodInfo
             {
-                ResultsDelegate = results,
-                ResultsMethod = results?.Method,
-                FieldsDelegate = fields,
-                FieldsMethod = fields?.Method,
+                FunctionDelegate = @delegate,
+                FunctionMethod = @delegate?.Method,
             };
             RegisterMethod(name, new string[0], method);
         }
 
-        public void RegisterMethod(string name, string[] path, Delegate results, Delegate fields = null)
+        public void RegisterMethod(string name, string[] path, Delegate @delegate)
         {
             MethodInfo method = new MethodInfo
             {
-                ResultsDelegate = results,
-                ResultsMethod = results?.Method,
-                FieldsDelegate = fields,
-                FieldsMethod = fields?.Method,
+                FunctionDelegate = @delegate,
+                FunctionMethod = @delegate?.Method,
             };
             RegisterMethod(name, path, method);
         }
 
-        public void RegisterMethod(string name, string[] path, MethodInfo method)
+        public void RegisterMethod(string name, string[] path, MethodInfo methodInfo)
         {
             var existingMethod = MatchMethods(name, path, true);
             if (existingMethod != null)
             {
-                existingMethod.Methods.Add(method);
+                existingMethod.Methods.Add(methodInfo);
             }
             else
             {
                 MethodGroupInfo methodDef = new MethodGroupInfo();
                 methodDef.Name = name;
                 methodDef.Path = path ?? new string[0];
-                methodDef.Methods.Add(method);
+                methodDef.Methods.Add(methodInfo);
                 _methods.Add(methodDef);
             }
         }
@@ -213,16 +210,23 @@ namespace Traficante.TSQL.Schema.Managers
 
     public class MethodInfo
     {
-        public string Name => ResultsMethod.Name;
-        public System.Reflection.MethodInfo ResultsMethod { get; set; }
-        public Delegate ResultsDelegate { get; set; }
-        public Delegate FieldsDelegate { get; internal set; }
-        public System.Reflection.MethodInfo FieldsMethod { get; internal set; }
+        public string Name => FunctionMethod.Name;
+        public System.Reflection.MethodInfo FunctionMethod { get; set; }
+        public Delegate FunctionDelegate { get; set; }
     }
 
-    public class FieldInfo
+    public class TableInfo
     {
+        public TableInfo(string name, string[] path, IEnumerable items, Type itemsType)
+        {
+            this.Name = name;
+            this.Path = path;
+            this.Items = items;
+            this.ItemsType = itemsType;
+        }
         public string Name { get; set; }
-        public string Type { get; set; }
+        public string[] Path { get; set; }
+        public IEnumerable Items { get; set; }
+        public Type ItemsType { get; set; }
     }
 }

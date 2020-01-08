@@ -74,9 +74,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
                 var method = _engine.ResolveMethod(fromNode.Function.Path, fromNode.Function.Name, fromNode.Function.ArgumentsTypes);
                 Type itemsType = null;
-                if (typeof(IEnumerable).IsAssignableFrom(method.ResultsMethod.ReturnType))
+                if (typeof(IEnumerable).IsAssignableFrom(method.FunctionMethod.ReturnType))
                 {
-                    itemsType = method.ResultsMethod.ReturnType.GetGenericArguments().FirstOrDefault();
+                    itemsType = method.FunctionMethod.ReturnType.GetGenericArguments().FirstOrDefault();
                 }
 
 
@@ -221,7 +221,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Visit(new FunctionNode(nameof(Operators.Like),
                 new ArgsListNode(new[] { node.Left, node.Right }), 
                 new string[0],
-                new MethodInfo { ResultsMethod = typeof(Operators).GetMethod(nameof(Operators.Like))}));
+                new MethodInfo { FunctionMethod = typeof(Operators).GetMethod(nameof(Operators.Like))}));
         }
 
         public void Visit(RLikeNode node)
@@ -229,7 +229,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Visit(new FunctionNode(nameof(Operators.RLike),
                 new ArgsListNode(new[] { node.Left, node.Right }),
                 new string[0],
-                new MethodInfo { ResultsMethod = typeof(Operators).GetMethod(nameof(Operators.RLike)) }));
+                new MethodInfo { FunctionMethod = typeof(Operators).GetMethod(nameof(Operators.RLike)) }));
         }
 
         public void Visit(InNode node)
@@ -501,10 +501,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     return;
                 }
 
-                var instance = node.Method.ResultsMethod.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
+                var instance = node.Method.FunctionMethod.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
                 /// TODO: check if there can be more that one generic argument
-                var method = node.Method.ResultsMethod.IsGenericMethodDefinition ?
-                    node.Method.ResultsMethod.MakeGenericMethod(node.ReturnType) : node.Method.ResultsMethod;
+                var method = node.Method.FunctionMethod.IsGenericMethodDefinition ?
+                    node.Method.FunctionMethod.MakeGenericMethod(node.ReturnType) : node.Method.FunctionMethod;
 
                 var parameters = method.GetParameters();
                 for(int i = 0; i < parameters.Length; i++)
@@ -841,16 +841,16 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var function = node.Function;
             Type itemsType = null;
-            if (typeof(IEnumerable).IsAssignableFrom(function.Method.ResultsMethod.ReturnType))
+            if (typeof(IEnumerable).IsAssignableFrom(function.Method.FunctionMethod.ReturnType))
             {
-                itemsType = function.Method.ResultsMethod.ReturnType.GetGenericArguments().FirstOrDefault();
+                itemsType = function.Method.FunctionMethod.ReturnType.GetGenericArguments().FirstOrDefault();
             }
 
             List<Expression> functionExpressionArgumetns = new List<Expression>();
             for (int i = 0; i < function.ArgsCount; i++)
                 functionExpressionArgumetns.Add(this.Nodes.Pop());
             functionExpressionArgumetns.Reverse();
-            var callFunction = Expression.Call(Expression.Constant(function.Method.ResultsDelegate.Target), function.Method.ResultsMethod, functionExpressionArgumetns);
+            var callFunction = Expression.Call(Expression.Constant(function.Method.FunctionDelegate.Target), function.Method.FunctionMethod, functionExpressionArgumetns);
             var entitySource = Expression.Call(
                 typeof(Queryable),
                 "AsQueryable",

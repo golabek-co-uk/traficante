@@ -12,7 +12,6 @@ using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.Managers;
-using FieldInfo = Traficante.TSQL.Schema.Managers.FieldInfo;
 using MethodInfo = Traficante.TSQL.Schema.Managers.MethodInfo;
 
 namespace Traficante.TSQL
@@ -61,16 +60,6 @@ namespace Traficante.TSQL
                 }).FirstOrDefault();
         }
 
-        public void AddFunction<T>(string name, string[] path, Func<IEnumerable<T>> function)
-        {
-            this.MethodsManager.RegisterMethod(name, path, function);
-        }
-
-        public void AddFunction<T>(string name, Func<IEnumerable<T>> function)
-        {
-            this.MethodsManager.RegisterMethod(name, function);
-        }
-
         public void AddFunction<TResult>(string name, string[] path, Func<TResult> function)
         {
             this.MethodsManager.RegisterMethod(name, path, function);
@@ -86,14 +75,14 @@ namespace Traficante.TSQL
             this.MethodsManager.RegisterMethod(name, path, function);
         }
 
-        public void AddFunction<T1, TResult>(string name, Func<T1, TResult> results, Func<T1, FieldInfo[]> fields = null)
+        public void AddFunction<T1, TResult>(string name, Func<T1, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, results, fields);
+            this.MethodsManager.RegisterMethod(name, function);
         }
 
-        public void AddFunction<T1, T2, TResult>(string name, string[] path, Func<T1, T2, TResult> results, Func<T1, FieldInfo[]> fields = null)
+        public void AddFunction<T1, T2, TResult>(string name, string[] path, Func<T1, T2, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, results, fields);
+            this.MethodsManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, TResult>(string name, Func<T1, T2, TResult> function)
@@ -166,23 +155,5 @@ namespace Traficante.TSQL
         {
             return MethodsManager.GetMethod(method, path, parameters);
         }
-    }
-
-    public class TableInfo
-    {
-        public TableInfo()
-        {
-        }
-        public TableInfo(string name, string[] path, IEnumerable items, Type itemsType)
-        {
-            this.Name = name;
-            this.Path = path;
-            this.Items = items;
-            this.ItemsType = itemsType;
-        }
-        public string Name { get; set; }
-        public string[] Path { get; set; }
-        public IEnumerable Items { get; set; }
-        public Type ItemsType { get; set; }
     }
 }

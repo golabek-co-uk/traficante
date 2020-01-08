@@ -386,7 +386,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             else
             {
                 var method = _engine.ResolveMethod(functionNode.Path, functionNode.Name, functionNode.ArgumentsTypes);
-                var returnType = method.ResultsMethod.ReturnType;
+                var returnType = method.FunctionMethod.ReturnType;
                 functionNode = new FunctionNode(functionNode.Name, functionNode.Arguments, functionNode.Path, method);
                 var columns = TypeHelper.GetColumns(returnType);
                 table = new Table(functionNode.Name, functionNode.Path, columns);
