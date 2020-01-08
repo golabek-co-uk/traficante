@@ -44,7 +44,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
         private Engine _engine;
-        private RuntimeContext _interCommunicator;
 
         public object Result = null;
 
@@ -59,7 +58,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //InferredColumns = inferredColumns;
             Nodes = new Stack<System.Linq.Expressions.Expression>();
             _engine = engine;
-            _interCommunicator = RuntimeContext.Empty;
 
         }
         
