@@ -220,7 +220,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _walker = _walker.NextChild();
             _visitor.SetScope(_walker.Scope);
 
-            _visitor.SetMethodAccessType(MethodAccessType.ResultQuery);
             _visitor.SetQueryIdentifier(node.From?.Alias);
 
             node.From?.Accept(this);

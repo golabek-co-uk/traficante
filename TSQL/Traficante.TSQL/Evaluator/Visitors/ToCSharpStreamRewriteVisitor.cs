@@ -26,7 +26,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         private string _queryAlias;
         private Scope _scope;
-        private MethodAccessType _type;
 
         ExpressionHelper expressionHelper = new ExpressionHelper();
 
@@ -1438,11 +1437,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void SetQueryIdentifier(string identifier)
         {
             _queryAlias = identifier;
-        }
-
-        public void SetMethodAccessType(MethodAccessType type)
-        {
-            _type = type;
         }
 
         public void IncrementMethodIdentifier()
