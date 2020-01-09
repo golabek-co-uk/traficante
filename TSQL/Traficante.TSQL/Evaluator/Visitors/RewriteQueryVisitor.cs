@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class RewriteQueryVisitor : IScopeAwareExpressionVisitor
+    public class RewriteQueryVisitor : IAwareExpressionVisitor
     {
         private Scope _scope;
 
@@ -578,6 +579,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(ExecuteNode node)
         {
             Nodes.Push(new ExecuteNode(node.VariableToSet, node.FunctionToRun));
+        }
+
+        public void SetQueryPart(QueryPart part)
+        {
+
         }
     }
 }

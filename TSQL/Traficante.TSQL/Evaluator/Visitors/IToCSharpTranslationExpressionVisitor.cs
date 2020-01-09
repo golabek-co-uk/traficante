@@ -1,6 +1,6 @@
 ﻿namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public interface IToCSharpTranslationExpressionVisitor : IScopeAwareExpressionVisitor
+    public interface IToCSharpTranslationExpressionVisitor : IAwareExpressionVisitor
     {
         void SetQueryIdentifier(string identifier);
 

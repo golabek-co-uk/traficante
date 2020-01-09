@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class BuildMetadataAndInferTypeTraverseVisitor : IQueryPartAwareExpressionVisitor
+    public class BuildMetadataAndInferTypeTraverseVisitor : IAwareExpressionVisitor
     {
         private readonly Stack<Scope> _scopes = new Stack<Scope>();
         private readonly IAwareExpressionVisitor _visitor;
@@ -631,6 +631,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.VariableToSet?.Accept(this);
             node.FunctionToRun?.Accept(this);
             node.Accept(_visitor);
+        }
+
+        public void SetScope(Scope scope)
+        {
+   
         }
     }
 }

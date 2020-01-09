@@ -8,10 +8,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class RewriteQueryTraverseVisitor : IExpressionVisitor
     {
-        private readonly IScopeAwareExpressionVisitor _visitor;
+        private readonly IAwareExpressionVisitor _visitor;
         private ScopeWalker _walker;
 
-        public RewriteQueryTraverseVisitor(IScopeAwareExpressionVisitor visitor, ScopeWalker walker)
+        public RewriteQueryTraverseVisitor(IAwareExpressionVisitor visitor, ScopeWalker walker)
         {
             _visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
             _walker = walker;
