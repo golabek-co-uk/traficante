@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using Traficante.TSQL.Evaluator.Utils;
-using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class ToCSharpStreamRewriteTraverseVisitor : IExpressionVisitor
+    public class RunTraverseVisitor : IExpressionVisitor
     {
-        private readonly ToCSharpStreamRewriteVisitor _visitor;
+        private readonly ExecuteQueryVisitor _visitor;
         private ScopeWalker _walker;
 
-        public ToCSharpStreamRewriteTraverseVisitor(ToCSharpStreamRewriteVisitor visitor, ScopeWalker walker)
+        public RunTraverseVisitor(ExecuteQueryVisitor visitor, ScopeWalker walker)
         {
             _visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
             _walker = walker;

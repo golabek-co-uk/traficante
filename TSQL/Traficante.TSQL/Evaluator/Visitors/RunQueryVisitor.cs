@@ -6,7 +6,6 @@ using System.Linq.Expressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using Traficante.TSQL.Evaluator.Utils;
-using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 using Traficante.TSQL.Parser.Tokens;
 using Traficante.TSQL.Schema;
@@ -17,7 +16,7 @@ using TextSpan = Traficante.TSQL.Parser.TextSpan;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class ToCSharpStreamRewriteVisitor : IExpressionVisitor
+    public class ExecuteQueryVisitor : IExpressionVisitor
     {
         //private readonly IDictionary<string, int[]> _setOperatorFieldIndexes;
 
@@ -48,7 +47,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         //private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
-        public ToCSharpStreamRewriteVisitor(
+        public ExecuteQueryVisitor(
             Engine engine
             //,IDictionary<string, int[]> setOperatorFieldIndexes
             )

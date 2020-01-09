@@ -4,6 +4,7 @@ using System.Reflection;
 using Traficante.TSQL.Parser.Tokens;
 using Traficante.TSQL.Lib.Attributes;
 using System.Linq;
+using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.TSQL.Parser.Nodes
 {

@@ -1,6 +1,6 @@
 ﻿using Traficante.TSQL.Parser.Nodes;
 
-namespace Traficante.TSQL.Parser
+namespace Traficante.TSQL.Evaluator.Visitors
 {
     public interface IExpressionVisitor
     {
@@ -77,5 +77,6 @@ namespace Traficante.TSQL.Parser
         void Visit(CreateTableNode node);
         void Visit(CaseNode node);
         void Visit(TypeNode node);
+
     }
 }

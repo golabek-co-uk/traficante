@@ -1,6 +1,7 @@
 ﻿using Traficante.TSQL.Parser.Tokens;
 using System;
 using System.Text;
+using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.TSQL.Parser.Nodes
 {

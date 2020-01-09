@@ -9,12 +9,12 @@ using System.Linq;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class BuildMetadataAndInferTypeTraverseVisitor : IAwareExpressionVisitor
+    public class PrepareQueryTraverseVisitor : IAwareExpressionVisitor
     {
         private readonly Stack<Scope> _scopes = new Stack<Scope>();
         private readonly IAwareExpressionVisitor _visitor;
 
-        public BuildMetadataAndInferTypeTraverseVisitor(IAwareExpressionVisitor visitor)
+        public PrepareQueryTraverseVisitor(IAwareExpressionVisitor visitor)
         {
             _visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
         }

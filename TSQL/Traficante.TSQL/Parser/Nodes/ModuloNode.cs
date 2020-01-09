@@ -1,4 +1,6 @@
-﻿namespace Traficante.TSQL.Parser.Nodes
+﻿using Traficante.TSQL.Evaluator.Visitors;
+
+namespace Traficante.TSQL.Parser.Nodes
 {
     public class ModuloNode : BinaryNode
     {

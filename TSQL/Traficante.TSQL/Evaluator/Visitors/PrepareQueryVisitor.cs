@@ -17,7 +17,7 @@ using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class BuildMetadataAndInferTypeVisitor : CloneQueryVisitor
+    public class PrepareQueryVisitor : CloneQueryVisitor
     {
         private readonly Engine _engine;
 
@@ -29,7 +29,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         private Stack<string> Methods { get; } = new Stack<string>();
 
-        public BuildMetadataAndInferTypeVisitor(Engine engine)
+        public PrepareQueryVisitor(Engine engine)
         {
             _engine = engine;
         }
