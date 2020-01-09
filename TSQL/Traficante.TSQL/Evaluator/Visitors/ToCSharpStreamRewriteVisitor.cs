@@ -233,7 +233,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(InNode node)
         {
-            throw new NotImplementedException();
+            
         }
 
         private FieldNode _currentFieldNode = null;
@@ -1172,12 +1172,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(StatementsArrayNode node)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void Visit(StatementNode node)
         {
-            throw new NotImplementedException();
+            
         }
 
         public void Visit(CteExpressionNode node)

@@ -137,17 +137,17 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(InNode node)
         {
-            var right = (ArgsListNode)Nodes.Pop();
-            var left = Nodes.Pop();
+            //var right = (ArgsListNode)Nodes.Pop();
+            //var left = Nodes.Pop();
 
-            Node exp = new EqualityNode(left, right.Args[0]);
+            //Node exp = new EqualityNode(left, right.Args[0]);
 
-            for (var i = 1; i < right.Args.Length; i++)
-            {
-                exp = new OrNode(exp, new EqualityNode(left, right.Args[i]));
-            }
+            //for (var i = 1; i < right.Args.Length; i++)
+            //{
+            //    exp = new OrNode(exp, new EqualityNode(left, right.Args[i]));
+            //}
 
-            Nodes.Push(exp);
+            //Nodes.Push(exp);
         }
 
         public virtual void Visit(FieldNode node)
@@ -162,9 +162,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(SelectNode node)
         {
-            var fields = CreateFields(node.Fields);
+            var reorderedList = new FieldNode[node.Fields.Length];
+            for (var i = reorderedList.Length - 1; i >= 0; i--) reorderedList[i] = Nodes.Pop() as FieldNode;
 
-            Nodes.Push(new SelectNode(fields.ToArray(), node.ReturnsSingleRow));
+            Nodes.Push(new SelectNode(reorderedList.ToArray(), node.ReturnsSingleRow));
         }
 
         public void Visit(StringNode node)
@@ -465,31 +466,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(new FunctionNode(node.Name, node.Arguments, node.Path, node.Method));
         }
-
-        private FieldNode[] CreateFields(FieldNode[] oldFields)
-        {
-            var reorderedList = new FieldNode[oldFields.Length];
-            var fields = new List<FieldNode>(reorderedList.Length);
-
-            for (var i = reorderedList.Length - 1; i >= 0; i--) reorderedList[i] = Nodes.Pop() as FieldNode;
-
-
-            for (int i = 0, j = reorderedList.Length, p = 0; i < j; ++i)
-            {
-                var field = reorderedList[i];
-
-                if (field.Expression is AllColumnsNode)
-                {
-                    fields.AddRange(new FieldNode[0]);
-                    continue;
-                }
-
-                fields.Add(new FieldNode(field.Expression, p++, field.FieldName));
-            }
-
-            return fields.ToArray();
-        }
-
+        
         public void Visit(CreateTableNode node)
         {
         }
