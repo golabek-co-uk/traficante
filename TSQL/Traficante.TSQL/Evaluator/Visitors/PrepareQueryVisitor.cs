@@ -244,9 +244,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
             var from = node.From != null ? Nodes.Pop() as FromNode : null;
 
-            if (from != null)
-                Methods.Push(from.Alias);
-
             if (from == null)
                 select.ReturnsSingleRow = true;
 
@@ -301,74 +298,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             return (aggregateFields.ToArray(), notAggregateFields.ToArray());
-        }
-
-
-        public override void Visit(UnionNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-
-            var rightMethodName = Methods.Pop();
-            var leftMethodName = Methods.Pop();
-
-            var methodName = $"{leftMethodName}_Union_{rightMethodName}";
-            Methods.Push(methodName);
-            CurrentScope.ScopeSymbolTable.AddSymbol(methodName,
-                CurrentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode)left).From.Alias));
-
-            Nodes.Push(new UnionNode(node.ResultTableName, node.Keys, left, right, node.IsNested, node.IsTheLastOne));
-        }
-
-        public override void Visit(UnionAllNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-
-            var rightMethodName = Methods.Pop();
-            var leftMethodName = Methods.Pop();
-
-            var methodName = $"{leftMethodName}_UnionAll_{rightMethodName}";
-            Methods.Push(methodName);
-            CurrentScope.ScopeSymbolTable.AddSymbol(methodName,
-                CurrentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode)left).From.Alias));
-
-            Nodes.Push(new UnionAllNode(node.ResultTableName, node.Keys, left, right, node.IsNested,
-                node.IsTheLastOne));
-        }
-
-        public override void Visit(ExceptNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-
-            var rightMethodName = Methods.Pop();
-            var leftMethodName = Methods.Pop();
-
-            var methodName = $"{leftMethodName}_Except_{rightMethodName}";
-            Methods.Push(methodName);
-            CurrentScope.ScopeSymbolTable.AddSymbol(methodName,
-                CurrentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode)left).From.Alias));
-
-            Nodes.Push(new ExceptNode(node.ResultTableName, node.Keys, left, right, node.IsNested, node.IsTheLastOne));
-        }
-
-        public override void Visit(IntersectNode node)
-        {
-
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-
-            var rightMethodName = Methods.Pop();
-            var leftMethodName = Methods.Pop();
-
-            var methodName = $"{leftMethodName}_Intersect_{rightMethodName}";
-            Methods.Push(methodName);
-            CurrentScope.ScopeSymbolTable.AddSymbol(methodName,
-                CurrentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode)left).From.Alias));
-
-            Nodes.Push(
-                new IntersectNode(node.ResultTableName, node.Keys, left, right, node.IsNested, node.IsTheLastOne));
         }
 
         public override void Visit(CteExpressionNode node)
