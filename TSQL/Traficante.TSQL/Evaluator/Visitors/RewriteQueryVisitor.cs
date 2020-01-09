@@ -164,7 +164,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var fields = CreateFields(node.Fields);
 
-            Nodes.Push(new SelectNode(fields.ToArray()));
+            Nodes.Push(new SelectNode(fields.ToArray(), node.ReturnsSingleRow));
         }
 
         public void Visit(StringNode node)
@@ -358,19 +358,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
             var from = node.From != null ? Nodes.Pop() as FromNode : null;
 
-            if (groupBy == null)
-            {
-                var split = SplitBetweenAggreateAndNonAggreagate(select.Fields);
-                if (split.NotAggregateFields.Length == 0)
-                {
-                    select.ReturnsSingleRow = true;
-                }
-            }
-
-            if (from == null)
-            {
-                select.ReturnsSingleRow = true;
-            }
+            
 
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
         }
@@ -530,46 +518,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new CaseNode(whenThenPairs.ToArray(), elseNode, node.ReturnType));
         }
 
-        private (FieldNode[] AggregateFields, FieldNode[] NotAggregateFields) SplitBetweenAggreateAndNonAggreagate(FieldNode[] fieldsToSplit)
-        {
-            var aggregateFields = new List<FieldNode>();
-            var notAggregateFields = new List<FieldNode>();
-
-            foreach (var root in fieldsToSplit)
-            {
-                var subNodes = new Stack<Node>();
-
-                subNodes.Push(root.Expression);
-                bool hasAggregateMethod = false;
-                while (subNodes.Count > 0)
-                {
-                    var subNode = subNodes.Pop();
-
-                    if (subNode is FunctionNode aggregateMethod && aggregateMethod.IsAggregateMethod)
-                    {
-                        hasAggregateMethod = true;
-                        break;
-                    }
-                    else
-                    if (subNode is FunctionNode method)
-                    {
-                        foreach (var arg in method.Arguments.Args)
-                            subNodes.Push(arg);
-                    }
-                    else if (subNode is BinaryNode binary)
-                    {
-                        subNodes.Push(binary.Left);
-                        subNodes.Push(binary.Right);
-                    }
-                }
-                if (hasAggregateMethod)
-                    aggregateFields.Add(root);
-                else
-                    notAggregateFields.Add(root);
-            }
-
-            return (aggregateFields.ToArray(), notAggregateFields.ToArray());
-        }
 
         public void Visit(TypeNode node)
         {

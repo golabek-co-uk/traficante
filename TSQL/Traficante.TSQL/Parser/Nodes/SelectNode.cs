@@ -5,9 +5,10 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class SelectNode : Node
     {
-        public SelectNode(FieldNode[] fields)
+        public SelectNode(FieldNode[] fields, bool? returnsSingleRow = null)
         {
             Fields = fields;
+            ReturnsSingleRow = returnsSingleRow;
             var fieldsId = fields.Length == 0 ? string.Empty : fields.Select(f => f.Id).Aggregate((a, b) => a + b);
             Id = $"{nameof(SelectNode)}{fieldsId}";
         }
