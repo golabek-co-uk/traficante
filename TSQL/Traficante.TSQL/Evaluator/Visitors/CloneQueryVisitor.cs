@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class CloneQueryVisitor : IExpressionVisitor
+    public class CloneQueryVisitor : IExpressionVisitor, IAwareExpressionVisitor
     {
+        protected Scope CurrentScope { get; set; }
+
         protected Stack<Node> Nodes { get; } = new Stack<Node>();
 
         public RootNode Root => (RootNode) Nodes.Peek();
 
-        public void Visit(Node node)
+        public virtual void Visit(Node node)
         {
         }
 
@@ -125,14 +128,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new LikeNode(left, right));
         }
 
-        public void Visit(RLikeNode node)
+        public virtual void Visit(RLikeNode node)
         {
             var right = Nodes.Pop();
             var left = Nodes.Pop();
             Nodes.Push(new RLikeNode(left, right));
         }
 
-        public void Visit(InNode node)
+        public virtual void Visit(InNode node)
         {
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -144,7 +147,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new FieldNode(Nodes.Pop(), node.FieldOrder, node.FieldName));
         }
 
-        public void Visit(FieldOrderedNode node)
+        public virtual void Visit(FieldOrderedNode node)
         {
             Nodes.Push(new FieldOrderedNode(Nodes.Pop(), node.FieldOrder, node.FieldName, node.Order));
         }
@@ -174,7 +177,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new IntegerNode(node.ObjValue.ToString()));
         }
 
-        public void Visit(BooleanNode node)
+        public virtual void Visit(BooleanNode node)
         {
             Nodes.Push(new BooleanNode(node.Value));
         }
@@ -234,7 +237,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new PropertyValueNode(node.Name, parentNodeType.GetProperty(node.Name)));
         }
 
-        public void Visit(VariableNode node)
+        public virtual void Visit(VariableNode node)
         {
             Nodes.Push(new VariableNode(node.Name, node.ReturnType));
         }
@@ -246,7 +249,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(SetNode node)
         {
-            Nodes.Push(new SetNode(node.Variable, node.Value));
+            var value = Nodes.Pop();
+            var variable = (VariableNode)Nodes.Pop();
+            Nodes.Push(new SetNode(variable, value));
         }
 
         public virtual void Visit(DotNode node)
@@ -442,7 +447,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 Nodes.Push(new InnerJoinNode(fromNode, expression));
         }
 
-        public void Visit(OrderByNode node)
+        public virtual void Visit(OrderByNode node)
         {
             var fields = new FieldOrderedNode[node.Fields.Length];
 
@@ -452,12 +457,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new OrderByNode(fields));
         }
 
-        public void Visit(CreateTableNode node)
+        public virtual void Visit(CreateTableNode node)
         {
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }
 
-        public void Visit(StatementsArrayNode node)
+        public virtual void Visit(StatementsArrayNode node)
         {
             var statements = new StatementNode[node.Statements.Length];
             for(int i = 0; i < node.Statements.Length; ++i)
@@ -468,12 +473,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new StatementsArrayNode(statements));
         }
 
-        public void Visit(StatementNode node)
+        public virtual void Visit(StatementNode node)
         {
             Nodes.Push(new StatementNode(Nodes.Pop()));
         }
 
-        public void Visit(CaseNode node)
+        public virtual void Visit(CaseNode node)
         {
             var whenThenPairs = new List<(Node When, Node Then)>();
 
@@ -489,14 +494,25 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new CaseNode(whenThenPairs.ToArray(), elseNode, elseNode.ReturnType));
         }
 
-        public void Visit(TypeNode node)
+        public virtual void Visit(TypeNode node)
         {
             Nodes.Push(new TypeNode(node.Name, node.Size));
         }
 
-        public void Visit(ExecuteNode node)
+        public virtual void Visit(ExecuteNode node)
         {
-            Nodes.Push(new ExecuteNode(node.VariableToSet, node.FunctionToRun));
+            FunctionNode functionToRun = node.FunctionToRun != null ? (FunctionNode)Nodes.Pop() : null;
+            VariableNode variableToSet = node.VariableToSet != null ? (VariableNode)Nodes.Pop() : null;
+            Nodes.Push(new ExecuteNode(variableToSet, functionToRun));
+        }
+
+        public void SetScope(Scope scope)
+        {
+            CurrentScope = scope;
+        }
+
+        public void SetQueryPart(QueryPart part)
+        {
         }
     }
 }

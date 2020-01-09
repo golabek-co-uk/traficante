@@ -17,16 +17,15 @@ using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class BuildMetadataAndInferTypeVisitor : IAwareExpressionVisitor
+    public class BuildMetadataAndInferTypeVisitor : CloneQueryVisitor
     {
         private readonly Engine _engine;
 
-        private Scope _currentScope;
         private readonly List<string> _generatedAliases = new List<string>();
         private FieldNode[] _generatedColumns = new FieldNode[0];
         private string _identifier;
         private string _queryAlias;
-        
+
 
         private Stack<string> Methods { get; } = new Stack<string>();
 
@@ -35,186 +34,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _engine = engine;
         }
 
-        protected Stack<Node> Nodes { get; } = new Stack<Node>();
-
-        public RootNode Root => (RootNode) Nodes.Peek();
-
-        public void Visit(Node node)
-        {
-        }
-
-        public void Visit(DescNode node)
-        {
-            Nodes.Push(new DescNode((FromNode) Nodes.Pop(), node.Type));
-        }
-
-        public void Visit(StarNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new StarNode(left, right));
-        }
-
-        public void Visit(FSlashNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new FSlashNode(left, right));
-        }
-
-        public void Visit(ModuloNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new ModuloNode(left, right));
-        }
-
-        public void Visit(AddNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new AddNode(left, right));
-        }
-
-        public void Visit(HyphenNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new HyphenNode(left, right));
-        }
-
-        public void Visit(AndNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new AndNode(left, right));
-        }
-
-        public void Visit(OrNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new OrNode(left, right));
-        }
-
-        public void Visit(EqualityNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new EqualityNode(left, right));
-        }
-
-        public void Visit(GreaterOrEqualNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new GreaterOrEqualNode(left, right));
-        }
-
-        public void Visit(LessOrEqualNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new LessOrEqualNode(left, right));
-        }
-
-        public void Visit(GreaterNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new GreaterNode(left, right));
-        }
-
-        public void Visit(LessNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new LessNode(left, right));
-        }
-
-        public void Visit(DiffNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new DiffNode(left, right));
-        }
-
-        public void Visit(NotNode node)
-        {
-            Nodes.Push(new NotNode(Nodes.Pop()));
-        }
-
-        public void Visit(LikeNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new LikeNode(left, right));
-        }
-
-        public void Visit(RLikeNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new RLikeNode(left, right));
-        }
-
-        public void Visit(InNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new InNode(left, (ArgsListNode)right));
-        }
-
-        public virtual void Visit(FieldNode node)
-        {
-            Nodes.Push(new FieldNode(Nodes.Pop(), node.FieldOrder, node.FieldName));
-        }
-
-        public void Visit(FieldOrderedNode node)
-        {
-            Nodes.Push(new FieldOrderedNode(Nodes.Pop(), node.FieldOrder, node.FieldName, node.Order));
-        }
-
-        public void Visit(SelectNode node)
+        public override void Visit(SelectNode node)
         {
             var fields = CreateFields(node.Fields);
 
             Nodes.Push(new SelectNode(fields.ToArray()));
         }
 
-        public void Visit(StringNode node)
-        {
-            Nodes.Push(new StringNode(node.Value));
-        }
-
-        public void Visit(DecimalNode node)
-        {
-            Nodes.Push(new DecimalNode(node.Value));
-        }
-
-        public void Visit(IntegerNode node)
-        {
-            Nodes.Push(new IntegerNode(node.ObjValue.ToString()));
-        }
-
-        public void Visit(BooleanNode node)
-        {
-            Nodes.Push(new BooleanNode(node.Value));
-        }
-
-        public void Visit(WordNode node)
-        {
-            Nodes.Push(new WordNode(node.Value));
-        }
-
-        public void Visit(ContainsNode node)
-        {
-            var right = Nodes.Pop();
-            var left = Nodes.Pop();
-            Nodes.Push(new ContainsNode(left, right as ArgsListNode));
-        }
-
-        public virtual void Visit(FunctionNode node)
+        public override void Visit(FunctionNode node)
         {
             var args = Nodes.Pop() as ArgsListNode;
 
@@ -223,18 +50,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(functionMethod);
         }
 
-        public void Visit(IsNullNode node)
+        public override void Visit(AccessColumnNode node)
         {
-            Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));
-        }
-
-        public void Visit(AccessColumnNode node)
-        {
-            var identifier = _currentScope.ContainsAttribute("ProcessedQueryId")
-                ? _currentScope["ProcessedQueryId"]
+            var identifier = CurrentScope.ContainsAttribute("ProcessedQueryId")
+                ? CurrentScope["ProcessedQueryId"]
                 : _identifier;
 
-            var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(identifier);
+            var tableSymbol = CurrentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(identifier);
 
             (Table Table, string TableName) tuple;
             if (!string.IsNullOrEmpty(node.Alias))
@@ -250,9 +72,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(accessColumn);
         }
 
-        public void Visit(AllColumnsNode node)
+        public override void Visit(AllColumnsNode node)
         {
-            var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(_identifier);
+            var tableSymbol = CurrentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(_identifier);
             var tuple = tableSymbol.GetTableByAlias(_identifier);
             var table = tuple.Table;
             _generatedColumns = new FieldNode[table.Columns.Length];
@@ -270,11 +92,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(node);
         }
 
-        public void Visit(IdentifierNode node)
+        public override void Visit(IdentifierNode node)
         {
             if (node.Name != _identifier)
             {
-                var tableSymbol = _currentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(_identifier);
+                var tableSymbol = CurrentScope.ScopeSymbolTable.GetSymbol<TableSymbol>(_identifier);
                 var column = tableSymbol.GetColumnByAliasAndName(_identifier, node.Name);
                 Visit(new AccessColumnNode(node.Name, string.Empty, column.ColumnType, TextSpan.Empty));
                 return;
@@ -283,25 +105,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new IdentifierNode(node.Name));
         }
 
-        public void Visit(AccessObjectArrayNode node)
-        {
-            var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new AccessObjectArrayNode(node.Token, parentNodeType.GetProperty(node.Name)));
-        }
-
-        public void Visit(AccessObjectKeyNode node)
-        {
-            var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new AccessObjectKeyNode(node.Token, parentNodeType.GetProperty(node.ObjectName)));
-        }
-
-        public void Visit(PropertyValueNode node)
-        {
-            var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new PropertyValueNode(node.Name, parentNodeType.GetProperty(node.Name)));
-        }
-
-        public void Visit(VariableNode node)
+        public override void Visit(VariableNode node)
         {
             var variable = _engine.GetVariable(node.Name);
             if (variable == null)
@@ -309,73 +113,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new VariableNode(node.Name, variable.Type));
         }
 
-        public virtual void Visit(DeclareNode node)
+        public override void Visit(DeclareNode node)
         {
             _engine.SetVariable(node.Variable.Name, node.Type.ReturnType, null);
             Nodes.Push(new DeclareNode(node.Variable, node.Type));
         }
 
-        public virtual void Visit(SetNode node)
-        {
-            var value = Nodes.Pop();
-            var variable = (VariableNode)Nodes.Pop();
-            Nodes.Push(new SetNode(variable, value));
-        }
-
-        public void Visit(DotNode node)
-        {
-            var exp = Nodes.Pop();
-            var root = Nodes.Pop();
-
-            Nodes.Push(new DotNode(root, exp, node.IsOuter, string.Empty, exp.ReturnType));
-        }
-
-
-        public void Visit(ArgsListNode node)
-        {
-            var args = new Node[node.Args.Length];
-
-            for (var i = node.Args.Length - 1; i >= 0; --i)
-                args[i] = Nodes.Pop();
-
-            Nodes.Push(new ArgsListNode(args));
-        }
-
-        public void Visit(WhereNode node)
-        {
-            Nodes.Push(new WhereNode(Nodes.Pop()));
-        }
-
-        public void Visit(GroupByNode node)
-        {
-            var having = Nodes.Peek() as HavingNode;
-
-            if (having != null)
-                Nodes.Pop();
-
-            var fields = new FieldNode[node.Fields.Length];
-
-            for (var i = node.Fields.Length - 1; i >= 0; --i) fields[i] = Nodes.Pop() as FieldNode;
-
-            Nodes.Push(new GroupByNode(fields, having));
-        }
-
-        public void Visit(HavingNode node)
-        {
-            Nodes.Push(new HavingNode(Nodes.Pop()));
-        }
-
-        public void Visit(SkipNode node)
-        {
-            Nodes.Push(new SkipNode((IntegerNode) node.Expression));
-        }
-
-        public void Visit(TakeNode node)
-        {
-            Nodes.Push(new TakeNode((IntegerNode) node.Expression));
-        }
-
-        public void Visit(FromFunctionNode node)
+        public override void Visit(FromFunctionNode node)
         {
             var functionNode = node.Function;
             var method = _engine.ResolveMethod(functionNode.Path, functionNode.Name, functionNode.ArgumentsTypes);
@@ -388,41 +132,41 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _generatedAliases.Add(_queryAlias);
 
             var tableSymbol = new TableSymbol(functionNode.Path, _queryAlias, table, !string.IsNullOrEmpty(node.Alias));
-            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
-            _currentScope[node.Id] = _queryAlias;
+            CurrentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
+            CurrentScope[node.Id] = _queryAlias;
 
             var aliasedSchemaFromNode = new FromFunctionNode(functionNode, _queryAlias);
             Nodes.Push(aliasedSchemaFromNode);
         }
 
-        public void Visit(InMemoryTableFromNode node)
+        public override void Visit(InMemoryTableFromNode node)
         {
             _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.VariableName : node.Alias;
             _generatedAliases.Add(_queryAlias);
 
             TableSymbol tableSymbol;
 
-            if (_currentScope.Parent.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(node.VariableName))
+            if (CurrentScope.Parent.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(node.VariableName))
             {
-                tableSymbol = _currentScope.Parent.ScopeSymbolTable.GetSymbol<TableSymbol>(node.VariableName);
+                tableSymbol = CurrentScope.Parent.ScopeSymbolTable.GetSymbol<TableSymbol>(node.VariableName);
             }
             else
             {
-                var scope = _currentScope;
+                var scope = CurrentScope;
                 while (scope != null && scope.Name != "CTE") scope = scope.Parent;
 
                 tableSymbol = scope.ScopeSymbolTable.GetSymbol<TableSymbol>(node.VariableName);
             }
 
             var tableSchemaPair = tableSymbol.GetTableByAlias(node.VariableName);
-            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
+            CurrentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
                 new TableSymbol(null, _queryAlias, tableSchemaPair.Table, node.Alias == _queryAlias));
-            _currentScope[node.Id] = _queryAlias;
+            CurrentScope[node.Id] = _queryAlias;
 
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, _queryAlias));
         }
 
-        public void Visit(FromTableNode node)
+        public override void Visit(FromTableNode node)
         {
             TableSymbol tableSymbol = null;
 
@@ -437,22 +181,22 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.Table.TableOrView : node.Alias;
                 _generatedAliases.Add(_queryAlias);
 
-                if (_currentScope.Parent.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(node.Table.TableOrView))
+                if (CurrentScope.Parent.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(node.Table.TableOrView))
                 {
-                    tableSymbol = _currentScope.Parent.ScopeSymbolTable.GetSymbol<TableSymbol>(node.Table.TableOrView);
+                    tableSymbol = CurrentScope.Parent.ScopeSymbolTable.GetSymbol<TableSymbol>(node.Table.TableOrView);
                 }
                 else
                 {
-                    var scope = _currentScope;
+                    var scope = CurrentScope;
                     while (scope != null && scope.Name != "CTE") scope = scope.Parent;
 
                     tableSymbol = scope.ScopeSymbolTable.GetSymbol<TableSymbol>(node.Table.TableOrView);
                 }
 
                 var tableSchemaPair = tableSymbol.GetTableByAlias(node.Table.TableOrView);
-                _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
+                CurrentScope.ScopeSymbolTable.AddSymbol(_queryAlias,
                     new TableSymbol(null, _queryAlias, tableSchemaPair.Table, node.Alias == _queryAlias));
-                _currentScope[node.Id] = _queryAlias;
+                CurrentScope[node.Id] = _queryAlias;
 
                 Nodes.Push(new InMemoryTableFromNode(node.Table.TableOrView, _queryAlias));
                 return;
@@ -462,42 +206,33 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _generatedAliases.Add(_queryAlias);
 
             tableSymbol = new TableSymbol(node.Table.Path, _queryAlias, table, !string.IsNullOrEmpty(node.Alias));
-            _currentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
-            _currentScope[node.Id] = _queryAlias;
+            CurrentScope.ScopeSymbolTable.AddSymbol(_queryAlias, tableSymbol);
+            CurrentScope[node.Id] = _queryAlias;
 
-            var aliasedSchemaFromNode = new FromTableNode(node.Table,  _queryAlias);
+            var aliasedSchemaFromNode = new FromTableNode(node.Table, _queryAlias);
 
 
             Nodes.Push(aliasedSchemaFromNode);
         }
 
-        public void Visit(JoinFromNode node)
+        public override void Visit(JoinFromNode node)
         {
             var expression = Nodes.Pop();
-            var joinedTable = (FromNode) Nodes.Pop();
-            var source = (FromNode) Nodes.Pop();
+            var joinedTable = (FromNode)Nodes.Pop();
+            var source = (FromNode)Nodes.Pop();
             var joinedFrom = new JoinFromNode(source, joinedTable, expression, node.JoinType);
             _identifier = joinedFrom.Alias;
             Nodes.Push(joinedFrom);
         }
 
-        public void Visit(ExpressionFromNode node)
+        public override void Visit(ExpressionFromNode node)
         {
-            var from = (FromNode) Nodes.Pop();
+            var from = (FromNode)Nodes.Pop();
             _identifier = from.Alias;
             Nodes.Push(new ExpressionFromNode(from));
         }
 
-        public void Visit(IntoNode node)
-        {
-            Nodes.Push(new IntoNode(node.Name));
-        }
-
-        public void Visit(QueryScope node)
-        {
-        }
-
-        public void Visit(QueryNode node)
+        public override void Visit(QueryNode node)
         {
             var orderBy = node.OrderBy != null ? Nodes.Pop() as OrderByNode : null;
             var groupBy = node.GroupBy != null ? Nodes.Pop() as GroupByNode : null;
@@ -514,16 +249,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
         }
 
-        public void Visit(RootNode node)
-        {
-            Nodes.Push(new RootNode(Nodes.Pop()));
-        }
 
-        public void Visit(SingleSetNode node)
-        {
-        }
-
-        public void Visit(UnionNode node)
+        public override void Visit(UnionNode node)
         {
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -533,13 +260,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var methodName = $"{leftMethodName}_Union_{rightMethodName}";
             Methods.Push(methodName);
-            _currentScope.ScopeSymbolTable.AddSymbol(methodName,
-                _currentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode) left).From.Alias));
+            CurrentScope.ScopeSymbolTable.AddSymbol(methodName,
+                CurrentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode)left).From.Alias));
 
             Nodes.Push(new UnionNode(node.ResultTableName, node.Keys, left, right, node.IsNested, node.IsTheLastOne));
         }
 
-        public void Visit(UnionAllNode node)
+        public override void Visit(UnionAllNode node)
         {
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -549,14 +276,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var methodName = $"{leftMethodName}_UnionAll_{rightMethodName}";
             Methods.Push(methodName);
-            _currentScope.ScopeSymbolTable.AddSymbol(methodName,
-                _currentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode) left).From.Alias));
+            CurrentScope.ScopeSymbolTable.AddSymbol(methodName,
+                CurrentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode)left).From.Alias));
 
             Nodes.Push(new UnionAllNode(node.ResultTableName, node.Keys, left, right, node.IsNested,
                 node.IsTheLastOne));
         }
 
-        public void Visit(ExceptNode node)
+        public override void Visit(ExceptNode node)
         {
             var right = Nodes.Pop();
             var left = Nodes.Pop();
@@ -566,13 +293,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var methodName = $"{leftMethodName}_Except_{rightMethodName}";
             Methods.Push(methodName);
-            _currentScope.ScopeSymbolTable.AddSymbol(methodName,
-                _currentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode) left).From.Alias));
+            CurrentScope.ScopeSymbolTable.AddSymbol(methodName,
+                CurrentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode)left).From.Alias));
 
             Nodes.Push(new ExceptNode(node.ResultTableName, node.Keys, left, right, node.IsNested, node.IsTheLastOne));
         }
 
-        public void Visit(IntersectNode node)
+        public override void Visit(IntersectNode node)
         {
 
             var right = Nodes.Pop();
@@ -583,41 +310,26 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var methodName = $"{leftMethodName}_Intersect_{rightMethodName}";
             Methods.Push(methodName);
-            _currentScope.ScopeSymbolTable.AddSymbol(methodName,
-                _currentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode) left).From.Alias));
+            CurrentScope.ScopeSymbolTable.AddSymbol(methodName,
+                CurrentScope.Child[0].ScopeSymbolTable.GetSymbol(((QueryNode)left).From.Alias));
 
             Nodes.Push(
                 new IntersectNode(node.ResultTableName, node.Keys, left, right, node.IsNested, node.IsTheLastOne));
         }
 
-        public void Visit(PutTrueNode node)
-        {
-            Nodes.Push(new PutTrueNode());
-        }
-
-        public void Visit(MultiStatementNode node)
-        {
-            var items = new Node[node.Nodes.Length];
-
-            for (var i = node.Nodes.Length - 1; i >= 0; --i)
-                items[i] = Nodes.Pop();
-
-            Nodes.Push(new MultiStatementNode(items, node.ReturnType));
-        }
-
-        public void Visit(CteExpressionNode node)
+        public override void Visit(CteExpressionNode node)
         {
             var sets = new CteInnerExpressionNode[node.InnerExpression.Length];
 
             var set = Nodes.Pop();
 
             for (var i = node.InnerExpression.Length - 1; i >= 0; --i)
-                sets[i] = (CteInnerExpressionNode) Nodes.Pop();
+                sets[i] = (CteInnerExpressionNode)Nodes.Pop();
 
             Nodes.Push(new CteExpressionNode(sets, set));
         }
 
-        public void Visit(CteInnerExpressionNode node)
+        public override void Visit(CteInnerExpressionNode node)
         {
             var set = Nodes.Pop();
 
@@ -627,32 +339,27 @@ namespace Traficante.TSQL.Evaluator.Visitors
             set.Accept(traverser);
 
             var table = new Table(node.Name, new string[0], collector.CollectedFieldNames);
-            _currentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
+            CurrentScope.Parent.ScopeSymbolTable.AddSymbol(node.Name,
                 new TableSymbol(new string[0], node.Name, table, false));
 
             Nodes.Push(new CteInnerExpressionNode(set, node.Name));
         }
 
-        public void Visit(JoinsNode node)
+        public override void Visit(JoinsNode node)
         {
             _identifier = node.Alias;
-            Nodes.Push(new JoinsNode((JoinFromNode) Nodes.Pop()));
+            Nodes.Push(new JoinsNode((JoinFromNode)Nodes.Pop()));
         }
 
-        public void Visit(JoinNode node)
+        public override void Visit(JoinNode node)
         {
             var expression = Nodes.Pop();
-            var fromNode = (FromNode) Nodes.Pop();
+            var fromNode = (FromNode)Nodes.Pop();
 
             if (node is OuterJoinNode outerJoin)
                 Nodes.Push(new OuterJoinNode(outerJoin.Type, fromNode, expression));
             else
                 Nodes.Push(new InnerJoinNode(fromNode, expression));
-        }
-
-        public void SetScope(Scope scope)
-        {
-            _currentScope = scope;
         }
 
         private FieldNode[] CreateFields(FieldNode[] oldFields)
@@ -680,7 +387,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return fields.ToArray();
         }
 
-        public void Visit(OrderByNode node)
+        public override void Visit(OrderByNode node)
         {
             var fields = new FieldOrderedNode[node.Fields.Length];
 
@@ -690,7 +397,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new OrderByNode(fields));
         }
 
-        public void Visit(CreateTableNode node)
+        public override void Visit(CreateTableNode node)
         {
             var columns = new List<Column>();
 
@@ -711,52 +418,5 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }
 
-        public void SetQueryPart(QueryPart part)
-        {
-        }
-
-        public void Visit(StatementsArrayNode node)
-        {
-            var statements = new StatementNode[node.Statements.Length];
-            for (int i = 0; i < node.Statements.Length; ++i)
-            {
-                statements[node.Statements.Length - 1 - i] = (StatementNode)Nodes.Pop();
-            }
-
-            Nodes.Push(new StatementsArrayNode(statements));
-        }
-
-        public void Visit(StatementNode node)
-        {
-            Nodes.Push(new StatementNode(Nodes.Pop()));
-        }
-
-        public void Visit(CaseNode node)
-        {
-            var whenThenPairs = new List<(Node When, Node Then)>();
-
-            for(int i = 0; i < node.WhenThenPairs.Length; ++i)
-            {
-                var then = Nodes.Pop();
-                var when = Nodes.Pop();
-                whenThenPairs.Add((when, then));
-            }
-
-            var elseNode = Nodes.Pop();
-
-            Nodes.Push(new CaseNode(whenThenPairs.ToArray(), elseNode, elseNode.ReturnType));
-        }
-
-        public void Visit(TypeNode node)
-        {
-            Nodes.Push(new TypeNode(node.Name, node.Size));
-        }
-
-        public void Visit(ExecuteNode node)
-        {
-            FunctionNode functionToRun = node.FunctionToRun != null ? (FunctionNode)Nodes.Pop() : null;
-            VariableNode variableToSet = node.VariableToSet != null ? (VariableNode)Nodes.Pop() : null;
-            Nodes.Push(new ExecuteNode(variableToSet, functionToRun));
-        }
     }
 }
