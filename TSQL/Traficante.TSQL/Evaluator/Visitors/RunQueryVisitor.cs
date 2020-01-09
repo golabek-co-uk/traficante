@@ -18,14 +18,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class ExecuteQueryVisitor : IExpressionVisitor
     {
-        //private readonly IDictionary<string, int[]> _setOperatorFieldIndexes;
-
-        private int _setOperatorMethodIdentifier;
-        private int _caseWhenMethodIndex = 0;
-
-        private string _queryAlias;
-        private Scope _scope;
-
         ExpressionHelper expressionHelper = new ExpressionHelper();
 
         //Type _itemType = null;
@@ -1454,19 +1446,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void SetScope(Scope scope)
         {
-            _scope = scope;
             if (scope?.Name == "Query")
                 _input = null;
         }
 
         public void SetQueryIdentifier(string identifier)
         {
-            _queryAlias = identifier;
-        }
-
-        public void IncrementMethodIdentifier()
-        {
-            _setOperatorMethodIdentifier += 1;
+            
         }
 
         public void Visit(TypeNode node)

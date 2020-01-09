@@ -549,7 +549,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 nodes.Push(node);
 
                 node.Left.Accept(this);
-                _visitor.IncrementMethodIdentifier();
 
                 while (nodes.Count > 0)
                 {
@@ -563,14 +562,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         _visitor.SetScope(_walker.Scope);
 
                         operatorNode.Left.Accept(this);
-                        _visitor.IncrementMethodIdentifier();
 
                         current.Accept(_visitor);
                     }
                     else
                     {
                         current.Right.Accept(this);
-                        _visitor.IncrementMethodIdentifier();
 
                         current.Accept(_visitor);
                     }
@@ -579,8 +576,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             else
             {
                 node.Left.Accept(this);
-
-                _visitor.IncrementMethodIdentifier();
 
                 node.Right.Accept(this);
 
