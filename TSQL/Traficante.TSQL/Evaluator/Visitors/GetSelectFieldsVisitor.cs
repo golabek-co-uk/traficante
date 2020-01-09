@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 using Traficante.TSQL.Schema;
@@ -7,7 +8,7 @@ using Traficante.TSQL.Schema.DataSources;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class GetSelectFieldsVisitor : IQueryPartAwareExpressionVisitor
+    public class GetSelectFieldsVisitor : IAwareExpressionVisitor
     {
         private readonly List<Schema.DataSources.Column> _collectedFieldNames = new List<Schema.DataSources.Column>();
         private QueryPart _queryPart;
@@ -17,6 +18,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void SetQueryPart(QueryPart part)
         {
             _queryPart = part;
+        }
+
+        public void SetScope(Scope scope)
+        {
+
         }
 
         public void Visit(Node node)

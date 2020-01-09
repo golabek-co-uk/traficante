@@ -8,9 +8,10 @@ using Traficante.TSQL.Parser.Nodes;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class CloneQueryVisitor : IExpressionVisitor, IAwareExpressionVisitor
+    public class CloneQueryVisitor : IAwareExpressionVisitor
     {
         protected Scope CurrentScope { get; set; }
+        protected QueryPart QueryPart { get; set; }
 
         protected Stack<Node> Nodes { get; } = new Stack<Node>();
 
@@ -513,6 +514,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void SetQueryPart(QueryPart part)
         {
+            QueryPart = part;
         }
     }
 }
