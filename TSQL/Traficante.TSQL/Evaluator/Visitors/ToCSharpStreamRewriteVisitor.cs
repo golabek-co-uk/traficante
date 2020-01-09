@@ -1432,6 +1432,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void SetScope(Scope scope)
         {
             _scope = scope;
+            if (scope?.Name == "Query")
+                _input = null;
         }
 
         public void SetQueryIdentifier(string identifier)

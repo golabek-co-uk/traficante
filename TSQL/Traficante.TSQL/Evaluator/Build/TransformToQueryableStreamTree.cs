@@ -22,13 +22,6 @@ namespace Traficante.TSQL.Converter.Build
 
             queryTree = metadataInferer.Root;
 
-            var rewriter = new RewriteQueryVisitor();
-            var rewriteTraverser = new RewriteQueryTraverseVisitor(rewriter, new ScopeWalker(metadataInfererTraverser.Scope));
-
-            queryTree.Accept(rewriteTraverser);
-
-            queryTree = rewriter.RootScript;
-
             var csharpRewriter = new ToCSharpStreamRewriteVisitor(items.Engine);//, metadataInferer.SetOperatorFieldPositions);
             var csharpRewriteTraverser = new ToCSharpStreamRewriteTraverseVisitor(csharpRewriter, new ScopeWalker(metadataInfererTraverser.Scope));
 
