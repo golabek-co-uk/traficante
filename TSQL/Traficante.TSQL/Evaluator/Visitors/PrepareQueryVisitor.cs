@@ -471,22 +471,5 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(new CreateTableNode(node.Name, node.TableTypePairs));
         }
-
-        // rewrite query
-        public override void Visit(InNode node)
-        {
-            var right = (ArgsListNode)Nodes.Pop();
-            var left = Nodes.Pop();
-
-            Node exp = new EqualityNode(left, right.Args[0]);
-
-            for (var i = 1; i < right.Args.Length; i++)
-            {
-                exp = new OrNode(exp, new EqualityNode(left, right.Args[i]));
-            }
-
-            Nodes.Push(exp);
-        }
-
     }
 }

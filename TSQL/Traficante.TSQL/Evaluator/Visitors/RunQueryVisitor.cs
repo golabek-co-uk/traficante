@@ -232,7 +232,31 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(InNode node)
         {
-            
+            var right = (ArgsListNode)node.Right;
+            var left = node.Left;
+
+            var rightExpressions = new List<Expression>();
+            for (int i = 0; i < right.Args.Length; i++)
+                rightExpressions.Add(Nodes.Pop());
+
+            var leftExpression = Nodes.Pop();
+
+            Expression exp = this.expressionHelper.SqlLikeOperation(
+                leftExpression, 
+                rightExpressions[0], 
+                Expression.Equal);
+            for (var i = 1; i < rightExpressions.Count; i++)
+            {
+                exp = Expression.Or(
+                    exp,
+                    this.expressionHelper.SqlLikeOperation(
+                        leftExpression,
+                        rightExpressions[i],
+                        Expression.Equal)
+                    );
+            }
+
+            Nodes.Push(exp);
         }
 
         private FieldNode _currentFieldNode = null;
