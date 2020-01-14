@@ -9,6 +9,9 @@ namespace Traficante.Studio.ViewModels
 {
     public class MainWindowBodyViewModel : DockBase
     {
-        
+        public override IDockable Clone()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

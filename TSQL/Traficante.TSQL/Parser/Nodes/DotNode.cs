@@ -5,14 +5,13 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class DotNode : UnaryNode
     {
-        public DotNode(Node root, Node expression, bool isOuter, string name, Type returnType = null)
+        public DotNode(Node root, Node expression, bool isOuter, string name)
             : base(expression)
         {
             Root = root;
             IsOuter = isOuter;
             Name = name;
             Id = $"{nameof(DotNode)}{root.ToString()}{expression.ToString()}{isOuter}{name}";
-            ReturnType = returnType;
         }
 
         public Node Root { get; }
@@ -21,7 +20,7 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public string Name { get; }
 
-        public override Type ReturnType { get; }
+        public override Type ReturnType => Expression.ReturnType;
 
         public override string Id { get; }
 

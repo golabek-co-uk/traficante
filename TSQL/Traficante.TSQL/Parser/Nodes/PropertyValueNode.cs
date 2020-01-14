@@ -17,7 +17,7 @@ namespace Traficante.TSQL.Parser.Nodes
             PropertyInfo = propertyInfo;
         }
 
-        public override Type ReturnType => PropertyInfo.PropertyType;
+        public override Type ReturnType => PropertyInfo?.PropertyType;
 
         public override string Id { get; }
         public PropertyInfo PropertyInfo { get; private set; }

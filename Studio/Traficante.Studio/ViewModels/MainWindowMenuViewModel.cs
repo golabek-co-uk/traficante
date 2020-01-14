@@ -1,6 +1,8 @@
-﻿namespace Traficante.Studio.ViewModels
+﻿using Dock.Model.Controls;
+
+namespace Traficante.Studio.ViewModels
 {
-    public class MainWindowMenuViewModel: Dock.Model.Controls.ToolTab
+    public class MainWindowMenuViewModel: Tool
     {
         public MainWindowMenuViewModel()
         {

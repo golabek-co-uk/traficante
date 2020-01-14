@@ -101,6 +101,26 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        public void SelectOneColumn_From_FunctionWithoutArguments()
+        {
+            Engine sut = new Engine();
+            sut.AddFunction("get_entities", () =>
+            {
+                return new[]
+                    {
+                        new BasicEntity("may"),
+                        new BasicEntity("june")
+                    }.AsEnumerable();
+            });
+
+            var table = sut.Run("select Name from get_entities()");
+
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual("may", table[0][0]);
+            Assert.AreEqual("june", table[1][0]);
+        }
+
+        [TestMethod]
         public void Select_From_FunctionArguments()
         {
             Engine sut = new Engine();

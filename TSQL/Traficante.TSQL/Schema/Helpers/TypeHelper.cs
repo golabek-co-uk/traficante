@@ -108,10 +108,25 @@ namespace Traficante.TSQL.Schema.Helpers
                     member.MemberType != MemberTypes.Field)
                     continue;
 
-                var property = (PropertyInfo)member;
-                columns.Add(new Traficante.TSQL.Schema.DataSources.Column(property.Name, columnIndex, property.PropertyType));
-                columnIndex += 1;
+                if (member is PropertyInfo)
+                {
+                    var property = (PropertyInfo)member;
+                    columns.Add(new Traficante.TSQL.Schema.DataSources.Column(property.Name, columnIndex, property.PropertyType));
+                    columnIndex += 1;
+                }
+                if (member is FieldInfo)
+                {
+                    var property = (FieldInfo)member;
+                    columns.Add(new Traficante.TSQL.Schema.DataSources.Column(property.Name, columnIndex, property.FieldType));
+                    columnIndex += 1;
+                }
+
+                //if (member is System.Reflection.RtFieldInfo)
+                //{
+
+                //}
             }
+            
 
             return columns.ToArray();
         }

@@ -116,69 +116,45 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(DotNode node)
         {
-            if (node.Expression is FunctionNode)
-            {
-                List<string> accessors = new List<string>();
-                Node parentNode = node.Root;
-                while (parentNode is null == false)
-                {
-                    if (parentNode is IdentifierNode)
-                        accessors.Add(((IdentifierNode)parentNode).Name);
-                    if (parentNode is PropertyValueNode)
-                        accessors.Add(((PropertyValueNode)parentNode).Name);
-                    if (parentNode is DotNode)
-                    {
-                        var dot = (DotNode)parentNode;
-                        if (dot.Expression is IdentifierNode)
-                            accessors.Add(((IdentifierNode)dot.Expression).Name);
-                        if (parentNode is PropertyValueNode)
-                            accessors.Add(((PropertyValueNode)dot.Expression).Name);
-                    }
-                    parentNode = (parentNode as DotNode)?.Root;
-                }
+            node.Root.Accept(this);
+            node.Expression.Accept(this);
+            node.Accept(_visitor);
 
-                accessors.Reverse();
+            //var self = node;
+            //var theMostInner = self;
+            //while (!(self is null))
+            //{
+            //    theMostInner = self;
+            //    self = self.Root as DotNode;
+            //}
 
-                FunctionNode function = node.Expression as FunctionNode;
-                Visit(new FunctionNode(function.Name, function.Arguments, accessors.ToArray(), function.Method));
-                return;
-            }
+            //var ident = (IdentifierNode) theMostInner.Root;
+            //if (node == theMostInner && Scope.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(ident.Name))
+            //{
+            //    if (theMostInner.Expression is DotNode dotNode)
+            //    {
+            //        var col = (IdentifierNode) dotNode.Root;
+            //        Visit(new AccessColumnNode(col.Name, ident.Name, TextSpan.Empty));
+            //    }
+            //    else
+            //    {
+            //        var col = (IdentifierNode) theMostInner.Expression;
+            //        Visit(new AccessColumnNode(col.Name, ident.Name, TextSpan.Empty));
+            //    }
 
-            var self = node;
-            var theMostInner = self;
-            while (!(self is null))
-            {
-                theMostInner = self;
-                self = self.Root as DotNode;
-            }
+            //    return;
+            //}
 
-            var ident = (IdentifierNode) theMostInner.Root;
-            if (node == theMostInner && Scope.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(ident.Name))
-            {
-                if (theMostInner.Expression is DotNode dotNode)
-                {
-                    var col = (IdentifierNode) dotNode.Root;
-                    Visit(new AccessColumnNode(col.Name, ident.Name, TextSpan.Empty));
-                }
-                else
-                {
-                    var col = (IdentifierNode) theMostInner.Expression;
-                    Visit(new AccessColumnNode(col.Name, ident.Name, TextSpan.Empty));
-                }
+            //self = node;
 
-                return;
-            }
+            //while (!(self is null))
+            //{
+            //    self.Root.Accept(this);
+            //    self.Expression.Accept(this);
+            //    self.Accept(_visitor);
 
-            self = node;
-
-            while (!(self is null))
-            {
-                self.Root.Accept(this);
-                self.Expression.Accept(this);
-                self.Accept(_visitor);
-
-                self = self.Expression as DotNode;
-            }
+            //    self = self.Expression as DotNode;
+            //}
         }
 
         public virtual void Visit(WhereNode node)
@@ -252,13 +228,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             join.Source.Accept(this);
             join.With.Accept(this);
 
-            var firstTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.Source.Id]);
-            var secondTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.With.Id]);
+            //var firstTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.Source.Id]);
+            //var secondTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.With.Id]);
 
-            var id = $"{Scope[join.Source.Id]}{Scope[join.With.Id]}";
+            //var id = $"{Scope[join.Source.Id]}{Scope[join.With.Id]}";
 
-            Scope.ScopeSymbolTable.AddSymbol(id, firstTableSymbol.MergeSymbols(secondTableSymbol));
-            Scope["ProcessedQueryId"] = id;
+            //Scope.ScopeSymbolTable.AddSymbol(id, firstTableSymbol.MergeSymbols(secondTableSymbol));
+            //Scope["ProcessedQueryId"] = id;
 
             join.Expression.Accept(this);
             join.Accept(_visitor);
@@ -268,13 +244,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 join = joins.Pop();
                 join.With.Accept(this);
 
-                var currentTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.With.Id]);
-                var previousTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(id);
+                //var currentTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.With.Id]);
+                //var previousTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(id);
 
-                id = $"{id}{Scope[join.With.Id]}";
+                //id = $"{id}{Scope[join.With.Id]}";
 
-                Scope.ScopeSymbolTable.AddSymbol(id, previousTableSymbol.MergeSymbols(currentTableSymbol));
-                Scope["ProcessedQueryId"] = id;
+                //Scope.ScopeSymbolTable.AddSymbol(id, previousTableSymbol.MergeSymbols(currentTableSymbol));
+                //Scope["ProcessedQueryId"] = id;
 
                 join.Expression.Accept(this);
                 join.Accept(_visitor);

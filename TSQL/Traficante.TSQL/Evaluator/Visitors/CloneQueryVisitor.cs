@@ -234,8 +234,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(PropertyValueNode node)
         {
-            var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new PropertyValueNode(node.Name, parentNodeType.GetProperty(node.Name)));
+            Nodes.Push(new PropertyValueNode(node.Name));
+            //var parentNodeType = Nodes.Peek().ReturnType;
+            //Nodes.Push(new PropertyValueNode(node.Name, parentNodeType.GetProperty(node.Name)));
         }
 
         public virtual void Visit(VariableNode node)
@@ -260,7 +261,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var exp = Nodes.Pop();
             var root = Nodes.Pop();
 
-            Nodes.Push(new DotNode(root, exp, node.IsOuter, string.Empty, exp.ReturnType));
+            Nodes.Push(new DotNode(root, exp, node.IsOuter, string.Empty));
         }
 
         public virtual void Visit(ArgsListNode node)

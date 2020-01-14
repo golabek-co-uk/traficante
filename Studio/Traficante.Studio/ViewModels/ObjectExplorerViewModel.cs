@@ -13,7 +13,7 @@ using Traficante.Studio.Views;
 
 namespace Traficante.Studio.ViewModels
 {
-    public class ObjectExplorerViewModel : ToolTab
+    public class ObjectExplorerViewModel : Tool
     {
         
         public ObservableCollection<ObjectModel> Objects => ((AppData)this.Context).Objects;

@@ -12,6 +12,7 @@ using System.Text.Json.Serialization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Logging.Serilog;
+using Avalonia.ReactiveUI;
 using Dock.Model;
 using ReactiveUI;
 using Traficante.Studio.Models;
@@ -33,7 +34,7 @@ namespace Traficante.Studio
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToDebug()
-                .UseDataGrid()
+                //.UseDataGrid()
                 .UseReactiveUI();
 
         // Your application's entry point. Here you can initialize your MVVM framework, DI

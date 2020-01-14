@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 
 namespace Traficante.TSQL.Evaluator.Visitors
@@ -19,6 +20,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SelectNode node)
         {
+            SetQueryPart(QueryPart.Select);
             foreach (var field in node.Fields)
                 field.Accept(this);
             node.Accept(_visitor);
@@ -110,19 +112,21 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(DotNode node)
         {
-            node.Root.Accept(this);
-            node.Expression.Accept(this);
+            //node.Root.Accept(this);
+            //node.Expression.Accept(this);
             node.Accept(_visitor);
         }
 
         public virtual void Visit(WhereNode node)
         {
+            SetQueryPart(QueryPart.Where);
             node.Expression.Accept(this);
             node.Accept(_visitor);
         }
 
         public void Visit(GroupByNode node)
         {
+            SetQueryPart(QueryPart.GroupBy);
             foreach (var field in node.Fields)
                 field.Accept(this);
 
@@ -132,6 +136,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(HavingNode node)
         {
+            SetQueryPart(QueryPart.Having);
             node.Expression.Accept(this);
             node.Accept(_visitor);
         }
@@ -148,6 +153,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromFunctionNode node)
         {
+            SetQueryPart(QueryPart.From);
             //node.Function.Accept(this);
             node.Function.Arguments.Accept(this);
             node.Accept(_visitor);
@@ -155,16 +161,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromTableNode node)
         {
+            SetQueryPart(QueryPart.From);
             node.Accept(_visitor);
         }
 
         public void Visit(InMemoryTableFromNode node)
         {
+            SetQueryPart(QueryPart.From);
             node.Accept(_visitor);
         }
 
         public void Visit(JoinFromNode node)
         {
+            SetQueryPart(QueryPart.From);
             var joins = new Stack<JoinFromNode>();
 
             var join = node;
@@ -199,6 +208,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(ExpressionFromNode node)
         {
+            SetQueryPart(QueryPart.From);
             _visitor.SetQueryIdentifier(node.Alias);
             node.Expression.Accept(this);
             node.Accept(_visitor);
@@ -234,6 +244,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Select.Accept(this);
             node.Accept(_visitor);
             _walker = _walker.Parent();
+
+            SetQueryPart(QueryPart.None);
         }
 
         public void Visit(OrNode node)
@@ -336,8 +348,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FieldOrderedNode node)
         {
+            _visitor.SetFieldNode(node);
             node.Expression.Accept(this);
             node.Accept(_visitor);
+            _visitor.SetFieldNode(null);
         }
 
         public void Visit(ArgsListNode node)
@@ -585,5 +599,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 _visitor.SetScope(_walker.Scope);
             }
         }
+
+        public void SetQueryPart(QueryPart part)
+        {
+            _visitor.SetQueryPart(part);
+        }
+
     }
 }

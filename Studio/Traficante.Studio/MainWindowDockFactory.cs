@@ -19,7 +19,7 @@ using DynamicData;
 
 namespace Traficante.Studio
 {
-    public class MainWindowDockFactory : DockFactory
+    public class MainWindowDockFactory : Factory
     {
         private AppData _context;
 
@@ -41,7 +41,7 @@ namespace Traficante.Studio
                 Id = "DocumentsPane",
                 Title = "DocumentsPane",
                 Proportion = double.NaN,
-                Views = CreateList<IView>()
+                VisibleDockables = CreateList<IDockable>()
             };
 
             _context
@@ -55,37 +55,37 @@ namespace Traficante.Studio
                 .ActOnEveryObject(
                     added =>
                     {
-                        bool exists = documentsWindows.Views
+                        bool exists = documentsWindows.VisibleDockables
                             .Select(x => (QueryViewModel)x)
                             .Any(x => x.Id == added.Id);
                         if (exists == false)
                         {
-                            if (documentsWindows.CurrentView != null)
+                            if (documentsWindows.ActiveDockable != null)
                             {
-                                documentsWindows.Views.Insert(
-                                    documentsWindows.Views.IndexOf(documentsWindows.CurrentView) + 1,
+                                documentsWindows.VisibleDockables.Insert(
+                                    documentsWindows.VisibleDockables.IndexOf(documentsWindows.ActiveDockable) + 1,
                                     added);
                             }
                             else
                             {
-                                documentsWindows.Views.Add(added);
+                                documentsWindows.VisibleDockables.Add(added);
                             }
                             this.InitLayout(added);
                             this.InitLayout(documentsWindows);
-                            documentsWindows.CurrentView = added;
+                            documentsWindows.ActiveDockable = added;
                         }
                     },
                     removed =>
                     {
-                        bool exists = documentsWindows.Views
+                        bool exists = documentsWindows.VisibleDockables
                             .Select(x => (QueryViewModel)x)
                             .Any(x => x.Id == removed.Id);
                         if (exists)
-                            documentsWindows.Views.Remove(removed);
+                            documentsWindows.VisibleDockables.Remove(removed);
                     }
                 );
 
-            ((INotifyCollectionChanged)documentsWindows.Views).CollectionChanged += new NotifyCollectionChangedEventHandler(
+            ((INotifyCollectionChanged)documentsWindows.VisibleDockables).CollectionChanged += new NotifyCollectionChangedEventHandler(
                 (object sender, NotifyCollectionChangedEventArgs e) =>
                 {
                     if (e.OldItems != null)
@@ -100,19 +100,19 @@ namespace Traficante.Studio
                 });
 
             documentsWindows
-                .WhenAnyValue(x => x.CurrentView)
+                .WhenAnyValue(x => x.ActiveDockable)
                 .Subscribe(x => {
                     if (x != null)
-                        _context.SelectedQueryIndex = documentsWindows.Views.IndexOf(x);
+                        _context.SelectedQueryIndex = documentsWindows.VisibleDockables.IndexOf(x);
                     else
                         _context.SelectedQueryIndex = -1;
                 });
             _context
                 .WhenAnyValue(x => x.SelectedQueryIndex)
                 .Subscribe(x => {
-                    var view = documentsWindows.Views.ElementAtOrDefault(x);
+                    var view = documentsWindows.VisibleDockables.ElementAtOrDefault(x);
                     if (view != null)
-                        documentsWindows.CurrentView = view;
+                        documentsWindows.ActiveDockable = view;
                 });
 
             Interactions.NewQuery.RegisterHandler(x =>
@@ -124,31 +124,31 @@ namespace Traficante.Studio
                 x.SetOutput(Unit.Default);
             });
 
-            var bodyLayout = new LayoutDock
+            var bodyLayout = new ProportionalDock
             {
                 Id = "BodyLayout",
                 Title = "BodyLayout",
                 Proportion = double.NaN,
                 Orientation = Orientation.Horizontal,
-                CurrentView = null,
-                Views = CreateList<IView>
+                ActiveDockable = null,
+                VisibleDockables = CreateList<IDockable>
                 (
-                    new LayoutDock
+                    new ProportionalDock
                     {
                         Id = "LeftPane",
                         Title = "LeftPane",
                         Proportion = double.NaN,
                         Orientation = Orientation.Vertical,
-                        CurrentView = null,
-                        Views = CreateList<IView>
+                        ActiveDockable = null,
+                        VisibleDockables = CreateList<IDockable>
                         (
                             new ToolDock
                             {
                                 Id = "LeftPaneTop",
                                 Title = "LeftPaneTop",
                                 Proportion = double.NaN,
-                                CurrentView = objectExplorer,
-                                Views = CreateList<IView>
+                                ActiveDockable = objectExplorer,
+                                VisibleDockables = CreateList<IDockable>
                                 (
                                     objectExplorer
                                 )
@@ -168,17 +168,17 @@ namespace Traficante.Studio
             {
                 Id = "Main",
                 Title = "Main",
-                CurrentView = bodyLayout,
-                Views = CreateList<IView>(bodyLayout)
+                ActiveDockable = bodyLayout,
+                VisibleDockables = CreateList<IDockable>(bodyLayout)
             };
 
             var root = CreateRootDock();
 
             root.Id = "Root";
             root.Title = "Root";
-            root.CurrentView = bodyView;
-            root.DefaultView = bodyView;
-            root.Views = CreateList<IView>(bodyView);
+            root.ActiveDockable = bodyView;
+            root.DefaultDockable = bodyView;
+            root.VisibleDockables = CreateList<IDockable>(bodyView);
             root.Top = CreatePinDock();
             root.Top.Alignment = Alignment.Top;
             root.Bottom = CreatePinDock();
@@ -191,19 +191,19 @@ namespace Traficante.Studio
             return root;
         }
 
-        public override void InitLayout(IView layout)
+        public override void InitLayout(IDockable layout)
         {
             this.ContextLocator = new Dictionary<string, Func<object>>
             {
                 [nameof(IRootDock)] = () => _context,
                 [nameof(IPinDock)] = () => _context,
-                [nameof(ILayoutDock)] = () => _context,
+                [nameof(IProportionalDock)] = () => _context,
                 [nameof(IDocumentDock)] = () => _context,
                 [nameof(IToolDock)] = () => _context,
                 [nameof(ISplitterDock)] = () => _context,
                 [nameof(IDockWindow)] = () => _context,
-                [nameof(IDocumentTab)] = () => _context,
-                [nameof(IToolTab)] = () => _context,
+                [nameof(IDocument)] = () => _context,
+                [nameof(ITool)] = () => _context,
                 ["ObjectExplorer"] = () => _context,
                 ["Query"] = () => _context,
                 ["QueryView"] = () => _context,
@@ -216,7 +216,7 @@ namespace Traficante.Studio
                 ["Main"] = () => _context,
             };
 
-            this.HostLocator = new Dictionary<string, Func<IDockHost>>
+            this.HostWindowLocator = new Dictionary<string, Func<IHostWindow>>
             {
                 [nameof(IDockWindow)] = () =>
                 {

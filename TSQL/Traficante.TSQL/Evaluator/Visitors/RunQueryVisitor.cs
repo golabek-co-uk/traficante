@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 using Traficante.TSQL.Parser.Tokens;
 using Traficante.TSQL.Schema;
@@ -32,10 +33,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
 
+        private List<FieldNode> _selectedFieldsNodes = new List<FieldNode>();
+
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
         private Engine _engine;
 
         public object Result = null;
+
+        private QueryPart _queryPart;
 
         //private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
@@ -259,9 +264,16 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FieldNode node)
         {
+            if ((node.Expression is AllColumnsNode) == false && _queryPart == QueryPart.Select)
+            {
+                _selectedFieldsNodes.Add(node);
+                var value = Nodes.Pop();
+                Nodes.Push(Expression.Convert(value, node.ReturnType));
+            }
             /// TODO: add check if conversion is needed
-            var value = Nodes.Pop();
-            Nodes.Push(Expression.Convert(value, node.ReturnType));
+            //var value = Nodes.Pop();
+            //Nodes.Push(Expression.Convert(value, node.ReturnType));
+            Nodes.Push(Nodes.Pop());
         }
 
         public void Visit(FieldOrderedNode node)
@@ -320,6 +332,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var args = Enumerable.Range(0, node.ArgsCount).Select(x => Nodes.Pop()).Reverse().ToArray();
             var argsTypes = args.Select(x => x.Type).ToArray();
+            MethodInfo methodInfo = node.Method ?? this._engine.ResolveMethod(node.Path, node.Name, argsTypes);
+            node.ChangeMethod(methodInfo);
+
             if (node.IsAggregateMethod)
             {
                 if (this._item.Type.Name == "IGrouping`2")
@@ -515,10 +530,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     return;
                 }
 
-                var instance = node.Method.FunctionMethod.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
+                var instance = methodInfo.FunctionMethod.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
                 /// TODO: check if there can be more that one generic argument
-                var method = node.Method.FunctionMethod.IsGenericMethodDefinition ?
-                    node.Method.FunctionMethod.MakeGenericMethod(node.ReturnType) : node.Method.FunctionMethod;
+                var method = methodInfo.FunctionMethod.IsGenericMethodDefinition ?
+                    methodInfo.FunctionMethod.MakeGenericMethod(node.ReturnType) : methodInfo.FunctionMethod;
 
                 var parameters = method.GetParameters();
                 for(int i = 0; i < parameters.Length; i++)
@@ -618,18 +633,52 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 //}
             }
 
-            var item = _alias2Item[node.Alias];
-            var property = this.expressionHelper.PropertyOrField(item, node.Name, node.ReturnType);
-            Nodes.Push(property);
+            if (_alias2Item.ContainsKey(node.Alias))
+            {
+                var item = _alias2Item[node.Alias];
+                var property = this.expressionHelper.PropertyOrField(item, node.Name, node.ReturnType);
+                Nodes.Push(property);
+            }
+            else
+            {
+                var property = this.expressionHelper.PropertyOrField(_item, node.Name, node.ReturnType);
+                Nodes.Push(property);
+            }
         }
 
+        
         public void Visit(AllColumnsNode node)
         {
+            var columns = TypeHelper.GetColumns(this._item.Type);
+            foreach(var column in columns)
+            {
+                IdentifierNode identifierNode = new IdentifierNode(column.ColumnName, column.ColumnType);
+                FieldNode fieldNode = new FieldNode(identifierNode, -1, column.ColumnName);
+                _selectedFieldsNodes.Add(fieldNode);
+                Visit(new AccessColumnNode(column.ColumnName, string.Empty, column.ColumnType, TextSpan.Empty));
+            }
         }
 
         public void Visit(IdentifierNode node)
         {
-            throw new NotImplementedException();
+            //if (_currentFieldNode != null)
+            //{
+
+            if (this._itemInGroup != null)
+            {
+                var columns = TypeHelper.GetColumns(this._itemInGroup.Type);
+                var column = columns.FirstOrDefault(x => x.ColumnName == node.Name);
+                node.SetReturnType(column.ColumnType);
+                Visit(new AccessColumnNode(node.Name, string.Empty, column.ColumnType, TextSpan.Empty));
+            }
+            else
+            {
+                var columns = TypeHelper.GetColumns(this._item.Type);
+                var column = columns.FirstOrDefault(x => x.ColumnName == node.Name);
+                node.SetReturnType(column.ColumnType);
+                Visit(new AccessColumnNode(node.Name, string.Empty, column.ColumnType, TextSpan.Empty));
+            }
+            //}
         }
 
         public void Visit(AccessObjectArrayNode node)
@@ -671,6 +720,55 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(DotNode node)
         {
+            if (node.Expression is FunctionNode)
+            {
+                List<string> accessors = new List<string>();
+                Node parentNode = node.Root;
+                while (parentNode is null == false)
+                {
+                    if (parentNode is IdentifierNode)
+                        accessors.Add(((IdentifierNode)parentNode).Name);
+                    if (parentNode is PropertyValueNode)
+                        accessors.Add(((PropertyValueNode)parentNode).Name);
+                    if (parentNode is DotNode)
+                    {
+                        var dot = (DotNode)parentNode;
+                        if (dot.Expression is IdentifierNode)
+                            accessors.Add(((IdentifierNode)dot.Expression).Name);
+                        if (parentNode is PropertyValueNode)
+                            accessors.Add(((PropertyValueNode)dot.Expression).Name);
+                    }
+                    parentNode = (parentNode as DotNode)?.Root;
+                }
+
+                accessors.Reverse();
+
+                FunctionNode function = node.Expression as FunctionNode;
+                Visit(new FunctionNode(function.Name, function.Arguments, accessors.ToArray(), function.Method));
+                return;
+            }
+
+            if (node.Expression is IdentifierNode)
+            {
+                IdentifierNode itemNode = (IdentifierNode)node.Expression;
+                IdentifierNode rootNode = (IdentifierNode)node.Root;
+
+                var item = _alias2Item[rootNode.Name];
+                var columns = TypeHelper.GetColumns(item.Type);
+                var column = columns.FirstOrDefault(x => x.ColumnName == itemNode.Name);
+                itemNode.SetReturnType(column.ColumnType);
+                Visit(new AccessColumnNode(itemNode.Name, rootNode.Name, column.ColumnType, TextSpan.Empty));
+            }
+
+            //var self = node;
+            //var theMostInner = self;
+            //while (!(self is null))
+            //{
+            //    theMostInner = self;
+            //    self = self.Root as DotNode;
+            //}
+
+            //var ident = (IdentifierNode)theMostInner.Root;
         }
 
         public void Visit(ArgsListNode node)
@@ -680,19 +778,25 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SelectNode node)
         {
-            var outputFields = new (FieldNode Field, Expression Value)[node.Fields.Length];
-            for (var i = 0; i < node.Fields.Length; i++)
-                outputFields[node.Fields.Length - 1 - i] = (node.Fields[node.Fields.Length - 1 - i], Nodes.Pop());
+            var selectedFieldsNodes = _selectedFieldsNodes;
+            _selectedFieldsNodes = new List<FieldNode>();
 
-            var outputItemType = expressionHelper.CreateAnonymousType(outputFields.Select(x => (x.Field.FieldName, x.Field.ReturnType)));
+            var fieldNodes = new Expression[selectedFieldsNodes.Count];
+            for (var i = 0; i < selectedFieldsNodes.Count; i++)
+                fieldNodes[selectedFieldsNodes.Count - 1 - i] = Nodes.Pop();
+
+
+            var outputItemType = expressionHelper.CreateAnonymousType(selectedFieldsNodes.Select(x => (x.FieldName, x.ReturnType)).Distinct());
 
             List<MemberBinding> bindings = new List<MemberBinding>();
-            foreach (var field in outputFields)
+            for(int i = 0; i < selectedFieldsNodes.Count; i++)
             {
+                var name = selectedFieldsNodes[i].FieldName;
+                var value = fieldNodes[i];
                 //"SelectProp = inputItem.Prop"
                 MemberBinding assignment = Expression.Bind(
-                    outputItemType.GetField(field.Field.FieldName),
-                    field.Value);
+                    outputItemType.GetField(name),
+                    value);
                 bindings.Add(assignment);
             }
 
@@ -854,17 +958,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(FromFunctionNode node)
         {
             var function = node.Function;
+            var method = _engine.ResolveMethod(function.Path, function.Name, function.ArgumentsTypes);
+
             Type itemsType = null;
-            if (typeof(IEnumerable).IsAssignableFrom(function.Method.FunctionMethod.ReturnType))
+            if (typeof(IEnumerable).IsAssignableFrom(method.FunctionMethod.ReturnType))
             {
-                itemsType = function.Method.FunctionMethod.ReturnType.GetGenericArguments().FirstOrDefault();
+                itemsType = method.FunctionMethod.ReturnType.GetGenericArguments().FirstOrDefault();
             }
 
             List<Expression> functionExpressionArgumetns = new List<Expression>();
             for (int i = 0; i < function.ArgsCount; i++)
                 functionExpressionArgumetns.Add(this.Nodes.Pop());
             functionExpressionArgumetns.Reverse();
-            var callFunction = Expression.Call(Expression.Constant(function.Method.FunctionDelegate.Target), function.Method.FunctionMethod, functionExpressionArgumetns);
+            var callFunction = Expression.Call(Expression.Constant(method.FunctionDelegate.Target), method.FunctionMethod, functionExpressionArgumetns);
             var entitySource = Expression.Call(
                 typeof(Queryable),
                 "AsQueryable",
@@ -1469,6 +1575,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 _engine.SetVariable(node.VariableToSet.Name, value);
             }
+        }
+
+        public void SetQueryPart(QueryPart queryPart)
+        {
+            _queryPart = queryPart;
         }
     }
 

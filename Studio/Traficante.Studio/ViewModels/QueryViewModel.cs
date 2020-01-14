@@ -22,7 +22,7 @@ using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.Studio.ViewModels
 {
-    public class QueryViewModel : DocumentTab
+    public class QueryViewModel : Document
     {
         public AppData AppData => ((AppData)this.Context);
         public ObservableCollection<ObjectModel> Objects { get; set; }

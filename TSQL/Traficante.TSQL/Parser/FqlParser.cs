@@ -841,7 +841,7 @@ namespace Traficante.TSQL.Parser
                 //    return ComposeFunctionMethod(null, null);
                 case TokenType.Property:
                     token = ConsumeAndGetToken(TokenType.Property);
-                    return new PropertyValueNode(token.Value);
+                    return new IdentifierNode(token.Value);
                 case TokenType.Star:
                     Consume(TokenType.Star);
                     return new AllColumnsNode();
