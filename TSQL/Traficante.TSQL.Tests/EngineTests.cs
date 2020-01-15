@@ -9,7 +9,7 @@ namespace Traficante.TSQL.Tests
     public class EngineTests
     {
         [TestMethod]
-        public void SelectFrom_Table()
+        public void Select_All_From_Where()
         {
             Engine sut = new Engine();
             sut.AddTable("Persons", new Person[] {
@@ -26,6 +26,74 @@ namespace Traficante.TSQL.Tests
             Assert.AreEqual(2, resunt[1][0]);
             Assert.AreEqual("John", resunt[1][1]);
             Assert.AreEqual("Doe", resunt[1][2]);
+        }
+
+        [TestMethod]
+        public void Select_All_FromWithAlias_Where()
+        {
+            Engine sut = new Engine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" },
+                new Person { Id = 2, FirstName = "John", LastName = "Doe" },
+                new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
+            });
+
+            var resunt = sut.Run("SELECT * FROM Persons p WHERE FirstName = 'John'");
+            Assert.AreEqual(2, resunt.Count);
+            Assert.AreEqual(1, resunt[0][0]);
+            Assert.AreEqual("John", resunt[0][1]);
+            Assert.AreEqual("Smith", resunt[0][2]);
+            Assert.AreEqual(2, resunt[1][0]);
+            Assert.AreEqual("John", resunt[1][1]);
+            Assert.AreEqual("Doe", resunt[1][2]);
+        }
+
+        [TestMethod]
+        public void Select_ColumnWithoutAlias_FromWithAlias_Where()
+        {
+            Engine sut = new Engine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" },
+                new Person { Id = 2, FirstName = "John", LastName = "Doe" },
+                new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
+            });
+
+            var resunt = sut.Run("SELECT LastName FROM Persons p WHERE FirstName = 'John'");
+            Assert.AreEqual(2, resunt.Count);
+            Assert.AreEqual("Smith", resunt[0][0]);
+            Assert.AreEqual("Doe", resunt[1][0]);
+        }
+
+        [TestMethod]
+        public void Select_ColumnWithAlias_FromWithAlias_Where()
+        {
+            Engine sut = new Engine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" },
+                new Person { Id = 2, FirstName = "John", LastName = "Doe" },
+                new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
+            });
+
+            var resunt = sut.Run("SELECT p.LastName FROM Persons p WHERE p.FirstName = 'John'");
+            Assert.AreEqual(2, resunt.Count);
+            Assert.AreEqual("Smith", resunt[0][0]);
+            Assert.AreEqual("Doe", resunt[1][0]);
+        }
+
+        [TestMethod]
+        public void Select_ColumnWithTableName_From_Where()
+        {
+            Engine sut = new Engine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" },
+                new Person { Id = 2, FirstName = "John", LastName = "Doe" },
+                new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
+            });
+
+            var resunt = sut.Run("SELECT Persons.LastName FROM Persons WHERE Persons.FirstName = 'John'");
+            Assert.AreEqual(2, resunt.Count);
+            Assert.AreEqual("Smith", resunt[0][0]);
+            Assert.AreEqual("Doe", resunt[1][0]);
         }
 
         [TestMethod]

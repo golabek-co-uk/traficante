@@ -923,10 +923,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SkipNode node)
         {
-            //"IQueryable<AnonymousType> input"
             this._queryState.Input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(this._queryState.Item.Type), "input");
             
-
             var skipNumber = Expression.Constant((int)node.Value);
 
             MethodCallExpression call = Expression.Call(
