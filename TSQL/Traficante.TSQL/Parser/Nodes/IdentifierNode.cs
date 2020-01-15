@@ -20,7 +20,7 @@ namespace Traficante.TSQL.Parser.Nodes
             get { return _returnType; }
         }
 
-        public void SetReturnType(Type type)
+        public void ChangeReturnType(Type type)
         {
             _returnType = type;
         }

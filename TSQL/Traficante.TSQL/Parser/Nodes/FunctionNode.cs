@@ -24,7 +24,7 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public Type[] ArgumentsTypes => Arguments.Args.Select(x => x.ReturnType).ToArray();
 
-        public string[] Path { get; }
+        public string[] Path { get; private set; }
         public string Name { get; }
 
         public bool IsAggregateMethod =>
@@ -86,6 +86,11 @@ namespace Traficante.TSQL.Parser.Nodes
         public void ChangeMethod(Traficante.TSQL.Schema.Managers.MethodInfo method)
         {
             Method = method;
+        }
+
+        public void ChangePath(string[] path)
+        {
+            Path = path;
         }
 
         public override string ToString()

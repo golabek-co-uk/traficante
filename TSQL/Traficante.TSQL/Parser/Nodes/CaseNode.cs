@@ -11,14 +11,14 @@ namespace Traficante.TSQL.Parser.Nodes
         {
             WhenThenPairs = whenThenNodesPairs;
             Else = elseNode;
-            ReturnType = returnType ?? typeof(void);
+            //ReturnType = returnType ?? typeof(void);
         }
 
         public (Node When, Node Then)[] WhenThenPairs { get; }
 
         public Node Else { get; }
 
-        public override Type ReturnType { get; }
+        public override Type ReturnType => Else?.ReturnType;
 
         public override string Id
         {

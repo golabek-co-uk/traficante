@@ -226,6 +226,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(QueryNode node)
         {
+            QueryState queryState = new QueryState();
+            queryState.QueryNode = node;
+            _visitor.QueryState(queryState);
+
             _walker = _walker.NextChild();
             _visitor.SetScope(_walker.Scope);
 

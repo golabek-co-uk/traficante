@@ -41,6 +41,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public object Result = null;
 
         private QueryPart _queryPart;
+        private QueryState _queryState;
 
         //private IDictionary<Node, IColumn[]> InferredColumns { get; }
 
@@ -55,7 +56,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _engine = engine;
 
         }
-        
+
+        public void QueryState(QueryState queryState)
+        {
+            _queryState = queryState;
+        }
+
+        public void SetQueryPart(QueryPart queryPart)
+        {
+            _queryPart = queryPart;
+        }
+
+
         public void Visit(Node node)
         {
         }
@@ -668,14 +680,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var columns = TypeHelper.GetColumns(this._itemInGroup.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == node.Name);
-                node.SetReturnType(column.ColumnType);
+                node.ChangeReturnType(column.ColumnType);
                 Visit(new AccessColumnNode(node.Name, string.Empty, column.ColumnType, TextSpan.Empty));
             }
             else
             {
                 var columns = TypeHelper.GetColumns(this._item.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == node.Name);
-                node.SetReturnType(column.ColumnType);
+                node.ChangeReturnType(column.ColumnType);
                 Visit(new AccessColumnNode(node.Name, string.Empty, column.ColumnType, TextSpan.Empty));
             }
             //}
@@ -744,19 +756,30 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 accessors.Reverse();
 
                 FunctionNode function = node.Expression as FunctionNode;
-                Visit(new FunctionNode(function.Name, function.Arguments, accessors.ToArray(), function.Method));
+                function.ChangePath(accessors.ToArray());
+                Visit(function);
                 return;
             }
 
             if (node.Expression is IdentifierNode)
             {
+                //var self = node;
+                //var theMostInner = self;
+                //while (!(self is null))
+                //{
+                //    theMostInner = self;
+                //    self = self.Root as DotNode;
+                //}
+
+
+
                 IdentifierNode itemNode = (IdentifierNode)node.Expression;
                 IdentifierNode rootNode = (IdentifierNode)node.Root;
 
                 var item = _alias2Item[rootNode.Name];
                 var columns = TypeHelper.GetColumns(item.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == itemNode.Name);
-                itemNode.SetReturnType(column.ColumnType);
+                itemNode.ChangeReturnType(column.ColumnType);
                 Visit(new AccessColumnNode(itemNode.Name, rootNode.Name, column.ColumnType, TextSpan.Empty));
             }
 
@@ -806,7 +829,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
-            if (node.ReturnsSingleRow.HasValue && node.ReturnsSingleRow.Value)
+            if (_queryState.IsSingleRowResult())
             {
                 var array = Expression.NewArrayInit(outputItemType, new Expression[] { initialization });
 
@@ -1020,6 +1043,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromTableNode node)
         {
+            if (_cte.ContainsKey(node.Table.TableOrView))
+            {
+                Visit(new InMemoryTableFromNode(node.Table.TableOrView, node.Alias));
+                    return;
+            }
             var table = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
             var fields = table.ItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
 
@@ -1504,7 +1532,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(CaseNode node)
         {
-
             var returnLabel = Expression.Label(node.ReturnType, "return");
 
             // when then
@@ -1577,10 +1604,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
-        public void SetQueryPart(QueryPart queryPart)
-        {
-            _queryPart = queryPart;
-        }
     }
 
 }

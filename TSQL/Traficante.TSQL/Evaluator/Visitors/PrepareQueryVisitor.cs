@@ -102,19 +102,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
         //    Nodes.Push(new IdentifierNode(node.Name));
         //}
 
-        //public override void Visit(VariableNode node)
-        //{
-        //    var variable = _engine.GetVariable(node.Name);
-        //    if (variable == null)
-        //        throw new Exception("Variable is not declare: " + node.Name);
-        //    Nodes.Push(new VariableNode(node.Name, variable.Type));
-        //}
+        public override void Visit(VariableNode node)
+        {
+            var variable = _engine.GetVariable(node.Name);
+            if (variable == null)
+                throw new Exception("Variable is not declare: " + node.Name);
+            Nodes.Push(new VariableNode(node.Name, variable.Type));
+        }
 
-        //public override void Visit(DeclareNode node)
-        //{
-        //    _engine.SetVariable(node.Variable.Name, node.Type.ReturnType, null);
-        //    Nodes.Push(new DeclareNode(node.Variable, node.Type));
-        //}
+        public override void Visit(DeclareNode node)
+        {
+            _engine.SetVariable(node.Variable.Name, node.Type.ReturnType, null);
+            Nodes.Push(new DeclareNode(node.Variable, node.Type));
+        }
 
         public override void Visit(FromFunctionNode node)
         {
@@ -199,7 +199,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //    return;
             //}
 
-            _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
+            _queryAlias = string.IsNullOrEmpty(node.Alias) ? node.Table.TableOrView : node.Alias;
+            _queryAlias = StringHelpers.CreateAliasIfEmpty(_queryAlias, _generatedAliases);
             _generatedAliases.Add(_queryAlias);
 
             //tableSymbol = new TableSymbol(node.Table.Path, _queryAlias, table, !string.IsNullOrEmpty(node.Alias));
@@ -313,17 +314,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
             var from = node.From != null ? Nodes.Pop() as FromNode : null;
 
-            if (from == null)
-                select.ReturnsSingleRow = true;
+            //if (from == null)
+            //    select.ReturnsSingleRow = true;
 
-            if (groupBy == null)
-            {
-                var split = SplitBetweenAggreateAndNonAggreagate(select.Fields);
-                if (split.NotAggregateFields.Length == 0)
-                {
-                    select.ReturnsSingleRow = true;
-                }
-            }
+
+            //if (groupBy == null)
+            //{
+            //    var split = SplitBetweenAggreateAndNonAggreagate(select.Fields);
+            //    if (split.NotAggregateFields.Length == 0)
+            //    {
+            //        select.ReturnsSingleRow = true;
+            //    }
+            //}
 
             Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
         }
