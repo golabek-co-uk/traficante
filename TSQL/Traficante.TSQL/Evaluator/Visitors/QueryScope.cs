@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using Traficante.TSQL.Parser.Nodes;
 
@@ -9,6 +10,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
     {
         public  QueryNode QueryNode { get; set; }
 
+        public List<FieldNode> SelectedFieldsNodes = new List<FieldNode>();
+
+        public ParameterExpression Item = null;
+        public ParameterExpression Item_i = Expression.Parameter(typeof(int), "item_i");
+        public Dictionary<string, Expression> Alias2Item = new Dictionary<string, Expression>();
+
+        public ParameterExpression ItemInGroup = null;
+
+        public ParameterExpression Input = null;
 
         public bool IsSingleRowResult()
         {
