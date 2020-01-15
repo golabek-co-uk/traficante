@@ -9,13 +9,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class RunTraverseVisitor : IExpressionVisitor
     {
-        private readonly ExecuteQueryVisitor _visitor;
-        private ScopeWalker _walker;
-
-        public RunTraverseVisitor(ExecuteQueryVisitor visitor, ScopeWalker walker)
+        private readonly RunQueryVisitor _visitor;
+        public RunTraverseVisitor(RunQueryVisitor visitor)
         {
             _visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
-            _walker = walker;
         }
 
         public void Visit(SelectNode node)
@@ -209,7 +206,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(ExpressionFromNode node)
         {
             SetQueryPart(QueryPart.From);
-            _visitor.SetQueryIdentifier(node.Alias);
             node.Expression.Accept(this);
             node.Accept(_visitor);
         }
@@ -230,11 +226,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             queryState.QueryNode = node;
             _visitor.QueryState(queryState);
 
-            _walker = _walker.NextChild();
-            _visitor.SetScope(_walker.Scope);
-
-            _visitor.SetQueryIdentifier(node.From?.Alias);
-
             node.From?.Accept(this);
             node.Where?.Accept(this);
 
@@ -247,7 +238,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             node.Select.Accept(this);
             node.Accept(_visitor);
-            _walker = _walker.Parent();
 
             SetQueryPart(QueryPart.None);
         }
@@ -377,11 +367,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(DescNode node)
         {
-            _walker = _walker.NextChild();
-            
             node.Accept(_visitor);
-
-            _walker = _walker.Parent();
         }
 
         public void Visit(StarNode node)
@@ -451,40 +437,22 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(MultiStatementNode node)
         {
-            _walker = _walker.NextChild();
-            _visitor.SetScope(_walker.Scope);
-
             foreach (var cNode in node.Nodes)
                 cNode.Accept(this);
             node.Accept(_visitor);
-
-            _walker = _walker.Parent();
-            _visitor.SetScope(_walker.Scope);
         }
 
         public void Visit(CteExpressionNode node)
         {
-            _walker = _walker.NextChild();
-            _visitor.SetScope(_walker.Scope);
-
             foreach (var exp in node.InnerExpression) exp.Accept(this);
             node.OuterExpression.Accept(this);
             node.Accept(_visitor);
-
-            _walker = _walker.Parent();
-            _visitor.SetScope(_walker.Scope);
         }
 
         public void Visit(CteInnerExpressionNode node)
         {
-            _walker = _walker.NextChild();
-            _visitor.SetScope(_walker.Scope);
-
             node.Value.Accept(this);
             node.Accept(_visitor);
-
-            _walker = _walker.Parent();
-            _visitor.SetScope(_walker.Scope);
         }
 
         public void Visit(JoinsNode node)
@@ -558,9 +526,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         private void TraverseSetOperator(SetOperatorNode node)
         {
-            _walker = _walker.NextChild();
-            _visitor.SetScope(_walker.Scope);
-
             if (node.Right is SetOperatorNode)
             {
                 var nodes = new Stack<SetOperatorNode>();
@@ -575,9 +540,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     if (current.Right is SetOperatorNode operatorNode)
                     {
                         nodes.Push(operatorNode);
-
-                        _walker = _walker.NextChild();
-                        _visitor.SetScope(_walker.Scope);
 
                         operatorNode.Left.Accept(this);
 
@@ -598,9 +560,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 node.Right.Accept(this);
 
                 node.Accept(_visitor);
-
-                _walker = _walker.Parent();
-                _visitor.SetScope(_walker.Scope);
             }
         }
 

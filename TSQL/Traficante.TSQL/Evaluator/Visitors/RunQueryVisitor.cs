@@ -17,7 +17,7 @@ using TextSpan = Traficante.TSQL.Parser.TextSpan;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class ExecuteQueryVisitor : IExpressionVisitor
+    public class RunQueryVisitor : IExpressionVisitor
     {
         ExpressionHelper expressionHelper = new ExpressionHelper();
 
@@ -31,7 +31,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         private QueryPart _queryPart;
         private QueryState _queryState;
 
-        public ExecuteQueryVisitor(Engine engine)
+        public RunQueryVisitor(Engine engine)
         {
             Nodes = new Stack<System.Linq.Expressions.Expression>();
             _engine = engine;

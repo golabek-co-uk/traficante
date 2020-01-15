@@ -15,18 +15,14 @@ namespace Traficante.TSQL.Converter.Build
         {
             var queryTree = items.RawQueryTree;
 
-            var metadataInferer = new PrepareQueryVisitor(items.Engine);
-            var metadataInfererTraverser = new PrepareQueryTraverseVisitor(metadataInferer);
+            var prepareQuery = new PrepareQueryVisitor(items.Engine);
+            var prepareQueryTraverser = new PrepareQueryTraverseVisitor(prepareQuery);
+            queryTree.Accept(prepareQueryTraverser);
+            queryTree = prepareQuery.Root;
 
-            queryTree.Accept(metadataInfererTraverser);
-
-            queryTree = metadataInferer.Root;
-
-            var csharpRewriter = new ExecuteQueryVisitor(items.Engine);//, metadataInferer.SetOperatorFieldPositions);
-            var csharpRewriteTraverser = new RunTraverseVisitor(csharpRewriter, new ScopeWalker(metadataInfererTraverser.Scope));
-
+            var csharpRewriter = new RunQueryVisitor(items.Engine);
+            var csharpRewriteTraverser = new RunTraverseVisitor(csharpRewriter);
             queryTree.Accept(csharpRewriteTraverser);
-
             items.Result = csharpRewriter.Result;
 
             Successor?.Build(items);
