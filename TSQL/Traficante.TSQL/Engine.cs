@@ -22,6 +22,7 @@ namespace Traficante.TSQL
         public SourceDataManager SourceDataManager { get; set; } = new SourceDataManager();
         public List<Variable> Variables { get; private set; }
         internal List<IDisposable> Disposables { get; private set; } = new List<IDisposable>();
+        
         public Engine()
         {
             Variables = new List<Variable>();

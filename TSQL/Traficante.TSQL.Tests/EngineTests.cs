@@ -11,6 +11,7 @@ namespace Traficante.TSQL.Tests
     [TestClass]
     public class EngineTests
     {
+
         [TestMethod]
         public void Select_All_From_Where()
         {
@@ -210,6 +211,35 @@ namespace Traficante.TSQL.Tests
                      var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture, false);
                      return new CsvDataReader(csvReader);
                  });
+
+                var table = sut.Run("SELECT * FROM Persons");
+                Assert.AreEqual(2, table.Count);
+                Assert.AreEqual("1", table[0][0]);
+                Assert.AreEqual("one", table[0][1]);
+                Assert.AreEqual("2", table[1][0]);
+                Assert.AreEqual("two", table[1][1]);
+            }
+        }
+
+        [TestMethod]
+        public void SelectFrom_Resolver_IDataReader_Table()
+        {
+            using (Engine sut = new Engine())
+            {
+                sut.AddTableResolver((name, path) =>
+                {
+                    if (name == "Persons")
+                    {
+                        Func<CsvDataReader> @delegate = () =>
+                        {
+                            var reader = new StreamReader("csv.csv");
+                            var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture, false);
+                            return new CsvDataReader(csvReader);
+                        };
+                        return @delegate;
+                    }
+                    return null;
+                });
 
                 var table = sut.Run("SELECT * FROM Persons");
                 Assert.AreEqual(2, table.Count);

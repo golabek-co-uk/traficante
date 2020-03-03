@@ -11,13 +11,7 @@ namespace Traficante.TSQL.Schema.Managers
 {
     public class SourceDataManager
     {
-        private static readonly Dictionary<Type, Type[]> TypeCompatibilityTable;
-        private List<MethodGroupInfo> _methods;
-        private List<TableInfo> _tables;
-
-        static SourceDataManager()
-        {
-            TypeCompatibilityTable = new Dictionary<Type, Type[]>
+        private static readonly Dictionary<Type, Type[]> TypeCompatibilityTable = new Dictionary<Type, Type[]>
             {
                 {typeof(bool), new[] {typeof(bool)}},
                 {typeof(short), new[] {typeof(short), typeof(bool)}},
@@ -28,12 +22,13 @@ namespace Traficante.TSQL.Schema.Managers
                 {typeof(string), new[] {typeof(string)}},
                 {typeof(decimal), new[] {typeof(decimal)}}
             };
-        }
+        private List<MethodGroupInfo> _methods = new List<MethodGroupInfo>();
+        private List<TableInfo> _tables = new List<TableInfo>();
+        private List<Func<string, string[], Type[], Delegate>> _methodsResolver = new List<Func<string, string[], Type[], Delegate>>();
+        private List<Func<string, string[], Delegate>> _tablesResolver = new List<Func<string, string[], Delegate>>();
 
         public SourceDataManager()
         {
-            _methods = new List<MethodGroupInfo>();
-            _tables = new List<TableInfo>();
         }
 
         public void RegisterLibraries(Library library)
@@ -52,7 +47,7 @@ namespace Traficante.TSQL.Schema.Managers
 
         public TableInfo ResolveTable(string name, string[] path)
         {
-            return _tables
+            var table = _tables
                 .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
                 .Where(x =>
                 {
@@ -65,6 +60,17 @@ namespace Traficante.TSQL.Schema.Managers
                     }
                     return true;
                 }).FirstOrDefault();
+            if (table != null)
+                return table;
+
+            foreach (var resolver in _tablesResolver)
+            {
+                var @delegate = resolver(name, path);
+                if (@delegate != null)
+                    return new TableInfo(name, path, new MethodInfo(@delegate));
+            }
+
+            return null;
         }
 
         public MethodInfo ResolveMethod(string name, Type[] args)
@@ -75,57 +81,64 @@ namespace Traficante.TSQL.Schema.Managers
         public MethodInfo ResolveMethod(string name, string[] path, Type[] methodArgs)
         {
             var methods = MatchMethods(name, path);
-            if (methods == null)
-                return null;
-
-
-            for (int i = 0, j = methods.Methods.Count; i < j; ++i)
+            if (methods != null)
             {
-                var methodInfo = methods.Methods[i].FunctionMethod;
-                var parameters = methodInfo.GetParameters();
-                var optionalParametersCount = parameters.CountOptionalParameters();
-                var allParameters = parameters.Length;
-                var notAnnotatedParametersCount = parameters.Count();//parameters.CountWithoutParametersAnnotatedBy<InjectTypeAttribute>();
-                var paramsParameter = parameters.GetParametersWithAttribute<ParamArrayAttribute>();
-                var parametersToInject = allParameters - notAnnotatedParametersCount;
-
-                //Wrong amount of argument's. That's not our function.
-                if (!paramsParameter.HasParameters() &&
-                    (HasMoreArgumentsThanMethodDefinitionContains(methodArgs, notAnnotatedParametersCount) ||
-                    !CanUseSomeArgumentsAsDefaultParameters(methodArgs, notAnnotatedParametersCount, optionalParametersCount)))
-                    continue;
-
-                var parametersToSkip = parametersToInject;
-
-                var hasMatchedArgTypes = true;
-                for (int f = 0, g = paramsParameter.HasParameters() ? Math.Min(methodArgs.Length - (parameters.Length - 1), parameters.Length) : methodArgs.Length; f < g; ++f)
+                for (int i = 0, j = methods.Methods.Count; i < j; ++i)
                 {
-                    //1. When constant value, it won't be nullable<type> but type.
-                    //So it is possible to call function with such value. 
-                    //That's why GetUnderlyingNullable exists here.
-                    var param = parameters[f + parametersToSkip].ParameterType.GetUnderlyingNullable();
-                    var arg = methodArgs[f].GetUnderlyingNullable();
+                    var methodInfo = methods.Methods[i].FunctionMethod;
+                    var parameters = methodInfo.GetParameters();
+                    var optionalParametersCount = parameters.CountOptionalParameters();
+                    var allParameters = parameters.Length;
+                    var notAnnotatedParametersCount = parameters.Count();//parameters.CountWithoutParametersAnnotatedBy<InjectTypeAttribute>();
+                    var paramsParameter = parameters.GetParametersWithAttribute<ParamArrayAttribute>();
+                    var parametersToInject = allParameters - notAnnotatedParametersCount;
 
-                    if (IsTypePossibleToConvert(param, arg) || param.IsGenericParameter || param.IsArray && param.GetElementType().IsGenericParameter)
+                    //Wrong amount of argument's. That's not our function.
+                    if (!paramsParameter.HasParameters() &&
+                        (HasMoreArgumentsThanMethodDefinitionContains(methodArgs, notAnnotatedParametersCount) ||
+                        !CanUseSomeArgumentsAsDefaultParameters(methodArgs, notAnnotatedParametersCount, optionalParametersCount)))
                         continue;
 
-                    hasMatchedArgTypes = false;
-                    break;
+                    var parametersToSkip = parametersToInject;
+
+                    var hasMatchedArgTypes = true;
+                    for (int f = 0, g = paramsParameter.HasParameters() ? Math.Min(methodArgs.Length - (parameters.Length - 1), parameters.Length) : methodArgs.Length; f < g; ++f)
+                    {
+                        //1. When constant value, it won't be nullable<type> but type.
+                        //So it is possible to call function with such value. 
+                        //That's why GetUnderlyingNullable exists here.
+                        var param = parameters[f + parametersToSkip].ParameterType.GetUnderlyingNullable();
+                        var arg = methodArgs[f].GetUnderlyingNullable();
+
+                        if (IsTypePossibleToConvert(param, arg) || param.IsGenericParameter || param.IsArray && param.GetElementType().IsGenericParameter)
+                            continue;
+
+                        hasMatchedArgTypes = false;
+                        break;
+                    }
+
+                    if (paramsParameter.HasParameters())
+                    {
+                        var paramsParameters = methodArgs.Skip(parameters.Length - 1);
+                        var arrayType = paramsParameters.ElementAt(0).MakeArrayType();
+                        var paramType = parameters[parameters.Length - 1].ParameterType;
+                        hasMatchedArgTypes = paramType == arrayType || CanBeAssignedFromGeneric(paramType, arrayType);
+                    }
+
+                    if (!hasMatchedArgTypes)
+                        continue;
+
+                    return methods.Methods[i];
                 }
-
-                if (paramsParameter.HasParameters())
-                {
-                    var paramsParameters = methodArgs.Skip(parameters.Length - 1);
-                    var arrayType = paramsParameters.ElementAt(0).MakeArrayType();
-                    var paramType = parameters[parameters.Length - 1].ParameterType;
-                    hasMatchedArgTypes = paramType == arrayType || CanBeAssignedFromGeneric(paramType, arrayType);
-                }
-
-                if (!hasMatchedArgTypes)
-                    continue;
-
-                return methods.Methods[i];
             }
+
+            foreach (var resolver in _methodsResolver)
+            {
+                var @delegate = resolver(name, path, methodArgs);
+                if (@delegate != null)
+                    return new MethodInfo(@delegate);
+            }
+
             return null;
         }
 
@@ -142,12 +155,12 @@ namespace Traficante.TSQL.Schema.Managers
 
         public void RegisterMethodResolver(Func<string, string[], Type[], Delegate> resolver)
         {
-            throw new NotImplementedException();
+            _methodsResolver.Add(resolver);
         }
 
         public void RegisterTableResolver(Func<string, string[], Delegate> resolver)
         {
-            throw new NotImplementedException();
+            _tablesResolver.Add(resolver);
         }
 
         private static bool HasMoreArgumentsThanMethodDefinitionContains(IReadOnlyList<Type> methodArgs,
@@ -244,6 +257,16 @@ namespace Traficante.TSQL.Schema.Managers
 
     public class MethodInfo
     {
+        public MethodInfo()
+        {
+        }
+
+        public MethodInfo(Delegate @delegate)
+        {
+            FunctionDelegate = @delegate;
+            FunctionMethod = @delegate.Method;
+        }
+
         public string Name => FunctionMethod.Name;
         public System.Reflection.MethodInfo FunctionMethod { get; set; }
         public Delegate FunctionDelegate { get; set; }
