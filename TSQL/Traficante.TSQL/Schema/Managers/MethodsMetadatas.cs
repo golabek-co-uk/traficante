@@ -140,6 +140,16 @@ namespace Traficante.TSQL.Schema.Managers
             return methodArgs.Count >= parametersCount - optionalParametersCount && methodArgs.Count <= parametersCount;
         }
 
+        public void RegisterMethodResolver(Func<string, string[], Type[], Delegate> resolver)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RegisterTableResolver(Func<string, string[], Delegate> resolver)
+        {
+            throw new NotImplementedException();
+        }
+
         private static bool HasMoreArgumentsThanMethodDefinitionContains(IReadOnlyList<Type> methodArgs,
             int parametersCount)
         {

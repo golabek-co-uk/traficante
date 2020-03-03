@@ -150,7 +150,7 @@ namespace Traficante.TSQL
             return Variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
         }
 
-        public MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
+        public MethodInfo ResolveMethod(string method, string[] path, Type[] parameters)
         {
             return SourceDataManager.ResolveMethod(method, path, parameters);
         }
@@ -158,6 +158,16 @@ namespace Traficante.TSQL
         public TableInfo ResolveTable(string name, string[] path)
         {
             return SourceDataManager.ResolveTable(name, path);
+        }
+
+        public void AddMethodResolver(Func<string, string[], Type[], Delegate> resolver)
+        {
+            SourceDataManager.RegisterMethodResolver(resolver);
+        }
+
+        public void AddTableResolver(Func<string, string[], Delegate> resolver)
+        {
+            SourceDataManager.RegisterTableResolver(resolver);
         }
 
         public void Dispose()
