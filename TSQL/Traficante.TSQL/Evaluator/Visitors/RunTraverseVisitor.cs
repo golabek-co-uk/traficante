@@ -224,7 +224,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             QueryState queryState = new QueryState();
             queryState.QueryNode = node;
-            _visitor.QueryState(queryState);
+            _visitor.SetQueryState(queryState);
 
             node.From?.Accept(this);
             node.Where?.Accept(this);

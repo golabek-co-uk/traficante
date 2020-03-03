@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using CsvHelper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 using Traficante.TSQL.Tests;
@@ -55,7 +59,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Engine sut = new Engine();
             sut.SetVariable("@alwayson", (int?)null);
             sut.SetVariable("@@SERVICENAME", "Traficante");
-            sut.AddFunction<string, string, int>("xp_qv", new string[2]{"master", "dbo"}, (x, y) => 5);
+            sut.AddFunction<string, string, int>("xp_qv", new string[2] { "master", "dbo" }, (x, y) => 5);
 
             var result = sut.Run("EXECUTE @alwayson = master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
             var alwayson = sut.GetVariable("@alwayson");
@@ -68,9 +72,9 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void Execute_FunctionWithArguments()
         {
             Engine sut = new Engine();
-            
+
             sut.SetVariable("@@SERVICENAME", "Traficante");
-            sut.AddFunction<string, string, int>("xp_qv", new string[2] { "master", "dbo" }, (x, y) => 
+            sut.AddFunction<string, string, int>("xp_qv", new string[2] { "master", "dbo" }, (x, y) =>
             {
                 Execute_FunctionWithArguments_Flag = true;
                 return default(int);
@@ -94,7 +98,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             });
 
             var table = sut.Run("select * from get_entities()");
-            
+
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("may", table[0][0]);
             Assert.AreEqual("june", table[1][0]);
@@ -138,6 +142,29 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("3", table[0][0]);
             Assert.AreEqual("june", table[1][0]);
+        }
+
+        [TestMethod]
+        public void Select_FromDataReader_FunctionArguments()
+        {
+            using (Engine sut = new Engine())
+            {
+                sut.AddFunction("get_entities", (int a, string b) =>
+                {
+
+                    var reader = new StreamReader("csv.csv");
+                    var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture, false);
+                    return new CsvDataReader(csvReader);
+                });
+
+                var table = sut.Run("select * from get_entities(3, 'june')");
+
+                Assert.AreEqual(2, table.Count);
+                Assert.AreEqual("1", table[0][0]);
+                Assert.AreEqual("one", table[0][1]);
+                Assert.AreEqual("2", table[1][0]);
+                Assert.AreEqual("two", table[1][1]);
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ using Traficante.TSQL.Parser.Nodes;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class QueryState
+    public class QueryState : IDisposable
     {
         public  QueryNode QueryNode { get; set; }
 
@@ -75,6 +75,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             return (aggregateFields.ToArray(), notAggregateFields.ToArray());
+        }
+
+        public List<IDisposable> Disposables = new List<IDisposable>();
+
+        public void Dispose()
+        {
+            foreach (var disposable in Disposables)
+                disposable.Dispose();
         }
     }
 }

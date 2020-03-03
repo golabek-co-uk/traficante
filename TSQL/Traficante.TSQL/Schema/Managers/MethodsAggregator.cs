@@ -8,16 +8,16 @@ namespace Traficante.TSQL.Schema.Managers
 {
     public class MethodsAggregator
     {
-        private readonly MethodsManager _methsManager;
+        private readonly SourceDataManager _methsManager;
 
-        public MethodsAggregator(MethodsManager methsManager)//, PropertiesManager propsManager)
+        public MethodsAggregator(SourceDataManager methsManager)//, PropertiesManager propsManager)
         {
             _methsManager = methsManager;
         }
 
         public MethodInfo ResolveMethod(string name, Type[] args)
         {
-            return _methsManager.GetMethod(name, args);
+            return _methsManager.ResolveMethod(name, args);
         }
     }
 }

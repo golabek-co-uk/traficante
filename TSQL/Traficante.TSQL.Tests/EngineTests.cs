@@ -1,6 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using CsvHelper;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace Traficante.TSQL.Tests
@@ -194,6 +197,27 @@ namespace Traficante.TSQL.Tests
             Assert.AreEqual(2, resunt[1][0]);
             Assert.AreEqual("John", resunt[1][1]);
             Assert.AreEqual("Doe", resunt[1][2]);
+        }
+
+        [TestMethod]
+        public void SelectFrom_IDataReader_Table()
+        {
+            using (Engine sut = new Engine())
+            {
+                sut.AddTable("Persons", new string[0] { }, () =>
+                 {
+                     var reader = new StreamReader("csv.csv");
+                     var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture, false);
+                     return new CsvDataReader(csvReader);
+                 });
+
+                var table = sut.Run("SELECT * FROM Persons");
+                Assert.AreEqual(2, table.Count);
+                Assert.AreEqual("1", table[0][0]);
+                Assert.AreEqual("one", table[0][1]);
+                Assert.AreEqual("2", table[1][0]);
+                Assert.AreEqual("two", table[1][1]);
+            }
         }
 
     }

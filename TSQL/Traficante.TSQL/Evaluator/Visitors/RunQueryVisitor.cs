@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.CodeAnalysis;
@@ -25,11 +26,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
         private Engine _engine;
+        private QueryState _queryState;
+        private QueryPart _queryPart;
 
         public object Result = null;
 
-        private QueryPart _queryPart;
-        private QueryState _queryState;
+        
 
         public RunQueryVisitor(Engine engine)
         {
@@ -37,7 +39,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _engine = engine;
         }
 
-        public void QueryState(QueryState queryState)
+        public void SetQueryState(QueryState queryState)
         {
             _queryState = queryState;
         }
@@ -950,68 +952,34 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             Nodes.Push(Expression.Lambda(call, _queryState.Input));
         }
-        
+
+        public IEnumerable<Object[]> AsEnumerable(IDataReader source)
+        {
+            if (source == null)
+                throw new ArgumentNullException("source");
+
+            while (source.Read())
+            {
+                Object[] row = new Object[source.FieldCount];
+                source.GetValues(row);
+                yield return row;
+            }
+        }
+
         public void Visit(FromFunctionNode node)
         {
             var function = node.Function;
             var method = _engine.ResolveMethod(function.Path, function.Name, function.ArgumentsTypes);
-
-            Type itemsType = null;
-            if (typeof(IEnumerable).IsAssignableFrom(method.FunctionMethod.ReturnType))
-            {
-                itemsType = method.FunctionMethod.ReturnType.GetGenericArguments().FirstOrDefault();
-            }
 
             List<Expression> functionExpressionArgumetns = new List<Expression>();
             for (int i = 0; i < function.ArgsCount; i++)
                 functionExpressionArgumetns.Add(this.Nodes.Pop());
             functionExpressionArgumetns.Reverse();
             var callFunction = Expression.Call(Expression.Constant(method.FunctionDelegate.Target), method.FunctionMethod, functionExpressionArgumetns);
-            var entitySource = Expression.Call(
-                typeof(Queryable),
-                "AsQueryable",
-                new Type[] { itemsType },
-                callFunction);
 
-            var entityFields = itemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
-            Type entityType = expressionHelper.CreateAnonymousType(entityFields);
-            var entityItem = Expression.Parameter(itemsType, "entityItem");
-
-            List<MemberBinding> bindings = new List<MemberBinding>();
-            foreach (var field in entityFields)
-            {
-                //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
-                MemberBinding assignment = Expression.Bind(
-                    entityType.GetField(field.Item1),
-                    Expression.PropertyOrField(entityItem, field.Name)
-                    );
-                bindings.Add(assignment);
-            }
-
-            //"new AnonymousType()"
-            var creationExpression = Expression.New(entityType.GetConstructor(Type.EmptyTypes));
-
-            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            var initialization = Expression.MemberInit(creationExpression, bindings);
-
-            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, entityItem, _queryState.Item_i);
-
-            var call = Expression.Call(
-                typeof(Queryable),
-                "Select",
-                new Type[] { itemsType, entityType },
-                entitySource,
-                expression);
-
-            Nodes.Push(call);
-
-            //"AnonymousType input"
-            this._queryState.Item = Expression.Parameter(entityType, "item_" + entityType.Name);
-            this._queryState.Alias2Item[node.Alias] = this._queryState.Item;
-
-            //"IQueryable<AnonymousType> input"
-            this._queryState.Input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(entityType), "input");
+            var resultAsObjectExpression = Expression.Convert(callFunction, typeof(object));
+            var result = Expression.Lambda<Func<object>>(resultAsObjectExpression).Compile()();
+            From(node, result);
         }
 
         public void Visit(FromTableNode node)
@@ -1021,49 +989,150 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 Visit(new InMemoryTableFromNode(node.Table.TableOrView, node.Alias));
                     return;
             }
-            var table = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
-            var fields = table.ItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
 
-            Type entityType = expressionHelper.CreateAnonymousType(fields);
-            var rowOfDataSource = Expression.Parameter(table.ItemsType, "rowOfDataSource");
+            var table = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
+            if (table.MethodInfo != null)
+            {
+                var method = table.MethodInfo;
+                var callFunction = Expression.Call(Expression.Constant(method.FunctionDelegate.Target), method.FunctionMethod);
+                var resultAsObjectExpression = Expression.Convert(callFunction, typeof(object));
+                var result = Expression.Lambda<Func<object>>(resultAsObjectExpression).Compile()();
+                From(node, result);
+            }
+            else
+            {
+                From(node, table.Result);
+            }
+            //var fields = table.ItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToArray(); ;
+
+            //Type entityType = expressionHelper.CreateAnonymousType(fields);
+            //var rowOfDataSource = Expression.Parameter(table.ItemsType, "rowOfDataSource");
+
+            //List<MemberBinding> bindings = new List<MemberBinding>();
+            //foreach (var field in fields)
+            //{
+            //    //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
+            //    MemberBinding assignment = Expression.Bind(
+            //        entityType.GetField(field.Item1),
+            //        Expression.PropertyOrField(rowOfDataSource, field.Name)
+            //        );
+            //    bindings.Add(assignment);
+            //}
+
+            ////"new AnonymousType()"
+            //var creationExpression = Expression.New(entityType.GetConstructor(Type.EmptyTypes));
+
+            ////"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            //var initialization = Expression.MemberInit(creationExpression, bindings);
+
+            ////"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            //Expression expression = Expression.Lambda(initialization, rowOfDataSource, _queryState.Item_i);
+
+            //var queryableRowSource = Expression.Constant(table.Items.AsQueryable());
+
+            //var call = Expression.Call(
+            //    typeof(Queryable),
+            //    "Select",
+            //    new Type[] { table.ItemsType, entityType },
+            //    queryableRowSource,
+            //    expression);
+
+            //Nodes.Push(call);
+
+            ////"AnonymousType input"
+            //this._queryState.Item = Expression.Parameter(entityType, "item_" + entityType.Name);
+            //this._queryState.Alias2Item[node.Alias] = this._queryState.Item;
+
+            ////"IQueryable<AnonymousType> input"
+            //this._queryState.Input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(entityType), "input");
+        }
+
+        public void From(FromNode node, object result)
+        {
+            var resultType = result.GetType();
+            var resultItemsType = result.GetType().GetElementType();
+            Expression resultsAsQueryableExpression = null;
+
+            List<(string Name, Type FieldType)> resultFields = null;
+            if (resultItemsType != null)
+            {
+                resultFields = resultItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToList();
+
+                resultsAsQueryableExpression = Expression.Call(
+                    typeof(Queryable),
+                    "AsQueryable",
+                    new Type[] { resultItemsType },
+                    Expression.Constant(result));
+            }
+            else if (typeof(IDataReader).IsAssignableFrom(resultType))
+            {
+                var resultReader = (IDataReader)result;
+                _engine.Disposables.Add(resultReader);
+                resultItemsType = typeof(object[]);
+                resultFields = Enumerable
+                    .Range(0, resultReader.FieldCount)
+                    .Select(x => (resultReader.GetName(x), resultReader.GetFieldType(x)))
+                    .ToList();
+
+                resultsAsQueryableExpression = Expression.Call(
+                    typeof(Queryable),
+                    "AsQueryable",
+                    new Type[] { resultItemsType },
+                    Expression.Constant(AsEnumerable(resultReader)));
+            }
+
+
+            Type outputItemType = expressionHelper.CreateAnonymousType(resultFields);
+            var resultItemExpression = Expression.Parameter(resultItemsType, "entityItem");
 
             List<MemberBinding> bindings = new List<MemberBinding>();
-            foreach (var field in fields)
+            int fieldIndex = 0;
+            foreach (var field in resultFields)
             {
-                //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
-                MemberBinding assignment = Expression.Bind(
-                    entityType.GetField(field.Item1),
-                    Expression.PropertyOrField(rowOfDataSource, field.Name)
+                if (resultItemsType == typeof(object[]))
+                {
+                    MemberBinding assignment = Expression.Bind(
+                        outputItemType.GetField(field.Name),
+                        Expression.Convert(Expression.ArrayAccess(resultItemExpression, Expression.Constant(fieldIndex)), field.FieldType)
                     );
-                bindings.Add(assignment);
+                    bindings.Add(assignment);
+                    fieldIndex++;
+                }
+                else
+                {
+                    //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
+                    MemberBinding assignment = Expression.Bind(
+                        outputItemType.GetField(field.Name),
+                        Expression.PropertyOrField(resultItemExpression, field.Name)
+                        );
+                    bindings.Add(assignment);
+                }
             }
 
             //"new AnonymousType()"
-            var creationExpression = Expression.New(entityType.GetConstructor(Type.EmptyTypes));
+            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
 
             //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, rowOfDataSource, _queryState.Item_i);
-
-            var queryableRowSource = Expression.Constant(table.Items.AsQueryable());
+            Expression expression = Expression.Lambda(initialization, resultItemExpression, _queryState.Item_i);
 
             var call = Expression.Call(
                 typeof(Queryable),
                 "Select",
-                new Type[] { table.ItemsType, entityType },
-                queryableRowSource,
+                new Type[] { resultItemsType, outputItemType },
+                resultsAsQueryableExpression,
                 expression);
 
             Nodes.Push(call);
 
             //"AnonymousType input"
-            this._queryState.Item = Expression.Parameter(entityType, "item_" + entityType.Name);
+            this._queryState.Item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
             this._queryState.Alias2Item[node.Alias] = this._queryState.Item;
 
             //"IQueryable<AnonymousType> input"
-            this._queryState.Input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(entityType), "input");
+            this._queryState.Input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputItemType), "input");
         }
 
         public void Visit(InMemoryTableFromNode node)
@@ -1576,7 +1645,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 _engine.SetVariable(node.VariableToSet.Name, value);
             }
         }
-
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -16,16 +17,15 @@ using MethodInfo = Traficante.TSQL.Schema.Managers.MethodInfo;
 
 namespace Traficante.TSQL
 {
-    public class Engine
+    public class Engine : IDisposable
     {
-        public List<TableInfo> Tables { get; set; } = new List<TableInfo>();
-        public MethodsManager MethodsManager { get; set; } = new MethodsManager();
-
-        public List<Variable> _variables { get; private set; }
+        public SourceDataManager SourceDataManager { get; set; } = new SourceDataManager();
+        public List<Variable> Variables { get; private set; }
+        internal List<IDisposable> Disposables { get; private set; } = new List<IDisposable>();
         public Engine()
         {
-            _variables = new List<Variable>();
-            MethodsManager.RegisterLibraries(new Library());
+            Variables = new List<Variable>();
+            SourceDataManager.RegisterLibraries(new Library());
         }
 
         public Evaluator.Tables.DataTable Run(string script)
@@ -38,122 +38,132 @@ namespace Traficante.TSQL
             AddTable(name, new string[0],  items);
         }
 
-        public void AddTable<T>(string name, string[] path, IEnumerable<T> items)
+        public void AddTable<TResult>(string name, Func<TResult> function)
         {
-            Tables.Add(new TableInfo(name, path ?? new string[0], items, typeof(T)));
+            AddTable(name, new string[0], function);
         }
 
-        public TableInfo ResolveTable(string name, string[] path)
+        public void AddTable<T>(string name, string[] path, IEnumerable<T> items)
         {
-            return Tables
-                .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
-                .Where(x =>
-                {
-                    var pathOfX = x.Path.Reverse().ToList();
-                    var pathToFind = path.Reverse().ToList();
-                    for (int i = 0; i < pathToFind.Count; i++)
+            SourceDataManager.RegisterTable(new TableInfo(name, path ?? new string[0], items));
+        }
+
+        public void AddTable<TResult>(string name, string[] path, Func<TResult> function)
+        {
+            SourceDataManager.RegisterTable(
+                new TableInfo(name, path ?? new string[0],
+                    new MethodInfo
                     {
-                        if (pathOfX.ElementAtOrDefault(i) != pathToFind.ElementAtOrDefault(i))
-                            return false;
-                    }
-                    return true;
-                }).FirstOrDefault();
+                        FunctionDelegate = function,
+                        FunctionMethod = function?.Method,
+                    }));
         }
 
         public void AddFunction<TResult>(string name, string[] path, Func<TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function);
+            this.SourceDataManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<TResult>(string name, Func<TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function);
+            this.SourceDataManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, TResult>(string name, string[] path, Func<T1, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function);
+            this.SourceDataManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, TResult>(string name, Func<T1, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function);
+            this.SourceDataManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, T2, TResult>(string name, string[] path, Func<T1, T2, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function);
+            this.SourceDataManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, TResult>(string name, Func<T1, T2, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function);
+            this.SourceDataManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, T2, T3, TResult>(string name, string[] path, Func<T1, T2, T3, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function);
+            this.SourceDataManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, T3, TResult>(string name, Func<T1, T2, T3, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function);
+            this.SourceDataManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, T2, T3, T4, TResult>(string name, string[] path, Func<T1, T2, T3, T4, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function);
+            this.SourceDataManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, T3, T4, TResult>(string name, Func<T1, T2, T3, T4, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function);
+            this.SourceDataManager.RegisterMethod(name, function);
         }
 
         public void AddFunction<T1, T2, T3, T4, T5, TResult>(string name, string[] path, Func<T1, T2, T3, T4, T5, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, path, function);
+            this.SourceDataManager.RegisterMethod(name, path, function);
         }
 
         public void AddFunction<T1, T2, T3, T4, T5, TResult>(string name, Func<T1, T2, T3, T4, T5, TResult> function)
         {
-            this.MethodsManager.RegisterMethod(name, function);
+            this.SourceDataManager.RegisterMethod(name, function);
         }
 
         public void SetVariable<T>(string name, T value)
         {
-            var variable = _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
+            var variable = Variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
             if (variable != null)
             {
                 variable.Value = value;
             }
             else
             {
-                _variables.Add(new Variable(name, typeof(T), value));
+                Variables.Add(new Variable(name, typeof(T), value));
             }
         }
 
         public void SetVariable(string name, Type type, object value)
         {
-            var variable = _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
+            var variable = Variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
             if (variable != null)
             {
                 variable.Value = value;
             }
             else
             {
-                _variables.Add(new Variable(name, type, value));
+                Variables.Add(new Variable(name, type, value));
             }
         }
 
         public Variable GetVariable(string name)
         {
-            return _variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
+            return Variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
         }
 
         public MethodInfo ResolveMethod(string[] path, string method, Type[] parameters)
         {
-            return MethodsManager.GetMethod(method, path, parameters);
+            return SourceDataManager.ResolveMethod(method, path, parameters);
+        }
+
+        public TableInfo ResolveTable(string name, string[] path)
+        {
+            return SourceDataManager.ResolveTable(name, path);
+        }
+
+        public void Dispose()
+        {
+            foreach (var disposable in Disposables)
+                disposable.Dispose();
         }
     }
 }

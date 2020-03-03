@@ -9,12 +9,13 @@ using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Schema.Managers
 {
-    public class MethodsManager
+    public class SourceDataManager
     {
         private static readonly Dictionary<Type, Type[]> TypeCompatibilityTable;
-        private readonly List<MethodGroupInfo> _methods;
+        private List<MethodGroupInfo> _methods;
+        private List<TableInfo> _tables;
 
-        static MethodsManager()
+        static SourceDataManager()
         {
             TypeCompatibilityTable = new Dictionary<Type, Type[]>
             {
@@ -29,9 +30,10 @@ namespace Traficante.TSQL.Schema.Managers
             };
         }
 
-        public MethodsManager()
+        public SourceDataManager()
         {
             _methods = new List<MethodGroupInfo>();
+            _tables = new List<TableInfo>();
         }
 
         public void RegisterLibraries(Library library)
@@ -43,12 +45,34 @@ namespace Traficante.TSQL.Schema.Managers
                 RegisterMethod(methodInfo);
         }
 
-        public MethodInfo GetMethod(string name, Type[] args)
+        public void RegisterTable(TableInfo tableInfo)
         {
-            return GetMethod(name, new string[0], args);
+            _tables.Add(tableInfo);
         }
 
-        public MethodInfo GetMethod(string name, string[] path, Type[] methodArgs)
+        public TableInfo ResolveTable(string name, string[] path)
+        {
+            return _tables
+                .Where(x => string.Equals(x.Name, name, StringComparison.InvariantCultureIgnoreCase))
+                .Where(x =>
+                {
+                    var pathOfX = x.Path.Reverse().ToList();
+                    var pathToFind = path.Reverse().ToList();
+                    for (int i = 0; i < pathToFind.Count; i++)
+                    {
+                        if (pathOfX.ElementAtOrDefault(i) != pathToFind.ElementAtOrDefault(i))
+                            return false;
+                    }
+                    return true;
+                }).FirstOrDefault();
+        }
+
+        public MethodInfo ResolveMethod(string name, Type[] args)
+        {
+            return ResolveMethod(name, new string[0], args);
+        }
+
+        public MethodInfo ResolveMethod(string name, string[] path, Type[] methodArgs)
         {
             var methods = MatchMethods(name, path);
             if (methods == null)
@@ -217,16 +241,22 @@ namespace Traficante.TSQL.Schema.Managers
 
     public class TableInfo
     {
-        public TableInfo(string name, string[] path, IEnumerable items, Type itemsType)
+        public TableInfo(string name, string[] path, object result)
         {
             this.Name = name;
             this.Path = path;
-            this.Items = items;
-            this.ItemsType = itemsType;
+            this.Result = result;
         }
+        public TableInfo(string name, string[] path, MethodInfo methodInfo)
+        {
+            this.Name = name;
+            this.Path = path;
+            this.MethodInfo = methodInfo;
+        }
+        
         public string Name { get; set; }
         public string[] Path { get; set; }
-        public IEnumerable Items { get; set; }
-        public Type ItemsType { get; set; }
+        public object Result { get; set; }
+        public MethodInfo MethodInfo { get; set; }
     }
 }
