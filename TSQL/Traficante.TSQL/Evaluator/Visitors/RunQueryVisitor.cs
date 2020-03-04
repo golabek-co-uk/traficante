@@ -958,11 +958,31 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (source == null)
                 throw new ArgumentNullException("source");
 
+            List<Object[]> list = new List<object[]>();
             while (source.Read())
             {
                 Object[] row = new Object[source.FieldCount];
                 source.GetValues(row);
-                yield return row;
+                for(int i = 0; i < source.FieldCount; i++)
+                {
+                    if (row[i] is DBNull)
+                        row[i] = GetDefaultValue(source.GetFieldType(i));
+                }
+                //yield return row;
+                list.Add(row);
+            }
+            return list;
+        }
+
+        public object GetDefaultValue(Type t)
+        {
+            if (t.IsValueType && Nullable.GetUnderlyingType(t) == null)
+            {
+                return Activator.CreateInstance(t);
+            }
+            else
+            {
+                return null;
             }
         }
 

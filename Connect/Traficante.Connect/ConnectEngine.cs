@@ -19,6 +19,8 @@ namespace Traficante.Connect
                 Connectors.Add(new MySqlConnector(mySqlConfig));
             if (connector is SqlServerConnectorConfig sqlServerConfig)
                 Connectors.Add(new SqlServerConnector(sqlServerConfig));
+            if (connector is SqliteConnectorConfig sqliteConfig)
+                Connectors.Add(new SqliteConnector(sqliteConfig));
         }
 
         public TSQL.DataTable Run(string sql)
