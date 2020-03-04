@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Converter;
-using Traficante.TSQL.Evaluator.Tables;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 using Traficante.TSQL.Lib;
 using Traficante.TSQL.Schema;

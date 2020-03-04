@@ -4,16 +4,9 @@ using System.Linq;
 using System.Reflection;
 using Traficante.TSQL.Evaluator.Exceptions;
 using Traficante.TSQL.Evaluator.Helpers;
-using Traficante.TSQL.Evaluator.Tables;
 using Traficante.TSQL.Evaluator.Utils;
-using Traficante.TSQL.Evaluator.Utils.Symbols;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
-using Traficante.TSQL.Parser.Tokens;
-using Traficante.TSQL.Lib.Attributes;
-using Traficante.TSQL.Schema;
-using Traficante.TSQL.Schema.DataSources;
-using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {

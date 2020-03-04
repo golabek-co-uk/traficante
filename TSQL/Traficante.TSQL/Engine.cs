@@ -7,11 +7,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Traficante.TSQL.Converter;
-using Traficante.TSQL.Evaluator.Tables;
 using Traficante.TSQL.Lib;
-using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
-using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.Managers;
 using MethodInfo = Traficante.TSQL.Schema.Managers.MethodInfo;
 
@@ -29,7 +26,7 @@ namespace Traficante.TSQL
             SourceDataManager.RegisterLibraries(new Library());
         }
 
-        public Evaluator.Tables.DataTable Run(string script)
+        public DataTable Run(string script)
         {
             return new Runner().RunAndReturnTable(script, this);
         }

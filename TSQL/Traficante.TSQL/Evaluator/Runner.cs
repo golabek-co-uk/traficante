@@ -9,10 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Traficante.TSQL.Converter.Build;
 using Traficante.TSQL.Evaluator;
-using Traficante.TSQL.Evaluator.Tables;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
-using DataColumn = Traficante.TSQL.Evaluator.Tables.DataColumn;
 
 namespace Traficante.TSQL.Converter
 {
@@ -57,7 +55,7 @@ namespace Traficante.TSQL.Converter
                     {
                         values[i] = itemType.GetField(columns2[i].ColumnName).GetValue(row);
                     }
-                    ObjectsRow row2 = new ObjectsRow(values);
+                    DataRow row2 = new DataRow(values);
                     t.Add(row2);
                 }
                 return t;
