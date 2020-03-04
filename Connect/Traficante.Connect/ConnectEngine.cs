@@ -25,28 +25,30 @@ namespace Traficante.Connect
 
         public TSQL.DataTable Run(string sql)
         {
-            TSQLEngine sqlEngine = new TSQLEngine();
-            sqlEngine.AddTableResolver((name, path) =>
+            using (TSQLEngine sqlEngine = new TSQLEngine())
             {
-                var alias = path.FirstOrDefault();
-                var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
-                if (connector == null)
-                    throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                Delegate @delegate = connector.GetTable(name, path);
-                return @delegate;
-            });
+                sqlEngine.AddTableResolver((name, path) =>
+                {
+                    var alias = path.FirstOrDefault();
+                    var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
+                    if (connector == null)
+                        throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
+                    Delegate @delegate = connector.GetTable(name, path);
+                    return @delegate;
+                });
 
-            sqlEngine.AddMethodResolver((name, path, arguments) =>
-            {
-                var alias = path.FirstOrDefault();
-                var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
-                if (connector == null)
-                    throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                Delegate @delegate = connector.GetMethod(name, path, arguments);
-                return @delegate;
-            });
+                sqlEngine.AddMethodResolver((name, path, arguments) =>
+                {
+                    var alias = path.FirstOrDefault();
+                    var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
+                    if (connector == null)
+                        throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
+                    Delegate @delegate = connector.GetMethod(name, path, arguments);
+                    return @delegate;
+                });
 
-            return sqlEngine.Run(sql);
+                return sqlEngine.Run(sql);
+            }
         }
     }
 

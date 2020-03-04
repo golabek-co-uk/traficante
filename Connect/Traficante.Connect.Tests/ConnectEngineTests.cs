@@ -8,7 +8,7 @@ namespace Traficante.Connect.Tests
     public class ConnectEngineTests
     {
         [TestMethod]
-        public void SelectFrom_Csv()
+        public void Select_From_Csv()
         {
             ConnectEngine connectEngine = new ConnectEngine();
             connectEngine.AddConector(new CsvConnectorConfig { Alias = "csv" });
@@ -21,7 +21,7 @@ namespace Traficante.Connect.Tests
         }
 
         [TestMethod]
-        public void SelectFrom_Sqlite()
+        public void Select_From_Sqlite()
         {
             ConnectEngine connectEngine = new ConnectEngine();
             connectEngine.AddConector(new SqliteConnectorConfig { Alias = "chinook", Database = "chinook.db" });
@@ -34,7 +34,7 @@ namespace Traficante.Connect.Tests
         }
 
         [TestMethod]
-        public void SelectFrom_Sqlite_Join_Csv()
+        public void Select_From_Csv_Join_Sqlite()
         {
             ConnectEngine connectEngine = new ConnectEngine();
             connectEngine.AddConector(new CsvConnectorConfig { Alias = "csv" });
