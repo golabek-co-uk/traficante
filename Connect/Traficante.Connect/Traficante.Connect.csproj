@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="15.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="1.1.1" />
+    <PackageReference Include="MySql.Data" Version="8.0.19" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\TSQL\Traficante.TSQL\Traficante.TSQL.csproj" />
   </ItemGroup>
 
