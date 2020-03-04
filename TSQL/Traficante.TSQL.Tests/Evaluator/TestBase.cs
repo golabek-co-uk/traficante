@@ -41,7 +41,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
         protected CompiledQuery CreateAndRunVirtualMachine<T>(string script, IDictionary<string, IEnumerable<T>> sources)
         {
-            var engine = new Engine();
+            var engine = new TSQLEngine();
             //new TestLibrary()
             engine.AddFunction<int?, int?>("NullableMethod", null, x => x);
             engine.AddFunction<int>("RandomNumber", () => _random.Next(0, 100));

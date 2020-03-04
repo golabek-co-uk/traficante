@@ -15,7 +15,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void Select_All_From_Where()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -35,7 +35,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void Select_All_FromWithAlias_Where()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -55,7 +55,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void Select_ColumnWithoutAlias_FromWithAlias_Where()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -71,7 +71,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void Select_ColumnWithAlias_FromWithAlias_Where()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -87,7 +87,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void Select_ColumnWithTableName_From_Where()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -103,7 +103,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void SelectFrom_DefaultSchema_Table()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new string[1] { "dbo" }, new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -123,7 +123,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void SelectFrom_DefaultDatabase_DefaultSchema_Table()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new string[2] { "master", "dbo" }, new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -143,7 +143,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void SelectFrom_CustomSchema_Table()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new string[1] { "xxx" }, new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -163,7 +163,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void SelectFrom_CustomtDatabase_CustomSchema_Table()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new string[2] { "yyy", "xxx" }, new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -183,7 +183,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void SelectFrom_DefaultDatabase_CustomSchema_Table()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new string[2] { "hr", "dbo" }, new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -203,7 +203,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void SelectFrom_IDataReader_Table()
         {
-            using (Engine sut = new Engine())
+            using (TSQLEngine sut = new TSQLEngine())
             {
                 sut.AddTable("Persons", new string[0] { }, () =>
                  {
@@ -224,7 +224,7 @@ namespace Traficante.TSQL.Tests
         [TestMethod]
         public void SelectFrom_Resolver_IDataReader_Table()
         {
-            using (Engine sut = new Engine())
+            using (TSQLEngine sut = new TSQLEngine())
             {
                 sut.AddTableResolver((name, path) =>
                 {

@@ -14,7 +14,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_Variable()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.SetVariable("@@VERSION", 123);
 
             var table = sut.Run("SELECT @@VERSION AS 'SQL Server Version'");
@@ -26,7 +26,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Set_Variable()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.SetVariable("@MasterPath", "/path/to/resource");
             var result = sut.Run("SET @MasterPath = '/new/path/to/resource'");
             Assert.AreEqual("/new/path/to/resource", sut.GetVariable("@MasterPath").Value);
@@ -35,7 +35,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Declare_Variable()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             var result = sut.Run("declare @MasterPath nvarchar(512)");
             Assert.IsNull(result);
             var variable = sut.GetVariable("@MasterPath");
@@ -46,7 +46,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Declare_SetString()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             var result = sut.Run("declare @MasterPath nvarchar(512); SET @MasterPath = '/new/path/to/resource'");
             Assert.IsNull(result);
             var variable = sut.GetVariable("@MasterPath");
@@ -57,7 +57,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Declare_SetFunction()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddFunction<string,string>("SERVERPROPERTY", x => "Standard Edition");
 
             var result = sut.Run("DECLARE @edition sysname; SET @edition = SERVERPROPERTY(N'EDITION'); ");
@@ -70,7 +70,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Declare_SetCast()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddFunction<string, string>("SERVERPROPERTY", x => "Standard Edition");
 
             var result = sut.Run("DECLARE @edition sysname; SET @edition = cast(SERVERPROPERTY(N'EDITION') as sysname); ");

@@ -11,32 +11,39 @@ using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.Connect.Connectors
 {
-    public class SqlServerConnector 
+    public class SqlServerConnector : Connector
     {
-        public async Task TryConnectAsync(SqlServerConnectorConfig connectionString, CancellationToken ct)
+        public SqlServerConnectorConfig Config => (SqlServerConnectorConfig)base.Config;
+
+        public SqlServerConnector(SqlServerConnectorConfig config)
+        {
+            base.Config = config;
+        }
+
+        public async Task TryConnectAsync(CancellationToken ct)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
-                sqlConnection.ConnectionString = connectionString.ToConnectionString();
+                sqlConnection.ConnectionString = this.Config.ToConnectionString();
                 await sqlConnection.OpenAsync(ct);
             }
         }
 
-        public void TryConnect(SqlServerConnectorConfig connectionString, string databaseName)
+        public void TryConnect(string databaseName)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
-                sqlConnection.ConnectionString = connectionString.ToConnectionString();
+                sqlConnection.ConnectionString = this.Config.ToConnectionString();
                 sqlConnection.Open();
                 sqlConnection.ChangeDatabase(databaseName);
             }
         }
 
-        public IEnumerable<object> Run(SqlServerConnectorConfig connectionString, string text, Action<Type> returnTypeCreated = null)
+        public IEnumerable<object> Run(string text, Action<Type> returnTypeCreated = null)
         {
             using (var sqlConnection = new SqlConnection())
             {
-                sqlConnection.ConnectionString = connectionString.ToConnectionString();
+                sqlConnection.ConnectionString = this.Config.ToConnectionString();
                 sqlConnection.Open();
                 //sqlConnection.ChangeDatabase(databaseName);
                 using (var sqlCommand = new SqlCommand(text, sqlConnection))
@@ -97,11 +104,11 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public List<(string schema, string name)> GetTables(SqlServerConnectorConfig connectionInfo, string database)
+        public List<(string schema, string name)> GetTables(string database)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
-                sqlConnection.ConnectionString = connectionInfo.ToConnectionString();
+                sqlConnection.ConnectionString = this.Config.ToConnectionString();
                 sqlConnection.Open();
                 sqlConnection.ChangeDatabase(database);
                 var tables = sqlConnection.GetSchema("Tables")
@@ -113,11 +120,11 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public List<(string schema, string name)> GetViews(SqlServerConnectorConfig connectionInfo, string database)
+        public List<(string schema, string name)> GetViews(string database)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
-                sqlConnection.ConnectionString = connectionInfo.ToConnectionString();
+                sqlConnection.ConnectionString = this.Config.ToConnectionString();
                 sqlConnection.Open();
                 sqlConnection.ChangeDatabase(database);
                 var views = sqlConnection.GetSchema("Tables")
@@ -130,7 +137,7 @@ namespace Traficante.Connect.Connectors
         }
     }
 
-    public class SqlServerConnectorConfig 
+    public class SqlServerConnectorConfig  : ConnectorConfig
     {
         public string Server { get; set; }
         public string UserId { get; set; }

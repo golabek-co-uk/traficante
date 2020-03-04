@@ -16,7 +16,7 @@ namespace Traficante.TSQL.Converter
 {
     public class Runner
     {
-        public object Run(string script, Engine engine)
+        public object Run(string script, TSQLEngine engine)
         {
             var items = new BuildItems
             {
@@ -32,7 +32,7 @@ namespace Traficante.TSQL.Converter
             return items.Result;
         }
 
-        public DataTable RunAndReturnTable(string script, Engine engine)
+        public DataTable RunAndReturnTable(string script, TSQLEngine engine)
         {
             object result = Run(script, engine);
             if (result is System.Collections.IEnumerable enumerableResult)

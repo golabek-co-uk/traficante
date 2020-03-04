@@ -19,7 +19,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_Function_Cast()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddFunction<string, bool>("SERVERPROPERTY", x => true);
 
             var result = sut.Run("SELECT CAST(SERVERPROPERTY(N'IsHadrEnabled') AS bit) AS [IsHadrEnabled]");
@@ -31,7 +31,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_ISNULL()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.SetVariable("@alwayson", (int?)null);
 
             var result = sut.Run("SELECT ISNULL(@alwayson, -1) AS [AlwaysOn]");
@@ -43,7 +43,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_Function_WithDatabaseAndSchema()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddFunction<bool>("fn_syspolicy_is_automation_enabled", new string[2] { "msdb", "dbo" }, () => true);
 
             var result = sut.Run("SELECT msdb.dbo.fn_syspolicy_is_automation_enabled()");
@@ -56,7 +56,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Execute_FunctionWithArguments_AssigneResultToVariable()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.SetVariable("@alwayson", (int?)null);
             sut.SetVariable("@@SERVICENAME", "Traficante");
             sut.AddFunction<string, string, int>("xp_qv", new string[2] { "master", "dbo" }, (x, y) => 5);
@@ -71,7 +71,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Execute_FunctionWithArguments()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
 
             sut.SetVariable("@@SERVICENAME", "Traficante");
             sut.AddFunction<string, string, int>("xp_qv", new string[2] { "master", "dbo" }, (x, y) =>
@@ -87,7 +87,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_From_FunctionWithoutArguments()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddFunction("get_entities", () =>
             {
                 return new[]
@@ -107,7 +107,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void SelectOneColumn_From_FunctionWithoutArguments()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddFunction("get_entities", () =>
             {
                 return new[]
@@ -127,7 +127,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_From_FunctionArguments()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddFunction("get_entities", (int a, string b) =>
             {
                 return new[]
@@ -147,7 +147,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_FromDataReader_FunctionArguments()
         {
-            using (Engine sut = new Engine())
+            using (TSQLEngine sut = new TSQLEngine())
             {
                 sut.AddFunction("get_entities", (int a, string b) =>
                 {

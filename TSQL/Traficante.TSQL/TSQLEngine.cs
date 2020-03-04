@@ -14,13 +14,13 @@ using MethodInfo = Traficante.TSQL.Schema.Managers.MethodInfo;
 
 namespace Traficante.TSQL
 {
-    public class Engine : IDisposable
+    public class TSQLEngine : IDisposable
     {
         public SourceDataManager SourceDataManager { get; set; } = new SourceDataManager();
         public List<Variable> Variables { get; private set; }
         internal List<IDisposable> Disposables { get; private set; } = new List<IDisposable>();
         
-        public Engine()
+        public TSQLEngine()
         {
             Variables = new List<Variable>();
             SourceDataManager.RegisterLibraries(new Library());

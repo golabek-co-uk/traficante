@@ -4,27 +4,37 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Traficante.Connect;
 using Traficante.TSQL;
 
-namespace Traficante.Studio.Services
+namespace Traficante.Connect.Connectors
 {
-    public class CsvConnector
+    public class CsvConnector : Connector
     {
-        public object Run(string sql)
+        public CsvConnector(CsvConnectorConfig config)
         {
-            Engine engine = new Engine();
-            engine.AddFunction("csv", (string pathToFile) =>
-            {
-                var reader = new StreamReader("csv.csv");
-                var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture, false);
-                return new CsvDataReader(csvReader);
-            });
+            this.Config = config;
+        }
 
-            return engine.Run(sql);
+        public override Delegate GetMethod(string name, string[] path, Type[] arguments)
+        {
+            if (string.Equals(name, "fromFile", StringComparison.InvariantCultureIgnoreCase)
+                && arguments.Length == 1
+                && arguments[0] == typeof(string))
+            {
+                Func<string, CsvDataReader> fromFile = (pathToFile) =>
+                {
+                    var reader = new StreamReader(pathToFile);
+                    var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture, false);
+                    return new CsvDataReader(csvReader);
+                };
+                return fromFile;
+            }
+            return null;
         }
     }
 
-    public class CsvConnectorConfig
+    public class CsvConnectorConfig : ConnectorConfig
     {
         public string FilePath { get; set; }
     }

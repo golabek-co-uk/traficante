@@ -12,7 +12,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class PrepareQueryVisitor : IAwareExpressionVisitor
     {
-        private readonly Engine _engine;
+        private readonly TSQLEngine _engine;
 
         private readonly List<string> _generatedAliases = new List<string>();
         private string _queryAlias;
@@ -26,7 +26,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public RootNode Root => (RootNode)Nodes.Peek();
 
 
-        public PrepareQueryVisitor(Engine engine)
+        public PrepareQueryVisitor(TSQLEngine engine)
         {
             _engine = engine;
         }

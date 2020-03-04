@@ -25,7 +25,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
-        private Engine _engine;
+        private TSQLEngine _engine;
         private QueryState _queryState;
         private QueryPart _queryPart;
 
@@ -33,7 +33,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         
 
-        public RunQueryVisitor(Engine engine)
+        public RunQueryVisitor(TSQLEngine engine)
         {
             Nodes = new Stack<System.Linq.Expressions.Expression>();
             _engine = engine;

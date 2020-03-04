@@ -1267,7 +1267,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_TwoQueries()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },
@@ -1289,7 +1289,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Select_QueryAndSelectFunction()
         {
-            Engine sut = new Engine();
+            TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Persons", new Person[] {
                 new Person { Id = 1, FirstName = "John", LastName = "Smith" },
                 new Person { Id = 2, FirstName = "John", LastName = "Doe" },

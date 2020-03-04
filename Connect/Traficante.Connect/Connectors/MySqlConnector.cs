@@ -8,36 +8,44 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
+using Traficante.Connect;
 using Traficante.TSQL.Evaluator.Visitors;
 
-namespace Traficante.Studio.Services
+namespace Traficante.Connect.Connectors
 {
-    public class MySqlConnector
+    public class MySqlConnector : Connector
     {
-        public async Task TryConnectAsync(MySqlConnectorConfig connectionString, CancellationToken ct)
+        public MySqlConnectorConfig Config => (MySqlConnectorConfig)base.Config;
+
+        public MySqlConnector(MySqlConnectorConfig config)
+        {
+            base.Config = config;
+        }
+
+        public async Task TryConnectAsync(CancellationToken ct)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
-                connection.ConnectionString = connectionString.ToConnectionString();
+                connection.ConnectionString = this.Config.ToConnectionString();
                 await connection.OpenAsync(ct);
             }
         }
 
-        public void TryConnect(MySqlConnectorConfig connectionString, string databaseName)
+        public void TryConnect(string databaseName)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
-                connection.ConnectionString = connectionString.ToConnectionString();
+                connection.ConnectionString = this.Config.ToConnectionString();
                 connection.Open();
                 connection.ChangeDatabase(databaseName);
             }
         }
 
-        public IEnumerable<object> Run(MySqlConnectorConfig connectionString, string text, Action<Type> returnTypeCreated = null)
+        public IEnumerable<object> Run(string text, Action<Type> returnTypeCreated = null)
         {
             using (var connection = new MySqlConnection())
             {
-                connection.ConnectionString = connectionString.ToConnectionString();
+                connection.ConnectionString = this.Config.ToConnectionString();
                 connection.Open();
                 //sqlConnection.ChangeDatabase(databaseName);
                 using (var sqlCommand = new MySqlCommand(text, connection))
@@ -68,22 +76,22 @@ namespace Traficante.Studio.Services
             }
         }
 
-        public List<string> GetDatabases(MySqlConnectorConfig connectionInfo)
+        public List<string> GetDatabases()
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
-                connection.ConnectionString = connectionInfo.ToConnectionString();
+                connection.ConnectionString = this.Config.ToConnectionString();
                 connection.Open();
                 var databasesNames = connection.GetSchema("Databases").Select().Select(s => s[1].ToString()).ToList();
                 return databasesNames;
             }
         }
 
-        public List<string> GetTables(MySqlConnectorConfig connectionInfo, string database)
+        public List<string> GetTables(string database)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
-                connection.ConnectionString = connectionInfo.ToConnectionString();
+                connection.ConnectionString = this.Config.ToConnectionString();
                 connection.Open();
                 connection.ChangeDatabase(database);
                 var tables = connection.GetSchema("Tables")
@@ -96,11 +104,11 @@ namespace Traficante.Studio.Services
             }
         }
 
-        public List<string> GetViews(MySqlConnectorConfig connectionInfo, string database)
+        public List<string> GetViews(string database)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
-                connection.ConnectionString = connectionInfo.ToConnectionString();
+                connection.ConnectionString = this.Config.ToConnectionString();
                 connection.Open();
                 connection.ChangeDatabase(database);
                 var views = connection.GetSchema("Tables")
@@ -114,7 +122,7 @@ namespace Traficante.Studio.Services
         }
     }
 
-    public class MySqlConnectorConfig
+    public class MySqlConnectorConfig : ConnectorConfig
     {
         public string Server { get; set; }
         public string UserId { get; set; }
