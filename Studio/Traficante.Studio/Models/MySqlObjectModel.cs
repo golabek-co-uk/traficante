@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
 
 namespace Traficante.Studio.Models
@@ -12,15 +13,15 @@ namespace Traficante.Studio.Models
     public class MySqlObjectModel : ObjectModel
     {
         [DataMember]
-        public MySqlConnectionInfo ConnectionInfo { get; set; }
+        public MySqlConnectionModel ConnectionInfo { get; set; }
         public override string Name { get => this.ConnectionInfo.Server; set { } }
 
         public MySqlObjectModel()
         {
-            ConnectionInfo = new MySqlConnectionInfo();
+            ConnectionInfo = new MySqlConnectionModel();
         }
 
-        public MySqlObjectModel(MySqlConnectionInfo connectionString)
+        public MySqlObjectModel(MySqlConnectionModel connectionString)
         {
             ConnectionInfo = connectionString;
         }
@@ -28,7 +29,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new MySqlService().GetDatabases(ConnectionInfo)))
+                .FromAsync(() => new TaskFactory().StartNew(() => new Traficante.Connect.Connectors.MySqlConnector(ConnectionInfo.ToConectorConfig()).GetDatabases()))
                 .SelectMany(x => x)
                 .Select(x => new MySqlDatabaseObjectModel(this, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -56,7 +57,7 @@ namespace Traficante.Studio.Models
             Observable
                 .FromAsync(() => new TaskFactory().StartNew(() =>
                 {
-                    new MySqlService().TryConnect(Server.ConnectionInfo, Name);
+                    new Traficante.Connect.Connectors.MySqlConnector(Server.ConnectionInfo.ToConectorConfig()).TryConnect(Name);
                     return new object[] {
                         new MySqlTablesObjectModel(this),
                         new MySqlViewsObjectModel(this)
@@ -86,7 +87,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new MySqlService().GetTables(Database.Server.ConnectionInfo, Database.Name)))
+                .FromAsync(() => new TaskFactory().StartNew(() => new Traficante.Connect.Connectors.MySqlConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetTables(Database.Name)))
                 .SelectMany(x => x)
                 .Select(x => new MySqlTableObjectModel(Database, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -127,7 +128,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new MySqlService().GetViews(Database.Server.ConnectionInfo, Database.Name)))
+                .FromAsync(() => new TaskFactory().StartNew(() => new Traficante.Connect.Connectors.MySqlConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetViews(Database.Name)))
                 .SelectMany(x => x)
                 .Select(x => new MySqlViewObjectModel(Database, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -156,7 +157,7 @@ namespace Traficante.Studio.Models
     }
 
     [DataContract]
-    public class MySqlConnectionInfo : ReactiveObject
+    public class MySqlConnectionModel : ReactiveObject
     {
         [DataMember]
         public string Server { get; set; }
@@ -165,9 +166,14 @@ namespace Traficante.Studio.Models
         [DataMember]
         public string Password { get; set; }
 
-        public string ToConnectionString()
+        public MySqlConnectorConfig ToConectorConfig()
         {
-            return $"Server={Server};User Id={UserId};Password={Password};";
+            return new MySqlConnectorConfig()
+            {
+                Server = this.Server,
+                UserId = this.UserId,
+                Password = this.Password
+            };
         }
     }
 }

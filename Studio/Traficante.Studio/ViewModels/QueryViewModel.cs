@@ -157,23 +157,23 @@ namespace Traficante.Studio.ViewModels
                         })
                         .Subscribe(this.ResultsDataColumns.Add);
                 };
-                if (SelectedObject is SqlServerObjectModel)
-                {
-                    SqlServerObjectModel sqlServer = (SqlServerObjectModel)SelectedObject;
-                    results = new SqlServerService().Run(
-                        sqlServer.ConnectionInfo,
-                        Text,
-                        returnTypeCreated: returnTypeCreated);
-                }
+                //if (SelectedObject is SqlServerObjectModel)
+                //{
+                //    SqlServerObjectModel sqlServer = (SqlServerObjectModel)SelectedObject;
+                //    results = new SqlServerService().Run(
+                //        sqlServer.ConnectionInfo,
+                //        Text,
+                //        returnTypeCreated: returnTypeCreated);
+                //}
 
-                if (SelectedObject is MySqlObjectModel)
-                {
-                    MySqlObjectModel mySql = (MySqlObjectModel)SelectedObject;
-                    results = new MySqlService().Run(
-                        mySql.ConnectionInfo, 
-                        Text,
-                        returnTypeCreated: returnTypeCreated);
-                }
+                //if (SelectedObject is MySqlObjectModel)
+                //{
+                //    MySqlObjectModel mySql = (MySqlObjectModel)SelectedObject;
+                //    results = new MySqlService().Run(
+                //        mySql.ConnectionInfo, 
+                //        Text,
+                //        returnTypeCreated: returnTypeCreated);
+                //}
                 if (results != null)
                 {
                     Type itemType = null;

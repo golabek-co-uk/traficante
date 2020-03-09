@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
 
 namespace Traficante.Studio.Models
@@ -13,15 +14,15 @@ namespace Traficante.Studio.Models
     public class SqlServerObjectModel : ObjectModel
     {
         [DataMember]
-        public SqlServerConnectionInfo ConnectionInfo { get; set; }
+        public SqlServerConnectionModel ConnectionInfo { get; set; }
         public override string Name { get => this.ConnectionInfo.Server; set { } }
 
         public SqlServerObjectModel()
         {
-            ConnectionInfo = new SqlServerConnectionInfo();
+            ConnectionInfo = new SqlServerConnectionModel();
         }
         
-        public SqlServerObjectModel(SqlServerConnectionInfo connectionString)
+        public SqlServerObjectModel(SqlServerConnectionModel connectionString)
         {
             ConnectionInfo = connectionString;
         }
@@ -29,7 +30,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerService().GetDatabases(ConnectionInfo)))
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(ConnectionInfo.ToConectorConfig()).GetDatabases()))
                 .SelectMany(x => x)
                 .Select(x => new SqlServerDatabaseObjectModel(this, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -57,7 +58,7 @@ namespace Traficante.Studio.Models
             Observable
                 .FromAsync(() => new TaskFactory().StartNew(() =>
                 {
-                    new SqlServerService().TryConnect(Server.ConnectionInfo, Name);
+                    new SqlServerConnector(Server.ConnectionInfo.ToConectorConfig()).TryConnect(Name);
                     return new object[] {
                         new SqlServerTablesObjectModel(this),
                         new SqlServerViewsObjectModel(this)
@@ -87,7 +88,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerService().GetTables(Database.Server.ConnectionInfo, Database.Name)))
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetTables(Database.Name)))
                 .SelectMany(x => x)
                 .Select(x => new SqlServerTableObjectModel(Database, x.schema, x.name))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -132,7 +133,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerService().GetViews(Database.Server.ConnectionInfo, Database.Name)))
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetViews(Database.Name)))
                 .SelectMany(x => x)
                 .Select(x => new SqlServerViewObjectModel(Database, x.schema, x.name))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -165,7 +166,7 @@ namespace Traficante.Studio.Models
 
 
     [DataContract]
-    public class SqlServerConnectionInfo : ReactiveObject
+    public class SqlServerConnectionModel : ReactiveObject
     {
         [DataMember]
         public string Server { get; set; }
@@ -182,12 +183,15 @@ namespace Traficante.Studio.Models
             set => this.RaiseAndSetIfChanged(ref _authentication, value);
         }
 
-        public string ToConnectionString()
+        public SqlServerConnectorConfig ToConectorConfig()
         {
-            if (Authentication == SqlServerAuthentication.Windows)
-                return $"Server={Server};Database=master;Trusted_Connection=True;";
-            else
-                return $"Server={Server};Database=master;User Id={UserId};Password={Password};";
+            return new SqlServerConnectorConfig()
+            {
+                Server = this.Server,
+                Authentication = (Traficante.Connect.Connectors.SqlServerAuthentication)this.Authentication,
+                UserId = this.UserId,
+                Password = this.Password
+            };
         }
     }
 

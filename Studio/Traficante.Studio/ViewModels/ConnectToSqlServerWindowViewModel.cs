@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Traficante.Connect.Connectors;
 using Traficante.Studio.Models;
 using Traficante.Studio.Services;
 
@@ -18,14 +19,14 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        private SqlServerConnectionInfo _input;
-        public SqlServerConnectionInfo Input
+        private SqlServerConnectionModel _input;
+        public SqlServerConnectionModel Input
         {
             get => _input;
             set => this.RaiseAndSetIfChanged(ref _input, value);
         }
 
-        public SqlServerConnectionInfo Output { get; set; }
+        public SqlServerConnectionModel Output { get; set; }
 
         private string _connectError;
         public string ConnectError
@@ -45,9 +46,9 @@ namespace Traficante.Studio.ViewModels
 
         public AppData AppData { get; set; }
 
-        public ConnectToSqlServerWindowViewModel(SqlServerConnectionInfo input, AppData appData)
+        public ConnectToSqlServerWindowViewModel(SqlServerConnectionModel input, AppData appData)
         {
-            Input = input ?? new SqlServerConnectionInfo();
+            Input = input ?? new SqlServerConnectionModel();
             AppData = appData;
 
             ConnectCommand = ReactiveCommand
@@ -76,7 +77,7 @@ namespace Traficante.Studio.ViewModels
 
             Observable.Merge(
                     ConnectCommand.IsExecuting.Select(x => x == false), 
-                    this.Input.WhenAnyValue(x => x.Authentication).Select(x => x == SqlServerAuthentication.SqlServer))
+                    this.Input.WhenAnyValue(x => x.Authentication).Select(x => x == Models.SqlServerAuthentication.SqlServer))
                 .ToProperty(this, x => x.CanChangeUserIdAndPassword, out _canChangeUserIdAndPassword);
         }
 
@@ -92,7 +93,7 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new SqlServerService().TryConnectAsync(Input, ct);
+                await new SqlServerConnector(Input.ToConectorConfig()).TryConnectAsync(ct);
                 Output = Input;
                 AppData.Objects.Add(new SqlServerObjectModel(Output));
                 await CloseInteraction.Handle(Unit.Default);

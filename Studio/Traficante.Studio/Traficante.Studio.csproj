@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp3.0;</TargetFrameworks>
@@ -37,14 +37,11 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.9.1" />
     <PackageReference Include="Avalonia.Desktop" Version="0.9.1" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.1" />
-    <PackageReference Include="CsvHelper" Version="12.2.3" />
     <PackageReference Include="Dock.Avalonia" Version="0.9.1" />
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.9.1" />
     <PackageReference Include="Dock.Model" Version="0.9.1" />
     <PackageReference Include="Dock.Model.ReactiveUI" Version="0.9.1" />
     <PackageReference Include="DynamicData" Version="6.14.3" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="1.0.19269.1" />
-    <PackageReference Include="MySqlConnector" Version="0.60.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
   <ItemGroup>
@@ -86,6 +83,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Connect\Traficante.Connect\Traficante.Connect.csproj" />
     <ProjectReference Include="..\..\TSQL\Traficante.TSQL\Traficante.TSQL.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -16,11 +16,11 @@ namespace Traficante.Studio.Tests.Models
         {
             AppDataSerializer sut = new AppDataSerializer();
             AppData appData = new AppData();
-            appData.Objects.Add(new SqlServerObjectModel(new SqlServerConnectionInfo{ Server = "server1.com" }) 
+            appData.Objects.Add(new SqlServerObjectModel(new SqlServerConnectionModel{ Server = "server1.com" }) 
             {
                 Name = "server1"
             });
-            appData.Objects.Add(new MySqlObjectModel(new MySqlConnectionInfo { Server = "server2.com" } )
+            appData.Objects.Add(new MySqlObjectModel(new MySqlConnectionModel { Server = "server2.com" } )
             {
                 Name = "server2"
             });

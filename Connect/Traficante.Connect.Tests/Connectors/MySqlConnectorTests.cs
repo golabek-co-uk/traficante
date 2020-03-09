@@ -1,7 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Traficante.Connect.Connectors;
 
 namespace Traficante.Connect.Tests.Connectors
@@ -34,6 +31,31 @@ namespace Traficante.Connect.Tests.Connectors
         {
             MySqlConnector connector = new MySqlConnector(this.config);
             connector.TryConnect("maidc1q2wm11dbzj");
+        }
+
+        [TestMethod]
+        public void GetDatabases()
+        {
+            MySqlConnector connector = new MySqlConnector(this.config);
+            var databases = connector.GetDatabases();
+            CollectionAssert.Contains(databases, "sys");
+        }
+
+        [TestMethod]
+        public void GetTables()
+        {
+            MySqlConnector connector = new MySqlConnector(this.config);
+            var tables = connector.GetTables("sys");
+            CollectionAssert.Contains(tables, "sys_config");
+        }
+
+
+        [TestMethod]
+        public void GetViews()
+        {
+            MySqlConnector connector = new MySqlConnector(this.config);
+            var views = connector.GetViews("sys");
+            CollectionAssert.Contains(views, "host_summary");
         }
 
     }

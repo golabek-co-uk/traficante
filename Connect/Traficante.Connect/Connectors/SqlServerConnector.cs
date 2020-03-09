@@ -93,11 +93,11 @@ namespace Traficante.Connect.Connectors
 
         // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql-server-schema-collections?view=netframework-4.8
 
-        public List<string> GetDatabases(SqlServerConnectorConfig connectionInfo)
+        public List<string> GetDatabases()
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
-                sqlConnection.ConnectionString = connectionInfo.ToConnectionString();
+                sqlConnection.ConnectionString = this.Config.ToConnectionString();
                 sqlConnection.Open();
                 var databasesNames = sqlConnection.GetSchema("Databases").Select().Select(s => s[0].ToString()).ToList();
                 return databasesNames;

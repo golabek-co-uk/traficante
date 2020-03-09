@@ -17,14 +17,14 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        private MySqlConnectionInfo _input;
-        public MySqlConnectionInfo Input
+        private MySqlConnectionModel _input;
+        public MySqlConnectionModel Input
         {
             get => _input;
             set => this.RaiseAndSetIfChanged(ref _input, value);
         }
 
-        public MySqlConnectionInfo Output { get; set; }
+        public MySqlConnectionModel Output { get; set; }
 
         private string _connectError;
         public string ConnectError
@@ -42,9 +42,9 @@ namespace Traficante.Studio.ViewModels
 
         public AppData AppData { get; set; }
 
-        public ConnectToMySqlWindowViewModel(MySqlConnectionInfo input, AppData appData)
+        public ConnectToMySqlWindowViewModel(MySqlConnectionModel input, AppData appData)
         {
-            Input = input ?? new MySqlConnectionInfo();
+            Input = input ?? new MySqlConnectionModel();
             AppData = appData;
 
             ConnectCommand = ReactiveCommand
@@ -79,7 +79,7 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new MySqlService().TryConnectAsync(Input, ct);
+                await new Traficante.Connect.Connectors.MySqlConnector(Input.ToConectorConfig()).TryConnectAsync(ct);
                 Output = Input;
                 AppData.Objects.Add(new MySqlObjectModel(Output));
                 await CloseInteraction.Handle(Unit.Default);
