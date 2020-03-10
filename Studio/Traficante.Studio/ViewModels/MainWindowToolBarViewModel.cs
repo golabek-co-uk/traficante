@@ -9,15 +9,14 @@ using Traficante.Studio.Models;
 
 namespace Traficante.Studio.ViewModels
 {
-    public class MainWindowToolBarViewModel : ViewModelBase
+    public class ToolBarViewModel : Tool
     {
-        public object Context { get; set; }
+        public AppData AppData { get; set; }
         public ReactiveCommand<Unit, Unit> ConnectToSqlServerCommand { get; }
         public ReactiveCommand<Unit, Unit> ConnectToMySqlCommand { get; }
         public ReactiveCommand<Unit, Unit> NewQueryCommand { get; }
-        public AppData AppData => ((AppData)this.Context);
 
-        public MainWindowToolBarViewModel()
+        public ToolBarViewModel()
         {
             ConnectToSqlServerCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToSqlServer);
             ConnectToMySqlCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToMySql);

@@ -1,10 +1,13 @@
 ﻿using Dock.Model.Controls;
+using Traficante.Studio.Models;
 
 namespace Traficante.Studio.ViewModels
 {
-    public class MainWindowMenuViewModel: Tool
+    public class MenuViewModel: Tool
     {
-        public MainWindowMenuViewModel()
+        public AppData AppData { get; set; }
+
+        public MenuViewModel()
         {
 
         }

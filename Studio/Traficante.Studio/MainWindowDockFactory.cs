@@ -164,21 +164,12 @@ namespace Traficante.Studio
                 )
             };
 
-            var bodyView = new MainWindowBodyViewModel
-            {
-                Id = "Main",
-                Title = "Main",
-                ActiveDockable = bodyLayout,
-                VisibleDockables = CreateList<IDockable>(bodyLayout)
-            };
-
             var root = CreateRootDock();
-
             root.Id = "Root";
             root.Title = "Root";
-            root.ActiveDockable = bodyView;
-            root.DefaultDockable = bodyView;
-            root.VisibleDockables = CreateList<IDockable>(bodyView);
+            root.ActiveDockable = bodyLayout;
+            root.DefaultDockable = bodyLayout;
+            root.VisibleDockables = CreateList<IDockable>(bodyLayout);
             root.Top = CreatePinDock();
             root.Top.Alignment = Alignment.Top;
             root.Bottom = CreatePinDock();
@@ -214,6 +205,11 @@ namespace Traficante.Studio
                 ["DocumentsPane"] = () => _context,
                 ["BodyLayout"] = () => _context,
                 ["Main"] = () => _context,
+                ["MainWindowMenu"] = () => _context,
+                ["MainWindowMenuViewModel"] = () => _context,
+                ["MainWindowMenuView"] = () => _context,
+                ["MainWindowToolBar"] = () => _context,
+                
             };
 
             this.HostWindowLocator = new Dictionary<string, Func<IHostWindow>>
