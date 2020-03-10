@@ -674,9 +674,19 @@ namespace Traficante.TSQL.Parser
                             Consume(TokenType.Dot);
                             if (Current.TokenType == TokenType.Property)
                             {
-                                var par3 = ConsumeAndGetToken(TokenType.Property).Value;
-                                alias = ComposeAlias();
-                                fromNode = new FromTableNode(new TableNode(par3, new string[2] { part1, part2 }), alias);
+                                var part3 = ConsumeAndGetToken(TokenType.Property).Value;
+                                if (Current.TokenType == TokenType.Dot)
+                                {
+                                    Consume(TokenType.Dot);
+                                    var part4 = ConsumeAndGetToken(TokenType.Property).Value;
+                                    alias = ComposeAlias();
+                                    fromNode = new FromTableNode(new TableNode(part4, new string[3] { part1, part2, part3 }), alias);
+                                }
+                                else
+                                {
+                                    alias = ComposeAlias();
+                                    fromNode = new FromTableNode(new TableNode(part3, new string[2] { part1, part2 }), alias);
+                                }
                             }
                             else if (Current.TokenType == TokenType.Function)
                             {

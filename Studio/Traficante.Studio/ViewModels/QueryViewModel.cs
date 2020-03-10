@@ -16,6 +16,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Traficante.Connect;
+using Traficante.Connect.Connectors;
 using Traficante.Studio.Models;
 using Traficante.Studio.Services;
 using Traficante.TSQL.Evaluator.Visitors;
@@ -132,8 +134,8 @@ namespace Traficante.Studio.ViewModels
 
         private Unit Run(Unit arg)
         {
-            if (SelectedObject == null)
-                return Unit.Default;
+            //if (SelectedObject == null)
+            //    return Unit.Default;
 
             //ResultsMessage = string.Empty;
             //ResultsError = string.Empty;
@@ -143,7 +145,6 @@ namespace Traficante.Studio.ViewModels
 
             try
             {
-                IEnumerable<object> results = null;
                 Action<Type> returnTypeCreated = itemType =>
                 {
                     itemType
@@ -157,103 +158,50 @@ namespace Traficante.Studio.ViewModels
                         })
                         .Subscribe(this.ResultsDataColumns.Add);
                 };
-                //if (SelectedObject is SqlServerObjectModel)
-                //{
-                //    SqlServerObjectModel sqlServer = (SqlServerObjectModel)SelectedObject;
-                //    results = new SqlServerService().Run(
-                //        sqlServer.ConnectionInfo,
-                //        Text,
-                //        returnTypeCreated: returnTypeCreated);
-                //}
 
-                //if (SelectedObject is MySqlObjectModel)
-                //{
-                //    MySqlObjectModel mySql = (MySqlObjectModel)SelectedObject;
-                //    results = new MySqlService().Run(
-                //        mySql.ConnectionInfo, 
-                //        Text,
-                //        returnTypeCreated: returnTypeCreated);
-                //}
-                if (results != null)
+                ConnectEngine connectEngine = new ConnectEngine();
+                connectEngine.AddConector(new CsvConnectorConfig { Alias = "csv" });
+                foreach (var obj in this.Objects)
                 {
-                    Type itemType = null;
-                    Type itemWrapperType = null;
-                    FieldInfo itemWrapperInnerField = null;
-
-                    ReadOnlyObservableCollection<object> data;
-                    var sourceList = new SourceList<object>();
-                    sourceList
-                        .Connect()
-                        .Transform(item =>
-                        {
-                            if (itemType == null)
-                            {
-                                itemType = item.GetType();
-                                itemWrapperType = new ExpressionHelper().CreateWrapperTypeFor(itemType);
-                                itemWrapperInnerField = itemWrapperType.GetFields().FirstOrDefault(x => x.Name == "_inner");
-                            }
-                            var itemWrapper = Activator.CreateInstance(itemWrapperType);
-                            itemWrapperInnerField.SetValue(itemWrapper, item);
-                            return itemWrapper;
-                        })
-                        .ObserveOn(RxApp.MainThreadScheduler)
-                        .Bind(out data)
-                        .DisposeMany()
-                        .Subscribe(x =>
-                        {
-                            this.ResultsData = data;
-                        });
-
-                    results
-                        .ToObservable()
-                        .Buffer(TimeSpan.FromSeconds(2))
-                        .Subscribe(x =>
-                        {
-                            sourceList.AddRange(x);
-                        });
+                    if (obj is SqlServerObjectModel)
+                        connectEngine.AddConector(((SqlServerObjectModel)obj).ConnectionInfo.ToConectorConfig());
+                    if (obj is MySqlObjectModel)
+                        connectEngine.AddConector(((MySqlObjectModel)obj).ConnectionInfo.ToConectorConfig());
                 }
-            
 
-                //if (SelectedObject is MySqlObjectModel)
-                //{
-                //    MySqlObjectModel mySql = (MySqlObjectModel)SelectedObject;
+                var items = connectEngine.RunAndReturnEnumerable(Text);
+                var itemsType = items.GetType().GenericTypeArguments.FirstOrDefault();
+                returnTypeCreated(itemsType);
 
-                //    var results = new MySqlService().Run(mySql.ConnectionInfo, Text,
-                //        itemType =>
-                //        {
-                //            itemType
-                //                .GetFields()
-                //                .ToObservable()
-                //                .Select(x => new DataGridTextColumn
-                //                {
-                //                    Header = x.Name,
-                //                    Binding = new Binding(x.Name)
-                //                })
-                //                .ObserveOn(RxApp.MainThreadScheduler)
-                //                .Subscribe(this.ResultsDataColumns.Add);
-                //        });
+                Type itemWrapperType = new ExpressionHelper().CreateWrapperTypeFor(itemsType); ;
+                FieldInfo itemWrapperInnerField = itemWrapperType.GetFields().FirstOrDefault(x => x.Name == "_inner"); ;
 
-                //    Type itemType = null;
-                //    Type itemWrapperType = null;
-                //    results
-                //        .ToObservable()
-                //        .Select(item =>
-                //        {
-                //            if (itemType == null)
-                //            {
-                //                itemType = item.GetType();
-                //                itemWrapperType = new ExpressionHelper().CreateWrapperTypeFor(itemType);
-                //            }
-                //            var itemWrapper = Activator.CreateInstance(itemWrapperType);
-                //            itemWrapperType
-                //                .GetFields()
-                //                .FirstOrDefault(x => x.Name == "_inner")
-                //                .SetValue(itemWrapper, item);
-                //            return itemWrapper;
-                //        })
-                //        .ObserveOn(RxApp.MainThreadScheduler)
-                //        .Subscribe(this.ResultsData.Add);
-                //}
+                ReadOnlyObservableCollection<object> data;
+                var sourceList = new SourceList<object>();
+                sourceList
+                    .Connect()
+                    .Transform(item =>
+                    {
+                        var itemWrapper = Activator.CreateInstance(itemWrapperType);
+                        itemWrapperInnerField.SetValue(itemWrapper, item);
+                        return itemWrapper;
+                    })
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Bind(out data)
+                    .DisposeMany()
+                    .Subscribe(x =>
+                    {
+                        this.ResultsData = data;
+                    });
+
+                ((IEnumerable<object>)items)
+                    .ToObservable()
+                    .Buffer(TimeSpan.FromSeconds(2))
+                    .Subscribe(x =>
+                    {
+                        sourceList.AddRange(x);
+                    });
+
             }
             catch (Exception ex)
             {

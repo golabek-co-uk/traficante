@@ -22,7 +22,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             TSQLEngine sut = new TSQLEngine();
             sut.AddFunction<string, bool>("SERVERPROPERTY", x => true);
 
-            var result = sut.Run("SELECT CAST(SERVERPROPERTY(N'IsHadrEnabled') AS bit) AS [IsHadrEnabled]");
+            var result = sut.RunAndReturnTable("SELECT CAST(SERVERPROPERTY(N'IsHadrEnabled') AS bit) AS [IsHadrEnabled]");
             Assert.IsNotNull(result);
             Assert.AreEqual("IsHadrEnabled", result.Columns.First().ColumnName);
             Assert.AreEqual(true, result[0][0]);
@@ -34,7 +34,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             TSQLEngine sut = new TSQLEngine();
             sut.SetVariable("@alwayson", (int?)null);
 
-            var result = sut.Run("SELECT ISNULL(@alwayson, -1) AS [AlwaysOn]");
+            var result = sut.RunAndReturnTable("SELECT ISNULL(@alwayson, -1) AS [AlwaysOn]");
             Assert.IsNotNull(result);
             Assert.AreEqual("AlwaysOn", result.Columns.First().ColumnName);
             Assert.AreEqual(-1, result[0][0]);
@@ -46,7 +46,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             TSQLEngine sut = new TSQLEngine();
             sut.AddFunction<bool>("fn_syspolicy_is_automation_enabled", new string[2] { "msdb", "dbo" }, () => true);
 
-            var result = sut.Run("SELECT msdb.dbo.fn_syspolicy_is_automation_enabled()");
+            var result = sut.RunAndReturnTable("SELECT msdb.dbo.fn_syspolicy_is_automation_enabled()");
             Assert.IsNotNull(result);
             Assert.AreEqual("msdb.dbo.fn_syspolicy_is_automation_enabled()", result.Columns.First().ColumnName);
             Assert.AreEqual(true, result[0][0]);
@@ -61,7 +61,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             sut.SetVariable("@@SERVICENAME", "Traficante");
             sut.AddFunction<string, string, int>("xp_qv", new string[2] { "master", "dbo" }, (x, y) => 5);
 
-            var result = sut.Run("EXECUTE @alwayson = master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
+            var result = sut.RunAndReturnTable("EXECUTE @alwayson = master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
             var alwayson = sut.GetVariable("@alwayson");
             Assert.IsNotNull(alwayson);
             Assert.AreEqual(5, alwayson.Value);
@@ -80,7 +80,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 return default(int);
             });
 
-            sut.Run("EXECUTE master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
+            sut.RunAndReturnTable("EXECUTE master.dbo.xp_qv N'3641190370', @@SERVICENAME;");
             Assert.IsTrue(Execute_FunctionWithArguments_Flag);
         }
 
@@ -97,7 +97,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                     }.AsEnumerable();
             });
 
-            var table = sut.Run("select * from get_entities()");
+            var table = sut.RunAndReturnTable("select * from get_entities()");
 
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("may", table[0][0]);
@@ -117,7 +117,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                     }.AsEnumerable();
             });
 
-            var table = sut.Run("select Name from get_entities()");
+            var table = sut.RunAndReturnTable("select Name from get_entities()");
 
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("may", table[0][0]);
@@ -137,7 +137,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                     }.AsEnumerable();
             });
 
-            var table = sut.Run("select * from get_entities(3, 'june')");
+            var table = sut.RunAndReturnTable("select * from get_entities(3, 'june')");
 
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("3", table[0][0]);
@@ -157,7 +157,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                     return new CsvDataReader(csvReader);
                 });
 
-                var table = sut.Run("select * from get_entities(3, 'june')");
+                var table = sut.RunAndReturnTable("select * from get_entities(3, 'june')");
 
                 Assert.AreEqual(2, table.Count);
                 Assert.AreEqual("1", table[0][0]);

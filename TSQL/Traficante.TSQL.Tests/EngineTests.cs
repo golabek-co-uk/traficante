@@ -22,7 +22,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT * FROM Persons WHERE FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM Persons WHERE FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual(1, resunt[0][0]);
             Assert.AreEqual("John", resunt[0][1]);
@@ -42,7 +42,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT * FROM Persons p WHERE FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM Persons p WHERE FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual(1, resunt[0][0]);
             Assert.AreEqual("John", resunt[0][1]);
@@ -62,7 +62,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT LastName FROM Persons p WHERE FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT LastName FROM Persons p WHERE FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual("Smith", resunt[0][0]);
             Assert.AreEqual("Doe", resunt[1][0]);
@@ -78,7 +78,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT p.LastName FROM Persons p WHERE p.FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT p.LastName FROM Persons p WHERE p.FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual("Smith", resunt[0][0]);
             Assert.AreEqual("Doe", resunt[1][0]);
@@ -94,7 +94,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT Persons.LastName FROM Persons WHERE Persons.FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT Persons.LastName FROM Persons WHERE Persons.FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual("Smith", resunt[0][0]);
             Assert.AreEqual("Doe", resunt[1][0]);
@@ -110,7 +110,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT * FROM Persons WHERE FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM Persons WHERE FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual(1, resunt[0][0]);
             Assert.AreEqual("John", resunt[0][1]);
@@ -130,7 +130,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT * FROM Persons WHERE FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM Persons WHERE FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual(1, resunt[0][0]);
             Assert.AreEqual("John", resunt[0][1]);
@@ -150,7 +150,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT * FROM xxx.Persons WHERE FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM xxx.Persons WHERE FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual(1, resunt[0][0]);
             Assert.AreEqual("John", resunt[0][1]);
@@ -170,7 +170,27 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT * FROM yyy.xxx.Persons WHERE FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM yyy.xxx.Persons WHERE FirstName = 'John'");
+            Assert.AreEqual(2, resunt.Count);
+            Assert.AreEqual(1, resunt[0][0]);
+            Assert.AreEqual("John", resunt[0][1]);
+            Assert.AreEqual("Smith", resunt[0][2]);
+            Assert.AreEqual(2, resunt[1][0]);
+            Assert.AreEqual("John", resunt[1][1]);
+            Assert.AreEqual("Doe", resunt[1][2]);
+        }
+
+        [TestMethod]
+        public void SelectFrom_CustomServer_CustomtDatabase_CustomSchema_Table()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            sut.AddTable("Persons", new string[3] { "zzz","yyy", "xxx" }, new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" },
+                new Person { Id = 2, FirstName = "John", LastName = "Doe" },
+                new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
+            });
+
+            var resunt = sut.RunAndReturnTable("SELECT * FROM zzz.yyy.xxx.Persons WHERE FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual(1, resunt[0][0]);
             Assert.AreEqual("John", resunt[0][1]);
@@ -190,7 +210,7 @@ namespace Traficante.TSQL.Tests
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT * FROM dbo.Persons WHERE FirstName = 'John'");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM dbo.Persons WHERE FirstName = 'John'");
             Assert.AreEqual(2, resunt.Count);
             Assert.AreEqual(1, resunt[0][0]);
             Assert.AreEqual("John", resunt[0][1]);
@@ -212,7 +232,7 @@ namespace Traficante.TSQL.Tests
                      return new CsvDataReader(csvReader);
                  });
 
-                var table = sut.Run("SELECT * FROM Persons");
+                var table = sut.RunAndReturnTable("SELECT * FROM Persons");
                 Assert.AreEqual(2, table.Count);
                 Assert.AreEqual("1", table[0][0]);
                 Assert.AreEqual("one", table[0][1]);
@@ -241,7 +261,7 @@ namespace Traficante.TSQL.Tests
                     return null;
                 });
 
-                var table = sut.Run("SELECT * FROM Persons");
+                var table = sut.RunAndReturnTable("SELECT * FROM Persons");
                 Assert.AreEqual(2, table.Count);
                 Assert.AreEqual("1", table[0][0]);
                 Assert.AreEqual("one", table[0][1]);

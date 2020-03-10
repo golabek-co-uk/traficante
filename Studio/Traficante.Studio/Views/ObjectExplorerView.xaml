@@ -7,13 +7,28 @@
              xmlns:models="clr-namespace:Traficante.Studio.Models">
   <DockPanel>
     <TreeView Name="Objects">
+
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate ItemsSource="{Binding Items}">
+          <TextBlock Text="{Binding Name}"/>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+
+      
       <TreeView.DataTemplates>
+        
         <TreeDataTemplate DataType="models:LoadItemsObjectModel" ItemsSource="{Binding Items}">
           <TextBlock Text="{Binding Name}" />
         </TreeDataTemplate>
-        
+
         <TreeDataTemplate DataType="models:SqlServerObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
+          <TextBlock Text="{Binding Name}">
+            <TextBlock.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="Disconnect"/>
+              </ContextMenu>
+            </TextBlock.ContextMenu>
+          </TextBlock>
         </TreeDataTemplate>
         <TreeDataTemplate DataType="models:SqlServerDatabaseObjectModel" ItemsSource="{Binding Items}">
           <TextBlock Text="{Binding Name}" />

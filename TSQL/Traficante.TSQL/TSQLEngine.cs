@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Traficante.TSQL.Converter;
+using Traficante.TSQL.Evaluator.Visitors;
 using Traficante.TSQL.Lib;
 using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Managers;
@@ -26,9 +27,14 @@ namespace Traficante.TSQL
             SourceDataManager.RegisterLibraries(new Library());
         }
 
-        public DataTable Run(string script)
+        public DataTable RunAndReturnTable(string script)
         {
             return new Runner().RunAndReturnTable(script, this);
+        }
+
+        public IEnumerable RunAndReturnEnumerable(string script)
+        {
+            return new Runner().Run(script, this) as IEnumerable;
         }
 
         public void AddTable<T>(string name, IEnumerable<T> items)

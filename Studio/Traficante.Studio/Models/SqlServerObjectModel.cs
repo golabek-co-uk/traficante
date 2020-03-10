@@ -15,7 +15,10 @@ namespace Traficante.Studio.Models
     {
         [DataMember]
         public SqlServerConnectionModel ConnectionInfo { get; set; }
-        public override string Name { get => this.ConnectionInfo.Server; set { } }
+        public override string Name {
+            get { return this.ConnectionInfo.Alias; }
+            set { } 
+        }
 
         public SqlServerObjectModel()
         {
@@ -169,6 +172,9 @@ namespace Traficante.Studio.Models
     public class SqlServerConnectionModel : ReactiveObject
     {
         [DataMember]
+        public string Alias { get; set; }
+
+        [DataMember]
         public string Server { get; set; }
         [DataMember]
         public string UserId { get; set; }
@@ -187,6 +193,7 @@ namespace Traficante.Studio.Models
         {
             return new SqlServerConnectorConfig()
             {
+                Alias = this.Alias,
                 Server = this.Server,
                 Authentication = (Traficante.Connect.Connectors.SqlServerAuthentication)this.Authentication,
                 UserId = this.UserId,

@@ -14,7 +14,7 @@ namespace Traficante.Studio.Models
     {
         [DataMember]
         public MySqlConnectionModel ConnectionInfo { get; set; }
-        public override string Name { get => this.ConnectionInfo.Server; set { } }
+        public override string Name { get => this.ConnectionInfo.Alias; set { } }
 
         public MySqlObjectModel()
         {
@@ -160,6 +160,9 @@ namespace Traficante.Studio.Models
     public class MySqlConnectionModel : ReactiveObject
     {
         [DataMember]
+        public string Alias { get; set; }
+
+        [DataMember]
         public string Server { get; set; }
         [DataMember]
         public string UserId { get; set; }
@@ -170,6 +173,7 @@ namespace Traficante.Studio.Models
         {
             return new MySqlConnectorConfig()
             {
+                Alias = this.Alias,
                 Server = this.Server,
                 UserId = this.UserId,
                 Password = this.Password

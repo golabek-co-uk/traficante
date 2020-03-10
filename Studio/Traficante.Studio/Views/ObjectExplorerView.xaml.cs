@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using Traficante.Studio.ViewModels;

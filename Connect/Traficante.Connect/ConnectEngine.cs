@@ -4,6 +4,7 @@ using System.Data;
 using Traficante.TSQL;
 using Traficante.Connect.Connectors;
 using System.Linq;
+using System.Collections;
 
 namespace Traficante.Connect
 {
@@ -23,7 +24,7 @@ namespace Traficante.Connect
                 Connectors.Add(new SqliteConnector(sqliteConfig));
         }
 
-        public TSQL.DataTable Run(string sql)
+        public TSQL.DataTable RunAndReturnTable(string sql)
         {
             using (TSQLEngine sqlEngine = new TSQLEngine())
             {
@@ -47,7 +48,35 @@ namespace Traficante.Connect
                     return @delegate;
                 });
 
-                return sqlEngine.Run(sql);
+                return sqlEngine.RunAndReturnTable(sql);
+            }
+        }
+
+        public IEnumerable RunAndReturnEnumerable(string sql)
+        {
+            using (TSQLEngine sqlEngine = new TSQLEngine())
+            {
+                sqlEngine.AddTableResolver((name, path) =>
+                {
+                    var alias = path.FirstOrDefault();
+                    var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
+                    if (connector == null)
+                        throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
+                    Delegate @delegate = connector.GetTable(name, path);
+                    return @delegate;
+                });
+
+                sqlEngine.AddMethodResolver((name, path, arguments) =>
+                {
+                    var alias = path.FirstOrDefault();
+                    var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
+                    if (connector == null)
+                        throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
+                    Delegate @delegate = connector.GetMethod(name, path, arguments);
+                    return @delegate;
+                });
+
+                return sqlEngine.RunAndReturnEnumerable(sql);
             }
         }
     }

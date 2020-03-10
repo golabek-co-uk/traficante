@@ -1279,7 +1279,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             });
 
 
-            var resunt = sut.Run("SELECT * FROM Persons WHERE FirstName = 'John'; SELECT * FROM Persons2 WHERE FirstName = 'Daniel'");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM Persons WHERE FirstName = 'John'; SELECT * FROM Persons2 WHERE FirstName = 'Daniel'");
             Assert.AreEqual(1, resunt.Count);
             Assert.AreEqual(5, resunt[0][0]);
             Assert.AreEqual("Daniel", resunt[0][1]);
@@ -1296,7 +1296,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
             });
 
-            var resunt = sut.Run("SELECT * FROM Persons WHERE FirstName = 'John'; SELECT GetDate()");
+            var resunt = sut.RunAndReturnTable("SELECT * FROM Persons WHERE FirstName = 'John'; SELECT GetDate()");
             Assert.AreEqual(1, resunt.Count);
             Assert.IsTrue(resunt[0][0] is DateTimeOffset);
         }

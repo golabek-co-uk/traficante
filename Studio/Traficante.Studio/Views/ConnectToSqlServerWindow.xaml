@@ -19,24 +19,27 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <TextBlock>Server name</TextBlock>
-    <TextBox Name="ServerName" Grid.Column="1" Margin="10,0,0,10" />
-    <TextBlock Grid.Row="1">Authentication </TextBlock>
-    <DropDown Name="Authentication"  Grid.Row="1" Grid.Column="1" Margin="10,0,0,10">
+    <TextBlock Grid.Row="0">Alias</TextBlock>
+    <TextBox Grid.Row="0" Name="Alias" Grid.Column="1" Margin="10,0,0,20" />
+    <TextBlock Grid.Row="1">Server name</TextBlock>
+    <TextBox Name="ServerName"  Grid.Row="1" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="2">Authentication </TextBlock>
+    <DropDown Name="Authentication"  Grid.Row="2" Grid.Column="1" Margin="10,0,0,10">
       <DropDownItem Name="Windows">Window Authentication</DropDownItem>
       <DropDownItem Name="SqlServer">SqlServer Authentication</DropDownItem>
     </DropDown>
-    <TextBlock Grid.Row="2">User name</TextBlock>
-    <TextBox Name="UserId" Grid.Row="2" Grid.Column="1" Margin="10,0,0,10" />
-    <TextBlock Grid.Row="3">Password</TextBlock>
-    <TextBox Name="Password" Grid.Row="3" Grid.Column="1" Margin="10,0,0,10" />
-    <TextBlock Grid.Row="4"></TextBlock>
-    <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,10">
+    <TextBlock Grid.Row="3">User name</TextBlock>
+    <TextBox Name="UserId" Grid.Row="3" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="4">Password</TextBlock>
+    <TextBox Name="Password" Grid.Row="4" Grid.Column="1" Margin="10,0,0,10" />
+    <TextBlock Grid.Row="5"></TextBlock>
+    <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,10">
       <Button Name="Connect">Connect</Button>
       <Button Name="Cancel" Margin="10,0,0,0">Cancel</Button>
     </StackPanel>
-    <TextBlock Grid.Row="5"></TextBlock>
-    <TextBlock Text="{Binding ConnectError}" Grid.Row="5" Grid.Column="1"></TextBlock>
+    <TextBlock Grid.Row="6"></TextBlock>
+    <TextBlock Text="{Binding ConnectError}" Grid.Row="6" Grid.Column="1"></TextBlock>
   </Grid>
 </Window>

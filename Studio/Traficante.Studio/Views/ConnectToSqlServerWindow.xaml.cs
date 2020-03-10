@@ -17,6 +17,7 @@ namespace Traficante.Studio.Views
         public Window Window => this.FindControl<Window>("Window");
         public Button Connect => this.FindControl<Button>("Connect");
         public Button Cancel => this.FindControl<Button>("Cancel");
+        public TextBox Alias => this.FindControl<TextBox>("Alias");
         public TextBox ServerName => this.FindControl<TextBox>("ServerName");
         public ComboBox Authentication => this.FindControl<ComboBox>("Authentication");
         public TextBox UserId => this.FindControl<TextBox>("UserId");
@@ -47,6 +48,9 @@ namespace Traficante.Studio.Views
                     }
                     catch { }
                 });
+
+                this.Bind(ViewModel, x => x.Input.Alias, x => x.Alias.Text)
+                    .DisposeWith(disposables);
 
                 this.Bind(ViewModel, x => x.Input.Server, x => x.ServerName.Text)
                     .DisposeWith(disposables);

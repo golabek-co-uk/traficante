@@ -20,6 +20,34 @@ namespace Traficante.Connect.Connectors
             base.Config = config;
         }
 
+        public override Delegate GetTable(string name, string[] path)
+        {
+            Func<IDataReader> @delegate = () =>
+            {
+                SqlConnection sqlConnection = null;
+                try
+                {
+                    string sqlPath = "";
+                    if (path.Length > 1)
+                        sqlPath = string.Join(".", path.Skip(1).Select(x => $"[{x}]")) + ".";
+                    string sqlName = $"[{name}]";
+
+                    sqlConnection = new SqlConnection(this.Config.ToConnectionString());
+                    SqlCommand sqliteCommand = new SqlCommand();
+                    sqliteCommand.Connection = sqlConnection;
+                    sqliteCommand.CommandText = $"SELECT * FROM {sqlPath}{sqlName}";
+                    sqlConnection.Open();
+                    return sqliteCommand.ExecuteReader(CommandBehavior.CloseConnection);
+                }
+                catch
+                {
+                    sqlConnection?.Dispose();
+                    throw;
+                }
+            };
+            return @delegate;
+        }
+
         public async Task TryConnectAsync(CancellationToken ct)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
