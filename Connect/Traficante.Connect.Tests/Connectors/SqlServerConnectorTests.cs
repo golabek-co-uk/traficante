@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Traficante.Studio.Tests
+namespace TTraficante.Connect.Tests.Connectors
 {
     [TestClass]
     public class SqlServerConnectorTests

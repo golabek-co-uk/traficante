@@ -12,6 +12,8 @@ namespace Traficante.Studio
     {
         public static readonly Interaction<SqlServerConnectionModel, SqlServerConnectionModel> ConnectToSqlServer = new Interaction<SqlServerConnectionModel, SqlServerConnectionModel>();
         public static readonly Interaction<MySqlConnectionModel, MySqlConnectionModel> ConnectToMySql = new Interaction<MySqlConnectionModel, MySqlConnectionModel>();
+        public static readonly Interaction<SqliteConnectionModel, SqliteConnectionModel> ConnectToSqlite = new Interaction<SqliteConnectionModel, SqliteConnectionModel>();
+        
         public static readonly Interaction<Unit, Unit> NewQuery = new Interaction<Unit, Unit>();
         public static readonly Interaction<Exception, Unit> Exceptions = new Interaction<Exception, Unit>();
 

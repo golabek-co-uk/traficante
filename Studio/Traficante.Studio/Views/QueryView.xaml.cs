@@ -12,7 +12,6 @@ namespace Traficante.Studio.Views
     {
         public Grid Grid => this.FindControl<Grid>("Grid");
         public Button Run => this.FindControl<Button>("Run");
-        public DropDown Objects => this.FindControl<DropDown>("Objects");
         public TextBox Text => this.FindControl<TextBox>("Text");
         public TabControl Results => this.FindControl<TabControl>("Results");
         public DataGrid ResultsData => this.FindControl<DataGrid>("ResultsData");
@@ -30,10 +29,6 @@ namespace Traficante.Studio.Views
         {
             this.WhenActivated(disposables =>
             {
-                this.OneWayBind(ViewModel, x => x.Objects, x => x.Objects.Items, x => (System.Collections.IEnumerable)x)
-                    .DisposeWith(disposables);
-                this.Bind(ViewModel, x => x.SelectedObject, x => x.Objects.SelectedItem)
-                    .DisposeWith(disposables);
                 this.Bind(ViewModel, x => x.Text, x => x.Text.Text)
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)

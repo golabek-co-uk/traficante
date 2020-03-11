@@ -35,6 +35,16 @@ namespace Traficante.Studio.ViewModels
                     interaction.SetOutput(dataContext.Output);
                 });
 
+            Interactions.ConnectToSqlite.RegisterHandler(
+                async interaction =>
+                {
+                    var dataContext = new ConnectToSqliteWindowViewModel(interaction.Input, _appData);
+                    var dialog = new ConnectToSqliteWindow() { DataContext = dataContext };
+                    await dialog.ShowDialog(Window);
+                    Window.Focus();
+                    interaction.SetOutput(dataContext.Output);
+                });
+
             Interactions.Exceptions.RegisterHandler(
                 async interaction =>
                 {

@@ -30,13 +30,6 @@ namespace Traficante.Studio.ViewModels
         public ObservableCollection<ObjectModel> Objects { get; set; }
         public QueryModel Query { get; set; }
 
-        private ObjectModel _selectedObject;
-        public ObjectModel SelectedObject
-        {
-            get => _selectedObject;
-            set => this.RaiseAndSetIfChanged(ref _selectedObject, value);
-        }
-
         private string _text;
         public string Text
         {
@@ -94,22 +87,7 @@ namespace Traficante.Studio.ViewModels
                 return Unit.Default;
             });
 
-            InitSelectedObject();
             InitAutoSave();
-        }
-
-        public void InitSelectedObject()
-        {
-            this.SelectedObject = AppData
-                .Objects
-                .FirstOrDefault(x => x.Name == Query.SelectedObjectName);
-
-            this.WhenAnyValue(x => x.SelectedObject)
-                .Select(x => x?.Name)
-                .Subscribe(x =>
-                {
-                    Query.SelectedObjectName = x;
-                });
         }
 
         public void InitAutoSave()
@@ -134,31 +112,17 @@ namespace Traficante.Studio.ViewModels
 
         private Unit Run(Unit arg)
         {
-            //if (SelectedObject == null)
-            //    return Unit.Default;
-
-            //ResultsMessage = string.Empty;
-            //ResultsError = string.Empty;
-            //this.ResultsAreVisible = true;
-            //this.ResultsData.Clear();
-            //this.ResultsDataColumns.Clear();
+            RxApp.MainThreadScheduler.Schedule(() =>
+            {
+                ResultsMessage = string.Empty;
+                ResultsError = string.Empty;
+                this.ResultsAreVisible = true;
+                this.ResultsData = new ReadOnlyObservableCollection<object>(new ObservableCollection<object>());
+                this.ResultsDataColumns.Clear();
+            });
 
             try
             {
-                Action<Type> returnTypeCreated = itemType =>
-                {
-                    itemType
-                        .GetFields()
-                        .ToObservable()
-                        .ObserveOn(RxApp.MainThreadScheduler)
-                        .Select(x => new DataGridTextColumn
-                        {
-                            Header = x.Name,
-                            Binding = new Binding(x.Name)
-                        })
-                        .Subscribe(this.ResultsDataColumns.Add);
-                };
-
                 ConnectEngine connectEngine = new ConnectEngine();
                 connectEngine.AddConector(new CsvConnectorConfig { Alias = "csv" });
                 foreach (var obj in this.Objects)
@@ -167,11 +131,24 @@ namespace Traficante.Studio.ViewModels
                         connectEngine.AddConector(((SqlServerObjectModel)obj).ConnectionInfo.ToConectorConfig());
                     if (obj is MySqlObjectModel)
                         connectEngine.AddConector(((MySqlObjectModel)obj).ConnectionInfo.ToConectorConfig());
+                    if (obj is SqliteObjectModel)
+                        connectEngine.AddConector(((SqliteObjectModel)obj).ConnectionInfo.ToConectorConfig());
                 }
 
                 var items = connectEngine.RunAndReturnEnumerable(Text);
                 var itemsType = items.GetType().GenericTypeArguments.FirstOrDefault();
-                returnTypeCreated(itemsType);
+
+                itemsType
+                       .GetFields()
+                       .ToObservable()
+                       .ObserveOn(RxApp.MainThreadScheduler)
+                       .Select(x => new DataGridTextColumn
+                       {
+                           Header = x.Name,
+                           Binding = new Binding(x.Name)
+                       })
+                       .Subscribe(this.ResultsDataColumns.Add);
+
 
                 Type itemWrapperType = new ExpressionHelper().CreateWrapperTypeFor(itemsType); ;
                 FieldInfo itemWrapperInnerField = itemWrapperType.GetFields().FirstOrDefault(x => x.Name == "_inner"); ;
@@ -205,7 +182,11 @@ namespace Traficante.Studio.ViewModels
             }
             catch (Exception ex)
             {
-                ResultsError = ex.Message;
+                RxApp.MainThreadScheduler.Schedule(() =>
+                {
+                    ResultsError = ex.Message;
+                });
+                
                 return Unit.Default;
             }
 

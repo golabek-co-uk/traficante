@@ -9,13 +9,6 @@
     <DockPanel Grid.Row="0" Margin="2 2 2 2">
       <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*,Auto">
         <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Run</Button>
-        <DropDown Grid.Column="2" Name="Objects" MinWidth="100" Margin="2 0 2 0" Padding="0 0 0 0"  Height="20">
-          <DropDown.ItemTemplate>
-            <DataTemplate>
-                <TextBlock Text="{Binding Name}"/>
-            </DataTemplate>
-          </DropDown.ItemTemplate>
-        </DropDown>
       </Grid>
     </DockPanel>
     <TextBox Name="Text" Grid.Row="1" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>

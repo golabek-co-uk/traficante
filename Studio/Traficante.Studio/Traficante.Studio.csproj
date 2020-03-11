@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Remove="Views\ConnectToMySqlWindow.xaml" />
+    <AvaloniaResource Remove="Views\ConnectToSqliteWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToSqlServerWindow.xaml" />
     <AvaloniaResource Remove="Views\ExceptionWindow.xaml" />
     <AvaloniaResource Remove="Views\MenuView.xaml" />
@@ -23,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Views\ConnectToMySqlWindow.xaml" />
+    <None Remove="Views\ConnectToSqliteWindow.xaml" />
     <None Remove="Views\ConnectToSqlServerWindow.xaml" />
     <None Remove="Views\ExceptionWindow.xaml" />
     <None Remove="Views\MenuView.xaml" />
@@ -56,11 +58,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\ConnectToSqlServerWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Views\ConnectToMySqlWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
@@ -72,6 +69,16 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\MenuView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ConnectToSqlServerWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\ConnectToSqliteWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
   </ItemGroup>

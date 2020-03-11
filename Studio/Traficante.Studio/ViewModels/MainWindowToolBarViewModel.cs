@@ -14,12 +14,14 @@ namespace Traficante.Studio.ViewModels
         public AppData AppData { get; set; }
         public ReactiveCommand<Unit, Unit> ConnectToSqlServerCommand { get; }
         public ReactiveCommand<Unit, Unit> ConnectToMySqlCommand { get; }
+        public ReactiveCommand<Unit, Unit> ConnectToSqliteCommand { get; }
         public ReactiveCommand<Unit, Unit> NewQueryCommand { get; }
 
         public ToolBarViewModel()
         {
             ConnectToSqlServerCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToSqlServer);
             ConnectToMySqlCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToMySql);
+            ConnectToSqliteCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToSqlite);
             NewQueryCommand = ReactiveCommand.Create<Unit, Unit>(NewQuery);
         }
 
@@ -49,6 +51,16 @@ namespace Traficante.Studio.ViewModels
 
             return Unit.Default;
         }
+
+        private Unit ConnectToSqlite(Unit arg)
+        {
+            Interactions.ConnectToSqlite.Handle(null)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe();
+
+            return Unit.Default;
+        }
+        
 
 
     }

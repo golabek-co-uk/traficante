@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.Connect.Connectors;
 
-namespace Traficante.Studio.Tests.Services
+namespace Traficante.Connect.Tests.Connectors
 {
     [TestClass]
     public class CsvConnectorTests
