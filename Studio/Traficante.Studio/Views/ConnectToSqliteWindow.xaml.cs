@@ -42,10 +42,10 @@ namespace Traficante.Studio.Views
                     catch { }
                 });
 
-                this.Bind(ViewModel, x => x.Input.Alias, x => x.Alias.Text)
+                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)
                     .DisposeWith(disposables);
 
-                this.Bind(ViewModel, x => x.Input.Database, x => x.Database.Text)
+                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Database, x => x.Database.Text)
                     .DisposeWith(disposables);
                 this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.Database.IsEnabled)
                     .DisposeWith(disposables);

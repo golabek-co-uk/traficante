@@ -1,11 +1,14 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Generators;
+using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reactive.Disposables;
+using Traficante.Studio.Models;
 using Traficante.Studio.ViewModels;
 
 namespace Traficante.Studio.Views
@@ -27,6 +30,48 @@ namespace Traficante.Studio.Views
                     .DisposeWith(disposables);
             });
             AvaloniaXamlLoader.Load(this);
+            Objects.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
+        }
+
+        private void TreeViewItemMaterialized(object sender, ItemContainerEventArgs e)
+        {
+            var item = (TreeViewItem)e.Containers[0].ContainerControl;
+            if (item.DataContext is SqlServerObjectModel sqlServer)
+            {
+                item.ContextMenu = new ContextMenu();
+                MenuItem change = new MenuItem { Header = "Change" };
+                change.Click += (x, y) => ViewModel.ChangeObject(sqlServer);
+                MenuItem remove = new MenuItem { Header = "Remove" };
+                remove.Click += (x, y) => ViewModel.RemoveObject(sqlServer);
+                item.ContextMenu.Items = new List<MenuItem> { change, remove };
+            } else if (item.DataContext is MySqlObjectModel mySql)
+            {
+                item.ContextMenu = new ContextMenu();
+                MenuItem change = new MenuItem { Header = "Change" };
+                change.Click += (x, y) => ViewModel.ChangeObject(mySql);
+                MenuItem remove = new MenuItem { Header = "Remove" };
+                remove.Click += (x, y) => ViewModel.RemoveObject(mySql);
+                item.ContextMenu.Items = new List<MenuItem> { change, remove };
+            }
+            else if (item.DataContext is SqliteObjectModel sqlite)
+            {
+                item.ContextMenu = new ContextMenu();
+                MenuItem change = new MenuItem { Header = "Change" };
+                change.Click += (x, y) => ViewModel.ChangeObject(sqlite);
+                MenuItem remove = new MenuItem { Header = "Remove" };
+                remove.Click += (x, y) => ViewModel.RemoveObject(sqlite);
+                item.ContextMenu.Items = new List<MenuItem> { change, remove };
+            }
+            else
+            {
+                item.ContextMenu = new ContextMenu();
+                item.ContextMenu.IsVisible = false;
+            }
+        }
+
+        private void Remove_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

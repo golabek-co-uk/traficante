@@ -50,7 +50,7 @@ namespace Traficante.Studio.Services
             try
             {
                 var json = File.ReadAllText("AppData");
-                return new AppDataSerializer().Derialize(json);
+                return new AppDataSerializer().Derialize<AppData>(json);
             }
             catch { }
             return new AppData();
@@ -61,7 +61,7 @@ namespace Traficante.Studio.Services
 
     public class AppDataSerializer
     {
-        public string Serialize(AppData appData)
+        public string Serialize<T>(T appData)
         {
             return JsonConvert.SerializeObject(
                 appData,
@@ -70,9 +70,23 @@ namespace Traficante.Studio.Services
                 new TypeConverter<ObjectModel>());
         }
 
-        public AppData Derialize(string json)
+        public T Derialize<T>(string json)
         {
-            return JsonConvert.DeserializeObject<AppData>(
+            return JsonConvert.DeserializeObject<T>(
+                json,
+                new StringEnumConverter(),
+                new TypeConverter<ObjectModel>());
+        }
+
+        public T Clone<T>(T appData)
+        {
+            var json = JsonConvert.SerializeObject(
+                appData,
+                Formatting.Indented,
+                new StringEnumConverter(),
+                new TypeConverter<ObjectModel>());
+
+            return JsonConvert.DeserializeObject<T>(
                 json,
                 new StringEnumConverter(),
                 new TypeConverter<ObjectModel>());

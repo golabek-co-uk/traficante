@@ -1,4 +1,6 @@
-﻿using ReactiveUI;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

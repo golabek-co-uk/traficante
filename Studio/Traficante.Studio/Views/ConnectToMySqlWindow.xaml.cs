@@ -44,21 +44,21 @@ namespace Traficante.Studio.Views
                     catch { }
                 });
 
-                this.Bind(ViewModel, x => x.Input.Alias, x => x.Alias.Text)
+                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)
                     .DisposeWith(disposables);
 
-                this.Bind(ViewModel, x => x.Input.Server, x => x.ServerName.Text)
+                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Server, x => x.ServerName.Text)
                     .DisposeWith(disposables);
                 this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.ServerName.IsEnabled)
                     .DisposeWith(disposables);
 
 
-                this.Bind(ViewModel, x => x.Input.UserId, x => x.UserId.Text)
+                this.Bind(ViewModel, x => x.Input.ConnectionInfo.UserId, x => x.UserId.Text)
                     .DisposeWith(disposables);
                 this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.UserId.IsEnabled)
                     .DisposeWith(disposables);
 
-                this.Bind(ViewModel, x => x.Input.Password, x => x.Password.Text)
+                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Password, x => x.Password.Text)
                     .DisposeWith(disposables);
                 this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.Password.IsEnabled)
                     .DisposeWith(disposables);

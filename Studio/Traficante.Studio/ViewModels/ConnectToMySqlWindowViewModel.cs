@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Studio.Models;
+using Traficante.Studio.Services;
 
 namespace Traficante.Studio.ViewModels
 {
@@ -14,14 +15,21 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        private MySqlConnectionModel _input;
-        public MySqlConnectionModel Input
+        private MySqlObjectModel _input;
+        public MySqlObjectModel Input
         {
             get => _input;
             set => this.RaiseAndSetIfChanged(ref _input, value);
         }
 
-        public MySqlConnectionModel Output { get; set; }
+        private MySqlObjectModel _inputOrginal;
+        public MySqlObjectModel InputOrginal
+        {
+            get => _inputOrginal;
+            set => this.RaiseAndSetIfChanged(ref _inputOrginal, value);
+        }
+
+        public MySqlObjectModel Output { get; set; }
 
         private string _connectError;
         public string ConnectError
@@ -39,9 +47,10 @@ namespace Traficante.Studio.ViewModels
 
         public AppData AppData { get; set; }
 
-        public ConnectToMySqlWindowViewModel(MySqlConnectionModel input, AppData appData)
+        public ConnectToMySqlWindowViewModel(MySqlObjectModel input, AppData appData)
         {
-            Input = input ?? new MySqlConnectionModel();
+            InputOrginal = input;
+            Input = input != null ? new AppDataSerializer().Clone(input) : new MySqlObjectModel();
             AppData = appData;
 
             ConnectCommand = ReactiveCommand
@@ -76,9 +85,18 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new Traficante.Connect.Connectors.MySqlConnector(Input.ToConectorConfig()).TryConnectAsync(ct);
+                await new Traficante.Connect.Connectors.MySqlConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnectAsync(ct);
                 Output = Input;
-                AppData.Objects.Add(new MySqlObjectModel(Output));
+                if (InputOrginal != null)
+                {
+                    var index = AppData.Objects.IndexOf(InputOrginal);
+                    AppData.Objects.RemoveAt(index);
+                    AppData.Objects.Insert(index, Input);
+                }
+                else
+                {
+                    AppData.Objects.Add(Output);
+                }
                 await CloseInteraction.Handle(Unit.Default);
             }
             catch (Exception ex)

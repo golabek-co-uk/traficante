@@ -5,68 +5,15 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Traficante.Studio.Views.ObjectExplorerView"
              xmlns:models="clr-namespace:Traficante.Studio.Models">
+
+
   <DockPanel>
     <TreeView Name="Objects">
-
       <TreeView.ItemTemplate>
         <TreeDataTemplate ItemsSource="{Binding Items}">
           <TextBlock Text="{Binding Name}"/>
         </TreeDataTemplate>
-      </TreeView.ItemTemplate>
-
-      
-      <TreeView.DataTemplates>
-        
-        <TreeDataTemplate DataType="models:LoadItemsObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-
-        <TreeDataTemplate DataType="models:SqlServerObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}">
-            <TextBlock.ContextMenu>
-              <ContextMenu>
-                <MenuItem Header="Disconnect"/>
-              </ContextMenu>
-            </TextBlock.ContextMenu>
-          </TextBlock>
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:SqlServerDatabaseObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:SqlServerTablesObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:SqlServerTableObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:SqlServerViewsObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:SqlServerViewObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-
-        <TreeDataTemplate DataType="models:MySqlObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:MySqlDatabaseObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:MySqlTablesObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:MySqlTableObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:MySqlViewsObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-        <TreeDataTemplate DataType="models:MySqlViewObjectModel" ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
-        </TreeDataTemplate>
-
-      </TreeView.DataTemplates>
+      </TreeView.ItemTemplate>          
     </TreeView>
-
   </DockPanel>
 </UserControl>

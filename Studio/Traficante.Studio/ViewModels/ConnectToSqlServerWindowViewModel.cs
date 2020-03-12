@@ -1,11 +1,13 @@
 ﻿using ReactiveUI;
 using System;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Models;
+using Traficante.Studio.Services;
 
 namespace Traficante.Studio.ViewModels
 {
@@ -15,14 +17,21 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        private SqlServerConnectionModel _input;
-        public SqlServerConnectionModel Input
+        private SqlServerObjectModel _input;
+        public SqlServerObjectModel Input
         {
             get => _input;
             set => this.RaiseAndSetIfChanged(ref _input, value);
         }
 
-        public SqlServerConnectionModel Output { get; set; }
+        private SqlServerObjectModel _inputOrginal;
+        public SqlServerObjectModel InputOrginal
+        {
+            get => _inputOrginal;
+            set => this.RaiseAndSetIfChanged(ref _inputOrginal, value);
+        }
+
+        public SqlServerObjectModel Output { get; set; }
 
         private string _connectError;
         public string ConnectError
@@ -42,9 +51,10 @@ namespace Traficante.Studio.ViewModels
 
         public AppData AppData { get; set; }
 
-        public ConnectToSqlServerWindowViewModel(SqlServerConnectionModel input, AppData appData)
+        public ConnectToSqlServerWindowViewModel(SqlServerObjectModel input, AppData appData)
         {
-            Input = input ?? new SqlServerConnectionModel();
+            InputOrginal = input;
+            Input = input != null ? new AppDataSerializer().Clone(input) : new SqlServerObjectModel();
             AppData = appData;
 
             ConnectCommand = ReactiveCommand
@@ -73,7 +83,7 @@ namespace Traficante.Studio.ViewModels
 
             Observable.Merge(
                     ConnectCommand.IsExecuting.Select(x => x == false), 
-                    this.Input.WhenAnyValue(x => x.Authentication).Select(x => x == Models.SqlServerAuthentication.SqlServer))
+                    this.Input.WhenAnyValue(x => x.ConnectionInfo.Authentication).Select(x => x == Models.SqlServerAuthentication.SqlServer))
                 .ToProperty(this, x => x.CanChangeUserIdAndPassword, out _canChangeUserIdAndPassword);
         }
 
@@ -89,9 +99,18 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new SqlServerConnector(Input.ToConectorConfig()).TryConnectAsync(ct);
+                await new SqlServerConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnectAsync(ct);
                 Output = Input;
-                AppData.Objects.Add(new SqlServerObjectModel(Output));
+                if (InputOrginal != null)
+                {
+                    var index = AppData.Objects.IndexOf(InputOrginal);
+                    AppData.Objects.RemoveAt(index);
+                    AppData.Objects.Insert(index, Input);
+                }
+                else
+                {
+                    AppData.Objects.Add(Output);
+                }
                 await CloseInteraction.Handle(Unit.Default);
             } catch(Exception ex)
             {

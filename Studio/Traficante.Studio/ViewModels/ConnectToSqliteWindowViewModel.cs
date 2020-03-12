@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Models;
+using Traficante.Studio.Services;
 
 namespace Traficante.Studio.ViewModels
 {
@@ -15,14 +16,21 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        private SqliteConnectionModel _input;
-        public SqliteConnectionModel Input
+        private SqliteObjectModel _input;
+        public SqliteObjectModel Input
         {
             get => _input;
             set => this.RaiseAndSetIfChanged(ref _input, value);
         }
 
-        public SqliteConnectionModel Output { get; set; }
+        private SqliteObjectModel _inputOrginal;
+        public SqliteObjectModel InputOrginal
+        {
+            get => _inputOrginal;
+            set => this.RaiseAndSetIfChanged(ref _inputOrginal, value);
+        }
+
+        public SqliteObjectModel Output { get; set; }
 
         private string _connectError;
         public string ConnectError
@@ -39,9 +47,10 @@ namespace Traficante.Studio.ViewModels
 
         public AppData AppData { get; set; }
 
-        public ConnectToSqliteWindowViewModel(SqliteConnectionModel input, AppData appData)
+        public ConnectToSqliteWindowViewModel(SqliteObjectModel input, AppData appData)
         {
-            Input = input ?? new SqliteConnectionModel();
+            InputOrginal = input;
+            Input = input != null ? new AppDataSerializer().Clone(input) : new SqliteObjectModel();
             AppData = appData;
 
             ConnectCommand = ReactiveCommand
@@ -75,9 +84,18 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new SqliteConnector(Input.ToConectorConfig()).TryConnectAsync(ct);
+                await new SqliteConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnectAsync(ct);
                 Output = Input;
-                AppData.Objects.Add(new SqliteObjectModel(Output));
+                if (InputOrginal != null)
+                {
+                    var index = AppData.Objects.IndexOf(InputOrginal);
+                    AppData.Objects.RemoveAt(index);
+                    AppData.Objects.Insert(index, Input);
+                }
+                else
+                {
+                    AppData.Objects.Add(Output);
+                }
                 await CloseInteraction.Handle(Unit.Default);
             }
             catch (Exception ex)

@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
-        Width="400" Height="200"
+        Width="400" Height="250"
         x:Class="Traficante.Studio.Views.ConnectToMySqlWindow"
         x:Name="Window"
         Title="Connect To MySql">
@@ -32,7 +32,7 @@
     <TextBox Name="Password" Grid.Row="3" Grid.Column="1" Margin="10,0,0,10" />
     <TextBlock Grid.Row="4"></TextBlock>
     <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,10">
-      <Button Name="Connect">Connect</Button>
+      <Button Name="Connect" Width="50">OK</Button>
       <Button Name="Cancel" Margin="10,0,0,0">Cancel</Button>
     </StackPanel>
     <TextBlock Grid.Row="5"></TextBlock>
