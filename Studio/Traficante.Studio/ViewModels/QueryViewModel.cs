@@ -10,16 +10,12 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Models;
-using Traficante.Studio.Services;
 using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.Studio.ViewModels

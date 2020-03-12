@@ -1,14 +1,8 @@
-﻿using Avalonia.Controls;
-using ReactiveUI;
+﻿using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Traficante.Studio.Models;
-using Traficante.Studio.Services;
 
 namespace Traficante.Studio.ViewModels
 {
