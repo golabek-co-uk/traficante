@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.PlatformServices;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -42,7 +43,8 @@ namespace Traficante.Studio
         private static void AppMain(Application app, string[] args)
         {
             DataGrid dg = new DataGrid();
-            //RxApp.DefaultExceptionHandler = new MyCoolObservableExceptionHandler();
+            RxApp.DefaultExceptionHandler = new ExceptionHandler();
+            var a = PlatformEnlightenmentProvider.Current;
 
             var appData = new AppDataService().Load();
             var factory = new MainWindowDockFactory(appData);
@@ -67,18 +69,18 @@ namespace Traficante.Studio
         }
     }
 
-    public class MyCoolObservableExceptionHandler : IObserver<Exception>
+    public class ExceptionHandler : IObserver<Exception>
     {
         public void OnNext(Exception value)
         {
             if (Debugger.IsAttached) Debugger.Break();
-            RxApp.MainThreadScheduler.Schedule(() => { Interactions.Exceptions.Handle(value).Subscribe(); });
+            Interactions.Exceptions.Handle(value).Subscribe();
         }
 
         public void OnError(Exception value)
         {
             if (Debugger.IsAttached) Debugger.Break();
-            RxApp.MainThreadScheduler.Schedule(() => { Interactions.Exceptions.Handle(value).Subscribe(); });
+            Interactions.Exceptions.Handle(value).Subscribe();
         }
 
         public void OnCompleted()
@@ -88,6 +90,13 @@ namespace Traficante.Studio
         }
     }
 
-    
+    public class ExceptionServices : IExceptionServices
+    {
+        public void Rethrow(Exception value)
+        {
+            if (Debugger.IsAttached) Debugger.Break();
+            Interactions.Exceptions.Handle(value).Subscribe();
+        }
+    }
 
 }

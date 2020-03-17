@@ -25,5 +25,12 @@ namespace Traficante.Studio.Models
             get => _selectedQueryIndex;
             set => this.RaiseAndSetIfChanged(ref _selectedQueryIndex, value);
         }
+
+        public QueryModel GetSelectedQuery()
+        {
+            if (SelectedQueryIndex >= 0)
+                return Queries[SelectedQueryIndex];
+            return null;
+        }
     }
 }

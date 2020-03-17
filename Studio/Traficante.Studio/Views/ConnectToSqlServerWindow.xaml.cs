@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using Avalonia;
@@ -47,6 +48,7 @@ namespace Traficante.Studio.Views
                         this.Window.Close();
                     }
                     catch { }
+                    x.SetOutput(Unit.Default);
                 });
 
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)

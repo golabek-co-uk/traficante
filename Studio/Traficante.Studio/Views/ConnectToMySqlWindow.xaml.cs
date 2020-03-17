@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
+using System.Reactive;
 using System.Reactive.Disposables;
 using Traficante.Studio.ViewModels;
 
@@ -42,6 +43,7 @@ namespace Traficante.Studio.Views
                         this.Window.Close();
                     }
                     catch { }
+                    x.SetOutput(Unit.Default);
                 });
 
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)

@@ -25,41 +25,26 @@ namespace Traficante.Studio.ViewModels
 
         private Unit NewQuery(Unit arg)
         {
-            Interactions.NewQuery.Handle(Unit.Default)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe();
-
+            Interactions.NewQuery.Handle(Unit.Default).Subscribe();
             return Unit.Default;
         }
 
         private Unit ConnectToSqlServer(Unit arg)
         {
-            Interactions.ConnectToSqlServer.Handle(null)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe();
-
+            Interactions.ConnectToSqlServer.Handle(null).Subscribe();
             return Unit.Default;
         }
 
         private Unit ConnectToMySql(Unit arg)
         {
-            Interactions.ConnectToMySql.Handle(null)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe();
-
+            Interactions.ConnectToMySql.Handle(null).Subscribe();
             return Unit.Default;
         }
 
         private Unit ConnectToSqlite(Unit arg)
         {
-            Interactions.ConnectToSqlite.Handle(null)
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe();
-
+            Interactions.ConnectToSqlite.Handle(null).Subscribe();
             return Unit.Default;
         }
-        
-
-
     }
 }

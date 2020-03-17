@@ -49,7 +49,7 @@ namespace Traficante.Studio
                 .ToObservableChangeSet()
                 .Transform(x =>
                 {
-                    return new QueryViewModel(x.Id, "New query", _context);
+                    return new QueryViewModel(x, _context);
                 })
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .ActOnEveryObject(
@@ -115,14 +115,6 @@ namespace Traficante.Studio
                         documentsWindows.ActiveDockable = view;
                 });
 
-            Interactions.NewQuery.RegisterHandler(x =>
-            {
-                _context.Queries.Add(new QueryModel
-                {
-                    Id = Guid.NewGuid().ToString()
-                });
-                x.SetOutput(Unit.Default);
-            });
 
             var bodyLayout = new ProportionalDock
             {

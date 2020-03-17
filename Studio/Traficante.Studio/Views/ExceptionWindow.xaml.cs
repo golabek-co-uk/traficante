@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive;
 using System.Reactive.Disposables;
 using Avalonia;
 using Avalonia.Controls;
@@ -36,6 +37,7 @@ namespace Traficante.Studio.Views
                 ViewModel.CloseInteraction.RegisterHandler(x =>
                 {
                     Window.Close();
+                    x.SetOutput(Unit.Default);
                 });
 
                 this.Bind(ViewModel, x => x.Message, x => x.Message.Text)

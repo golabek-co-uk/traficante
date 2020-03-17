@@ -1,8 +1,10 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
+using System.Collections.Generic;
 using System.Reactive.Disposables;
 using Traficante.Studio.ViewModels;
 
@@ -51,8 +53,24 @@ namespace Traficante.Studio.Views
 
                 //this.OneWayBind(ViewModel, x => x.ResultsColumns, x => x.Results.Columns)
                 //    .DisposeWith(disposables);
+
+                //ContentPresenter contentPresenter = this.Parent as ContentPresenter;
+                //Carousel carusel = this.Parent?.Parent as Carousel;
+                ////if (contentPresenter != null)
+                ////{
+                ////    contentPresenter.ContextMenu = new ContextMenu();
+                ////    contentPresenter.ContextMenu.Items = new List<MenuItem> { new MenuItem { Header = "qwer1" } };
+                ////}
+                //if (carusel != null)
+                //{
+                //    carusel.ContextMenu = new ContextMenu();
+                //    carusel.ContextMenu.Items = new List<MenuItem> { new MenuItem { Header = "qwer2" } };
+                   
+                //}
+
             });
             AvaloniaXamlLoader.Load(this);
+            
         }
     }
 }

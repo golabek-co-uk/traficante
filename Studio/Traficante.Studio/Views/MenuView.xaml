@@ -7,16 +7,27 @@
   <DockPanel Height="20">
     <Menu>
     <MenuItem Header="_File">
-      <MenuItem Header="_Open..."/>
+      <MenuItem Header="_Connect">
+        <MenuItem Header="SqlServer" Name="ConnectToSqlServer"/>
+        <MenuItem Header="MySql" Name="ConnectToMySql"/>
+        <MenuItem Header="Sqlite" Name="ConnectToSqlite"/>
+      </MenuItem>
       <Separator/>
-      <MenuItem Header="_Exit"/>
+      <MenuItem Header="_New" Name="New"/>
+      <MenuItem Header="_Open" Name="Open"/>
+      <MenuItem Header="_Save" Name="Save"/>
+      <MenuItem Header="_Save As" Name="SaveAs"/>
+      <MenuItem Header="_Save All" Name="SaveAll"/>
+      <MenuItem Header="_Close" Name="Close"/>
+      <Separator/>
+      <MenuItem Header="_Exit" Name="Exit"/>
     </MenuItem>
     <MenuItem Header="_Edit">
-      <MenuItem Header="Copy"/>
-      <MenuItem Header="Paste"/>
+      <MenuItem Header="Copy" Name="Copy"/>
+      <MenuItem Header="Paste" Name="Paste"/>
     </MenuItem>
-    <MenuItem Header="_View">
-    </MenuItem>
+    <!--<MenuItem Header="_View">
+    </MenuItem>-->
   </Menu>
   </DockPanel>
 </UserControl>

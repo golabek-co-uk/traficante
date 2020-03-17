@@ -22,17 +22,34 @@ namespace Traficante.Studio.Services
             appData
                 .Objects
                 .ToObservableChangeSet()
+                .OnItemAdded(x =>
+                {
+                    x.PropertyChanged += (x, y) =>
+                    {
+                        SaveToFile(appData);
+                    };
+                })
                 .Subscribe(x =>
                 {
                     SaveToFile(appData);
                 });
+
             appData
                 .Queries
                 .ToObservableChangeSet()
+                .OnItemAdded(x =>
+                {
+                    x.PropertyChanged += (x, y) =>
+                    {
+                        SaveToFile(appData);
+                    };
+                })
                 .Subscribe(x =>
                 {
                     SaveToFile(appData);
                 });
+            
+
             return appData;
         }
 
@@ -55,8 +72,6 @@ namespace Traficante.Studio.Services
             catch { }
             return new AppData();
         }
-
-        
     }
 
     public class AppDataSerializer

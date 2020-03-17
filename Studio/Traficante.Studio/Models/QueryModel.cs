@@ -13,12 +13,12 @@ namespace Traficante.Studio.Models
             set => this.RaiseAndSetIfChanged(ref _id, value);
         }
 
-        private string _selectedObjectName;
+        private string _path;
         [DataMember]
-        public string SelectedObjectName
+        public string Path
         {
-            get => _selectedObjectName;
-            set => this.RaiseAndSetIfChanged(ref _selectedObjectName, value);
+            get => _path;
+            set => this.RaiseAndSetIfChanged(ref _path, value);
         }
     }
 }
