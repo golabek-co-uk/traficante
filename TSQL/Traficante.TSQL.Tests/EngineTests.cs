@@ -271,6 +271,7 @@ namespace Traficante.TSQL.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(TSQLException))]
         public void SelectFrom_ColumnDoesNotExist()
         {
             TSQLEngine sut = new TSQLEngine();
@@ -280,6 +281,27 @@ namespace Traficante.TSQL.Tests
 
             var resunt = sut.RunAndReturnTable("SELECT NotExistingColumn FROM Persons");
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(TSQLException))]
+        public void SelectFrom_NotExistingTable()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            var resunt = sut.RunAndReturnTable("SELECT * FROM NotExistingTable");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(TSQLException))]
+        public void Select_FunctionDoesNotExist()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" }
+            });
+
+            var resunt = sut.RunAndReturnTable("SELECT SomeFunction(FirstName) FROM Persons");
+        }
+
     }
 
     public class Person

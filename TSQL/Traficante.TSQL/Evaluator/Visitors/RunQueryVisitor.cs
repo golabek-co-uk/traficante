@@ -524,6 +524,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     return;
                 }
 
+                if (methodInfo == null)
+                    throw new TSQLException($"Function does not exist: {node.Name}");
                 var instance = methodInfo.FunctionMethod.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
                 /// TODO: check if there can be more that one generic argument
                 var method = methodInfo.FunctionMethod.IsGenericMethodDefinition ?
@@ -1015,6 +1017,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             var table = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
+            if (table == null)
+                throw new TSQLException($"Table or view does not exist: {node.Table.TableOrView}");
             if (table.MethodInfo != null)
             {
                 var method = table.MethodInfo;
