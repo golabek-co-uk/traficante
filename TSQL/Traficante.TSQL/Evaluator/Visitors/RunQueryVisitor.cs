@@ -659,6 +659,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var columns = TypeHelper.GetColumns(this._queryState.ItemInGroup.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == node.Name);
+                if (column == null)
+                    throw new TSQLException($"Column does not exist: {node.Name}");
                 node.ChangeReturnType(column.ColumnType);
                 Visit(new AccessColumnNode(node.Name, string.Empty, column.ColumnType, TextSpan.Empty));
             }
@@ -666,6 +668,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var columns = TypeHelper.GetColumns(this._queryState.Item.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == node.Name);
+                if (column == null)
+                    throw new TSQLException($"Column does not exist: {node.Name}");
                 node.ChangeReturnType(column.ColumnType);
                 Visit(new AccessColumnNode(node.Name, string.Empty, column.ColumnType, TextSpan.Empty));
             }

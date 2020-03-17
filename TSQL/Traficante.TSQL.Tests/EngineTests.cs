@@ -270,6 +270,16 @@ namespace Traficante.TSQL.Tests
             }
         }
 
+        [TestMethod]
+        public void SelectFrom_ColumnDoesNotExist()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" }
+            });
+
+            var resunt = sut.RunAndReturnTable("SELECT NotExistingColumn FROM Persons");
+        }
     }
 
     public class Person
