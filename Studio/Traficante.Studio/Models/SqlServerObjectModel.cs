@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -104,7 +105,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqlServerTableObjectModel : ObjectModel
+    public class SqlServerTableObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
         public SqlServerDatabaseObjectModel Databse { get; }
         public string OnlyName { get; set; }
@@ -120,6 +121,16 @@ namespace Traficante.Studio.Models
 
         public override void LoadItems()
         {
+        }
+
+        public string[] GetObjectPath()
+        {
+            return new string[] { Databse.Server.Name, Databse.Name, OnlySchema, OnlyName };
+        }
+
+        public string[] GetObjectFields()
+        {
+            return new string[0];
         }
     }
 
@@ -148,7 +159,7 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
     }
-    public class SqlServerViewObjectModel : ObjectModel
+    public class SqlServerViewObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
         public SqlServerDatabaseObjectModel Databse { get; }
         public string OnlyName { get; set; }
@@ -164,6 +175,16 @@ namespace Traficante.Studio.Models
 
         public override void LoadItems()
         {
+        }
+
+        public string[] GetObjectPath()
+        {
+            return new string[] { Databse.Server.Name, Databse.Name, OnlySchema, OnlyName };
+        }
+
+        public string[] GetObjectFields()
+        {
+            return new string[0];
         }
     }
 

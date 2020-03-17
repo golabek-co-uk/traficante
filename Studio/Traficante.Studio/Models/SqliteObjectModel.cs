@@ -79,22 +79,32 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqliteTableObjectModel : ObjectModel
+    public class SqliteTableObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
         public SqliteObjectModel Databse { get; }
-        public string OnlyName { get; set; }
-        public string OnlySchema { get; set; }
+        //public string OnlyName { get; set; }
+        //public string OnlySchema { get; set; }
 
         public SqliteTableObjectModel(SqliteObjectModel databse, string schema, string name)
         {
             Databse = databse;
-            OnlyName = name;
-            OnlySchema = schema;
+            //OnlyName = name;
+            //OnlySchema = schema;
             Name = name;
         }
 
         public override void LoadItems()
         {
+        }
+
+        public string[] GetObjectPath()
+        {
+            return new string[] { Databse.Name, Name };
+        }
+
+        public string[] GetObjectFields()
+        {
+            return new string[0];
         }
     }
 
@@ -123,7 +133,7 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
     }
-    public class SqliteViewObjectModel : ObjectModel
+    public class SqliteViewObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
         public SqliteObjectModel Databse { get; }
         public string OnlyName { get; set; }
@@ -139,6 +149,16 @@ namespace Traficante.Studio.Models
 
         public override void LoadItems()
         {
+        }
+
+        public string[] GetObjectPath()
+        {
+            return new string[] { Databse.Name, OnlySchema, OnlyName };
+        }
+
+        public string[] GetObjectFields()
+        {
+            return new string[0];
         }
     }
 

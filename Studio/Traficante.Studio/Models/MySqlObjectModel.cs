@@ -102,7 +102,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class MySqlTableObjectModel : ObjectModel
+    public class MySqlTableObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
         public MySqlDatabaseObjectModel Databse { get; }
         
@@ -114,6 +114,16 @@ namespace Traficante.Studio.Models
 
         public override void LoadItems()
         {
+        }
+
+        public string[] GetObjectPath()
+        {
+            return new string[] { Databse.Server.Name, Databse.Name, Name };
+        }
+
+        public string[] GetObjectFields()
+        {
+            return new string[0];
         }
     }
 
@@ -143,7 +153,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class MySqlViewObjectModel : ObjectModel
+    public class MySqlViewObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
         public MySqlDatabaseObjectModel Databse { get; }
 
@@ -155,6 +165,16 @@ namespace Traficante.Studio.Models
 
         public override void LoadItems()
         {
+        }
+
+        public string[] GetObjectPath()
+        {
+            return new string[] { Databse.Server.Name, Databse.Name, Name };
+        }
+
+        public string[] GetObjectFields()
+        {
+            return new string[0];
         }
     }
 

@@ -25,21 +25,8 @@ namespace Traficante.Studio.ViewModels
         public AppData AppData => ((AppData)this.Context);
         public QueryModel Query { get; set; }
 
-        private string _text;
-        public string Text
-        {
-            get => _text;
-            set => this.RaiseAndSetIfChanged(ref _text, value);
-        }
 
-        private bool _isDirty;
-        public bool IsDirty
-        {
-            get => _isDirty;
-            set => this.RaiseAndSetIfChanged(ref _isDirty, value);
-        }
-
-        public string AutoSavePath => System.IO.Path.Combine("AutoSave", this.Query.Id);
+        
 
         private string _resultsError;
         public string ResultsError
@@ -85,28 +72,17 @@ namespace Traficante.Studio.ViewModels
             InitQuery();
             RunCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(Run);
             Interactions.SaveQuery.RegisterHandler(Save);
+            Interactions.SaveAsQuery.RegisterHandler(SaveAs);
         }
 
         private void InitQuery()
         {
             // Load text
             Id = this.Query.Id;
-            if (this.Query.Path != null)
-            {
-                try
-                {
-                    Text = System.IO.File.ReadAllText(this.Query.Path);
-                }
-                catch (Exception ex) { Interactions.Exceptions.Handle(ex).Subscribe(); }
-            }
-            else
-            {
-                Text = "";
-            }
 
             // Adding star to the title when the query is dirty (was changed)
             this
-                .WhenAnyValue(x => x.Query.Path, x => x.IsDirty)
+                .WhenAnyValue(x => x.Query.Path, x => x.Query.IsDirty)
                 .Subscribe(x =>
                 {
                     if (x.Item1 != null)
@@ -121,46 +97,9 @@ namespace Traficante.Studio.ViewModels
                             Title = "New Query";
                 });
 
-            // Set IsDirty flag, when the text is changed
-            this
-                .WhenAnyValue(x => x.Text)
-                .Subscribe(x =>
-                {
-                    if (this.Query.Path != null && this.IsDirty == false)
-                    {
-                        try
-                        {
-                            this.IsDirty = File.ReadAllText(this.Query.Path) != x;
-                        }
-                        catch { }
-                    } else if (this.Query.Path == null && this.IsDirty == false)
-                    {
-                        this.IsDirty = true;
-                    }
-                });
+            
 
-            // Load auto saved text
-            try
-            {
-                if (Directory.Exists("AutoSave") == false)
-                    Directory.CreateDirectory("AutoSave");
-                this.Text = File.ReadAllText(this.AutoSavePath);
-            }
-            catch { }
-            // Autosave every 1 second
-            this
-                .WhenAnyValue(x => x.Text)
-                .DistinctUntilChanged()
-                .Throttle(TimeSpan.FromSeconds(1))
-                .Subscribe(x =>
-                {
-                    AutoSave();
-                });
-        }
-
-        public void AutoSave()
-        {
-            try { File.WriteAllText(AutoSavePath, Text); } catch { }
+            
         }
 
         public Task<Unit> Run(Unit arg)
@@ -190,7 +129,7 @@ namespace Traficante.Studio.ViewModels
                             connectEngine.AddConector(((SqliteObjectModel)obj).ConnectionInfo.ToConectorConfig());
                     }
 
-                    var items = connectEngine.RunAndReturnEnumerable(Text);
+                    var items = connectEngine.RunAndReturnEnumerable(this.Query.Text);
                     var itemsType = items.GetType().GenericTypeArguments.FirstOrDefault();
 
                     itemsType
@@ -255,13 +194,13 @@ namespace Traficante.Studio.ViewModels
             if (selectedQuery == this.Query)
             {
                 context.SetOutput(Unit.Default);
-                AutoSave();
+                try { File.WriteAllText(this.Query.AutoSavePath, this.Query.Text); } catch { }
                 if (Query.Path != null)
                 {
                     try
                     {
-                        System.IO.File.WriteAllText(this.Query.Path, Text);
-                        this.IsDirty = false;
+                        System.IO.File.WriteAllText(this.Query.Path, this.Query.Text);
+                        this.Query.IsDirty = false;
                     }  catch(Exception ex) {Interactions.Exceptions.Handle(ex).Subscribe();}
                 }
                 else
@@ -274,11 +213,35 @@ namespace Traficante.Studio.ViewModels
                     {
                         try
                         {
-                            System.IO.File.WriteAllText(path, Text);
+                            System.IO.File.WriteAllText(path, this.Query.Text);
                             this.Query.Path = path;
-                            this.IsDirty = false;
+                            this.Query.IsDirty = false;
                         } catch (Exception ex) { Interactions.Exceptions.Handle(ex).Subscribe(); }
                     }
+                }
+            }
+        }
+
+        private async Task SaveAs(InteractionContext<Unit, Unit> context)
+        {
+            var selectedQuery = AppData.GetSelectedQuery();
+            if (selectedQuery == this.Query)
+            {
+                context.SetOutput(Unit.Default);
+                try { File.WriteAllText(this.Query.AutoSavePath, this.Query.Text); } catch { }
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                saveDialog.Filters.Add(new FileDialogFilter() { Name = "Text", Extensions = { "txt" } });
+                saveDialog.Filters.Add(new FileDialogFilter() { Name = "All files", Extensions = { } });
+                var path = await saveDialog.ShowAsync(this.AppData.MainWindow);
+                if (path != null)
+                {
+                    try
+                    {
+                        System.IO.File.WriteAllText(path, Query.Text);
+                        this.Query.Path = path;
+                        this.Query.IsDirty = false;
+                    }
+                    catch (Exception ex) { Interactions.Exceptions.Handle(ex).Subscribe(); }
                 }
             }
         }

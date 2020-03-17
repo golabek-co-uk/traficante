@@ -31,7 +31,7 @@ namespace Traficante.Studio.Views
         {
             this.WhenActivated(disposables =>
             {
-                this.Bind(ViewModel, x => x.Text, x => x.Text.Text)
+                this.Bind(ViewModel, x => x.Query.Text, x => x.Text.Text)
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)
                     .DisposeWith(disposables);

@@ -1,7 +1,9 @@
-﻿using Dock.Model.Controls;
+﻿using Avalonia.Controls;
+using Dock.Model.Controls;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive.Linq;
 using Traficante.Studio.Models;
 
@@ -10,7 +12,7 @@ namespace Traficante.Studio.ViewModels
     public class ObjectExplorerViewModel : Tool
     {
         
-        public ObservableCollection<ObjectModel> Objects => ((AppData)this.Context).Objects;
+        public AppData AppData => (AppData)this.Context;
 
         public ObjectExplorerViewModel()
         {
@@ -26,7 +28,7 @@ namespace Traficante.Studio.ViewModels
 
         public void RemoveObject(SqlServerObjectModel sqlServer)
         {
-            Objects.Remove(sqlServer);
+            AppData.Objects.Remove(sqlServer);
         }
 
         public void ChangeObject(MySqlObjectModel mySql)
@@ -39,7 +41,7 @@ namespace Traficante.Studio.ViewModels
 
         public void RemoveObject(MySqlObjectModel mySql)
         {
-            Objects.Remove(mySql);
+            AppData.Objects.Remove(mySql);
         }
 
         public void ChangeObject(SqliteObjectModel sqlite)
@@ -52,7 +54,17 @@ namespace Traficante.Studio.ViewModels
 
         public void RemoveObject(SqliteObjectModel sqlite)
         {
-            Objects.Remove(sqlite);
+            AppData.Objects.Remove(sqlite);
+        }
+
+        public void GenerateSelectQuery(IObjectPath objectPath, IObjectFields objectFields)
+        {
+            var path = objectPath.GetObjectPath();
+            var sqlPath = string.Join(".", path.Select(x => $"[{x}]"));
+            var fields = objectFields.GetObjectFields();
+            var sqlFields = fields.Length > 0 ? string.Join(".", fields.Select(x => $"[{x}]")) : "*";
+            var sql = $"SELECT {sqlFields} FROM {sqlPath}";
+            AppData.Queries.Add(new QueryModel { Id = Guid.NewGuid().ToString(), Text = sql });
         }
     }
 }

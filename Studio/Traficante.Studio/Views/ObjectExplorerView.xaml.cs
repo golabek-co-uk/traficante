@@ -26,7 +26,7 @@ namespace Traficante.Studio.Views
         {
             this.WhenActivated(disposables => 
             {
-                this.OneWayBind(ViewModel, x => x.Objects, x => x.Objects.Items, x => (System.Collections. IEnumerable)x)
+                this.OneWayBind(ViewModel, x => x.AppData.Objects, x => x.Objects.Items, x => (System.Collections. IEnumerable)x)
                     .DisposeWith(disposables);
             });
             AvaloniaXamlLoader.Load(this);
@@ -38,29 +38,38 @@ namespace Traficante.Studio.Views
             var item = (TreeViewItem)e.Containers[0].ContainerControl;
             if (item.DataContext is SqlServerObjectModel sqlServer)
             {
-                item.ContextMenu = new ContextMenu();
                 MenuItem change = new MenuItem { Header = "Change" };
                 change.Click += (x, y) => ViewModel.ChangeObject(sqlServer);
                 MenuItem remove = new MenuItem { Header = "Remove" };
                 remove.Click += (x, y) => ViewModel.RemoveObject(sqlServer);
+                item.ContextMenu = new ContextMenu();
                 item.ContextMenu.Items = new List<MenuItem> { change, remove };
             } else if (item.DataContext is MySqlObjectModel mySql)
             {
-                item.ContextMenu = new ContextMenu();
                 MenuItem change = new MenuItem { Header = "Change" };
                 change.Click += (x, y) => ViewModel.ChangeObject(mySql);
                 MenuItem remove = new MenuItem { Header = "Remove" };
                 remove.Click += (x, y) => ViewModel.RemoveObject(mySql);
+                item.ContextMenu = new ContextMenu();
                 item.ContextMenu.Items = new List<MenuItem> { change, remove };
             }
             else if (item.DataContext is SqliteObjectModel sqlite)
             {
-                item.ContextMenu = new ContextMenu();
                 MenuItem change = new MenuItem { Header = "Change" };
                 change.Click += (x, y) => ViewModel.ChangeObject(sqlite);
                 MenuItem remove = new MenuItem { Header = "Remove" };
                 remove.Click += (x, y) => ViewModel.RemoveObject(sqlite);
+                item.ContextMenu = new ContextMenu();
                 item.ContextMenu.Items = new List<MenuItem> { change, remove };
+            }
+            else if (item.DataContext is IObjectPath objectPath && item.DataContext is IObjectFields objectFields)
+            {
+                MenuItem generateSelect = new MenuItem { Header = "Select query" };
+                generateSelect.Click += (x, y) => ViewModel.GenerateSelectQuery(objectPath, objectFields);
+                MenuItem generate = new MenuItem { Header = "Generate" };
+                generate.Items = new List<MenuItem> { generateSelect };
+                item.ContextMenu = new ContextMenu();
+                item.ContextMenu.Items = new List<MenuItem> { generate };
             }
             else
             {

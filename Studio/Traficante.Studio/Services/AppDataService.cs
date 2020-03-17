@@ -18,6 +18,9 @@ namespace Traficante.Studio.Services
     {
         public AppData Load()
         {
+            EnsureAutoSaveDirectory();
+
+
             var appData = LoadFromFile();
             appData
                 .Objects
@@ -37,9 +40,61 @@ namespace Traficante.Studio.Services
             appData
                 .Queries
                 .ToObservableChangeSet()
-                .OnItemAdded(x =>
+                .OnItemAdded(query =>
                 {
-                    x.PropertyChanged += (x, y) =>
+                    //Initialize text from path
+                    if (string.IsNullOrEmpty(query.Text))
+                    {
+                        if (query.Path != null)
+                        {
+                            try
+                            {
+                                query.Text = System.IO.File.ReadAllText(query.Path);
+                            }
+                            catch (Exception ex) { Interactions.Exceptions.Handle(ex).Subscribe(); }
+                        }
+                        else
+                        {
+                            query.Text = "";
+                        }
+                    }
+
+                    // Set IsDirty flag, when the text is changed
+                    query
+                    .WhenAnyValue(x => x.Text)
+                    .Subscribe(changeText =>
+                    {
+                        if (query.Path != null && query.IsDirty == false)
+                        {
+                            try
+                            {
+                                query.IsDirty = File.ReadAllText(query.Path) != query.Text;
+                            }
+                            catch { }
+                        }
+                        else if (query.Path == null && query.IsDirty == false)
+                        {
+                            query.IsDirty = true;
+                        }
+                    });
+
+                    // Load auto saved text
+                    try
+                    {
+                        query.Text = File.ReadAllText(query.AutoSavePath);
+                    }
+                    catch { }
+                    // Autosave every 1 second
+                    query
+                        .WhenAnyValue(x => x.Text)
+                        .DistinctUntilChanged()
+                        .Throttle(TimeSpan.FromSeconds(1))
+                        .Subscribe(x =>
+                        {
+                            try { File.WriteAllText(query.AutoSavePath, query.Text); } catch { }
+                        });
+
+                    query.PropertyChanged += (x, y) =>
                     {
                         SaveToFile(appData);
                     };
@@ -71,6 +126,16 @@ namespace Traficante.Studio.Services
             }
             catch { }
             return new AppData();
+        }
+
+        public void EnsureAutoSaveDirectory()
+        {
+            try
+            {
+                if (Directory.Exists("AutoSave") == false)
+                    Directory.CreateDirectory("AutoSave");
+            }
+            catch { }
         }
     }
 
