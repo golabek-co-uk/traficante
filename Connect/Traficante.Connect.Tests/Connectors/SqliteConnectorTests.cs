@@ -39,6 +39,14 @@ namespace Traficante.Connect.Tests.Connectors
             Assert.IsTrue(tables.Any(x => x.name == "albums"));
         }
 
+        [TestMethod]
+        public void GetTableFields()
+        {
+            SqliteConnector connector = new SqliteConnector(this.config);
+            var tables = connector.GetFields("Albums");
+            Assert.IsTrue(tables.Any(x => x.name == "Title"));
+        }
+
 
         [TestMethod]
         public void GetViews()
@@ -48,5 +56,13 @@ namespace Traficante.Connect.Tests.Connectors
             Assert.IsTrue(tables.Any(x => x.name == "vAlbums"));
         }
 
+
+        [TestMethod]
+        public void GetViewFields()
+        {
+            SqliteConnector connector = new SqliteConnector(this.config);
+            var tables = connector.GetFields("vAlbums");
+            Assert.IsTrue(tables.Any(x => x.name == "Title"));
+        }
     }
 }

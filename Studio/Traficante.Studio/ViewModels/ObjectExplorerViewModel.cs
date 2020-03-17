@@ -22,7 +22,6 @@ namespace Traficante.Studio.ViewModels
         {
             Interactions.ConnectToSqlServer
                 .Handle(sqlServer)
-                .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe();
         }
 
@@ -35,7 +34,6 @@ namespace Traficante.Studio.ViewModels
         {
             Interactions.ConnectToMySql
                 .Handle(mySql)
-                .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe();
         }
 
@@ -48,7 +46,6 @@ namespace Traficante.Studio.ViewModels
         {
             Interactions.ConnectToSqlite
                 .Handle(sqlite)
-                .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe();
         }
 

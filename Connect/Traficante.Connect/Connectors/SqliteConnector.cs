@@ -110,6 +110,28 @@ namespace Traficante.Connect.Connectors
             }
             return views;
         }
+
+        public List<(string name, string type, bool? notNull)> GetFields(string tableOrView)
+        {
+            List<(string name, string type, bool? notNull)> fields = new List<(string name, string type, bool? notNull)>();
+            using (SqliteConnection sqlConnection = new SqliteConnection())
+            {
+                sqlConnection.ConnectionString = this.Config.ToConnectionString();
+                sqlConnection.Open();
+                using (var command = sqlConnection.CreateCommand())
+                {
+                    command.CommandText = $"PRAGMA table_info('{tableOrView}');";
+                    using (var result = command.ExecuteReader())
+                    {
+                        while (result.Read())
+                        {
+                            fields.Add((result.GetString(1), result.GetString(2), result.GetBoolean(3)));
+                        }
+                    }
+                }
+            }
+            return fields;
+        }
     }
 
     public class SqliteConnectorConfig : ConnectorConfig

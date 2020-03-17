@@ -1,6 +1,7 @@
 ﻿using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -107,13 +108,13 @@ namespace Traficante.Studio.Models
 
     public class SqlServerTableObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
-        public SqlServerDatabaseObjectModel Databse { get; }
+        public SqlServerDatabaseObjectModel Database { get; }
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
 
         public SqlServerTableObjectModel(SqlServerDatabaseObjectModel databse, string schema, string name)
         {
-            Databse = databse;
+            Database = databse;
             OnlyName = name;
             OnlySchema = schema;
             Name = schema + "." + name;
@@ -121,11 +122,22 @@ namespace Traficante.Studio.Models
 
         public override void LoadItems()
         {
+            Observable
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Name, this.OnlyName)))
+                .SelectMany(x => x)
+                .Select(x => new SqlServerFielObjectModel(Database, x.name, x.type, x.notNull))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Catch<object, Exception>(ex =>
+                {
+                    Interactions.Exceptions.Handle(ex).Subscribe();
+                    return Observable.Empty<object>();
+                })
+                .Subscribe(x => Items.Add(x));
         }
 
         public string[] GetObjectPath()
         {
-            return new string[] { Databse.Server.Name, Databse.Name, OnlySchema, OnlyName };
+            return new string[] { Database.Server.Name, Database.Name, OnlySchema, OnlyName };
         }
 
         public string[] GetObjectFields()
@@ -159,15 +171,16 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
     }
+
     public class SqlServerViewObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
-        public SqlServerDatabaseObjectModel Databse { get; }
+        public SqlServerDatabaseObjectModel Database { get; }
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
 
         public SqlServerViewObjectModel(SqlServerDatabaseObjectModel databse, string schema, string name)
         {
-            Databse = databse;
+            Database = databse;
             OnlyName = name;
             OnlySchema = schema;
             Name = schema + "." + name;
@@ -175,11 +188,22 @@ namespace Traficante.Studio.Models
 
         public override void LoadItems()
         {
+            Observable
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Name, this.OnlyName)))
+                .SelectMany(x => x)
+                .Select(x => new SqlServerFielObjectModel(Database, x.name, x.type, x.notNull))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Catch<object, Exception>(ex =>
+                {
+                    Interactions.Exceptions.Handle(ex).Subscribe();
+                    return Observable.Empty<object>();
+                })
+                .Subscribe(x => Items.Add(x));
         }
 
         public string[] GetObjectPath()
         {
-            return new string[] { Databse.Server.Name, Databse.Name, OnlySchema, OnlyName };
+            return new string[] { Database.Server.Name, Database.Name, OnlySchema, OnlyName };
         }
 
         public string[] GetObjectFields()
@@ -188,6 +212,18 @@ namespace Traficante.Studio.Models
         }
     }
 
+    public class SqlServerFielObjectModel : ObjectModel
+    {
+        public SqlServerDatabaseObjectModel Databse { get; }
+
+        public SqlServerFielObjectModel(SqlServerDatabaseObjectModel databse, string name, string type, bool? notNull)
+        {
+            Databse = databse;
+            Name = $"{name} {type}";
+        }
+
+        public override ObservableCollection<object> Items => null;
+    }
 
     [DataContract]
     public class SqlServerConnectionModel : ReactiveObject

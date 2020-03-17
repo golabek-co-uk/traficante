@@ -12,7 +12,7 @@ namespace Traficante.Studio.Models
         public virtual string Name { get; set; }
 
         private ObservableCollection<object> _items;
-        public ObservableCollection<object> Items
+        public virtual ObservableCollection<object> Items
         {
             get
             {

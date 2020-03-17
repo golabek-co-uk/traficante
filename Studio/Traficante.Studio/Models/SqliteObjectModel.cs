@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using System;
+using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -81,25 +82,32 @@ namespace Traficante.Studio.Models
 
     public class SqliteTableObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
-        public SqliteObjectModel Databse { get; }
-        //public string OnlyName { get; set; }
-        //public string OnlySchema { get; set; }
+        public SqliteObjectModel Database { get; }
 
         public SqliteTableObjectModel(SqliteObjectModel databse, string schema, string name)
         {
-            Databse = databse;
-            //OnlyName = name;
-            //OnlySchema = schema;
+            Database = databse;
             Name = name;
         }
 
         public override void LoadItems()
         {
+            Observable
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetFields(this.Name)))
+                .SelectMany(x => x)
+                .Select(x => new SqliteFielObjectModel(Database, x.name, x.type, x.notNull))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Catch<object, Exception>(ex =>
+                {
+                    Interactions.Exceptions.Handle(ex).Subscribe();
+                    return Observable.Empty<object>();
+                })
+                .Subscribe(x => Items.Add(x));
         }
 
         public string[] GetObjectPath()
         {
-            return new string[] { Databse.Name, Name };
+            return new string[] { Database.Name, Name };
         }
 
         public string[] GetObjectFields()
@@ -133,15 +141,16 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
     }
+
     public class SqliteViewObjectModel : ObjectModel, IObjectPath, IObjectFields
     {
-        public SqliteObjectModel Databse { get; }
+        public SqliteObjectModel Database { get; }
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
 
         public SqliteViewObjectModel(SqliteObjectModel databse, string schema, string name)
         {
-            Databse = databse;
+            Database = databse;
             OnlyName = name;
             OnlySchema = schema;
             Name = name;
@@ -149,11 +158,22 @@ namespace Traficante.Studio.Models
 
         public override void LoadItems()
         {
+            Observable
+                .FromAsync(() => new TaskFactory().StartNew(() => new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetFields(this.Name)))
+                .SelectMany(x => x)
+                .Select(x => new SqliteFielObjectModel(Database, x.name, x.type, x.notNull))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Catch<object, Exception>(ex =>
+                {
+                    Interactions.Exceptions.Handle(ex).Subscribe();
+                    return Observable.Empty<object>();
+                })
+                .Subscribe(x => Items.Add(x));
         }
 
         public string[] GetObjectPath()
         {
-            return new string[] { Databse.Name, OnlySchema, OnlyName };
+            return new string[] { Database.Name, OnlySchema, OnlyName };
         }
 
         public string[] GetObjectFields()
@@ -162,6 +182,18 @@ namespace Traficante.Studio.Models
         }
     }
 
+    public class SqliteFielObjectModel : ObjectModel
+    {
+        public SqliteObjectModel Databse { get; }
+
+        public SqliteFielObjectModel(SqliteObjectModel databse, string name, string type, bool? notNull)
+        {
+            Databse = databse;
+            Name = $"{name} {type}";
+        }
+
+        public override ObservableCollection<object> Items => null;
+    }
 
     [DataContract]
     public class SqliteConnectionModel : ReactiveObject

@@ -163,6 +163,22 @@ namespace Traficante.Connect.Connectors
                 return views;
             }
         }
+
+        public List<(string name, string type, bool? notNull)> GetFields(string database, string tableOrView)
+        {
+            using (SqlConnection sqlConnection = new SqlConnection())
+            {
+                sqlConnection.ConnectionString = this.Config.ToConnectionString();
+                sqlConnection.Open();
+                sqlConnection.ChangeDatabase(database);
+                var fields = sqlConnection.GetSchema("Columns")
+                    .Select()
+                    .Where(x => x["TABLE_NAME"].ToString() == tableOrView)
+                    .Select(x => (x["COLUMN_NAME"]?.ToString(), x["DATA_TYPE"]?.ToString(), x["IS_NULLABLE"] as Nullable<bool>))
+                    .ToList();
+                return fields;
+            }
+        }
     }
 
     public class SqlServerConnectorConfig  : ConnectorConfig
