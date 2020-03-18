@@ -1,4 +1,5 @@
-﻿using Avalonia;
+﻿using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Markup.Xaml;
@@ -37,8 +38,14 @@ namespace Traficante.Studio.Views
                     .DisposeWith(disposables);
                 this.OneWayBind(ViewModel, x => x.ResultsData, x => x.ResultsData.Items, x => (System.Collections.IEnumerable)x)
                     .DisposeWith(disposables);
-                this.Bind(ViewModel, x => x.ResultsError, x => x.ResultsError.Text)
-                    .DisposeWith(disposables);
+                //this.Bind(ViewModel, x => x.ResultsError, x => x.ResultsError.Text)
+                //    .DisposeWith(disposables);
+                this.WhenAnyValue(x => x.ViewModel.ResultsError)
+                    .Subscribe(x =>
+                    {
+                        this.ResultsError.Text = x;
+                        this.Results.SelectedIndex = string.IsNullOrEmpty(x) ? 0 : 1;
+                    });
                 this.Bind(ViewModel, x => x.ResultsMessage, x => x.ResultsMessage.Text)
                     .DisposeWith(disposables);
                 this.Bind(ViewModel, x => x.ResultsAreVisible, x => x.Results.IsVisible)

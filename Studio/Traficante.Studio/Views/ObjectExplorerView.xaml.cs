@@ -77,10 +77,5 @@ namespace Traficante.Studio.Views
                 item.ContextMenu.IsVisible = false;
             }
         }
-
-        private void Remove_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

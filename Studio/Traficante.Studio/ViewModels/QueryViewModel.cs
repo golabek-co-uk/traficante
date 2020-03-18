@@ -25,9 +25,6 @@ namespace Traficante.Studio.ViewModels
         public AppData AppData => ((AppData)this.Context);
         public QueryModel Query { get; set; }
 
-
-        
-
         private string _resultsError;
         public string ResultsError
         {
@@ -42,7 +39,7 @@ namespace Traficante.Studio.ViewModels
             set => this.RaiseAndSetIfChanged(ref _resultsMessage, value);
         }
 
-        private bool _resultsAreVisible = true;
+        private bool _resultsAreVisible = false;
         public bool ResultsAreVisible
         {
             get => _resultsAreVisible;
