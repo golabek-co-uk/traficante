@@ -1,11 +1,13 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
+using CsvHelper;
 using Dock.Model.Controls;
 using DynamicData;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -61,6 +63,7 @@ namespace Traficante.Studio.ViewModels
         }
 
         public ReactiveCommand<Unit, Unit> RunCommand { get; }
+        public ReactiveCommand<Unit, Unit> SaveResultsAsCommand { get; set; }
 
         public QueryViewModel(QueryModel query, AppData context)
         {
@@ -68,6 +71,7 @@ namespace Traficante.Studio.ViewModels
             Query = query;
             InitQuery();
             RunCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(Run);
+            SaveResultsAsCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(SaveResultsAs);
             Interactions.SaveQuery.RegisterHandler(Save);
             Interactions.SaveAsQuery.RegisterHandler(SaveAs);
         }
@@ -183,6 +187,26 @@ namespace Traficante.Studio.ViewModels
 
                 return Unit.Default;
             });
+        }
+
+        public async Task<Unit> SaveResultsAs(Unit arg)
+        {
+            SaveFileDialog saveDialog = new SaveFileDialog();
+            saveDialog.Filters.Add(new FileDialogFilter() { Name = "CSV (comma delimited)", Extensions = { "csv" } });
+            var path = await saveDialog.ShowAsync(this.AppData.MainWindow);
+            if (path != null)
+            {
+                try
+                {
+                    using (var writer = new StreamWriter(path))
+                    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                    {
+                        csv.WriteRecords(this.ResultsData);
+                    }
+                }
+                catch (Exception ex) { Interactions.Exceptions.Handle(ex).Subscribe(); }
+            }
+            return Unit.Default;
         }
 
         private async Task Save(InteractionContext<Unit, Unit> context)

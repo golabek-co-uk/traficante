@@ -22,6 +22,8 @@ namespace Traficante.Studio.Views
         public TextBlock ResultsError => this.FindControl<TextBlock>("ResultsError");
         public TextBlock ResultsMessage => this.FindControl<TextBlock>("ResultsMessage");
         public GridSplitter ResultsSplitter => this.FindControl<GridSplitter>("ResultsSplitter");
+
+        public MenuItem ExportResultsAs => this.FindControl<MenuItem>("ExportResultsAs");
         
         public QueryView()
         {
@@ -55,6 +57,7 @@ namespace Traficante.Studio.Views
                 this.OneWayBind(ViewModel, x => x.ResultsAreVisible, x => x.Grid.RowDefinitions[3].Height, x => x ? new GridLength(1, GridUnitType.Star) : new GridLength(0, GridUnitType.Auto))
                     .DisposeWith(disposables);
                 this.ViewModel.ResultsDataColumns = this.ResultsData.Columns;
+                this.BindCommand(ViewModel, x => x.SaveResultsAsCommand, x => x.ExportResultsAs);
 
                 //var resultRow = this.Grid.RowDefinitions[3].Height.IsAbsolute;
 
@@ -72,12 +75,11 @@ namespace Traficante.Studio.Views
                 //{
                 //    carusel.ContextMenu = new ContextMenu();
                 //    carusel.ContextMenu.Items = new List<MenuItem> { new MenuItem { Header = "qwer2" } };
-                   
+
                 //}
 
             });
             AvaloniaXamlLoader.Load(this);
-            
         }
     }
 }

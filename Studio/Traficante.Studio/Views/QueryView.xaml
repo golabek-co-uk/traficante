@@ -19,7 +19,13 @@
           <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Results</TextBlock>
         </TabItem.Header>
         <DockPanel>
-          <dg:DataGrid Name="ResultsData"></dg:DataGrid>
+          <dg:DataGrid Name="ResultsData">
+            <DataGrid.ContextMenu>
+              <ContextMenu>
+                <MenuItem Name="ExportResultsAs" Header="Export Results As..."></MenuItem>
+              </ContextMenu>
+            </DataGrid.ContextMenu>
+          </dg:DataGrid>
         </DockPanel>
       </TabItem>
       <TabItem>
