@@ -27,7 +27,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetDatabases()
         {
             SqliteConnector connector = new SqliteConnector(this.config);
-            var databases = connector.GetDatabases();
+            var databases = connector.GetDatabases().ToList();
             CollectionAssert.Contains(databases, "chinook.db");
         }
 

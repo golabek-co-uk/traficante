@@ -61,6 +61,7 @@ namespace Traficante.Studio.ViewModels
                         await dialog.ShowDialog(Window);
                         Window.Focus();
                     });
+                    interaction.SetOutput(Unit.Default);
                 });
 
             Interactions.NewQuery.RegisterHandler(x =>
