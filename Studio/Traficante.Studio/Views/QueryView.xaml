@@ -1,4 +1,5 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -11,7 +12,15 @@
         <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Run</Button>
       </Grid>
     </DockPanel>
-    <TextBox Name="Text" Grid.Row="1" AcceptsReturn="True" TextWrapping="NoWrap"></TextBox>
+    
+    <DockPanel Grid.Row="1">
+      <AvalonEdit:TextEditor Name="Text" 
+          SyntaxHighlighting="SQL"
+          ShowLineNumbers="True"
+          HorizontalScrollBarVisibility="Auto"
+          VerticalScrollBarVisibility="Visible"/>
+    </DockPanel>
+    
     <GridSplitter Name="ResultsSplitter" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
     <TabControl Name="Results" Grid.Row="3">
       <TabItem>

@@ -25,7 +25,7 @@ namespace Traficante.Studio.Tests.Models
                 Name = "server2"
             });
             var json =  sut.Serialize(appData);
-            var appDataCopy = sut.Derialize(json);
+            var appDataCopy = sut.Derialize<AppData>(json);
             CollectionAssert.Equals(appData.Objects, appDataCopy.Objects);
         }
     }
