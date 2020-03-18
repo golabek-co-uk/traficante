@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Input;
 using Dock.Model.Controls;
 using ReactiveUI;
 using System;
@@ -62,6 +63,15 @@ namespace Traficante.Studio.ViewModels
             var sqlFields = fields.Length > 0 ? string.Join(".", fields.Select(x => $"[{x}]")) : "*";
             var sql = $"SELECT {sqlFields} FROM {sqlPath}";
             AppData.Queries.Add(new QueryModel { Id = Guid.NewGuid().ToString(), Text = sql });
+        }
+
+        public async void DragObjectPath(PointerPressedEventArgs e, IObjectPath objectPath)
+        {
+            var path = objectPath.GetObjectPath();
+            var sqlPath = string.Join(".", path.Select(x => $"[{x}]"));
+            DataObject dragData = new DataObject();
+            dragData.Set(DataFormats.Text, sqlPath);
+            await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Copy);
         }
     }
 }

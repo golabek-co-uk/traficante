@@ -14,11 +14,12 @@
     </DockPanel>
     
     <DockPanel Grid.Row="1">
-      <AvalonEdit:TextEditor Name="Text" 
-          SyntaxHighlighting="SQL"
+      <AvalonEdit:TextEditor 
+          Name="Text" 
           ShowLineNumbers="True"
           HorizontalScrollBarVisibility="Auto"
-          VerticalScrollBarVisibility="Visible"/>
+          VerticalScrollBarVisibility="Visible"
+          DragDrop.AllowDrop="True" />
     </DockPanel>
     
     <GridSplitter Name="ResultsSplitter" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>

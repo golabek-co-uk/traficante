@@ -196,6 +196,11 @@ namespace Traficante.Studio.ViewModels
                 return Unit.Default;
             });
         }
+        
+        public void DropText(int offset, string text)
+        {
+            this.Query.Text = this.Query.Text.Insert(offset, text);
+        }
 
         public async Task<Unit> SaveResultsAs(Unit arg)
         {
