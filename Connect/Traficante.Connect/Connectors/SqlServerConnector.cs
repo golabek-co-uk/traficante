@@ -121,7 +121,7 @@ namespace Traficante.Connect.Connectors
 
         // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql-server-schema-collections?view=netframework-4.8
 
-        public List<string> GetDatabases()
+        public IEnumerable<string> GetDatabases()
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
@@ -132,7 +132,7 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public List<(string schema, string name)> GetTables(string database)
+        public IEnumerable<(string schema, string name)> GetTables(string database)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
@@ -143,12 +143,12 @@ namespace Traficante.Connect.Connectors
                     .Select()
                     .Where(x => x["TABLE_TYPE"]?.ToString() == "BASE TABLE")
                     .Select(t => (t["TABLE_SCHEMA"]?.ToString(), t["TABLE_NAME"]?.ToString()))
-                    .ToList();
+                    .OrderBy(x => x.Item1).ThenBy(x => x.Item2);
                 return tables;
             }
         }
 
-        public List<(string schema, string name)> GetViews(string database)
+        public IEnumerable<(string schema, string name)> GetViews(string database)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
@@ -159,12 +159,12 @@ namespace Traficante.Connect.Connectors
                     .Select()
                     .Where(x => x["TABLE_TYPE"]?.ToString() == "VIEW")
                     .Select(t => (t["TABLE_SCHEMA"]?.ToString(), t["TABLE_NAME"]?.ToString()))
-                    .ToList();
+                    .OrderBy(x=> x.Item1).ThenBy(x => x.Item2);
                 return views;
             }
         }
 
-        public List<(string name, string type, bool? notNull)> GetFields(string database, string tableOrView)
+        public IEnumerable<(string name, string type, bool? notNull)> GetFields(string database, string tableOrView)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {

@@ -32,7 +32,7 @@ namespace Traficante.Studio.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _exception, value);
-                Message = value.Message;
+                Message = value.ToString();
             }
         }
 

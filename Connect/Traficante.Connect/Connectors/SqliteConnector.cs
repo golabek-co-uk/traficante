@@ -60,14 +60,14 @@ namespace Traficante.Connect.Connectors
             return @delegate;
         }
 
-        public List<string> GetDatabases()
+        public IEnumerable<string> GetDatabases()
         {
             List<string> databases = new List<string>();
             databases.Add(this.Config.Database);
             return databases;
         }
 
-        public List<(string schema, string name)> GetTables()
+        public IEnumerable<(string schema, string name)> GetTables()
         {
             List<(string schema, string name)> tables = new List<(string schema, string name)>();
             using (SqliteConnection sqlConnection = new SqliteConnection())
@@ -86,10 +86,10 @@ namespace Traficante.Connect.Connectors
                     }
                 }
             }
-            return tables;
+            return tables.OrderBy(x => x.Item1).ThenBy(x => x.Item2);
         }
 
-        public List<(string schema, string name)> GetViews()
+        public IEnumerable<(string schema, string name)> GetViews()
         {
             List<(string schema, string name)> views = new List<(string schema, string name)>();
             using (SqliteConnection sqlConnection = new SqliteConnection())
@@ -108,10 +108,10 @@ namespace Traficante.Connect.Connectors
                     }
                 }
             }
-            return views;
+            return views.OrderBy(x => x.Item1).ThenBy(x => x.Item2);
         }
 
-        public List<(string name, string type, bool? notNull)> GetFields(string tableOrView)
+        public IEnumerable<(string name, string type, bool? notNull)> GetFields(string tableOrView)
         {
             List<(string name, string type, bool? notNull)> fields = new List<(string name, string type, bool? notNull)>();
             using (SqliteConnection sqlConnection = new SqliteConnection())

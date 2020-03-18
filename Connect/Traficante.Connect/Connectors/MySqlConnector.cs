@@ -76,7 +76,7 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public List<string> GetDatabases()
+        public IEnumerable<string> GetDatabases()
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
@@ -87,7 +87,7 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public List<string> GetTables(string database)
+        public IEnumerable<string> GetTables(string database)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
@@ -99,12 +99,12 @@ namespace Traficante.Connect.Connectors
                     .Where(x => x["TABLE_TYPE"]?.ToString() == "BASE TABLE")
                     .Where(x => x["TABLE_SCHEMA"]?.ToString() == database)
                     .Select(t => t["TABLE_NAME"]?.ToString())
-                    .ToList();
+                    .OrderBy(x => x);
                 return tables;
             }
         }
 
-        public List<string> GetViews(string database)
+        public IEnumerable<string> GetViews(string database)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
@@ -116,7 +116,7 @@ namespace Traficante.Connect.Connectors
                     .Where(x => x["TABLE_TYPE"]?.ToString() == "VIEW")
                     .Where(x => x["TABLE_SCHEMA"]?.ToString() == database)
                     .Select(t => t["TABLE_NAME"]?.ToString())
-                    .ToList();
+                    .OrderBy(x => x);
                 return views;
             }
         }

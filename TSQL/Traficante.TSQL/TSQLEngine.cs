@@ -19,8 +19,7 @@ namespace Traficante.TSQL
     {
         public SourceDataManager SourceDataManager { get; set; } = new SourceDataManager();
         public List<Variable> Variables { get; private set; }
-        internal List<IDisposable> Disposables { get; private set; } = new List<IDisposable>();
-        
+
         public TSQLEngine()
         {
             Variables = new List<Variable>();
@@ -176,8 +175,6 @@ namespace Traficante.TSQL
 
         public void Dispose()
         {
-            foreach (var disposable in Disposables)
-                disposable.Dispose();
         }
     }
 }

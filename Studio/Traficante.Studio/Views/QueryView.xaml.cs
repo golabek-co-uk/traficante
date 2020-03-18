@@ -19,8 +19,8 @@ namespace Traficante.Studio.Views
         public TabControl Results => this.FindControl<TabControl>("Results");
         public DataGrid ResultsData => this.FindControl<DataGrid>("ResultsData");
 
-        public TextBlock ResultsError => this.FindControl<TextBlock>("ResultsError");
-        public TextBlock ResultsMessage => this.FindControl<TextBlock>("ResultsMessage");
+        public TextBox ResultsError => this.FindControl<TextBox>("ResultsError");
+        public TextBox ResultsMessage => this.FindControl<TextBox>("ResultsMessage");
         public GridSplitter ResultsSplitter => this.FindControl<GridSplitter>("ResultsSplitter");
 
         public MenuItem ExportResultsAs => this.FindControl<MenuItem>("ExportResultsAs");
@@ -46,9 +46,16 @@ namespace Traficante.Studio.Views
                     .Subscribe(x =>
                     {
                         this.ResultsError.Text = x;
+                        this.ResultsError.IsVisible = !string.IsNullOrEmpty(x);
                         this.Results.SelectedIndex = string.IsNullOrEmpty(x) ? 0 : 1;
-                    });
-                this.Bind(ViewModel, x => x.ResultsMessage, x => x.ResultsMessage.Text)
+                    })
+                    .DisposeWith(disposables);
+                this.WhenAnyValue(x => x.ViewModel.ResultsMessage)
+                    .Subscribe(x =>
+                    {
+                        this.ResultsMessage.IsVisible = !string.IsNullOrEmpty(x);
+                        this.ResultsMessage.Text = x;
+                    })
                     .DisposeWith(disposables);
                 this.Bind(ViewModel, x => x.ResultsAreVisible, x => x.Results.IsVisible)
                     .DisposeWith(disposables);

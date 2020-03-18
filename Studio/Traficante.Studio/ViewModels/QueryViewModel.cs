@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Traficante.Connect;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Models;
+using Traficante.TSQL;
 using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.Studio.ViewModels
@@ -168,20 +169,27 @@ namespace Traficante.Studio.ViewModels
 
                     ((IEnumerable<object>)items)
                         .ToObservable()
-                        .Buffer(TimeSpan.FromSeconds(2))
+                        .Buffer(TimeSpan.FromSeconds(1))
                         .Subscribe(x =>
                         {
                             sourceList.AddRange(x);
                         });
 
                 }
-                catch (Exception ex)
+                catch (TSQLException ex)
                 {
                     RxApp.MainThreadScheduler.Schedule(() =>
                     {
                         ResultsError = ex.Message;
                     });
-
+                    return Unit.Default;
+                }
+                catch (Exception ex)
+                {
+                    RxApp.MainThreadScheduler.Schedule(() =>
+                    {
+                        ResultsError = ex.ToString();
+                    });
                     return Unit.Default;
                 }
 

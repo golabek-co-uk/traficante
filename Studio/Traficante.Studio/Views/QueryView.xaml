@@ -11,7 +11,7 @@
         <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Run</Button>
       </Grid>
     </DockPanel>
-    <TextBox Name="Text" Grid.Row="1" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
+    <TextBox Name="Text" Grid.Row="1" AcceptsReturn="True" TextWrapping="NoWrap"></TextBox>
     <GridSplitter Name="ResultsSplitter" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
     <TabControl Name="Results" Grid.Row="3">
       <TabItem>
@@ -28,14 +28,16 @@
           </dg:DataGrid>
         </DockPanel>
       </TabItem>
-      <TabItem>
+      <TabItem >
         <TabItem.Header>
           <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Messages</TextBlock>
         </TabItem.Header>
-        <StackPanel>
-          <TextBlock Name="ResultsMessage" Text="" />
-          <TextBlock Name="ResultsError" Text="" Foreground="Red" />
-        </StackPanel>
+        <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
+          <StackPanel>
+              <TextBox Name="ResultsMessage" Text="" IsReadOnly="True" TextWrapping="NoWrap" BorderThickness="0" />
+              <TextBox Name="ResultsError" Text="" IsReadOnly="True" TextWrapping="NoWrap" BorderThickness="0" Foreground="Red" />
+          </StackPanel>
+        </ScrollViewer>
       </TabItem>
     </TabControl>
   </Grid>

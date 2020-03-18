@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
+using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
@@ -763,6 +764,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var item = _queryState.Alias2Item[rootNode.Name];
                 var columns = TypeHelper.GetColumns(item.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == itemNode.Name);
+                if (column == null)
+                    throw new TSQLException($"Column does not exist: {itemNode.Name}");
                 itemNode.ChangeReturnType(column.ColumnType);
                 Visit(new AccessColumnNode(itemNode.Name, rootNode.Name, column.ColumnType, TextSpan.Empty));
             }
@@ -1053,7 +1056,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             else if (typeof(IDataReader).IsAssignableFrom(resultType))
             {
                 var resultReader = (IDataReader)result;
-                _engine.Disposables.Add(resultReader);
                 resultItemsType = typeof(object[]);
                 resultFields = Enumerable
                     .Range(0, resultReader.FieldCount)
@@ -1064,7 +1066,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     typeof(Queryable),
                     "AsQueryable",
                     new Type[] { resultItemsType },
-                    Expression.Constant(AsEnumerable(resultReader)));
+                    Expression.Constant(new DataReaderEnumerable(resultReader)));
+                //Expression.Constant(AsEnumerable(resultReader)));
+                
             }
 
 
