@@ -18,8 +18,7 @@
           Name="Text" 
           ShowLineNumbers="True"
           HorizontalScrollBarVisibility="Auto"
-          VerticalScrollBarVisibility="Visible"
-          DragDrop.AllowDrop="True" />
+          VerticalScrollBarVisibility="Visible" />
     </DockPanel>
     
     <GridSplitter Name="ResultsSplitter" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>

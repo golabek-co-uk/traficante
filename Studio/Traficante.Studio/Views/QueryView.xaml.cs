@@ -30,7 +30,6 @@ namespace Traficante.Studio.Views
         public QueryView()
         {
             this.InitializeComponent();
-            
         }
 
         private void InitializeComponent()
@@ -73,6 +72,11 @@ namespace Traficante.Studio.Views
                 this.Text.AddHandler(DragDrop.DragOverEvent, DragOver);
                 DragDrop.SetAllowDrop(this.Text, true);
                 DragDrop.SetAllowDrop(this.Text.TextArea, true);
+                //this.Text.KeyUp += (source, e) =>
+                //{
+                    
+                //};
+                
             });
             AvaloniaXamlLoader.Load(this);
         }
@@ -106,9 +110,9 @@ namespace Traficante.Studio.Views
                 var position = this.Text.GetPositionFromPoint(point);
                 if (position.HasValue)
                 {
-                    var offset = this.Text.TextArea.Document.GetOffset(position.Value.Line, position.Value.Column);
                     var text = e.Data.GetText();
-                    this.ViewModel.DropText(offset, text);
+                    this.Text.TextArea.Selection.ReplaceSelectionWithText(text);
+                    this.Text.Focus();
                 }
 
             }
