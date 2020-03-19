@@ -16,6 +16,7 @@
     <AvaloniaResource Remove="Views\ConnectToMySqlWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToSqliteWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <AvaloniaResource Remove="Views\EditorView.xaml" />
     <AvaloniaResource Remove="Views\ExceptionWindow.xaml" />
     <AvaloniaResource Remove="Views\MenuView.xaml" />
     <AvaloniaResource Remove="Views\ObjectExplorerView.xaml" />
@@ -26,6 +27,7 @@
     <None Remove="Views\ConnectToMySqlWindow.xaml" />
     <None Remove="Views\ConnectToSqliteWindow.xaml" />
     <None Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <None Remove="Views\EditorView.xaml" />
     <None Remove="Views\ExceptionWindow.xaml" />
     <None Remove="Views\MenuView.xaml" />
     <None Remove="Views\ObjectExplorerView.xaml" />
@@ -89,6 +91,9 @@
     <ProjectReference Include="..\AvaloniaEdit\AvaloniaEdit.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\EditorView.xaml.cs">
+      <DependentUpon>EditorView.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ExceptionWindow.xaml.cs">
       <DependentUpon>ExceptionWindow.xaml</DependentUpon>
     </Compile>
@@ -107,5 +112,10 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controls\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\EditorView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

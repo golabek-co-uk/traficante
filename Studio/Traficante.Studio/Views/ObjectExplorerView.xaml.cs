@@ -88,9 +88,12 @@ namespace Traficante.Studio.Views
 
         private async void Item_DoDrag(object sender, PointerPressedEventArgs e)
         {
-            var item = (TreeViewItem)sender;
-            var objectPath = (IObjectPath)item.DataContext;
-            ViewModel.DragObjectPath(e, objectPath);
+            if (e.MouseButton == MouseButton.Left)
+            {
+                var item = (TreeViewItem)sender;
+                var objectPath = (IObjectPath)item.DataContext;
+                ViewModel.DragObjectPath(e, objectPath);
+            }
         }
     }
 }

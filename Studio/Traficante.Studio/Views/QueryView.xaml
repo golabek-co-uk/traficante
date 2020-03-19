@@ -1,5 +1,5 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             xmlns:views="clr-namespace:Traficante.Studio.Views;assembly=Traficante.Studio"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,11 +14,7 @@
     </DockPanel>
     
     <DockPanel Grid.Row="1">
-      <AvalonEdit:TextEditor 
-          Name="Text" 
-          ShowLineNumbers="True"
-          HorizontalScrollBarVisibility="Auto"
-          VerticalScrollBarVisibility="Visible" />
+      <views:EditorView Name="Text" />
     </DockPanel>
     
     <GridSplitter Name="ResultsSplitter" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
