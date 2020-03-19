@@ -176,7 +176,14 @@ namespace Traficante.Studio.ViewModels
                 {
                     RxApp.MainThreadScheduler.Schedule(() =>
                     {
-                        ResultsError = ex.Message;
+                        string error = $"Error: {ex.Message}";
+                        if (ex.LineNumber.HasValue)
+                            error += $"\r\nLine number: {ex.LineNumber}";
+                        if (ex.ColumnNumber.HasValue)
+                            error += $"\r\nColumn number: {ex.ColumnNumber}";
+                        if (ex.ColumnNumber.HasValue)
+                            error += $"\r\n\r\nStack trace: {ex.StackTrace}";
+                        ResultsError = error;
                     });
                     return Unit.Default;
                 }

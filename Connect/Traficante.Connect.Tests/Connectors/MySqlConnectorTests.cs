@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using Traficante.Connect.Connectors;
 
 namespace Traficante.Connect.Tests.Connectors
@@ -37,7 +38,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetDatabases()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            var databases = connector.GetDatabases();
+            var databases = connector.GetDatabases().ToList();
             CollectionAssert.Contains(databases, "sys");
         }
 
@@ -45,7 +46,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetTables()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            var tables = connector.GetTables("sys");
+            var tables = connector.GetTables("sys").ToList();
             CollectionAssert.Contains(tables, "sys_config");
         }
 
@@ -54,7 +55,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetViews()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            var views = connector.GetViews("sys");
+            var views = connector.GetViews("sys").ToList();
             CollectionAssert.Contains(views, "host_summary");
         }
 

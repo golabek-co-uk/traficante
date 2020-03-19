@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Traficante.TSQL.Parser.Lexing
@@ -9,14 +10,7 @@ namespace Traficante.TSQL.Parser.Lexing
     /// </summary>
     public abstract class LexerBase<TToken> : ILexer<TToken>
     {
-        #region Constructors
 
-        /// <summary>
-        ///     Initialize instance.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="defaultToken">The Default token.</param>
-        /// <param name="definitions">The Definitions.</param>
         protected LexerBase(string input, TToken defaultToken, params TokenDefinition[] definitions)
         {
             if (string.IsNullOrEmpty(input))
@@ -32,18 +26,7 @@ namespace Traficante.TSQL.Parser.Lexing
             _definitions = definitions;
         }
 
-        #endregion
-
-        #region Public properties
-
-        /// <summary>
-        ///     Determine if lexer position is out of range.
-        /// </summary>
         protected bool IsOutOfRange => Position >= Input.Length;
-
-        #endregion
-
-        #region TokenUtils
 
         protected class TokenDefinition
         {
@@ -109,37 +92,15 @@ namespace Traficante.TSQL.Parser.Lexing
             public Match SubMatch { get; set; }
         }
 
-        #endregion
-
-        #region Private Variables
-
         private readonly TokenDefinition[] _definitions;
         private TToken _currentToken;
         private TToken _lastToken;
 
-        #endregion
 
-        #region Protected properties
-
-        /// <summary>
-        ///     Gets or sets the position.
-        /// </summary>
         public int Position { get; protected set; }
 
-        /// <summary>
-        ///     Gets the input.
-        /// </summary>
-        protected string Input { get; }
+        public string Input { get; }
 
-        #endregion
-
-        #region Protected Methods
-
-        /// <summary>
-        ///     Assigns token of specific type.
-        /// </summary>
-        /// <param name="instantiate">Instantiate token function.</param>
-        /// <returns>The TToken.</returns>
         protected TToken AssignTokenOfType(Func<TToken> instantiate)
         {
             if (instantiate == null)
@@ -150,46 +111,21 @@ namespace Traficante.TSQL.Parser.Lexing
             return _currentToken;
         }
 
-        /// <summary>
-        ///     Gets the token.
-        /// </summary>
-        /// <param name="matchedDefinition">The matched definition.</param>
-        /// <param name="match">The match.</param>
-        /// <returns>The TToken.</returns>
         protected abstract TToken GetToken(TokenDefinition matchedDefinition, TokenMatch match);
 
-        /// <summary>
-        ///     Gets end of file token.
-        /// </summary>
-        /// <returns>The TToken.</returns>
         protected abstract TToken GetEndOfFileToken();
 
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        ///     Gets lastly processed token.
-        /// </summary>
-        /// <returns>The TToken.</returns>
+     
         public virtual TToken Last()
         {
             return _lastToken;
         }
 
-        /// <summary>
-        ///     Gets currently processing token.
-        /// </summary>
-        /// <returns>The TToken.</returns>
         public virtual TToken Current()
         {
             return _currentToken;
         }
 
-        /// <summary>
-        ///     Compute next token.
-        /// </summary>
-        /// <returns>The TToken.</returns>
         public virtual TToken Next()
         {
             while (!IsOutOfRange)
@@ -220,6 +156,11 @@ namespace Traficante.TSQL.Parser.Lexing
             return AssignTokenOfType(GetEndOfFileToken);
         }
 
-        #endregion
+        public (int? LineNumber, int? ColumnNumber) GetLineAndColumnPosition(int position)
+        {
+            var lineNumber = Input.Take(position).Count(c => c == '\n') + 1;
+            var columnNumber = Input.Take(position).Reverse().TakeWhile(x => x != '\n').Count() + 1;
+            return (lineNumber, columnNumber);
+        }
     }
 }
