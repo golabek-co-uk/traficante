@@ -65,10 +65,10 @@ namespace Traficante.Studio.Views
                 item.ContextMenu = item.ContextMenu != null ? item.ContextMenu : new ContextMenu();
                 item.ContextMenu.Items = new List<MenuItem> { change, remove };
             }
-            if (item.DataContext is IObjectPath objectPath && item.DataContext is IObjectFields objectFields)
+            if (item.DataContext is IObjectSource objectPath)
             {
                 MenuItem generateSelect = new MenuItem { Header = "Select query" };
-                generateSelect.Click += (x, y) => ViewModel.GenerateSelectQuery(objectPath, objectFields);
+                generateSelect.Click += (x, y) => ViewModel.GenerateSelectQuery(objectPath);
                 MenuItem generate = new MenuItem { Header = "Generate" };
                 generate.Items = new List<MenuItem> { generateSelect };
                 item.ContextMenu = item.ContextMenu != null ? item.ContextMenu : new ContextMenu();
@@ -80,7 +80,7 @@ namespace Traficante.Studio.Views
                 item.ContextMenu.IsVisible = false;
             }
 
-            if (item.DataContext is IObjectPath objectPath2)
+            if (item.DataContext is IObjectSource objectPath2 || item.DataContext is IObjectField objectField2)
             {
                 item.PointerPressed += Item_DoDrag;
             }
@@ -91,8 +91,9 @@ namespace Traficante.Studio.Views
             if (e.MouseButton == MouseButton.Left)
             {
                 var item = (TreeViewItem)sender;
-                var objectPath = (IObjectPath)item.DataContext;
-                ViewModel.DragObjectPath(e, objectPath);
+                var objectSource = item.DataContext as IObjectSource;
+                var objectField = item.DataContext as IObjectField;
+                ViewModel.DragObjectPath(objectSource, objectField, e);
             }
         }
     }

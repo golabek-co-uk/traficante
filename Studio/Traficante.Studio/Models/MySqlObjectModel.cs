@@ -102,7 +102,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class MySqlTableObjectModel : ObjectModel, IObjectPath, IObjectFields
+    public class MySqlTableObjectModel : ObjectModel, IObjectSource
     {
         public MySqlDatabaseObjectModel Databse { get; }
         
@@ -153,7 +153,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class MySqlViewObjectModel : ObjectModel, IObjectPath, IObjectFields
+    public class MySqlViewObjectModel : ObjectModel, IObjectSource
     {
         public MySqlDatabaseObjectModel Databse { get; }
 

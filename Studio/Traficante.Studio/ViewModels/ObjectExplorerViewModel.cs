@@ -55,23 +55,34 @@ namespace Traficante.Studio.ViewModels
             AppData.Objects.Remove(sqlite);
         }
 
-        public void GenerateSelectQuery(IObjectPath objectPath, IObjectFields objectFields)
+        public void GenerateSelectQuery(IObjectSource objectPath)
         {
             var path = objectPath.GetObjectPath();
             var sqlPath = string.Join(".", path.Select(x => $"[{x}]"));
-            var fields = objectFields.GetObjectFields();
+            var fields = objectPath.GetObjectFields();
             var sqlFields = fields.Length > 0 ? string.Join(".", fields.Select(x => $"[{x}]")) : "*";
             var sql = $"SELECT {sqlFields} FROM {sqlPath}";
             AppData.Queries.Add(new QueryModel { Id = Guid.NewGuid().ToString(), Text = sql });
         }
 
-        public async void DragObjectPath(PointerPressedEventArgs e, IObjectPath objectPath)
+        public async void DragObjectPath(IObjectSource objectSource, IObjectField objectField, PointerPressedEventArgs e)
         {
-            var path = objectPath.GetObjectPath();
-            var sqlPath = string.Join(".", path.Select(x => $"[{x}]"));
-            DataObject dragData = new DataObject();
-            dragData.Set(DataFormats.Text, sqlPath);
-            await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Copy);
+            if (objectSource != null)
+            {
+                var path = objectSource.GetObjectPath();
+                var sqlPath = string.Join(",", path.Select(x => $"[{x}]"));
+                DataObject dragData = new DataObject();
+                dragData.Set(DataFormats.Text, sqlPath);
+                await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Copy);
+            }
+            if (objectField != null)
+            {
+                var name = objectField.GetObjectFieldName();
+                var sqlName = $"[{name}]";
+                DataObject dragData = new DataObject();
+                dragData.Set(DataFormats.Text, sqlName);
+                await DragDrop.DoDragDrop(e, dragData, DragDropEffects.Copy);
+            }
         }
     }
 }

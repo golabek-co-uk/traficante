@@ -106,7 +106,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqlServerTableObjectModel : ObjectModel, IObjectPath, IObjectFields
+    public class SqlServerTableObjectModel : ObjectModel, IObjectSource
     {
         public SqlServerDatabaseObjectModel Database { get; }
         public string OnlyName { get; set; }
@@ -125,7 +125,7 @@ namespace Traficante.Studio.Models
             Observable
                 .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Name, this.OnlyName)))
                 .SelectMany(x => x)
-                .Select(x => new SqlServerFielObjectModel(Database, x.name, x.type, x.notNull))
+                .Select(x => new SqlServerFieldObjectModel(Database, x.name, x.type, x.notNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -172,7 +172,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqlServerViewObjectModel : ObjectModel, IObjectPath, IObjectFields
+    public class SqlServerViewObjectModel : ObjectModel, IObjectSource
     {
         public SqlServerDatabaseObjectModel Database { get; }
         public string OnlyName { get; set; }
@@ -191,7 +191,7 @@ namespace Traficante.Studio.Models
             Observable
                 .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Name, this.OnlyName)))
                 .SelectMany(x => x)
-                .Select(x => new SqlServerFielObjectModel(Database, x.name, x.type, x.notNull))
+                .Select(x => new SqlServerFieldObjectModel(Database, x.name, x.type, x.notNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -212,17 +212,24 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqlServerFielObjectModel : ObjectModel
+    public class SqlServerFieldObjectModel : ObjectModel, IObjectField
     {
         public SqlServerDatabaseObjectModel Databse { get; }
+        public string NameOnly { get; set; }
 
-        public SqlServerFielObjectModel(SqlServerDatabaseObjectModel databse, string name, string type, bool? notNull)
+        public SqlServerFieldObjectModel(SqlServerDatabaseObjectModel databse, string name, string type, bool? notNull)
         {
             Databse = databse;
             Name = $"{name} {type}";
+            NameOnly = name;
         }
 
         public override ObservableCollection<object> Items => null;
+
+        public string GetObjectFieldName()
+        {
+            return this.NameOnly;
+        }
     }
 
     [DataContract]

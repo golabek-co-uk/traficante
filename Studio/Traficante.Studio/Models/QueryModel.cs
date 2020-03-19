@@ -39,13 +39,14 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public interface IObjectPath
+    public interface IObjectSource
     {
         string[] GetObjectPath();
+        string[] GetObjectFields();
     }
 
-    public interface IObjectFields
+    public interface IObjectField
     {
-        string[] GetObjectFields();
+        string GetObjectFieldName();
     }
 }

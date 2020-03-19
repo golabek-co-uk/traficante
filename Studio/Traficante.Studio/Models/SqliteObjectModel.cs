@@ -80,7 +80,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqliteTableObjectModel : ObjectModel, IObjectPath, IObjectFields
+    public class SqliteTableObjectModel : ObjectModel, IObjectSource
     {
         public SqliteObjectModel Database { get; }
 
@@ -95,7 +95,7 @@ namespace Traficante.Studio.Models
             Observable
                 .FromAsync(() => new TaskFactory().StartNew(() => new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetFields(this.Name)))
                 .SelectMany(x => x)
-                .Select(x => new SqliteFielObjectModel(Database, x.name, x.type, x.notNull))
+                .Select(x => new SqliteFieldObjectModel(Database, x.name, x.type, x.notNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -142,7 +142,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqliteViewObjectModel : ObjectModel, IObjectPath, IObjectFields
+    public class SqliteViewObjectModel : ObjectModel, IObjectSource
     {
         public SqliteObjectModel Database { get; }
         public string OnlyName { get; set; }
@@ -161,7 +161,7 @@ namespace Traficante.Studio.Models
             Observable
                 .FromAsync(() => new TaskFactory().StartNew(() => new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetFields(this.Name)))
                 .SelectMany(x => x)
-                .Select(x => new SqliteFielObjectModel(Database, x.name, x.type, x.notNull))
+                .Select(x => new SqliteFieldObjectModel(Database, x.name, x.type, x.notNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -182,17 +182,24 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqliteFielObjectModel : ObjectModel
+    public class SqliteFieldObjectModel : ObjectModel, IObjectField
     {
         public SqliteObjectModel Databse { get; }
+        public string NameOnly { get; set; }
 
-        public SqliteFielObjectModel(SqliteObjectModel databse, string name, string type, bool? notNull)
+        public SqliteFieldObjectModel(SqliteObjectModel databse, string name, string type, bool? notNull)
         {
             Databse = databse;
             Name = $"{name} {type}";
+            NameOnly = name;
         }
 
         public override ObservableCollection<object> Items => null;
+
+        public string GetObjectFieldName()
+        {
+            return NameOnly;
+        }
     }
 
     [DataContract]
