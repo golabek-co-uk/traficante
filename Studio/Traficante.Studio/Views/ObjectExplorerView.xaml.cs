@@ -3,12 +3,14 @@ using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using Traficante.Studio.Models;
 using Traficante.Studio.ViewModels;
@@ -18,7 +20,8 @@ namespace Traficante.Studio.Views
     public class ObjectExplorerView : ReactiveUserControl<ObjectExplorerViewModel>
     {
         public TreeView Objects => this.FindControl<TreeView>("Objects");
-        
+
+
         public ObjectExplorerView()
         {
             this.InitializeComponent();
@@ -26,13 +29,14 @@ namespace Traficante.Studio.Views
 
         private void InitializeComponent()
         {
-            this.WhenActivated(disposables => 
+            this.WhenActivated(disposables =>
             {
-                this.OneWayBind(ViewModel, x => x.AppData.Objects, x => x.Objects.Items, x => (System.Collections. IEnumerable)x)
+                this.OneWayBind(ViewModel, x => x.AppData.Objects, x => x.Objects.Items, x => (System.Collections.IEnumerable)x)
                     .DisposeWith(disposables);
+
+                Objects.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
             });
             AvaloniaXamlLoader.Load(this);
-            Objects.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
         }
 
         private void TreeViewItemMaterialized(object sender, ItemContainerEventArgs e)
@@ -46,7 +50,7 @@ namespace Traficante.Studio.Views
                 remove.Click += (x, y) => ViewModel.RemoveObject(sqlServer);
                 item.ContextMenu = item.ContextMenu != null ? item.ContextMenu : new ContextMenu();
                 item.ContextMenu.Items = new List<MenuItem> { change, remove };
-            } 
+            }
             if (item.DataContext is MySqlObjectModel mySql)
             {
                 MenuItem change = new MenuItem { Header = "Change" };
@@ -82,19 +86,46 @@ namespace Traficante.Studio.Views
 
             if (item.DataContext is IObjectSource objectPath2 || item.DataContext is IObjectField objectField2)
             {
-                item.PointerPressed += Item_DoDrag;
+                item.PointerMoved += Item_PointerMoved;
             }
         }
 
-        private async void Item_DoDrag(object sender, PointerPressedEventArgs e)
+        private TreeViewItem _pressedItem = null;
+
+        private async void Item_PointerMoved(object sender, PointerEventArgs e)
         {
-            if (e.MouseButton == MouseButton.Left)
+            if (e.InputModifiers == InputModifiers.LeftMouseButton)
             {
-                var item = (TreeViewItem)sender;
-                var objectSource = item.DataContext as IObjectSource;
-                var objectField = item.DataContext as IObjectField;
-                ViewModel.DragObjectPath(objectSource, objectField, e);
+                if (this._pressedItem == null)
+                {
+                    this._pressedItem = sender as TreeViewItem;
+                    var objectSource = _pressedItem.DataContext as IObjectSource;
+                    var objectField = _pressedItem.DataContext as IObjectField;
+                    if (objectSource != null)
+                    {
+                        var path = objectSource.GetObjectPath();
+                        var sqlPath = string.Join(",", path.Select(x => $"[{x}]"));
+                        var pressedItemDraggedData = new DataObject();
+                        pressedItemDraggedData.Set(DataFormats.Text, sqlPath);
+                        await DragDrop.DoDragDrop(e, pressedItemDraggedData, DragDropEffects.Copy);
+                    }
+                    if (objectField != null)
+                    {
+                        var name = objectField.GetObjectFieldName();
+                        var sqlName = $"[{name}]";
+                        var pressedItemDraggedData = new DataObject();
+                        pressedItemDraggedData.Set(DataFormats.Text, sqlName);
+                        await DragDrop.DoDragDrop(e, pressedItemDraggedData, DragDropEffects.Copy);
+                    }
+
+                }
             }
+            else
+            {
+                this._pressedItem = null;
+            }
+            
         }
+
     }
 }
