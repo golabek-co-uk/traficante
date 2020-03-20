@@ -145,8 +145,7 @@ namespace Traficante.TSQL.Parser.Lexing
                 }
 
                 if (matchedDefinition == null)
-                    throw new UnknownTokenException(Position, Input[Position],
-                        $"Unrecognized token exception at {Position} for {Input.Substring(Position)}");
+                    throw new TSQLException($"Unrecognized token", GetLocation(Position));
                 var token = GetToken(matchedDefinition, match);
                 Position += match.Match.Length;
 
@@ -156,7 +155,7 @@ namespace Traficante.TSQL.Parser.Lexing
             return AssignTokenOfType(GetEndOfFileToken);
         }
 
-        public (int? LineNumber, int? ColumnNumber) GetLineAndColumnPosition(int position)
+        public (int? LineNumber, int? ColumnNumber) GetLocation(int position)
         {
             var lineNumber = Input.Take(position).Count(c => c == '\n') + 1;
             var columnNumber = Input.Take(position).Reverse().TakeWhile(x => x != '\n').Count() + 1;

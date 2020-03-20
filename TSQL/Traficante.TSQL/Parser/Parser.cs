@@ -71,7 +71,7 @@ namespace Traficante.TSQL.Parser
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeFunctionMethod(new string[0])), TokenType.Semicolon);
                 default:
                     throw new TSQLException(
-                        $"{Current.TokenType} cannot be used here.",  _lexer.GetLineAndColumnPosition(Current.Span.Start));
+                        $"{Current.TokenType} cannot be used here.",  _lexer.GetLocation(Current.Span.Start));
                   
             }
         }
@@ -510,7 +510,7 @@ namespace Traficante.TSQL.Parser
                 case TokenType.EndOfFile:
                     return Order.Ascending;
                 default:
-                    throw new TSQLException($"Unrecognized token: {Current.TokenType}", _lexer.GetLineAndColumnPosition(Current.Span.Start));
+                    throw new TSQLException($"Unrecognized token: {Current.TokenType}", _lexer.GetLocation(Current.Span.Start));
             }
         }
 
@@ -529,7 +529,7 @@ namespace Traficante.TSQL.Parser
                         node = new OrNode(node, ComposeEqualityOperators());
                         break;
                     default:
-                        throw new TSQLException($"Unrecognized token: {Current.TokenType}", _lexer.GetLineAndColumnPosition(Current.Span.Start));
+                        throw new TSQLException($"Unrecognized token: {Current.TokenType}", _lexer.GetLocation(Current.Span.Start));
                 }
             return node;
         }
@@ -567,7 +567,7 @@ namespace Traficante.TSQL.Parser
                         left = new DotNode(left, right, false, string.Empty);
                         break;
                     default:
-                        throw new TSQLException($"Unrecognized: {curr.TokenType}", _lexer.GetLineAndColumnPosition(curr.Span.Start));
+                        throw new TSQLException($"Unrecognized: {curr.TokenType}", _lexer.GetLocation(curr.Span.Start));
                 }
             }
 
@@ -644,7 +644,7 @@ namespace Traficante.TSQL.Parser
                         node = new NotNode(new InNode(node, ComposeFunctionArgs()));
                         break;
                     default:
-                        throw new TSQLException($"Unrecognized token: {Current.TokenType}", _lexer.GetLineAndColumnPosition(Current.Span.Start));
+                        throw new TSQLException($"Unrecognized token: {Current.TokenType}", _lexer.GetLocation(Current.Span.Start));
                 }
 
             return node;
@@ -760,7 +760,7 @@ namespace Traficante.TSQL.Parser
                 return;
             }
 
-            throw new TSQLException($"Unrecognized token: {Current.Value}", _lexer.GetLineAndColumnPosition(Current.Span.Start));
+            throw new TSQLException($"Unrecognized token: {Current.Value}", _lexer.GetLocation(Current.Span.Start));
         }
 
         private ArgsListNode ComposeFunctionArgs()
@@ -833,7 +833,7 @@ namespace Traficante.TSQL.Parser
                 case TokenType.Identifier:
 
                     if (!(Current is ColumnToken column))
-                        throw new TSQLException($"Expected token is {TokenType.Identifier} but received {Current.TokenType}", _lexer.GetLineAndColumnPosition(Current.Span.Start));
+                        throw new TSQLException($"Expected token is {TokenType.Identifier} but received {Current.TokenType}", _lexer.GetLocation(Current.Span.Start));
 
                     Consume(TokenType.Identifier);
 
@@ -877,7 +877,7 @@ namespace Traficante.TSQL.Parser
                     return new VariableNode(token.Value);
             }
 
-            throw new TSQLException($"Token {Current.Value}({Current.TokenType}) cannot be used here.", _lexer.GetLineAndColumnPosition(Current.Span.Start));
+            throw new TSQLException($"Token {Current.Value}({Current.TokenType}) cannot be used here.", _lexer.GetLocation(Current.Span.Start));
         }
 
         private ((Node When, Node Then)[] WhenThenNodes, Node ElseNode) ComposeCase()
@@ -922,7 +922,7 @@ namespace Traficante.TSQL.Parser
         private FunctionNode ComposeFunctionMethod(string[] path)
         {
             if (!(Current is FunctionToken func))
-                throw new TSQLException($"Expected token is {TokenType.Function} but {Current.TokenType} received", _lexer.GetLineAndColumnPosition(Current.Span.Start));
+                throw new TSQLException($"Expected token is {TokenType.Function} but {Current.TokenType} received", _lexer.GetLocation(Current.Span.Start));
 
             bool isCastFunction = Current.Value.Equals("CAST", StringComparison.CurrentCultureIgnoreCase);
 
