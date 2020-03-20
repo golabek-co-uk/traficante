@@ -45,7 +45,7 @@ namespace Traficante.Studio.Views
                     nameof(this.TextEditor.TextChanged))
                 .Subscribe(x =>
                 {
-                    this.SetValue(TextProperty, x);
+                    this.SetValue(TextProperty, this.TextEditor.Text);
                 });
 
                 Observable.FromEventPattern(
