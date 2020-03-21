@@ -32,6 +32,7 @@ namespace Traficante.Studio.Models
                 }
                 return _items;
             }
+            set { _items = value; }
         }
 
         public virtual void LoadItems()

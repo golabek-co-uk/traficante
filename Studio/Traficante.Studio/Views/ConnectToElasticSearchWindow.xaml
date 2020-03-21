@@ -1,0 +1,36 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
+        Width="400" Height="250"
+        x:Class="Traficante.Studio.Views.ConnectToElasticSearchWindow"
+        x:Name="Window"
+        Title="Connect To ElasticSearch">
+  <Grid Margin="10">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock Grid.Row="0">Alias</TextBlock>
+    <TextBox Grid.Row="0" Name="Alias" Grid.Column="1" Margin="10,0,0,20" />
+    <TextBlock Grid.Row="1">Server url</TextBlock>
+    <TextBox Grid.Row="1" Name="Server" Grid.Column="1" Margin="10,0,0,10" />
+    <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,10">
+      <Button Name="Connect" Width="50">OK</Button>
+      <Button Name="Cancel" Margin="10,0,0,0">Cancel</Button>
+    </StackPanel>
+    <TextBlock Grid.Row="3"></TextBlock>
+    <TextBlock Text="{Binding ConnectError}" Grid.Row="2" Grid.Column="1"></TextBlock>
+  </Grid>
+</Window>

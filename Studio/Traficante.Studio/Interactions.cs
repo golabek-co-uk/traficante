@@ -13,6 +13,8 @@ namespace Traficante.Studio
         public static readonly Interaction<SqlServerObjectModel, SqlServerObjectModel> ConnectToSqlServer = new Interaction<SqlServerObjectModel, SqlServerObjectModel>();
         public static readonly Interaction<MySqlObjectModel, MySqlObjectModel> ConnectToMySql = new Interaction<MySqlObjectModel, MySqlObjectModel>();
         public static readonly Interaction<SqliteObjectModel, SqliteObjectModel> ConnectToSqlite = new Interaction<SqliteObjectModel, SqliteObjectModel>();
+        public static readonly Interaction<ElasticSearchObjectModel, ElasticSearchObjectModel> ConnectToElasticSearch = new Interaction<ElasticSearchObjectModel, ElasticSearchObjectModel>();
+        
 
         public static readonly Interaction<Unit, Unit> Exit = new Interaction<Unit, Unit>();
         public static readonly Interaction<Unit, Unit> Paste = new Interaction<Unit, Unit>();

@@ -49,6 +49,16 @@ namespace Traficante.Studio.ViewModels
                     interaction.SetOutput(dataContext.Output);
                 });
 
+                Interactions.ConnectToElasticSearch.RegisterHandler(
+                async interaction =>
+                {
+                    var dataContext = new ConnectToElasticSearchViewModel(interaction.Input, _appData);
+                    var dialog = new ConnectToElasticSearchWindow() { DataContext = dataContext };
+                    await dialog.ShowDialog(Window);
+                    Window.Focus();
+                    interaction.SetOutput(dataContext.Output);
+                });
+
             Interactions.Exceptions.RegisterHandler(
                 interaction =>
                 {
