@@ -69,6 +69,15 @@ namespace Traficante.Studio.Views
                 item.ContextMenu = item.ContextMenu != null ? item.ContextMenu : new ContextMenu();
                 item.ContextMenu.Items = new List<MenuItem> { change, remove };
             }
+            if (item.DataContext is ElasticSearchObjectModel elastic)
+            {
+                MenuItem change = new MenuItem { Header = "Change" };
+                change.Click += (x, y) => ViewModel.ChangeObject(elastic);
+                MenuItem remove = new MenuItem { Header = "Remove" };
+                remove.Click += (x, y) => ViewModel.RemoveObject(elastic);
+                item.ContextMenu = item.ContextMenu != null ? item.ContextMenu : new ContextMenu();
+                item.ContextMenu.Items = new List<MenuItem> { change, remove };
+            }
             if (item.DataContext is IObjectSource objectPath)
             {
                 MenuItem generateSelect = new MenuItem { Header = "Select query" };

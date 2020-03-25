@@ -20,7 +20,6 @@ namespace Traficante.Studio.Views
         
 
         public static readonly AvaloniaProperty<string> TextProperty = AvaloniaProperty.Register<EditorView, string>("Text");
-
         public string Text
         {
             get { return this.TextEditor.Text; }
@@ -29,6 +28,13 @@ namespace Traficante.Studio.Views
                 this.TextEditor.Text = value;
                 this.SetValue(TextProperty, value);
             }
+        }
+
+        public static readonly AvaloniaProperty<string> SelectedTextProperty = AvaloniaProperty.Register<EditorView, string>("SelectedText");
+        public string SelectedText
+        {
+            get { return this.TextEditor.SelectedText; }
+            set { this.SetValue(SelectedTextProperty, value); }
         }
 
         public EditorView()
@@ -56,7 +62,15 @@ namespace Traficante.Studio.Views
                     this.Ln.Text = this.TextEditor.TextArea.Caret.Line.ToString();
                     this.Col.Text = this.TextEditor.TextArea.Caret.Column.ToString();
                 });
-                
+
+                Observable.FromEventPattern(
+                    this.TextEditor.TextArea,
+                    nameof(this.TextEditor.TextArea.SelectionChanged))
+                .Subscribe(x =>
+                {
+                    this.SelectedText = this.TextEditor.SelectedText;
+                });
+
                 this.TextEditor.AddHandler(DragDrop.DropEvent, Drop);
                 this.TextEditor.AddHandler(DragDrop.DragOverEvent, DragOver);
                 DragDrop.SetAllowDrop(this.TextEditor, true);

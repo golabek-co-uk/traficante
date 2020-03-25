@@ -536,6 +536,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("002", table[1].Values[0]);
         }
 
+
         [TestMethod]
         public void SimpleSkipTest()
         {

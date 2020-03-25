@@ -84,6 +84,20 @@ namespace Traficante.Studio.Models
     {
         public ElasticSearchObjectModel Server { get; }
 
+        public JsonDocument _mapping = null;
+        public JsonDocument Mapping
+        {
+            get
+            {
+                lock (this)
+                {
+                    if (_mapping == null)
+                        _mapping = new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetIndex(Name);
+                    return _mapping;
+                }
+            }
+        }
+
         public ElasticSearchIndexObjectModel(ElasticSearchObjectModel server, string name)
         {
             Server = server;
@@ -95,12 +109,11 @@ namespace Traficante.Studio.Models
             Observable
                 .FromAsync(() => new TaskFactory().StartNew(() =>
                 {
-                    return new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig())
-                    .GetIndexMapping(Name)
-                    .RootElement.GetProperty(this.Name)
-                    .EnumerateObject()
-                    .Select(x => new ElasticSearchJsonDocument(Server, x.Name, x.Value))
-                    .ToList();
+                    return Mapping
+                        .RootElement.GetProperty(this.Name)
+                        .EnumerateObject()
+                        .Select(x => new ElasticSearchJsonDocument(Server, x.Name, x.Value))
+                        .ToList();
                 }))
                 .SelectMany(x => x)
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -114,12 +127,21 @@ namespace Traficante.Studio.Models
 
         public string[] GetObjectPath()
         {
-            return new string[] { Name };
+            var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(Mapping).ToList();
+            if (mappingTypes.Count > 1)
+                return new string[] { this.Server.Name, Name, mappingTypes.First() };
+            else
+                return new string[] { this.Server.Name, Name};
         }
 
         public string[] GetObjectFields()
         {
-            return new string[0];
+            var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(Mapping).ToList();
+            var fields = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Name);
+            if (mappingTypes.Count > 1)
+                return fields.Where(x => x.MappingType == mappingTypes[0]).Select(x => x.Name).ToArray();
+            else
+                return fields.Select(x => x.Name).ToArray();
         }
     }
 
@@ -165,7 +187,7 @@ namespace Traficante.Studio.Models
                 .FromAsync(() => new TaskFactory().StartNew(() =>
                 {
                     return new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig())
-                    .GetIndexMapping(Name)
+                    .GetIndex(Name)
                     .RootElement
                     .EnumerateObject()
                     .Select(x => new ElasticSearchJsonDocument(Server, x.Name, x.Value))
@@ -183,7 +205,7 @@ namespace Traficante.Studio.Models
 
         public string[] GetObjectPath()
         {
-            return new string[] { Name };
+            return new string[] { this.Server.Name, Name };
         }
 
         public string[] GetObjectFields()

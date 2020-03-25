@@ -11,6 +11,21 @@ namespace Traficante.TSQL.Tests
     [TestClass]
     public class EngineTests
     {
+        
+
+        [TestMethod]
+        public void Select_All_From_TableInBrackets()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            sut.AddTable("55dog-animals", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" },
+                new Person { Id = 2, FirstName = "John", LastName = "Doe" },
+                new Person { Id = 2, FirstName = "Joe", LastName = "Block" }
+            });
+
+            var resunt = sut.RunAndReturnTable("SELECT * FROM [55dog-animals] WHERE FirstName = 'John'");
+            Assert.AreEqual(2, resunt.Count);
+        }
 
         [TestMethod]
         public void Select_All_From_Where()

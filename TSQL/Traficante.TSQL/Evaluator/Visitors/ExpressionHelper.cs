@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.Json;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
@@ -348,6 +349,21 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 if (right.Type.Name != "Nullable`1")
                     right = Expression.Convert(right, typeof(Nullable<>).MakeGenericType(right.Type));
             }
+
+            if (left.Type == typeof(Nullable<JsonElement>) || right.Type == typeof(Nullable<JsonElement>))
+            {
+                left = Expression.Call(
+                     Expression.Convert(left, typeof(object)),
+                     typeof(object).GetMethod("ToString"));
+                right = Expression.Call(
+                     Expression.Convert(right, typeof(object)),
+                     typeof(object).GetMethod("ToString"));
+
+                //right = Expression.Convert(right, typeof(string));
+                //left = Expression.Convert(left, typeof(string));
+                return (left, right);
+            }
+
             //TODO: check best converstoin
             //System.Byte
             //System.SByte
@@ -374,6 +390,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 else
                     left = Expression.Convert(left, right.Type);
             }
+
             return (left, right);
         }
 

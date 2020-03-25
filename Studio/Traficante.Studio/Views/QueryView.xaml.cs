@@ -24,7 +24,9 @@ namespace Traficante.Studio.Views
         public TextBox ResultsMessage => this.FindControl<TextBox>("ResultsMessage");
         public GridSplitter ResultsSplitter => this.FindControl<GridSplitter>("ResultsSplitter");
         public MenuItem ExportResultsAs => this.FindControl<MenuItem>("ExportResultsAs");
+        public TextBlock ResultsCount => this.FindControl<TextBlock>("ResultsCount");
         
+
         public QueryView()
         {
             this.InitializeComponent();
@@ -35,6 +37,8 @@ namespace Traficante.Studio.Views
             this.WhenActivated(disposables =>
             {
                 this.Bind(ViewModel, x => x.Query.Text, x => x.Text.Text)
+                    .DisposeWith(disposables);
+                this.Bind(ViewModel, x => x.SelectedText, x => x.Text.SelectedText)
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)
                     .DisposeWith(disposables);
@@ -64,11 +68,13 @@ namespace Traficante.Studio.Views
                 this.ViewModel.ResultsDataColumns = this.ResultsData.Columns;
                 this.BindCommand(ViewModel, x => x.SaveResultsAsCommand, x => x.ExportResultsAs);
 
-                
+                this.Bind(ViewModel, x => x.ResultsCount, x => x.ResultsCount.Text)
+                    .DisposeWith(disposables);
+
             });
             AvaloniaXamlLoader.Load(this);
+
+
         }
-
-
     }
 }

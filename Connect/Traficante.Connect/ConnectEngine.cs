@@ -22,6 +22,8 @@ namespace Traficante.Connect
                 Connectors.Add(new SqlServerConnector(sqlServerConfig));
             if (connector is SqliteConnectorConfig sqliteConfig)
                 Connectors.Add(new SqliteConnector(sqliteConfig));
+            if (connector is ElasticSearchConnectorConfig elasticConfig)
+                Connectors.Add(new ElasticSearchConnector(elasticConfig));
         }
 
         public TSQL.DataTable RunAndReturnTable(string sql)

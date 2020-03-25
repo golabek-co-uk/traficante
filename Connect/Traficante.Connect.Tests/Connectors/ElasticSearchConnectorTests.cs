@@ -12,8 +12,8 @@ namespace Traficante.Connect.Tests.Connectors
     {
         private ElasticSearchConnectorConfig config = new ElasticSearchConnectorConfig
         {
+            Alias = "elastic",
             Server = "http://tstldnvmgsaweb1:9200/"
-            //Database = "maidc1q2wm11dbzj"
         };
 
 
@@ -31,6 +31,49 @@ namespace Traficante.Connect.Tests.Connectors
             var sut = new ElasticSearchConnector(config);
             var indices = sut.GetAliases();
             Assert.IsTrue(indices.ToList().Count > 0);
+        }
+
+        [TestMethod]
+        public void SelectAllFromElastic()
+        {
+            ConnectEngine engine = new ConnectEngine();
+            engine.AddConector(this.config);
+
+            var results = engine.RunAndReturnTable("SELECT * FROM [elastic].[]");
+        }
+
+        [TestMethod]
+        public void ElasticSearchDataReader()
+        {
+            using (var sut = new ElasticSearchDataReader(
+                new ElasticSearchConnector(config),
+                "", null, "{ \"query\": { \"match_all\": {} } }"))
+            {
+                List<(string Name,Type Type)> fields = Enumerable
+                    .Range(0, sut.FieldCount)
+                    .Select(i => (sut.GetName(i), sut.GetFieldType(i)))
+                    .ToList();
+
+                if (sut.Read())
+                {
+                    for(int i = 0; i < sut.FieldCount; i++)
+                    {
+                        var field = fields[i];
+                        var value = sut.GetValue(i);
+                        if (value != null)
+                        {
+                            if (field.Type != value.GetType())
+                            {
+                                var xxx = 1;
+                            }
+                            Assert.AreEqual(field.Type, value.GetType());
+                        }
+                    }
+                    
+                }
+            }
+
+            
         }
     }
 }

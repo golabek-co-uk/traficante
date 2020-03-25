@@ -48,6 +48,7 @@
     <PackageReference Include="Dock.Model.ReactiveUI" Version="0.9.4.1" />
     <PackageReference Include="DynamicData" Version="6.14.8" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Text.Json" Version="4.7.1" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\ConnectToElasticSearchWindow.xaml">

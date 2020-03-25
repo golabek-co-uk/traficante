@@ -24,13 +24,16 @@
           <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Results</TextBlock>
         </TabItem.Header>
         <DockPanel>
-          <dg:DataGrid Name="ResultsData">
-            <DataGrid.ContextMenu>
-              <ContextMenu>
-                <MenuItem Name="ExportResultsAs" Header="Export Results As..."></MenuItem>
-              </ContextMenu>
-            </DataGrid.ContextMenu>
-          </dg:DataGrid>
+          <Grid RowDefinitions="*,Auto">
+            <dg:DataGrid Grid.Row="0" Name="ResultsData">
+              <DataGrid.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Name="ExportResultsAs" Header="Export Results As..."></MenuItem>
+                </ContextMenu>
+              </DataGrid.ContextMenu>
+            </dg:DataGrid>
+            <TextBlock Grid.Row="1" Name="ResultsCount" FontSize="10"></TextBlock>
+          </Grid>
         </DockPanel>
       </TabItem>
       <TabItem >

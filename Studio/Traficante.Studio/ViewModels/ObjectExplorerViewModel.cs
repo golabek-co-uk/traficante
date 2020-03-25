@@ -31,6 +31,18 @@ namespace Traficante.Studio.ViewModels
             AppData.Objects.Remove(sqlServer);
         }
 
+        public void ChangeObject(ElasticSearchObjectModel elastic)
+        {
+            Interactions.ConnectToElasticSearch
+                .Handle(elastic)
+                .Subscribe();
+        }
+
+        public void RemoveObject(ElasticSearchObjectModel elastic)
+        {
+            AppData.Objects.Remove(elastic);
+        }
+
         public void ChangeObject(MySqlObjectModel mySql)
         {
             Interactions.ConnectToMySql

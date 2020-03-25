@@ -1,5 +1,7 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 using CsvHelper;
 using Dock.Model.Controls;
 using DynamicData;
@@ -13,6 +15,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
 using Traficante.Connect;
@@ -27,6 +30,13 @@ namespace Traficante.Studio.ViewModels
     {
         public AppData AppData => ((AppData)this.Context);
         public QueryModel Query { get; set; }
+
+        private string _selectedText;
+        public string SelectedText
+        {
+            get => _selectedText;
+            set => this.RaiseAndSetIfChanged(ref _selectedText, value);
+        }
 
         private string _resultsError;
         public string ResultsError
@@ -49,6 +59,13 @@ namespace Traficante.Studio.ViewModels
             set => this.RaiseAndSetIfChanged(ref _resultsAreVisible, value);
         }
 
+        private string _rowsCount;
+        public string ResultsCount
+        {
+            get => _rowsCount;
+            set => this.RaiseAndSetIfChanged(ref _rowsCount, value);
+        }
+
         private ReadOnlyObservableCollection<object> _resultsData;
         public ReadOnlyObservableCollection<object> ResultsData
         {
@@ -65,6 +82,7 @@ namespace Traficante.Studio.ViewModels
 
         public ReactiveCommand<Unit, Unit> RunCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveResultsAsCommand { get; set; }
+        
 
         public QueryViewModel(QueryModel query, AppData context)
         {
@@ -94,20 +112,22 @@ namespace Traficante.Studio.ViewModels
                             Title = System.IO.Path.GetFileName(x.Item1);
                     else
                         if (x.Item2)
-                            Title = "New Query*";
-                        else
-                            Title = "New Query";
+                        Title = "New Query*";
+                    else
+                        Title = "New Query";
                 });
         }
 
         public Task<Unit> Run(Unit arg)
         {
+
             return Task.Run(() =>
             {
                 RxApp.MainThreadScheduler.Schedule(() =>
                 {
                     ResultsMessage = string.Empty;
                     ResultsError = string.Empty;
+                    ResultsCount = string.Empty;
                     this.ResultsAreVisible = true;
                     this.ResultsData = new ReadOnlyObservableCollection<object>(new ObservableCollection<object>());
                     this.ResultsDataColumns.Clear();
@@ -125,9 +145,12 @@ namespace Traficante.Studio.ViewModels
                             connectEngine.AddConector(((MySqlObjectModel)obj).ConnectionInfo.ToConectorConfig());
                         if (obj is SqliteObjectModel)
                             connectEngine.AddConector(((SqliteObjectModel)obj).ConnectionInfo.ToConectorConfig());
+                        if (obj is ElasticSearchObjectModel)
+                            connectEngine.AddConector(((ElasticSearchObjectModel)obj).ConnectionInfo.ToConectorConfig());
                     }
 
-                    var items = connectEngine.RunAndReturnEnumerable(this.Query.Text);
+                    var sql = string.IsNullOrEmpty(this.SelectedText) == false ? this.SelectedText : this.Query.Text;
+                    var items = connectEngine.RunAndReturnEnumerable(sql);
                     var itemsType = items.GetType().GenericTypeArguments.FirstOrDefault();
 
                     itemsType
@@ -137,14 +160,14 @@ namespace Traficante.Studio.ViewModels
                            .Select(x => new DataGridTextColumn
                            {
                                Header = x.Name,
-                               Binding = new Binding(x.Name)
+                               Binding = new DataBinding(x.Name),
                            })
                            .Subscribe(this.ResultsDataColumns.Add);
 
 
                     Type itemWrapperType = new ExpressionHelper().CreateWrapperTypeFor(itemsType); ;
                     FieldInfo itemWrapperInnerField = itemWrapperType.GetFields().FirstOrDefault(x => x.Name == "_inner"); ;
-
+          
                     ReadOnlyObservableCollection<object> data;
                     var sourceList = new SourceList<object>();
                     sourceList
@@ -161,7 +184,9 @@ namespace Traficante.Studio.ViewModels
                         .Subscribe(x =>
                         {
                             this.ResultsData = data;
+
                         });
+
 
                     ((IEnumerable<object>)items)
                         .ToObservable()
@@ -169,6 +194,11 @@ namespace Traficante.Studio.ViewModels
                         .Subscribe(x =>
                         {
                             sourceList.AddRange(x);
+                            
+                            RxApp.MainThreadScheduler.Schedule(() =>
+                            {
+                                ResultsCount = sourceList.Count + " rows";
+                            });
                         });
 
                 }
@@ -233,7 +263,7 @@ namespace Traficante.Studio.ViewModels
                     {
                         System.IO.File.WriteAllText(this.Query.Path, this.Query.Text);
                         this.Query.IsDirty = false;
-                    }  catch(Exception ex) {Interactions.Exceptions.Handle(ex).Subscribe();}
+                    } catch (Exception ex) { Interactions.Exceptions.Handle(ex).Subscribe(); }
                 }
                 else
                 {
@@ -278,4 +308,76 @@ namespace Traficante.Studio.ViewModels
             }
         }
     }
+
+    public class DataBinding: IBinding
+    {
+        public string Path { get; }
+
+        public DataBinding(string path)
+        {
+            Path = path;
+        }
+        
+        public InstancedBinding Initiate(IAvaloniaObject target, AvaloniaProperty targetProperty, object anchor = null, bool enableDataValidation = false)
+        {
+            target
+                .GetObservable(StyledElement.DataContextProperty)
+                .Subscribe(x =>
+                {
+                    if (x != null)
+                    {
+                        var type = x.GetType();
+                        var field = type.GetProperty(this.Path);
+                        var value = field.GetValue(x);
+                        target.SetValue(targetProperty, value?.ToString() ?? "", BindingPriority.LocalValue);
+                    }
+                    else
+                    {
+                        target.SetValue(targetProperty, "", BindingPriority.LocalValue);
+
+                    }
+                });
+
+            return null;
+        }
+    }
+
+    //public class ValueSubject : ISubject<object>, IDisposable
+    //{
+    //    private IAvaloniaObject target;
+    //    private AvaloniaProperty targetProperty;
+
+    //    public ValueSubject(IAvaloniaObject target, AvaloniaProperty targetProperty)
+    //    {
+    //        this.target = target;
+    //        this.targetProperty = targetProperty;
+    //    }
+
+    //    public void Dispose()
+    //    {
+            
+    //    }
+
+    //    public void OnCompleted()
+    //    {
+           
+    //    }
+
+    //    public void OnError(Exception error)
+    //    {
+            
+    //    }
+
+    //    public void OnNext(object value)
+    //    {
+    //        Console.WriteLine(value?.ToString());
+    //    }
+
+    //    public IDisposable Subscribe(IObserver<object> observer)
+    //    {
+            
+    //        return this;
+    //    }
+    //}
+
 }
