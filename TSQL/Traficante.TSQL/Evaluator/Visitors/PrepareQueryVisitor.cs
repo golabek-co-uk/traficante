@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Reflection;
 using Traficante.TSQL.Evaluator.Exceptions;
 using Traficante.TSQL.Evaluator.Helpers;
@@ -13,7 +14,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
     public class PrepareQueryVisitor : IAwareExpressionVisitor
     {
         private readonly TSQLEngine _engine;
-
+        private readonly CancellationToken _cancellationToken;
         private readonly List<string> _generatedAliases = new List<string>();
         private string _queryAlias;
 
@@ -26,9 +27,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public RootNode Root => (RootNode)Nodes.Peek();
 
 
-        public PrepareQueryVisitor(TSQLEngine engine)
+        public PrepareQueryVisitor(TSQLEngine engine, CancellationToken cancellationToken)
         {
-            _engine = engine;
+            this._engine = engine;
+            this._cancellationToken = cancellationToken;
         }
 
         public void Visit(VariableNode node)

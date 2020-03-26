@@ -10,11 +10,14 @@ namespace Traficante.TSQL.Evaluator.Helpers
 {
     public class DataReaderEnumerable : IEnumerable<Object[]>
     {
+        private readonly CancellationToken _cancellationToken;
+
         public List<Object[]> List { get; set; } = new List<object[]>();
         public Task Task { get; set; } = null;
 
-        public DataReaderEnumerable(IDataReader source)
+        public DataReaderEnumerable(IDataReader source, CancellationToken cancellationToken)
         {
+            this._cancellationToken = cancellationToken;
             Task = Task.Run(() =>
             {
                 try
@@ -30,15 +33,15 @@ namespace Traficante.TSQL.Evaluator.Helpers
                         }
                         //yield return row;
                         List.Add(row);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
                 finally
                 {
                     source.Dispose();
                 }
-            });
-            
-            
+            }, cancellationToken);
+           
         }
 
         public object GetDefaultValue(Type t)

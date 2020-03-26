@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Evaluator.Utils.Symbols;
+using System.Threading;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 using Traficante.Sql.Evaluator.Resources;
@@ -13,10 +14,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
     {
         private readonly Stack<Scope> _scopes = new Stack<Scope>();
         private readonly IAwareExpressionVisitor _visitor;
+        private readonly CancellationToken _cancellationToken;
 
-        public RequestDataTraverseVisitor(IAwareExpressionVisitor visitor)
+        public RequestDataTraverseVisitor(IAwareExpressionVisitor visitor, CancellationToken cancellationToken)
         {
-            _visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
+            this._visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
+            this._cancellationToken = cancellationToken;
         }
 
         public Scope Scope { get; private set; } = new Scope(null, -1, "Root");

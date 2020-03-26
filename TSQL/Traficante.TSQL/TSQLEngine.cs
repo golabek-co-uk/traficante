@@ -33,12 +33,22 @@ namespace Traficante.TSQL
 
         public DataTable RunAndReturnTable(string script)
         {
-            return new Runner().RunAndReturnTable(script, this);
+            return RunAndReturnTable(script, CancellationToken.None);
+        }
+
+        public DataTable RunAndReturnTable(string script, CancellationToken cancellationToken)
+        {
+            return new Runner().RunAndReturnTable(script, this, cancellationToken);
         }
 
         public IEnumerable RunAndReturnEnumerable(string script)
         {
-            return new Runner().Run(script, this) as IEnumerable;
+            return RunAndReturnEnumerable(script, CancellationToken.None);
+        }
+
+        public IEnumerable RunAndReturnEnumerable(string script, CancellationToken cancellationToken)
+        {
+            return new Runner().Run(script, this, cancellationToken) as IEnumerable;
         }
 
         public void AddTable<T>(string name, IEnumerable<T> items)
@@ -177,7 +187,7 @@ namespace Traficante.TSQL
             this._engine = engine;
         }
         
-        public void StartReadingTable(string name, string[] path)
+        public void StartRequestingTable(string name, string[] path, CancellationToken cancellationToken)
         {
             var tableData = new TableResult
             {
@@ -233,27 +243,15 @@ namespace Traficante.TSQL
                         .Range(0, resultReader.FieldCount)
                         .Select(x => (resultReader.GetName(x), resultReader.GetFieldType(x)))
                         .ToList();
-                    results = new DataReaderEnumerable(resultReader);
+                    results = new DataReaderEnumerable(resultReader, cancellationToken);
                 }
 
-                tableData.Results = (IEnumerable)results;
+                tableData.Results = results;
                 tableData.ResultFields = resultFields;
                 tableData.ResultType = resultType;
                 tableData.ResultItemsType = resultItemsType;
-            });
+            }, cancellationToken);
             _tableData.Add(tableData);
-        }
-
-        public async Task EnsureTableIsReady(string name, string[] path)
-        {
-            var tableData = new TableResult
-            {
-                Name = name,
-                Path = path
-            };
-
-            var featchedData = _tableData.FirstOrDefault(x => x.Id == tableData.Id);
-            await Task.WhenAll(featchedData.Task);
         }
 
         public async Task<TableResult> GeTable(string name, string[] path)
@@ -265,7 +263,17 @@ namespace Traficante.TSQL
             };
 
             var featchedData = _tableData.FirstOrDefault(x => x.Id == tableData.Id);
-            await Task.WhenAll(featchedData.Task);
+            var taskResult = await Task.WhenAny(featchedData.Task);
+            
+            try
+            {
+                taskResult.Wait();
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
+
             return featchedData;
         }
     }
@@ -276,7 +284,7 @@ namespace Traficante.TSQL
     {
         public string Name { get; set; }
         public string[] Path { get; set; }
-        public IEnumerable Results { get; set; }
+        public object Results { get; set; }
         public List<(string Name, Type FieldType)> ResultFields { get; set; }
         public Type ResultType { get; set; }
         public Type ResultItemsType { get; set; }

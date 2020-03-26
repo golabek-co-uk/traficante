@@ -67,7 +67,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 engine.AddTable("entities", new string[1] { source.Key }, source.Value);
                 engine.AddFunction("Entities", new string[1] { source.Key }, () => source.Value);
             }
-            return new CompiledQuery( new Runner().RunAndReturnTable(script, engine));
+            return new CompiledQuery( new Runner().RunAndReturnTable(script, engine, CancellationToken.None));
             //return InstanceCreator.CompileForExecution(script, engine);
         }
 

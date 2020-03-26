@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
 using Traficante.TSQL.Evaluator.Helpers;
@@ -27,6 +28,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
         private TSQLEngine _engine;
+        private readonly CancellationToken _cancellationToken;
         private QueryState _queryState;
         private QueryPart _queryPart;
 
@@ -34,10 +36,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         
 
-        public RunQueryVisitor(TSQLEngine engine)
+        public RunQueryVisitor(TSQLEngine engine, CancellationToken cancellationToken)
         {
             Nodes = new Stack<System.Linq.Expressions.Expression>();
-            _engine = engine;
+            this._engine = engine;
+            this._cancellationToken = cancellationToken;
         }
 
         public void SetQueryState(QueryState queryState)
@@ -1114,7 +1117,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     typeof(Queryable),
                     "AsQueryable",
                     new Type[] { resultItemsType },
-                    Expression.Constant(new DataReaderEnumerable(resultReader)));
+                    Expression.Constant(new DataReaderEnumerable(resultReader, this._cancellationToken)));
                 //Expression.Constant(AsEnumerable(resultReader)));
                 
             }

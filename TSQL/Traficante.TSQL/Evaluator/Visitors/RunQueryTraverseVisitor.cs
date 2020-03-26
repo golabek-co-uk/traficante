@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Text;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
@@ -10,9 +11,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
     public class RunQueryTraverseVisitor : IExpressionVisitor
     {
         private readonly RunQueryVisitor _visitor;
-        public RunQueryTraverseVisitor(RunQueryVisitor visitor)
+        private readonly CancellationToken _cancellationToken;
+
+        public RunQueryTraverseVisitor(RunQueryVisitor visitor, CancellationToken cancellationToken)
         {
-            _visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
+            this._visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
+            this._cancellationToken = cancellationToken;
         }
 
         public void Visit(SelectNode node)

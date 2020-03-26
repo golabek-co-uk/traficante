@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Linq.Expressions;
 using System.Reflection;
 using Traficante.TSQL.Evaluator.Exceptions;
@@ -17,6 +18,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
     {
         private TSQLEngine Engine { get; set; }
         private Dictionary<string, Node> CteNodes = new Dictionary<string, Node>();
+        private readonly CancellationToken _cancellationToken;
+
         private Stack<Node> Nodes { get; set; } = new Stack<Node>();
         private Scope CurrentScope { get; set; }
         private QueryPart CurrentQueryPart { get; set; }
@@ -24,9 +27,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public RootNode Root => (RootNode)Nodes.Peek();
 
 
-        public RequestDataVisitor(TSQLEngine engine)
+        public RequestDataVisitor(TSQLEngine engine, CancellationToken cancellationToken)
         {
-            Engine = engine;
+            this.Engine = engine;
+            this._cancellationToken = cancellationToken;
         }
 
         public void Visit(VariableNode node)
@@ -53,7 +57,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             if (CteNodes.ContainsKey(node.Table.TableOrView) == false)
             {
-                Engine.DataManager.StartReadingTable(node.Table.TableOrView, node.Table.Path);
+                Engine.DataManager.StartRequestingTable(node.Table.TableOrView, node.Table.Path, this._cancellationToken);
             }
 
             Nodes.Push(new FromTableNode(node.Table, node.Alias));

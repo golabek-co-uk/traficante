@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Traficante.TSQL.Evaluator.Visitors;
 using Traficante.TSQL.Parser.Lexing;
 
@@ -8,7 +9,7 @@ namespace Traficante.TSQL.Converter
 {
     public class Runner
     {
-        public object Run(string script, TSQLEngine engine)
+        public object Run(string script, TSQLEngine engine, CancellationToken cancellationToken)
         {
             try
             {
@@ -16,18 +17,18 @@ namespace Traficante.TSQL.Converter
                 var parser = new Parser.Parser(lexer);
                 var queryTree = parser.ComposeAll();
 
-                var prepareQuery = new PrepareQueryVisitor(engine);
-                var prepareQueryTraverser = new PrepareQueryTraverseVisitor(prepareQuery);
+                var prepareQuery = new PrepareQueryVisitor(engine, cancellationToken);
+                var prepareQueryTraverser = new PrepareQueryTraverseVisitor(prepareQuery, cancellationToken);
                 queryTree.Accept(prepareQueryTraverser);
                 queryTree = prepareQuery.Root;
 
-                var requestData = new RequestDataVisitor(engine);
-                var requestDataTraverser = new RequestDataTraverseVisitor(requestData);
+                var requestData = new RequestDataVisitor(engine, cancellationToken);
+                var requestDataTraverser = new RequestDataTraverseVisitor(requestData, cancellationToken);
                 queryTree.Accept(requestDataTraverser);
                 queryTree = requestData.Root;
 
-                var runQuery = new RunQueryVisitor(engine);
-                var csharpRewriteTraverser = new RunQueryTraverseVisitor(runQuery);
+                var runQuery = new RunQueryVisitor(engine, cancellationToken);
+                var csharpRewriteTraverser = new RunQueryTraverseVisitor(runQuery, cancellationToken);
                 queryTree.Accept(csharpRewriteTraverser);
                 return runQuery.Result;
             } catch(AggregateException ex)
@@ -36,9 +37,9 @@ namespace Traficante.TSQL.Converter
             }
         }
 
-        public DataTable RunAndReturnTable(string script, TSQLEngine engine)
+        public DataTable RunAndReturnTable(string script, TSQLEngine engine, CancellationToken cancellationToken)
         {
-            object result = Run(script, engine);
+            object result = Run(script, engine, cancellationToken);
             if (result is System.Collections.IEnumerable enumerableResult)
             {
                 var itemType = result.GetType().GenericTypeArguments.FirstOrDefault();

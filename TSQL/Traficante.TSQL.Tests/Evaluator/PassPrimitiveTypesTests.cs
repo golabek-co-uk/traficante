@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Converter;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
@@ -63,7 +64,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
         private CompiledQuery CreateAndRunVirtualMachine(string script, IEnumerable<TestEntity> source, Action<object[]> onGetTableOrRowSource, WhenCheckedParameters whenChecked)
         {
-            return new CompiledQuery(new Runner().RunAndReturnTable(script, new TSQLEngine()));
+            return new CompiledQuery(new Runner().RunAndReturnTable(script, new TSQLEngine(), CancellationToken.None));
         }
     }
 }
