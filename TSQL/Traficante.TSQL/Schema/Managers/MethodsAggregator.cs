@@ -8,9 +8,9 @@ namespace Traficante.TSQL.Schema.Managers
 {
     public class MethodsAggregator
     {
-        private readonly SourceDataManager _methsManager;
+        private readonly SchemaManager _methsManager;
 
-        public MethodsAggregator(SourceDataManager methsManager)//, PropertiesManager propsManager)
+        public MethodsAggregator(SchemaManager methsManager)//, PropertiesManager propsManager)
         {
             _methsManager = methsManager;
         }

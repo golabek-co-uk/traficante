@@ -9,7 +9,7 @@ using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Schema.Managers
 {
-    public class SourceDataManager
+    public class SchemaManager
     {
         private static readonly Dictionary<Type, Type[]> TypeCompatibilityTable = new Dictionary<Type, Type[]>
             {
@@ -27,7 +27,7 @@ namespace Traficante.TSQL.Schema.Managers
         private List<Func<string, string[], Type[], Delegate>> _methodsResolver = new List<Func<string, string[], Type[], Delegate>>();
         private List<Func<string, string[], Delegate>> _tablesResolver = new List<Func<string, string[], Delegate>>();
 
-        public SourceDataManager()
+        public SchemaManager()
         {
         }
 
@@ -291,5 +291,7 @@ namespace Traficante.TSQL.Schema.Managers
         public string[] Path { get; set; }
         public object Result { get; set; }
         public MethodInfo MethodInfo { get; set; }
+
+        public string FullName => $"{string.Join(".", this.Path)}.{this.Name}".ToLower();
     }
 }

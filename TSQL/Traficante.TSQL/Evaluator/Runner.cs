@@ -1,16 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Traficante.TSQL.Converter.Build;
-using Traficante.TSQL.Evaluator;
-using Traficante.TSQL.Schema;
-using Traficante.TSQL.Schema.DataSources;
+using Traficante.TSQL.Evaluator.Visitors;
+using Traficante.TSQL.Parser.Lexing;
 
 namespace Traficante.TSQL.Converter
 {
@@ -18,18 +10,30 @@ namespace Traficante.TSQL.Converter
     {
         public object Run(string script, TSQLEngine engine)
         {
-            var items = new BuildItems
+            try
             {
-                RawQuery = script,
-                Engine = engine,
-            };
+                var lexer = new Lexer(script, true);
+                var parser = new Parser.Parser(lexer);
+                var queryTree = parser.ComposeAll();
 
-            BuildChain chain =
-                new CreateTree(
-                    new TransformToQueryableStreamTree(null));
-            chain.Build(items);
+                var prepareQuery = new PrepareQueryVisitor(engine);
+                var prepareQueryTraverser = new PrepareQueryTraverseVisitor(prepareQuery);
+                queryTree.Accept(prepareQueryTraverser);
+                queryTree = prepareQuery.Root;
 
-            return items.Result;
+                var requestData = new RequestDataVisitor(engine);
+                var requestDataTraverser = new RequestDataTraverseVisitor(requestData);
+                queryTree.Accept(requestDataTraverser);
+                queryTree = requestData.Root;
+
+                var runQuery = new RunQueryVisitor(engine);
+                var csharpRewriteTraverser = new RunQueryTraverseVisitor(runQuery);
+                queryTree.Accept(csharpRewriteTraverser);
+                return runQuery.Result;
+            } catch(AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
         }
 
         public DataTable RunAndReturnTable(string script, TSQLEngine engine)

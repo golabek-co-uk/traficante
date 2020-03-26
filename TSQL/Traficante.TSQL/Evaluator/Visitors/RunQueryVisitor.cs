@@ -1019,21 +1019,69 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     return;
             }
 
-            var table = _engine.ResolveTable(node.Table.TableOrView, node.Table.Path);
-            if (table == null)
-                throw new TSQLException($"Table or view does not exist: {node.Table.TableOrView}");
-            if (table.MethodInfo != null)
+            var tableData = this._engine.DataManager.GeTable(node.Table.TableOrView, node.Table.Path).Result;
+
+            var result = tableData.Results;
+            var resultItemsType = tableData.ResultItemsType;
+            var resultFields = tableData.ResultFields;
+
+            Expression resultsAsQueryableExpression = Expression.Call(
+                typeof(Queryable),
+                "AsQueryable",
+                new Type[] { resultItemsType },
+                Expression.Constant(result));
+
+            Type outputItemType = expressionHelper.CreateAnonymousType(resultFields);
+            var resultItemExpression = Expression.Parameter(resultItemsType, "entityItem");
+
+            List<MemberBinding> bindings = new List<MemberBinding>();
+            int fieldIndex = 0;
+            foreach (var field in resultFields)
             {
-                var method = table.MethodInfo;
-                var callFunction = Expression.Call(Expression.Constant(method.FunctionDelegate.Target), method.FunctionMethod);
-                var resultAsObjectExpression = Expression.Convert(callFunction, typeof(object));
-                var result = Expression.Lambda<Func<object>>(resultAsObjectExpression).Compile()();
-                From(node, result);
+                if (resultItemsType == typeof(object[]))
+                {
+                    MemberBinding assignment = Expression.Bind(
+                        outputItemType.GetField(field.Name),
+                        Expression.Convert(Expression.ArrayAccess(resultItemExpression, Expression.Constant(fieldIndex)), field.FieldType)
+                    );
+                    bindings.Add(assignment);
+                    fieldIndex++;
+                }
+                else
+                {
+                    //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
+                    MemberBinding assignment = Expression.Bind(
+                        outputItemType.GetField(field.Name),
+                        Expression.PropertyOrField(resultItemExpression, field.Name)
+                        );
+                    bindings.Add(assignment);
+                }
             }
-            else
-            {
-                From(node, table.Result);
-            }
+
+            //"new AnonymousType()"
+            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
+
+            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            var initialization = Expression.MemberInit(creationExpression, bindings);
+
+            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            Expression expression = Expression.Lambda(initialization, resultItemExpression, _queryState.Item_i);
+
+            var call = Expression.Call(
+                typeof(Queryable),
+                "Select",
+                new Type[] { resultItemsType, outputItemType },
+                resultsAsQueryableExpression,
+                expression);
+
+            Nodes.Push(call);
+
+            //"AnonymousType input"
+            this._queryState.Item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
+            this._queryState.Alias2Item[node.Alias] = this._queryState.Item;
+
+            //"IQueryable<AnonymousType> input"
+            this._queryState.Input = Expression.Parameter(typeof(IQueryable<>).MakeGenericType(outputItemType), "input");
         }
 
         public void From(FromNode node, object result)

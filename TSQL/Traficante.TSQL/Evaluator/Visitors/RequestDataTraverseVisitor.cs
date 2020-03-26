@@ -1,19 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Traficante.TSQL.Evaluator.Utils;
+using Traficante.TSQL.Evaluator.Utils.Symbols;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
+using Traficante.Sql.Evaluator.Resources;
+using System.Linq;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class RunTraverseVisitor : IExpressionVisitor
+    public class RequestDataTraverseVisitor : IAwareExpressionVisitor
     {
-        private readonly RunQueryVisitor _visitor;
-        public RunTraverseVisitor(RunQueryVisitor visitor)
+        private readonly Stack<Scope> _scopes = new Stack<Scope>();
+        private readonly IAwareExpressionVisitor _visitor;
+
+        public RequestDataTraverseVisitor(IAwareExpressionVisitor visitor)
         {
             _visitor = visitor ?? throw new ArgumentNullException(nameof(visitor));
         }
+
+        public Scope Scope { get; private set; } = new Scope(null, -1, "Root");
 
         public void Visit(SelectNode node)
         {
@@ -96,22 +102,59 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(DeclareNode node)
+        public virtual void Visit(DeclareNode node)
         {
             node.Accept(_visitor);
         }
 
-        public void Visit(SetNode node)
+        public virtual void Visit(SetNode node)
         {
-            node.Value?.Accept(this);
+            node.Variable.Accept(this);
+            node.Value.Accept(this);
             node.Accept(_visitor);
         }
 
         public void Visit(DotNode node)
         {
-            //node.Root.Accept(this);
-            //node.Expression.Accept(this);
+            node.Root.Accept(this);
+            node.Expression.Accept(this);
             node.Accept(_visitor);
+
+            //var self = node;
+            //var theMostInner = self;
+            //while (!(self is null))
+            //{
+            //    theMostInner = self;
+            //    self = self.Root as DotNode;
+            //}
+
+            //var ident = (IdentifierNode) theMostInner.Root;
+            //if (node == theMostInner && Scope.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(ident.Name))
+            //{
+            //    if (theMostInner.Expression is DotNode dotNode)
+            //    {
+            //        var col = (IdentifierNode) dotNode.Root;
+            //        Visit(new AccessColumnNode(col.Name, ident.Name, TextSpan.Empty));
+            //    }
+            //    else
+            //    {
+            //        var col = (IdentifierNode) theMostInner.Expression;
+            //        Visit(new AccessColumnNode(col.Name, ident.Name, TextSpan.Empty));
+            //    }
+
+            //    return;
+            //}
+
+            //self = node;
+
+            //while (!(self is null))
+            //{
+            //    self.Root.Accept(this);
+            //    self.Expression.Accept(this);
+            //    self.Accept(_visitor);
+
+            //    self = self.Expression as DotNode;
+            //}
         }
 
         public virtual void Visit(WhereNode node)
@@ -124,11 +167,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(GroupByNode node)
         {
             SetQueryPart(QueryPart.GroupBy);
+
             foreach (var field in node.Fields)
                 field.Accept(this);
 
-            node.Accept(_visitor);
             node.Having?.Accept(this);
+            node.Accept(_visitor);
         }
 
         public void Visit(HavingNode node)
@@ -148,11 +192,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+
         public void Visit(FromFunctionNode node)
         {
             SetQueryPart(QueryPart.From);
             //node.Function.Accept(this);
-            node.Function.Arguments.Accept(this);
             node.Accept(_visitor);
         }
 
@@ -181,26 +225,36 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             join = joins.Pop();
-
             join.Source.Accept(this);
             join.With.Accept(this);
+
+            //var firstTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.Source.Id]);
+            //var secondTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.With.Id]);
+
+            //var id = $"{Scope[join.Source.Id]}{Scope[join.With.Id]}";
+
+            //Scope.ScopeSymbolTable.AddSymbol(id, firstTableSymbol.MergeSymbols(secondTableSymbol));
+            //Scope["ProcessedQueryId"] = id;
+
             join.Expression.Accept(this);
-
-            while (joins.Count > 1)
-            {
-                join = joins.Pop();
-                join.With.Accept(this);
-                join.Expression.Accept(this);
-            }
-
-            if (joins.Count > 0)
-            {
-                join = joins.Pop();
-                join.With.Accept(this);
-                join.Expression.Accept(this);
-            }
-
             join.Accept(_visitor);
+
+            while (joins.Count > 0)
+            {
+                join = joins.Pop();
+                join.With.Accept(this);
+
+                //var currentTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.With.Id]);
+                //var previousTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(id);
+
+                //id = $"{id}{Scope[join.With.Id]}";
+
+                //Scope.ScopeSymbolTable.AddSymbol(id, previousTableSymbol.MergeSymbols(currentTableSymbol));
+                //Scope["ProcessedQueryId"] = id;
+
+                join.Expression.Accept(this);
+                join.Accept(_visitor);
+            }
         }
 
         public void Visit(ExpressionFromNode node)
@@ -220,25 +274,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+
         public void Visit(QueryNode node)
         {
-            QueryState queryState = new QueryState();
-            queryState.QueryNode = node;
-            _visitor.SetQueryState(queryState);
-
+            LoadScope("Query");
             node.From?.Accept(this);
             node.Where?.Accept(this);
-
-            node.GroupBy?.Accept(this);
-            
-            node.Skip?.Accept(this);
-            node.Take?.Accept(this);
-
-            node.OrderBy?.Accept(this);
-
             node.Select.Accept(this);
+            node.Take?.Accept(this);
+            node.Skip?.Accept(this);
+            node.GroupBy?.Accept(this);
+            node.OrderBy?.Accept(this);
             node.Accept(_visitor);
-
+            RestoreScope();
             SetQueryPart(QueryPart.None);
         }
 
@@ -334,18 +382,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FieldNode node)
         {
-            _visitor.SetFieldNode(node);
             node.Expression.Accept(this);
             node.Accept(_visitor);
-            _visitor.SetFieldNode(null);
         }
 
         public void Visit(FieldOrderedNode node)
         {
-            _visitor.SetFieldNode(node);
             node.Expression.Accept(this);
             node.Accept(_visitor);
-            _visitor.SetFieldNode(null);
         }
 
         public void Visit(ArgsListNode node)
@@ -362,12 +406,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(Node node)
         {
-            node.Accept(_visitor);
+            throw new NotSupportedException("Node cannot be visited.");
         }
 
         public void Visit(DescNode node)
         {
+            LoadScope("Desc");
+            node.From.Accept(this);
             node.Accept(_visitor);
+            RestoreScope();
         }
 
         public void Visit(StarNode node)
@@ -412,21 +459,25 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(UnionNode node)
         {
+            LoadScope("Union");
             TraverseSetOperator(node);
         }
 
         public void Visit(UnionAllNode node)
         {
+            LoadScope("UnionAll");
             TraverseSetOperator(node);
         }
 
         public void Visit(ExceptNode node)
         {
+            LoadScope("Except");
             TraverseSetOperator(node);
         }
 
         public void Visit(IntersectNode node)
         {
+            LoadScope("Intersect");
             TraverseSetOperator(node);
         }
 
@@ -444,15 +495,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(CteExpressionNode node)
         {
+            LoadScope("CTE");
             foreach (var exp in node.InnerExpression) exp.Accept(this);
+
             node.OuterExpression.Accept(this);
             node.Accept(_visitor);
+            RestoreScope();
         }
 
         public void Visit(CteInnerExpressionNode node)
         {
+            LoadScope("CTE Inner Expression");
             node.Value.Accept(this);
             node.Accept(_visitor);
+            RestoreScope();
         }
 
         public void Visit(JoinsNode node)
@@ -468,6 +524,21 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+        private void LoadScope(string name)
+        {
+            var newScope = Scope.AddScope(name);
+            _scopes.Push(Scope);
+            Scope = newScope;
+
+            _visitor.SetScope(newScope);
+        }
+
+        private void RestoreScope()
+        {
+            Scope = _scopes.Pop();
+            _visitor.SetScope(Scope);
+        }
+
         public void Visit(FromNode node)
         {
             node.Accept(_visitor);
@@ -479,6 +550,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 field.Accept(this);
 
             node.Accept(_visitor);
+        }
+
+        private void TraverseSetOperator(SetOperatorNode node)
+        {
+            node.Left.Accept(this);
+            node.Right.Accept(this);
+            node.Accept(_visitor);
+            RestoreScope();
+        }
+
+        public void SetQueryPart(QueryPart part)
+        {
+            _visitor.SetQueryPart(part);
         }
 
         public void Visit(CreateTableNode node)
@@ -520,53 +604,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(ExecuteNode node)
         {
+            node.VariableToSet?.Accept(this);
             node.FunctionToRun?.Accept(this);
             node.Accept(_visitor);
         }
 
-        private void TraverseSetOperator(SetOperatorNode node)
+        public void SetScope(Scope scope)
         {
-            if (node.Right is SetOperatorNode)
-            {
-                var nodes = new Stack<SetOperatorNode>();
-                nodes.Push(node);
 
-                node.Left.Accept(this);
-
-                while (nodes.Count > 0)
-                {
-                    var current = nodes.Pop();
-
-                    if (current.Right is SetOperatorNode operatorNode)
-                    {
-                        nodes.Push(operatorNode);
-
-                        operatorNode.Left.Accept(this);
-
-                        current.Accept(_visitor);
-                    }
-                    else
-                    {
-                        current.Right.Accept(this);
-
-                        current.Accept(_visitor);
-                    }
-                }
-            }
-            else
-            {
-                node.Left.Accept(this);
-
-                node.Right.Accept(this);
-
-                node.Accept(_visitor);
-            }
         }
-
-        public void SetQueryPart(QueryPart part)
-        {
-            _visitor.SetQueryPart(part);
-        }
-
     }
 }

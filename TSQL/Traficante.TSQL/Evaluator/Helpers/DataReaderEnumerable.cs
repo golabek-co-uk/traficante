@@ -52,6 +52,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 return null;
             }
         }
+
         public IEnumerator<object[]> GetEnumerator()
         {
             return new DataReaderEnumerator(this);
