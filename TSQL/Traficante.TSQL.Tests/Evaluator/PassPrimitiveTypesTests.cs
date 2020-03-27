@@ -9,7 +9,6 @@ using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Managers;
-using Traficante.TSQL.Schema.Reflection;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {

@@ -6,9 +6,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Traficante.TSQL.Lib;
 using Traficante.TSQL.Lib.Attributes;
-using Traficante.TSQL.Schema.Helpers;
-using Traficante.TSQL.Schema.Managers;
-using Traficante.TSQL.Schema.Reflection;
 
 namespace Traficante.TSQL.Schema.DataSources
 {

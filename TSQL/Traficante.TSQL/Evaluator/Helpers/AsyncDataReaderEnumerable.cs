@@ -1,47 +1,40 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Traficante.TSQL.Evaluator.Helpers
 {
-    public class DataReaderEnumerable : IEnumerable<Object[]>
+    public class AsyncDataReaderEnumerable : IEnumerable<Object[]>
     {
-        private readonly CancellationToken _cancellationToken;
+        private readonly CancellationToken _ct;
 
         public List<Object[]> Items { get; set; } = new List<object[]>();
         public Task Task { get; set; } = null;
 
-        public DataReaderEnumerable(IDataReader source, CancellationToken cancellationToken)
+        public AsyncDataReaderEnumerable(IAsyncDataReader reader, CancellationToken ct)
         {
-            this._cancellationToken = cancellationToken;
-            Task = Task.Run(() =>
+            this._ct = ct;
+            Task = Task.Run(async () =>
             {
-                try
+                var nextResultTask = reader.NextResultAsync();
+                while ((await Task.WhenAll(nextResultTask))[0] && nextResultTask.Result)
                 {
-                    while (source.Read())
+                    nextResultTask = reader.NextResultAsync();
+                    while (reader.Read())
                     {
-                        Object[] row = new Object[source.FieldCount];
-                        source.GetValues(row);
-                        for (int i = 0; i < source.FieldCount; i++)
+                        Object[] row = new Object[reader.FieldCount];
+                        reader.GetValues(row);
+                        for (int i = 0; i < reader.FieldCount; i++)
                         {
                             if (row[i] is DBNull)
-                                row[i] = GetDefaultValue(source.GetFieldType(i));
+                                row[i] = GetDefaultValue(reader.GetFieldType(i));
                         }
-                        //yield return row;
                         Items.Add(row);
-                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
-                finally
-                {
-                    source.Dispose();
-                }
-            }, cancellationToken);
-           
+            }, this._ct);
         }
 
         public object GetDefaultValue(Type t)
@@ -58,21 +51,21 @@ namespace Traficante.TSQL.Evaluator.Helpers
 
         public IEnumerator<object[]> GetEnumerator()
         {
-            return new DataReaderEnumerator(this);
+            return new AsyncDataReaderEnumerator(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return new DataReaderEnumerator(this);
+            return new AsyncDataReaderEnumerator(this);
         }
     }
 
-    public class DataReaderEnumerator : IEnumerator<object[]>
+    public class AsyncDataReaderEnumerator : IEnumerator<object[]>
     {
-        private DataReaderEnumerable _dataReader = null;
+        private AsyncDataReaderEnumerable _dataReader = null;
         private int _currentIndex = -1;
 
-        public DataReaderEnumerator(DataReaderEnumerable enumerable)
+        public AsyncDataReaderEnumerator(AsyncDataReaderEnumerable enumerable)
         {
             this._dataReader = enumerable;
         }
