@@ -17,7 +17,7 @@ namespace Traficante.Studio.Models
     {
         [DataMember]
         public SqlServerConnectionModel ConnectionInfo { get; set; }
-        public override string Name {
+        public override string Title {
             get { return this.ConnectionInfo.Alias; }
             set { } 
         }
@@ -35,7 +35,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(ConnectionInfo.ToConectorConfig()).GetDatabases()))
+                .FromAsync(() => Task.Run(async () => await new SqlServerConnector(ConnectionInfo.ToConectorConfig()).GetDatabases()))
                 .SelectMany(x => x)
                 .Select(x => new SqlServerDatabaseObjectModel(this, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -55,15 +55,15 @@ namespace Traficante.Studio.Models
         public SqlServerDatabaseObjectModel(SqlServerObjectModel sqlServer, string name)
         {
             Server = sqlServer;
-            Name = name;
+            Title = name;
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() =>
+                .FromAsync(() => Task.Run(async () =>
                 {
-                    new SqlServerConnector(Server.ConnectionInfo.ToConectorConfig()).TryConnect(Name);
+                    await new SqlServerConnector(Server.ConnectionInfo.ToConectorConfig()).TryConnect(Title);
                     return new object[] {
                         new SqlServerTablesObjectModel(this),
                         new SqlServerViewsObjectModel(this)
@@ -87,15 +87,15 @@ namespace Traficante.Studio.Models
         public SqlServerTablesObjectModel(SqlServerDatabaseObjectModel database)
         {
             Database = database;
-            Name = "Tables";
+            Title = "Tables";
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetTables(Database.Name)))
+                .FromAsync(() => Task.Run(async () => await new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetTables(Database.Title)))
                 .SelectMany(x => x)
-                .Select(x => new SqlServerTableObjectModel(Database, x.schema, x.name))
+                .Select(x => new SqlServerTableObjectModel(Database, x.Schema, x.Name))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -106,7 +106,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqlServerTableObjectModel : ObjectModel, IObjectSource
+    public class SqlServerTableObjectModel : ObjectModel, ITableObjectModel
     {
         public SqlServerDatabaseObjectModel Database { get; }
         public string OnlyName { get; set; }
@@ -117,15 +117,15 @@ namespace Traficante.Studio.Models
             Database = databse;
             OnlyName = name;
             OnlySchema = schema;
-            Name = schema + "." + name;
+            Title = schema + "." + name;
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Name, this.OnlyName)))
+                .FromAsync(() => Task.Run(async () => await new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Title, this.OnlyName)))
                 .SelectMany(x => x)
-                .Select(x => new SqlServerFieldObjectModel(Database, x.name, x.type, x.notNull))
+                .Select(x => new SqlServerFieldObjectModel(Database, x.Name, x.Type, x.NotNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -135,12 +135,12 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
 
-        public string[] GetObjectPath()
+        public string[] GetTablePath()
         {
-            return new string[] { Database.Server.Name, Database.Name, OnlySchema, OnlyName };
+            return new string[] { Database.Server.Title, Database.Title, OnlySchema, OnlyName };
         }
 
-        public string[] GetObjectFields()
+        public string[] GetTableFields()
         {
             return new string[0];
         }
@@ -153,15 +153,15 @@ namespace Traficante.Studio.Models
         public SqlServerViewsObjectModel(SqlServerDatabaseObjectModel database)
         {
             Database = database;
-            Name = "Views";
+            Title = "Views";
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetViews(Database.Name)))
+                .FromAsync(() => Task.Run(async () => await new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetViews(Database.Title)))
                 .SelectMany(x => x)
-                .Select(x => new SqlServerViewObjectModel(Database, x.schema, x.name))
+                .Select(x => new SqlServerViewObjectModel(Database, x.Schema, x.Name))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -172,7 +172,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqlServerViewObjectModel : ObjectModel, IObjectSource
+    public class SqlServerViewObjectModel : ObjectModel, ITableObjectModel
     {
         public SqlServerDatabaseObjectModel Database { get; }
         public string OnlyName { get; set; }
@@ -183,15 +183,15 @@ namespace Traficante.Studio.Models
             Database = databse;
             OnlyName = name;
             OnlySchema = schema;
-            Name = schema + "." + name;
+            Title = schema + "." + name;
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Name, this.OnlyName)))
+                .FromAsync(() => Task.Run(async () => await new SqlServerConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Title, this.OnlyName)))
                 .SelectMany(x => x)
-                .Select(x => new SqlServerFieldObjectModel(Database, x.name, x.type, x.notNull))
+                .Select(x => new SqlServerFieldObjectModel(Database, x.Name, x.Type, x.NotNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -201,18 +201,18 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
 
-        public string[] GetObjectPath()
+        public string[] GetTablePath()
         {
-            return new string[] { Database.Server.Name, Database.Name, OnlySchema, OnlyName };
+            return new string[] { Database.Server.Title, Database.Title, OnlySchema, OnlyName };
         }
 
-        public string[] GetObjectFields()
+        public string[] GetTableFields()
         {
             return new string[0];
         }
     }
 
-    public class SqlServerFieldObjectModel : ObjectModel, IObjectField
+    public class SqlServerFieldObjectModel : ObjectModel, IFieldObjectModel
     {
         public SqlServerDatabaseObjectModel Databse { get; }
         public string NameOnly { get; set; }
@@ -220,13 +220,13 @@ namespace Traficante.Studio.Models
         public SqlServerFieldObjectModel(SqlServerDatabaseObjectModel databse, string name, string type, bool? notNull)
         {
             Databse = databse;
-            Name = $"{name} {type}";
+            Title = $"{name} {type}";
             NameOnly = name;
         }
 
         public override ObservableCollection<object> Items => null;
 
-        public string GetObjectFieldName()
+        public string GetFieldName()
         {
             return this.NameOnly;
         }

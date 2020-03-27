@@ -11,7 +11,7 @@
     <TreeView Name="Objects">
       <TreeView.ItemTemplate>
         <TreeDataTemplate ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Name}" />
+          <TextBlock Text="{Binding Title}" />
         </TreeDataTemplate>
       </TreeView.ItemTemplate>          
     </TreeView>

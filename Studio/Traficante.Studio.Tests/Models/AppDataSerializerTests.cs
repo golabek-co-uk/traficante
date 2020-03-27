@@ -18,11 +18,11 @@ namespace Traficante.Studio.Tests.Models
             AppData appData = new AppData();
             appData.Objects.Add(new SqlServerObjectModel(new SqlServerConnectionModel{ Server = "server1.com" }) 
             {
-                Name = "server1"
+                Title = "server1"
             });
             appData.Objects.Add(new MySqlObjectModel(new MySqlConnectionModel { Server = "server2.com" } )
             {
-                Name = "server2"
+                Title = "server2"
             });
             var json =  sut.Serialize(appData);
             var appDataCopy = sut.Derialize<AppData>(json);

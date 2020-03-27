@@ -84,7 +84,7 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new SqliteConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnectAsync(ct);
+                await new SqliteConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
                 Output = Input;
                 if (InputOrginal != null)
                 {

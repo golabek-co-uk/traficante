@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Formatting;
+using Traficante.TSQL;
 using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
@@ -1103,6 +1104,23 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     "AsQueryable",
                     new Type[] { resultItemsType },
                     Expression.Constant(result));
+            }
+            else if (typeof(IAsyncDataReader).IsAssignableFrom(resultType))
+            {
+                var resultReader = (IAsyncDataReader)result;
+                resultItemsType = typeof(object[]);
+                resultFields = Enumerable
+                    .Range(0, resultReader.FieldCount)
+                    .Select(x => (resultReader.GetName(x), resultReader.GetFieldType(x)))
+                    .ToList();
+
+                resultsAsQueryableExpression = Expression.Call(
+                    typeof(Queryable),
+                    "AsQueryable",
+                    new Type[] { resultItemsType },
+                    Expression.Constant(new AsyncDataReaderEnumerable(resultReader, this._cancellationToken)));
+                //Expression.Constant(AsEnumerable(resultReader)));
+
             }
             else if (typeof(IDataReader).IsAssignableFrom(resultType))
             {

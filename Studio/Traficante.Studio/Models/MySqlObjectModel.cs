@@ -16,7 +16,7 @@ namespace Traficante.Studio.Models
     {
         [DataMember]
         public MySqlConnectionModel ConnectionInfo { get; set; }
-        public override string Name { get => this.ConnectionInfo.Alias; set { } }
+        public override string Title { get => this.ConnectionInfo.Alias; set { } }
 
         public MySqlObjectModel()
         {
@@ -31,7 +31,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new Traficante.Connect.Connectors.MySqlConnector(ConnectionInfo.ToConectorConfig()).GetDatabases()))
+                .FromAsync(() => Task.Run(async () => await new Traficante.Connect.Connectors.MySqlConnector(ConnectionInfo.ToConectorConfig()).GetDatabases()))
                 .SelectMany(x => x)
                 .Select(x => new MySqlDatabaseObjectModel(this, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -51,15 +51,15 @@ namespace Traficante.Studio.Models
         public MySqlDatabaseObjectModel(MySqlObjectModel server, string name)
         {
             Server = server;
-            Name = name;
+            Title = name;
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() =>
+                .FromAsync(() => Task.Run(async () =>
                 {
-                    new Traficante.Connect.Connectors.MySqlConnector(Server.ConnectionInfo.ToConectorConfig()).TryConnect(Name);
+                    await new Traficante.Connect.Connectors.MySqlConnector(Server.ConnectionInfo.ToConectorConfig()).TryConnect(Title);
                     return new object[] {
                         new MySqlTablesObjectModel(this),
                         new MySqlViewsObjectModel(this)
@@ -83,13 +83,13 @@ namespace Traficante.Studio.Models
         public MySqlTablesObjectModel(MySqlDatabaseObjectModel database)
         {
             Database = database;
-            Name = "Tables";
+            Title = "Tables";
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new Traficante.Connect.Connectors.MySqlConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetTables(Database.Name)))
+                .FromAsync(() => Task.Run(async () => await new Traficante.Connect.Connectors.MySqlConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetTables(Database.Title)))
                 .SelectMany(x => x)
                 .Select(x => new MySqlTableObjectModel(Database, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -102,26 +102,26 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class MySqlTableObjectModel : ObjectModel, IObjectSource
+    public class MySqlTableObjectModel : ObjectModel, ITableObjectModel
     {
         public MySqlDatabaseObjectModel Databse { get; }
         
         public MySqlTableObjectModel(MySqlDatabaseObjectModel databse, string name)
         {
             Databse = databse;
-            Name = name;
+            Title = name;
         }
 
         public override void LoadItems()
         {
         }
 
-        public string[] GetObjectPath()
+        public string[] GetTablePath()
         {
-            return new string[] { Databse.Server.Name, Databse.Name, Name };
+            return new string[] { Databse.Server.Title, Databse.Title, Title };
         }
 
-        public string[] GetObjectFields()
+        public string[] GetTableFields()
         {
             return new string[0];
         }
@@ -134,13 +134,13 @@ namespace Traficante.Studio.Models
         public MySqlViewsObjectModel(MySqlDatabaseObjectModel database)
         {
             Database = database;
-            Name = "Views";
+            Title = "Views";
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new Traficante.Connect.Connectors.MySqlConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetViews(Database.Name)))
+                .FromAsync(() => Task.Run(async () => await new Traficante.Connect.Connectors.MySqlConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetViews(Database.Title)))
                 .SelectMany(x => x)
                 .Select(x => new MySqlViewObjectModel(Database, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -153,26 +153,26 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class MySqlViewObjectModel : ObjectModel, IObjectSource
+    public class MySqlViewObjectModel : ObjectModel, ITableObjectModel
     {
         public MySqlDatabaseObjectModel Databse { get; }
 
         public MySqlViewObjectModel(MySqlDatabaseObjectModel databse, string name)
         {
             Databse = databse;
-            Name = name;
+            Title = name;
         }
 
         public override void LoadItems()
         {
         }
 
-        public string[] GetObjectPath()
+        public string[] GetTablePath()
         {
-            return new string[] { Databse.Server.Name, Databse.Name, Name };
+            return new string[] { Databse.Server.Title, Databse.Title, Title };
         }
 
-        public string[] GetObjectFields()
+        public string[] GetTableFields()
         {
             return new string[0];
         }

@@ -78,7 +78,7 @@ namespace Traficante.Studio.Views
                 item.ContextMenu = item.ContextMenu != null ? item.ContextMenu : new ContextMenu();
                 item.ContextMenu.Items = new List<MenuItem> { change, remove };
             }
-            if (item.DataContext is IObjectSource objectPath)
+            if (item.DataContext is ITableObjectModel objectPath)
             {
                 MenuItem generateSelect = new MenuItem { Header = "Select query" };
                 generateSelect.Click += (x, y) => ViewModel.GenerateSelectQuery(objectPath);
@@ -93,7 +93,7 @@ namespace Traficante.Studio.Views
                 item.ContextMenu.IsVisible = false;
             }
 
-            if (item.DataContext is IObjectSource objectPath2 || item.DataContext is IObjectField objectField2)
+            if (item.DataContext is ITableObjectModel objectPath2 || item.DataContext is IFieldObjectModel objectField2)
             {
                 item.PointerMoved += Item_PointerMoved;
             }
@@ -108,19 +108,19 @@ namespace Traficante.Studio.Views
                 if (this._pressedItem == null)
                 {
                     this._pressedItem = sender as TreeViewItem;
-                    var objectSource = _pressedItem.DataContext as IObjectSource;
-                    var objectField = _pressedItem.DataContext as IObjectField;
+                    var objectSource = _pressedItem.DataContext as ITableObjectModel;
+                    var objectField = _pressedItem.DataContext as IFieldObjectModel;
                     if (objectSource != null)
                     {
-                        var path = objectSource.GetObjectPath();
-                        var sqlPath = string.Join(",", path.Select(x => $"[{x}]"));
+                        var path = objectSource.GetTablePath();
+                        var sqlPath = string.Join(".", path.Select(x => $"[{x}]"));
                         var pressedItemDraggedData = new DataObject();
                         pressedItemDraggedData.Set(DataFormats.Text, sqlPath);
                         await DragDrop.DoDragDrop(e, pressedItemDraggedData, DragDropEffects.Copy);
                     }
                     if (objectField != null)
                     {
-                        var name = objectField.GetObjectFieldName();
+                        var name = objectField.GetFieldName();
                         var sqlName = $"[{name}]";
                         var pressedItemDraggedData = new DataObject();
                         pressedItemDraggedData.Set(DataFormats.Text, sqlName);

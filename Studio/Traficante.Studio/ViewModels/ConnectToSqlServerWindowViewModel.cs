@@ -99,7 +99,7 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new SqlServerConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnectAsync(ct);
+                await new SqlServerConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
                 Output = Input;
                 if (InputOrginal != null)
                 {

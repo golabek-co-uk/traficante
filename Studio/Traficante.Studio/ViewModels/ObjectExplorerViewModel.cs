@@ -67,12 +67,12 @@ namespace Traficante.Studio.ViewModels
             AppData.Objects.Remove(sqlite);
         }
 
-        public void GenerateSelectQuery(IObjectSource objectPath)
+        public void GenerateSelectQuery(ITableObjectModel objectPath)
         {
-            var path = objectPath.GetObjectPath();
+            var path = objectPath.GetTablePath();
             var sqlPath = string.Join(".", path.Select(x => $"[{x}]"));
-            var fields = objectPath.GetObjectFields();
-            var sqlFields = fields.Length > 0 ? string.Join(".", fields.Select(x => $"[{x}]")) : "*";
+            var fields = objectPath.GetTableFields();
+            var sqlFields = fields.Length > 0 ? string.Join(", ", fields.Select(x => $"[{x}]")) : "*";
             var sql = $"SELECT {sqlFields} FROM {sqlPath}";
             AppData.Queries.Add(new QueryModel { Id = Guid.NewGuid().ToString(), Text = sql });
         }

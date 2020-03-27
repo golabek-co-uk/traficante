@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Traficante.Connect.Connectors;
 
 namespace Traficante.Connect.Tests.Connectors
@@ -21,7 +22,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetIndices()
         {
             var sut = new ElasticSearchConnector(config);
-            var indices = sut.GetIndices();
+            var indices = sut.GetIndices().Result;
             Assert.IsTrue(indices.ToList().Count > 0);
         }
 
@@ -29,7 +30,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetAliases()
         {
             var sut = new ElasticSearchConnector(config);
-            var indices = sut.GetAliases();
+            var indices = sut.GetAliases().Result;
             Assert.IsTrue(indices.ToList().Count > 0);
         }
 
@@ -47,7 +48,10 @@ namespace Traficante.Connect.Tests.Connectors
         {
             using (var sut = new ElasticSearchDataReader(
                 new ElasticSearchConnector(config),
-                "", null, "{ \"query\": { \"match_all\": {} } }"))
+                "",
+                null, 
+                "{ \"query\": { \"match_all\": {} } }",
+                CancellationToken.None))
             {
                 List<(string Name,Type Type)> fields = Enumerable
                     .Range(0, sut.FieldCount)

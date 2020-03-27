@@ -18,7 +18,7 @@ namespace Traficante.Connect.Connectors
             base.Config = config;
         }
 
-        public async Task TryConnectAsync(CancellationToken ct)
+        public async Task TryConnect(CancellationToken ct = default)
         {
             using (SqliteConnection connection = new SqliteConnection())
             {
@@ -27,19 +27,9 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public void TryConnect()
+        public override Delegate ResolveTable(string name, string[] path, CancellationToken ct)
         {
-            using (SqliteConnection connection = new SqliteConnection())
-            {
-                connection.ConnectionString = this.Config.ToConnectionString();
-                connection.Open();
-            }
-        }
-        
-
-        public override Delegate GetTable(string name, string[] path)
-        {
-            Func<IDataReader> @delegate = () =>
+            Func<Task<object>> @delegate = async () =>
             {
                 SqliteConnection sqliteConnection = null;
                 try
@@ -48,8 +38,8 @@ namespace Traficante.Connect.Connectors
                     SqliteCommand sqliteCommand = new SqliteCommand();
                     sqliteCommand.Connection = sqliteConnection;
                     sqliteCommand.CommandText = $"SELECT * FROM {name}";
-                    sqliteConnection.Open();
-                    return sqliteCommand.ExecuteReader(CommandBehavior.CloseConnection);
+                    await sqliteConnection.OpenAsync(ct);
+                    return await sqliteCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
                 }
                 catch
                 {
@@ -60,68 +50,58 @@ namespace Traficante.Connect.Connectors
             return @delegate;
         }
 
-        public IEnumerable<string> GetDatabases()
+        public async Task<IEnumerable<string>> GetTables()
         {
-            List<string> databases = new List<string>();
-            databases.Add(this.Config.Database);
-            return databases;
-        }
-
-        public IEnumerable<(string schema, string name)> GetTables()
-        {
-            List<(string schema, string name)> tables = new List<(string schema, string name)>();
+            List<string> tables = new List<string>();
             using (SqliteConnection sqlConnection = new SqliteConnection())
             {
                 sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync();
                 using (var command = sqlConnection.CreateCommand())
                 {
-                    command.CommandText = "SELECT name from sqlite_master WHERE type='table'";
-                    using (var result = command.ExecuteReader())
+                    command.CommandText = "SELECT name from sqlite_master WHERE type='table' ORDER BY name";
+                    using (var result = await command.ExecuteReaderAsync())
                     {
                         while (result.Read())
-                        {
-                            tables.Add((null, result.GetString(0)));
-                        }
+                            //yield return result.GetString(0);
+                            tables.Add(result.GetString(0));
                     }
                 }
             }
-            return tables.OrderBy(x => x.Item1).ThenBy(x => x.Item2);
+            return tables;
         }
 
-        public IEnumerable<(string schema, string name)> GetViews()
+        public async Task<IEnumerable<string>> GetViews()
         {
-            List<(string schema, string name)> views = new List<(string schema, string name)>();
+            List<string> views = new List<string>();
             using (SqliteConnection sqlConnection = new SqliteConnection())
             {
                 sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync();
                 using (var command = sqlConnection.CreateCommand())
                 {
-                    command.CommandText = "SELECT name from sqlite_master WHERE type='view'";
-                    using (var result = command.ExecuteReader())
+                    command.CommandText = "SELECT name from sqlite_master WHERE type='view' ORDER BY name";
+                    using (var result = await command.ExecuteReaderAsync())
                     {
                         while (result.Read())
-                        {
-                            views.Add((null, result.GetString(0)));
-                        }
+                            views.Add(result.GetString(0));
                     }
                 }
             }
-            return views.OrderBy(x => x.Item1).ThenBy(x => x.Item2);
+            return views;
         }
 
-        public IEnumerable<(string name, string type, bool? notNull)> GetFields(string tableOrView)
+        public async Task<IEnumerable<(string Name, string Type, bool? NotNull)>> GetFields(string tableOrView)
         {
             List<(string name, string type, bool? notNull)> fields = new List<(string name, string type, bool? notNull)>();
             using (SqliteConnection sqlConnection = new SqliteConnection())
             {
                 sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync();
                 using (var command = sqlConnection.CreateCommand())
                 {
                     command.CommandText = $"PRAGMA table_info('{tableOrView}');";
-                    using (var result = command.ExecuteReader())
+                    using (var result = await command.ExecuteReaderAsync())
                     {
                         while (result.Read())
                         {

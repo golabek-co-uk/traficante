@@ -16,7 +16,7 @@ namespace Traficante.Studio.Models
     {
         [DataMember]
         public ElasticSearchConnectionModel ConnectionInfo { get; set; }
-        public override string Name
+        public override string Title
         {
             get { return this.ConnectionInfo.Alias; }
             set { }
@@ -35,9 +35,9 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() =>
+                .FromAsync(() => Task.Run(async () =>
                 {
-                    new ElasticSearchConnector(this.ConnectionInfo.ToConectorConfig()).TryConnect();
+                    await new ElasticSearchConnector(this.ConnectionInfo.ToConectorConfig()).TryConnect();
                     return new object[] {
                         new ElasticSearchIndicesObjectModel(this),
                         new ElasticSearchAliasesObjectModel(this)
@@ -61,13 +61,13 @@ namespace Traficante.Studio.Models
         public ElasticSearchIndicesObjectModel(ElasticSearchObjectModel server)
         {
             Server = server;
-            Name = "Indices";
+            Title = "Indices";
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetIndices()))
+                .FromAsync(() => Task.Run(async () => await new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetIndices()))
                 .SelectMany(x => x)
                 .Select(x => new ElasticSearchIndexObjectModel(Server, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -80,37 +80,32 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class ElasticSearchIndexObjectModel : ObjectModel, IObjectSource
+    public class ElasticSearchIndexObjectModel : ObjectModel, ITableObjectModel
     {
         public ElasticSearchObjectModel Server { get; }
-
-        public JsonDocument _mapping = null;
-        public JsonDocument Mapping
-        {
-            get
-            {
-                lock (this)
-                {
-                    if (_mapping == null)
-                        _mapping = new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetIndex(Name);
-                    return _mapping;
-                }
-            }
-        }
+        private volatile JsonDocument _index = null;
 
         public ElasticSearchIndexObjectModel(ElasticSearchObjectModel server, string name)
         {
             Server = server;
-            Name = name;
+            Title = name;
+
+            Task.Run(async () =>
+            {
+                this._index = await new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetIndex(Title);
+            })
+            .ConfigureAwait(false);
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() =>
+                .FromAsync(() => Task.Run(async () =>
                 {
-                    return Mapping
-                        .RootElement.GetProperty(this.Name)
+                    _index = _index ?? await new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetIndex(Title);
+                    return _index
+                        .RootElement
+                        .GetProperty(this.Title)
                         .EnumerateObject()
                         .Select(x => new ElasticSearchJsonDocument(Server, x.Name, x.Value))
                         .ToList();
@@ -125,23 +120,29 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
 
-        public string[] GetObjectPath()
+        public string[] GetTablePath()
         {
-            var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(Mapping).ToList();
-            if (mappingTypes.Count > 1)
-                return new string[] { this.Server.Name, Name, mappingTypes.First() };
-            else
-                return new string[] { this.Server.Name, Name};
+            if (_index != null)
+            {
+                var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(this._index).ToList();
+                if (mappingTypes.Count > 1)
+                    return new string[] { this.Server.Title, Title, mappingTypes.First() };
+            }
+            return new string[] { this.Server.Title, Title };
         }
 
-        public string[] GetObjectFields()
+        public string[] GetTableFields()
         {
-            var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(Mapping).ToList();
-            var fields = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Name);
-            if (mappingTypes.Count > 1)
-                return fields.Where(x => x.MappingType == mappingTypes[0]).Select(x => x.Name).ToArray();
-            else
-                return fields.Select(x => x.Name).ToArray();
+            if (_index != null)
+            {
+                var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(this._index).ToList();
+                var fields = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetFields(this._index).ToList();
+                if (mappingTypes.Count > 1)
+                    return fields.Where(x => x.MappingType == mappingTypes[0]).Select(x => x.Name).ToArray();
+                else
+                    return fields.Select(x => x.Name).ToArray();
+            }
+            return new string[0];
         }
     }
 
@@ -152,13 +153,13 @@ namespace Traficante.Studio.Models
         public ElasticSearchAliasesObjectModel(ElasticSearchObjectModel server)
         {
             Server = server;
-            Name = "Aliases";
+            Title = "Aliases";
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetAliases()))
+                .FromAsync(() => Task.Run(async () => await new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetAliases()))
                 .SelectMany(x => x)
                 .Select(x => new ElasticSearchAliasObjectModel(Server, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
@@ -171,24 +172,23 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class ElasticSearchAliasObjectModel : ObjectModel, IObjectSource
+    public class ElasticSearchAliasObjectModel : ObjectModel, ITableObjectModel
     {
         public ElasticSearchObjectModel Server { get; }
 
         public ElasticSearchAliasObjectModel(ElasticSearchObjectModel server, string name)
         {
             Server = server;
-            Name = name;
+            Title = name;
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() =>
+                .FromAsync(() => Task.Run(async () =>
                 {
-                    return new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig())
-                    .GetIndex(Name)
-                    .RootElement
+                    var index = await new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetIndex(Title);
+                    return index.RootElement
                     .EnumerateObject()
                     .Select(x => new ElasticSearchJsonDocument(Server, x.Name, x.Value))
                     .ToList();
@@ -203,12 +203,12 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
 
-        public string[] GetObjectPath()
+        public string[] GetTablePath()
         {
-            return new string[] { this.Server.Name, Name };
+            return new string[] { this.Server.Title, Title };
         }
 
-        public string[] GetObjectFields()
+        public string[] GetTableFields()
         {
             return new string[0];
         }
@@ -223,10 +223,10 @@ namespace Traficante.Studio.Models
         {
             Server = server;
             JsonElement = jsonElement;
-            Name = name;
+            Title = name;
             if (JsonElement.ValueKind != JsonValueKind.Object && JsonElement.ValueKind != JsonValueKind.Array)
             {
-                Name = $"{name}: {jsonElement.ToString()}";
+                Title = $"{name}: {jsonElement.ToString()}";
                 Items = new ObservableCollection<object>();
             }
         }
@@ -234,7 +234,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() =>
+                .FromAsync(() => Task.Run(() =>
                 {
                     if (JsonElement.ValueKind == JsonValueKind.Object)
                         return JsonElement

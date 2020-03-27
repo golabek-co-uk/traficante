@@ -16,7 +16,7 @@ namespace Traficante.Studio.Models
     {
         [DataMember]
         public SqliteConnectionModel ConnectionInfo { get; set; }
-        public override string Name
+        public override string Title
         {
             get { return this.ConnectionInfo.Alias; }
             set { }
@@ -35,9 +35,9 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() =>
+                .FromAsync(() => Task.Run(async () =>
                 {
-                    new SqliteConnector(ConnectionInfo.ToConectorConfig()).TryConnect();
+                    await new SqliteConnector(ConnectionInfo.ToConectorConfig()).TryConnect();
                     return new object[] {
                         new SqliteTablesObjectModel(this),
                         new SqliteViewsObjectModel(this)
@@ -61,15 +61,15 @@ namespace Traficante.Studio.Models
         public SqliteTablesObjectModel(SqliteObjectModel database)
         {
             Database = database;
-            Name = "Tables";
+            Title = "Tables";
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetTables()))
+                .FromAsync(() => Task.Run(async () => await new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetTables()))
                 .SelectMany(x => x)
-                .Select(x => new SqliteTableObjectModel(Database, x.schema, x.name))
+                .Select(x => new SqliteTableObjectModel(Database, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -80,22 +80,22 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqliteTableObjectModel : ObjectModel, IObjectSource
+    public class SqliteTableObjectModel : ObjectModel, ITableObjectModel
     {
         public SqliteObjectModel Database { get; }
 
-        public SqliteTableObjectModel(SqliteObjectModel databse, string schema, string name)
+        public SqliteTableObjectModel(SqliteObjectModel databse, string name)
         {
             Database = databse;
-            Name = name;
+            Title = name;
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetFields(this.Name)))
+                .FromAsync(() => Task.Run(async () => await new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetFields(this.Title)))
                 .SelectMany(x => x)
-                .Select(x => new SqliteFieldObjectModel(Database, x.name, x.type, x.notNull))
+                .Select(x => new SqliteFieldObjectModel(Database, x.Name, x.Type, x.NotNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -105,12 +105,12 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
 
-        public string[] GetObjectPath()
+        public string[] GetTablePath()
         {
-            return new string[] { Database.Name, Name };
+            return new string[] { Database.Title, Title };
         }
 
-        public string[] GetObjectFields()
+        public string[] GetTableFields()
         {
             return new string[0];
         }
@@ -123,15 +123,15 @@ namespace Traficante.Studio.Models
         public SqliteViewsObjectModel(SqliteObjectModel database)
         {
             Database = database;
-            Name = "Views";
+            Title = "Views";
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetViews()))
+                .FromAsync(() => Task.Run(async () => await new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetViews()))
                 .SelectMany(x => x)
-                .Select(x => new SqliteViewObjectModel(Database, x.schema, x.name))
+                .Select(x => new SqliteViewObjectModel(Database, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -142,26 +142,24 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqliteViewObjectModel : ObjectModel, IObjectSource
+    public class SqliteViewObjectModel : ObjectModel, ITableObjectModel
     {
         public SqliteObjectModel Database { get; }
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
 
-        public SqliteViewObjectModel(SqliteObjectModel databse, string schema, string name)
+        public SqliteViewObjectModel(SqliteObjectModel databse, string name)
         {
             Database = databse;
-            OnlyName = name;
-            OnlySchema = schema;
-            Name = name;
+            Title = name;
         }
 
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => new TaskFactory().StartNew(() => new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetFields(this.Name)))
+                .FromAsync(() => Task.Run(async () => await new SqliteConnector(Database.ConnectionInfo.ToConectorConfig()).GetFields(this.Title)))
                 .SelectMany(x => x)
-                .Select(x => new SqliteFieldObjectModel(Database, x.name, x.type, x.notNull))
+                .Select(x => new SqliteFieldObjectModel(Database, x.Name, x.Type, x.NotNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Catch<object, Exception>(ex =>
                 {
@@ -171,34 +169,34 @@ namespace Traficante.Studio.Models
                 .Subscribe(x => Items.Add(x));
         }
 
-        public string[] GetObjectPath()
+        public string[] GetTablePath()
         {
-            return new string[] { Database.Name, OnlySchema, OnlyName };
+            return new string[] { Database.Title, OnlySchema, OnlyName };
         }
 
-        public string[] GetObjectFields()
+        public string[] GetTableFields()
         {
             return new string[0];
         }
     }
 
-    public class SqliteFieldObjectModel : ObjectModel, IObjectField
+    public class SqliteFieldObjectModel : ObjectModel, IFieldObjectModel
     {
         public SqliteObjectModel Databse { get; }
-        public string NameOnly { get; set; }
+        public string Name { get; set; }
 
         public SqliteFieldObjectModel(SqliteObjectModel databse, string name, string type, bool? notNull)
         {
             Databse = databse;
-            Name = $"{name} {type}";
-            NameOnly = name;
+            Title = $"{name} {type}";
+            Name = name;
         }
 
         public override ObservableCollection<object> Items => null;
 
-        public string GetObjectFieldName()
+        public string GetFieldName()
         {
-            return NameOnly;
+            return Name;
         }
     }
 

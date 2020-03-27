@@ -20,9 +20,9 @@ namespace Traficante.Connect.Connectors
             base.Config = config;
         }
 
-        public override Delegate GetTable(string name, string[] path)
+        public override Delegate ResolveTable(string name, string[] path, CancellationToken ct)
         {
-            Func<IDataReader> @delegate = () =>
+            Func<Task<object>> @delegate = async () =>
             {
                 SqlConnection sqlConnection = null;
                 try
@@ -36,8 +36,8 @@ namespace Traficante.Connect.Connectors
                     SqlCommand sqliteCommand = new SqlCommand();
                     sqliteCommand.Connection = sqlConnection;
                     sqliteCommand.CommandText = $"SELECT * FROM {sqlPath}{sqlName}";
-                    sqlConnection.Open();
-                    return sqliteCommand.ExecuteReader(CommandBehavior.CloseConnection);
+                    await sqlConnection.OpenAsync(ct);
+                    return await sqliteCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
                 }
                 catch
                 {
@@ -48,7 +48,7 @@ namespace Traficante.Connect.Connectors
             return @delegate;
         }
 
-        public async Task TryConnectAsync(CancellationToken ct)
+        public async Task TryConnect(CancellationToken ct = default)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
@@ -57,87 +57,35 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public void TryConnect(string databaseName)
+        public async Task TryConnect(string databaseName, CancellationToken ct = default)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
                 sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync(ct);
                 sqlConnection.ChangeDatabase(databaseName);
-            }
-        }
-
-        public IEnumerable<object> Run(string text, Action<Type> returnTypeCreated = null)
-        {
-            using (var sqlConnection = new SqlConnection())
-            {
-                sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
-                //sqlConnection.ChangeDatabase(databaseName);
-                using (var sqlCommand = new SqlCommand(text, sqlConnection))
-                {
-                    using (var sqlReader = sqlCommand.ExecuteReader())
-                    {
-                        List<(string name, Type type)> fields = new List<(string name, Type type)>();
-                        for (int i = 0; i < sqlReader.FieldCount; i++)
-                        {
-                            var name = sqlReader.GetName(i);
-                            var type = sqlReader.GetFieldType(i);
-                            fields.Add((name, type));
-                        }
-                        Type returnType = new ExpressionHelper().CreateAnonymousType(fields);
-                        returnTypeCreated?.Invoke(returnType);
-                        while (sqlReader.Read())
-                        {
-                            var item = Activator.CreateInstance(returnType);
-                            for (int i = 0; i < sqlReader.FieldCount; i++)
-                            {
-                                
-                                var name = sqlReader.GetName(i);
-                                var field = returnType.GetField(name);
-                                var value = sqlReader.GetValue(i);
-                                if (value is DBNull)
-                                    value = GetDefaultValue(field.FieldType);
-                                field.SetValue(item, value);
-                            }
-                            yield return item;
-                        }
-                    }
-                }
-            }
-        }
-
-        public object GetDefaultValue(Type t)
-        {
-            if (t.IsValueType && Nullable.GetUnderlyingType(t) == null)
-            {
-                return Activator.CreateInstance(t);
-            }
-            else
-            {
-                return null;
             }
         }
 
         // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql-server-schema-collections?view=netframework-4.8
 
-        public IEnumerable<string> GetDatabases()
+        public async Task<IEnumerable<string>> GetDatabases()
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
                 sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync();
                 var databasesNames = sqlConnection.GetSchema("Databases").Select().Select(s => s[0].ToString()).ToList();
                 return databasesNames;
             }
         }
 
-        public IEnumerable<(string schema, string name)> GetTables(string database)
+        public async Task<IEnumerable<(string Schema, string Name)>> GetTables(string database)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
                 sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync();
                 sqlConnection.ChangeDatabase(database);
                 var tables = sqlConnection.GetSchema("Tables")
                     .Select()
@@ -148,12 +96,12 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public IEnumerable<(string schema, string name)> GetViews(string database)
+        public async Task<IEnumerable<(string Schema, string Name)>> GetViews(string database)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
                 sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync();
                 sqlConnection.ChangeDatabase(database);
                 var views = sqlConnection.GetSchema("Tables")
                     .Select()
@@ -164,12 +112,12 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public IEnumerable<(string name, string type, bool? notNull)> GetFields(string database, string tableOrView)
+        public async Task<IEnumerable<(string Name, string Type, bool? NotNull)>> GetFields(string database, string tableOrView)
         {
             using (SqlConnection sqlConnection = new SqlConnection())
             {
                 sqlConnection.ConnectionString = this.Config.ToConnectionString();
-                sqlConnection.Open();
+                await sqlConnection.OpenAsync();
                 sqlConnection.ChangeDatabase(database);
                 var fields = sqlConnection.GetSchema("Columns")
                     .Select()

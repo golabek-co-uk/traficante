@@ -4,12 +4,13 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 namespace Traficante.Studio.Models
 {
     public class ObjectModel : ReactiveObject
     {
-        public virtual string Name { get; set; }
+        public virtual string Title { get; set; }
 
         private ObservableCollection<object> _items;
         public virtual ObservableCollection<object> Items
@@ -21,13 +22,8 @@ namespace Traficante.Studio.Models
                     _items = new ObservableCollection<object>();
                     _items.Add(new LoadItemsObjectModel(() =>
                     {
-                        ((LoadItemsObjectModel)Items[0]).Name = "";
+                        ((LoadItemsObjectModel)Items[0]).Title = "";
                         LoadItems();
-                        //RxApp.MainThreadScheduler.Schedule(() =>
-                        //{
-                        //Items.Clear() ;
-                        //});
-                        //LoadItems();
                     }));
                 }
                 return _items;
@@ -43,7 +39,7 @@ namespace Traficante.Studio.Models
 
     public class LoadItemsObjectModel : ReactiveObject
     {
-        public string Name { get; set; } = "...";
+        public string Title { get; set; } = "...";
         public Action LoadItems { get; }
 
         public LoadItemsObjectModel(Action loadItems)
@@ -65,5 +61,16 @@ namespace Traficante.Studio.Models
                 return _items;
             }
         }
+    }
+
+    public interface ITableObjectModel
+    {
+        string[] GetTablePath();
+        string[] GetTableFields();
+    }
+
+    public interface IFieldObjectModel
+    {
+        string GetFieldName();
     }
 }

@@ -85,7 +85,7 @@ namespace Traficante.Studio.ViewModels
             try
             {
                 ConnectError = string.Empty;
-                await new Traficante.Connect.Connectors.MySqlConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnectAsync(ct);
+                await new Traficante.Connect.Connectors.MySqlConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
                 Output = Input;
                 if (InputOrginal != null)
                 {

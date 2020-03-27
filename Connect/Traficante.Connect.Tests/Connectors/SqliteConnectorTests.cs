@@ -20,31 +20,24 @@ namespace Traficante.Connect.Tests.Connectors
         public void TryConnect_RanWithoutException()
         {
             SqliteConnector connector = new SqliteConnector(this.config);
-            connector.TryConnectAsync(CancellationToken.None).Wait();
+            connector.TryConnect(CancellationToken.None).Wait();
         }
 
-        [TestMethod]
-        public void GetDatabases()
-        {
-            SqliteConnector connector = new SqliteConnector(this.config);
-            var databases = connector.GetDatabases().ToList();
-            CollectionAssert.Contains(databases, "chinook.db");
-        }
 
         [TestMethod]
         public void GetTables()
         {
             SqliteConnector connector = new SqliteConnector(this.config);
-            var tables = connector.GetTables();
-            Assert.IsTrue(tables.Any(x => x.name == "albums"));
+            var tables = connector.GetTables().Result;
+            Assert.IsTrue(tables.Any(x => x == "albums"));
         }
 
         [TestMethod]
         public void GetTableFields()
         {
             SqliteConnector connector = new SqliteConnector(this.config);
-            var tables = connector.GetFields("Albums");
-            Assert.IsTrue(tables.Any(x => x.name == "Title"));
+            var tables = connector.GetFields("Albums").Result;
+            Assert.IsTrue(tables.Any(x => x.Name == "Title"));
         }
 
 
@@ -52,8 +45,8 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetViews()
         {
             SqliteConnector connector = new SqliteConnector(this.config);
-            var tables = connector.GetViews();
-            Assert.IsTrue(tables.Any(x => x.name == "vAlbums"));
+            var tables = connector.GetViews().Result;
+            Assert.IsTrue(tables.Any(x => x == "vAlbums"));
         }
 
 
@@ -61,8 +54,8 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetViewFields()
         {
             SqliteConnector connector = new SqliteConnector(this.config);
-            var tables = connector.GetFields("vAlbums");
-            Assert.IsTrue(tables.Any(x => x.name == "Title"));
+            var tables = connector.GetFields("vAlbums").Result;
+            Assert.IsTrue(tables.Any(x => x.Name == "Title"));
         }
     }
 }

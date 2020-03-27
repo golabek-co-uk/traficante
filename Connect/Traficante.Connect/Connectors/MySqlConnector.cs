@@ -22,7 +22,7 @@ namespace Traficante.Connect.Connectors
             base.Config = config;
         }
 
-        public async Task TryConnectAsync(CancellationToken ct)
+        public async Task TryConnect(CancellationToken ct = default)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
@@ -31,68 +31,33 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public void TryConnect(string databaseName)
+        public async Task TryConnect(string databaseName, CancellationToken ct = default)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
                 connection.ConnectionString = this.Config.ToConnectionString();
-                connection.Open();
+                await connection.OpenAsync(ct);
                 connection.ChangeDatabase(databaseName);
             }
         }
 
-        public IEnumerable<object> Run(string text, Action<Type> returnTypeCreated = null)
-        {
-            using (var connection = new MySqlConnection())
-            {
-                connection.ConnectionString = this.Config.ToConnectionString();
-                connection.Open();
-                //sqlConnection.ChangeDatabase(databaseName);
-                using (var sqlCommand = new MySqlCommand(text, connection))
-                {
-                    using (var sqlReader = sqlCommand.ExecuteReader())
-                    {
-                        List<(string name, Type type)> fields = new List<(string name, Type type)>();
-                        for (int i = 0; i < sqlReader.FieldCount; i++)
-                        {
-                            var name = sqlReader.GetName(i);
-                            var type = sqlReader.GetFieldType(i);
-                            fields.Add((name, type));
-                        }
-                        Type returnType = new ExpressionHelper().CreateAnonymousType(fields);
-                        returnTypeCreated?.Invoke(returnType);
-                        while (sqlReader.Read())
-                        {
-                            var item = Activator.CreateInstance(returnType);
-                            for (int i = 0; i < sqlReader.FieldCount; i++)
-                            {
-                                var name = sqlReader.GetName(i);
-                                returnType.GetField(name).SetValue(item, sqlReader.GetValue(i));
-                            }
-                            yield return item;
-                        }
-                    }
-                }
-            }
-        }
-
-        public IEnumerable<string> GetDatabases()
+        public async Task<IEnumerable<string>> GetDatabases()
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
                 connection.ConnectionString = this.Config.ToConnectionString();
-                connection.Open();
+                await connection.OpenAsync();
                 var databasesNames = connection.GetSchema("Databases").Select().Select(s => s[1].ToString()).ToList();
                 return databasesNames;
             }
         }
 
-        public IEnumerable<string> GetTables(string database)
+        public async Task<IEnumerable<string>> GetTables(string database)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
                 connection.ConnectionString = this.Config.ToConnectionString();
-                connection.Open();
+                await connection.OpenAsync();
                 connection.ChangeDatabase(database);
                 var tables = connection.GetSchema("Tables")
                     .Select()
@@ -104,12 +69,12 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public IEnumerable<string> GetViews(string database)
+        public async Task<IEnumerable<string>> GetViews(string database)
         {
             using (MySqlConnection connection = new MySqlConnection())
             {
                 connection.ConnectionString = this.Config.ToConnectionString();
-                connection.Open();
+                await connection.OpenAsync();
                 connection.ChangeDatabase(database);
                 var views = connection.GetSchema("Tables")
                     .Select()

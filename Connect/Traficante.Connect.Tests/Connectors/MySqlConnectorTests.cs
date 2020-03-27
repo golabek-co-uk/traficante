@@ -28,17 +28,17 @@ namespace Traficante.Connect.Tests.Connectors
        
 
         [TestMethod]
-        public void TryConnect_RanWithoutException()
+        public void TryConnect_Server()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            connector.TryConnect("maidc1q2wm11dbzj");
+            connector.TryConnect("maidc1q2wm11dbzj").Wait();
         }
 
         [TestMethod]
         public void GetDatabases()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            var databases = connector.GetDatabases().ToList();
+            var databases = connector.GetDatabases().Result.ToList();
             CollectionAssert.Contains(databases, "sys");
         }
 
@@ -46,7 +46,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetTables()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            var tables = connector.GetTables("sys").ToList();
+            var tables = connector.GetTables("sys").Result.ToList();
             CollectionAssert.Contains(tables, "sys_config");
         }
 
@@ -55,7 +55,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetViews()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            var views = connector.GetViews("sys").ToList();
+            var views = connector.GetViews("sys").Result.ToList();
             CollectionAssert.Contains(views, "host_summary");
         }
 

@@ -187,7 +187,7 @@ namespace Traficante.TSQL
             this._engine = engine;
         }
         
-        public void StartRequestingTable(string name, string[] path, CancellationToken cancellationToken)
+        public void StartRequestingTable(string name, string[] path, CancellationToken ct)
         {
             var tableData = new TableResult
             {
@@ -198,7 +198,7 @@ namespace Traficante.TSQL
             if (_tableData.Any(x => x.Id == tableData.Id))
                 return;
 
-            tableData.Task = Task.Run(() =>
+            tableData.Task = Task.Run(async () =>
             {
                 var tableInfo = this._engine.ResolveTable(name, path);
                 if (tableInfo == null)
@@ -219,21 +219,36 @@ namespace Traficante.TSQL
                     results = tableInfo.Result;
                 }
 
-                //if (results is Task)
-                //{
-                //    Task resultsTask = (Task)results;
-                //    await resultsTask.ContinueWith(x =>
-                //    {
-                //        x.Res
-                //    })
+                if (results is Task)
+                {
+                    Task<object> resultsTask = (Task<object>)results;
+                    await Task.WhenAll(resultsTask);
+                    try
+                    {
+                        resultsTask.Wait();
+                        results = resultsTask.Result;
+                    } catch (AggregateException ex)
+                    {
+                        throw ex.InnerException;
+                    }
 
-                //}
+                }
 
                 var resultType = results.GetType();
                 var resultItemsType = results.GetType().GetElementType();
                 if (resultItemsType != null)
                 {
                     resultFields = resultItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToList();
+                }
+                else if (typeof(IAsyncDataReader).IsAssignableFrom(resultType))
+                {
+                    var resultReader = (IAsyncDataReader)results;
+                    resultItemsType = typeof(object[]);
+                    resultFields = Enumerable
+                        .Range(0, resultReader.FieldCount)
+                        .Select(x => (resultReader.GetName(x), resultReader.GetFieldType(x)))
+                        .ToList();
+                    results = new AsyncDataReaderEnumerable(resultReader, ct);
                 }
                 else if (typeof(IDataReader).IsAssignableFrom(resultType))
                 {
@@ -243,14 +258,14 @@ namespace Traficante.TSQL
                         .Range(0, resultReader.FieldCount)
                         .Select(x => (resultReader.GetName(x), resultReader.GetFieldType(x)))
                         .ToList();
-                    results = new DataReaderEnumerable(resultReader, cancellationToken);
+                    results = new DataReaderEnumerable(resultReader, ct);
                 }
 
                 tableData.Results = results;
                 tableData.ResultFields = resultFields;
                 tableData.ResultType = resultType;
                 tableData.ResultItemsType = resultItemsType;
-            }, cancellationToken);
+            }, ct);
             _tableData.Add(tableData);
         }
 
@@ -277,7 +292,6 @@ namespace Traficante.TSQL
             return featchedData;
         }
     }
-
 
 
     public class TableResult

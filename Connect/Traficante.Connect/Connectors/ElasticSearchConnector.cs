@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Traficante.TSQL;
 
 namespace Traficante.Connect.Connectors
 {
@@ -20,25 +21,16 @@ namespace Traficante.Connect.Connectors
             base.Config = config;
         }
 
-        public async Task TryConnectAsync(CancellationToken ct)
+        public async Task TryConnect(CancellationToken ct = default)
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                var result = await httpClient.GetAsync(ToFullUrl("/"));
+                var result = await httpClient.GetAsync(ToFullUrl("/"), ct);
                 result.EnsureSuccessStatusCode();
             }
         }
 
-        public void TryConnect()
-        {
-            using (HttpClient httpClient = new HttpClient())
-            {
-                var result = httpClient.GetAsync(ToFullUrl("/")).Result;
-                result.EnsureSuccessStatusCode();
-            }
-        }
-
-        public override Delegate GetTable(string name, string[] path)
+        public override Delegate ResolveTable(string name, string[] path, CancellationToken ct)
         {
             if (path.Length > 2)
                 throw new Exception($"Incorrect Elasticsearch path {name} ->  {string.Join(" -> ", path)}");
@@ -47,18 +39,18 @@ namespace Traficante.Connect.Connectors
             string typeName = path.Length == 2 ? name : null;
             Func <IDataReader> @delegate = () =>
             {
-                return new ElasticSearchDataReader(this, indexName, typeName, "{ \"query\": { \"match_all\": {} } }");
+                return new ElasticSearchDataReader(this, indexName, typeName, "{ \"query\": { \"match_all\": {} } }", ct);
             };
             return @delegate;
         }
 
-        public IEnumerable<string> GetIndices()
+        public async Task<IEnumerable<string>> GetIndices()
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                var result = httpClient.GetAsync(ToFullUrl("/_cat/indices?format=json")).Result;
+                var result = await httpClient.GetAsync(ToFullUrl("/_cat/indices?format=json"));
                 result.EnsureSuccessStatusCode();
-                var jsonString = result.Content.ReadAsStringAsync().Result;
+                var jsonString = await result.Content.ReadAsStringAsync();
                 using (var jsonDoc = JsonDocument.Parse(jsonString))
                 {
                     return jsonDoc
@@ -71,13 +63,13 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public IEnumerable<string> GetAliases()
+        public async Task<IEnumerable<string>> GetAliases()
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                var result = httpClient.GetAsync(ToFullUrl("/_cat/aliases?format=json")).Result;
+                var result = await httpClient.GetAsync(ToFullUrl("/_cat/aliases?format=json"));
                 result.EnsureSuccessStatusCode();
-                var jsonString = result.Content.ReadAsStringAsync().Result;
+                var jsonString = await result.Content.ReadAsStringAsync();
                 using (var jsonDoc = JsonDocument.Parse(jsonString))
                 {
                     return jsonDoc
@@ -90,20 +82,20 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public JsonDocument GetIndex(string index)
+        public async Task<JsonDocument> GetIndex(string index)
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                var result = httpClient.GetAsync(ToFullUrl(index)).Result;
+                var result = await httpClient.GetAsync(ToFullUrl(index));
                 result.EnsureSuccessStatusCode();
-                var jsonString = result.Content.ReadAsStringAsync().Result;
+                var jsonString = await result.Content.ReadAsStringAsync();
                 return JsonDocument.Parse(jsonString);
             }
         }
 
-        public IEnumerable<(string Name, string MappingType, string FieldType)> GetFields(string index)
+        public async Task<IEnumerable<(string Name, string MappingType, string FieldType)>> GetFields(string index)
         {
-            using (var jsonIndex = GetIndex(index))
+            using (var jsonIndex = await GetIndex(index))
             {
                 return GetFields(jsonIndex);
             }
@@ -145,12 +137,13 @@ namespace Traficante.Connect.Connectors
         public string Server { get; set; }
     }
 
-    public class ElasticSearchDataReader : IDataReader
+    public class ElasticSearchDataReader : IAsyncDataReader
     {
         private ElasticSearchConnector _elasticSearch;
         private string _indexName;
         private string _mappingTypeName;
         private string _query;
+        private readonly CancellationToken _ct;
         private JsonDocument _index;
         private List<(string Name, string MappingType, string FieldType)> _fields;
         private string _scrollId = null;
@@ -158,14 +151,15 @@ namespace Traficante.Connect.Connectors
         private JsonElement? _currentDocument = null;
 
 
-        public ElasticSearchDataReader(ElasticSearchConnector elasticSearch, string indexName, string mappingTypeName, string query)
+        public ElasticSearchDataReader(ElasticSearchConnector elasticSearch, string indexName, string mappingTypeName, string query, CancellationToken ct)
         {
             this._elasticSearch = elasticSearch;
             this._indexName = indexName;
             this._mappingTypeName = mappingTypeName;
             this._query = query;
-            this._index = elasticSearch.GetIndex(indexName);
-            
+            this._ct = ct;
+            this._index = elasticSearch.GetIndex(indexName).Result;
+
             var mappingTypes = elasticSearch.GetMappingTypes(_index).ToList();
             if (mappingTypes.Count > 0)
                 this._mappingTypeName = mappingTypes.First();
@@ -343,7 +337,7 @@ namespace Traficante.Connect.Connectors
             return _fields.FindIndex(x => x.Name == name);
         }
 
-        public DataTable GetSchemaTable()
+        public System.Data.DataTable GetSchemaTable()
         {
             return null;
         }
@@ -356,7 +350,7 @@ namespace Traficante.Connect.Connectors
 
         public bool NextResult()
         {
-            return false;
+            return NextResultAsync().Result;
         }
 
         public bool Read()
@@ -367,49 +361,57 @@ namespace Traficante.Connect.Connectors
                 return true;
             }
 
+            _currentDocument = null;
+            return false;
+        }
+
+        public async Task<bool> ReadAsync()
+        {
+            return Read();
+        }
+
+        public async Task<bool> NextResultAsync()
+        {
             if (_scrollId == null)
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    var results = client.PostAsync(
+                    var response = await client.PostAsync(
                         this._elasticSearch.ToFullUrl($"/{this._indexName}/_search?scroll=10m"),
-                        new StringContent(this._query, Encoding.UTF8, "application/json"))
-                        .Result;
-                    LoadDocuments(results);
+                        new StringContent(this._query, Encoding.UTF8, "application/json"),
+                        this._ct);
+                    response.EnsureSuccessStatusCode();
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var results = ParseJsonResults(jsonString);
+                    this._scrollId = results.ScrollId;
+                    results.Hits.ForEach(x => this._documents.Enqueue(x));
+                    return this._scrollId != null && results.Hits.Count > 0;
                 }
             }
             else
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    var results = client.PostAsync(
+                    var response = await client.PostAsync(
                             this._elasticSearch.ToFullUrl("/_search/scroll"),
-                            new StringContent("{\"scroll\" : \"1m\", \"scroll_id\" : \"" + _scrollId + "\"}", Encoding.UTF8, "application/json"))
-                        .Result;
-                    LoadDocuments(results);
+                            new StringContent("{\"scroll\" : \"1m\", \"scroll_id\" : \"" + _scrollId + "\"}", Encoding.UTF8, "application/json"),
+                            this._ct);
+                    response.EnsureSuccessStatusCode();
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var results = ParseJsonResults(jsonString);
+                    this._scrollId = results.ScrollId;
+                    results.Hits.ForEach(x => this._documents.Enqueue(x));
+                    return this._scrollId != null && results.Hits.Count > 0;
                 }
             }
-            if (_documents.Count > 0)
-            {
-                _currentDocument = _documents.Dequeue();
-                return true;
-            }
-
-            _currentDocument = null;
-            return false;
         }
 
-        public void LoadDocuments(HttpResponseMessage results)
+        public (string ScrollId, List<JsonElement> Hits) ParseJsonResults(string jsonResults)
         {
-            results.EnsureSuccessStatusCode();
-            var jsonString = results.Content.ReadAsStringAsync().Result;
-            var jsonDocument = JsonDocument.Parse(jsonString);
-            this._scrollId = jsonDocument.RootElement.GetProperty("_scroll_id").ToString();
-            var hits = jsonDocument.RootElement.GetProperty("hits").GetProperty("hits").EnumerateArray();
-            foreach(var hit in hits)
-            {
-                _documents.Enqueue(hit);
-            }
+            var jsonDocument = JsonDocument.Parse(jsonResults);
+            var scrollId = jsonDocument.RootElement.GetProperty("_scroll_id").ToString();
+            var hits = jsonDocument.RootElement.GetProperty("hits").GetProperty("hits").EnumerateArray().ToList();
+            return (scrollId, hits);
         }
     }
 

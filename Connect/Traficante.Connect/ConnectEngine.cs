@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using Traficante.TSQL;
 using Traficante.Connect.Connectors;
 using System.Linq;
 using System.Collections;
+using System.Threading;
 
 namespace Traficante.Connect
 {
@@ -26,7 +26,7 @@ namespace Traficante.Connect
                 Connectors.Add(new ElasticSearchConnector(elasticConfig));
         }
 
-        public TSQL.DataTable RunAndReturnTable(string sql)
+        public TSQL.DataTable RunAndReturnTable(string sql, CancellationToken ct = default)
         {
             using (TSQLEngine sqlEngine = new TSQLEngine())
             {
@@ -36,7 +36,7 @@ namespace Traficante.Connect
                     var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
                     if (connector == null)
                         throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                    Delegate @delegate = connector.GetTable(name, path);
+                    Delegate @delegate = connector.ResolveTable(name, path, ct);
                     return @delegate;
                 });
 
@@ -46,7 +46,7 @@ namespace Traficante.Connect
                     var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
                     if (connector == null)
                         throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                    Delegate @delegate = connector.GetMethod(name, path, arguments);
+                    Delegate @delegate = connector.ResolveMethod(name, path, arguments, ct);
                     return @delegate;
                 });
 
@@ -54,7 +54,7 @@ namespace Traficante.Connect
             }
         }
 
-        public IEnumerable RunAndReturnEnumerable(string sql)
+        public IEnumerable RunAndReturnEnumerable(string sql, CancellationToken ct = default)
         {
             using (TSQLEngine sqlEngine = new TSQLEngine())
             {
@@ -64,7 +64,7 @@ namespace Traficante.Connect
                     var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
                     if (connector == null)
                         throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                    Delegate @delegate = connector.GetTable(name, path);
+                    Delegate @delegate = connector.ResolveTable(name, path, ct);
                     return @delegate;
                 });
 
@@ -74,36 +74,12 @@ namespace Traficante.Connect
                     var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
                     if (connector == null)
                         throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                    Delegate @delegate = connector.GetMethod(name, path, arguments);
+                    Delegate @delegate = connector.ResolveMethod(name, path, arguments, ct);
                     return @delegate;
                 });
 
                 return sqlEngine.RunAndReturnEnumerable(sql);
             }
-        }
-    }
-
-    public class ConnectorConfig
-    {
-        public string Alias { get; set; }
-    }
-
-    public class Connector
-    {
-        public ConnectorConfig Config { get; set; }
-        public IDataReader RunSelect(string name, string[] path)
-        {
-            return null;
-        }
-
-        public virtual Delegate GetMethod(string name, string[] path, Type[] arguments)
-        {
-            return null;
-        }
-
-        public virtual Delegate GetTable(string name, string[] path)
-        {
-            return null;
         }
     }
 

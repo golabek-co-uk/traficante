@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Traficante.Connect;
 using Traficante.TSQL;
 
@@ -16,7 +17,7 @@ namespace Traficante.Connect.Connectors
             this.Config = config;
         }
 
-        public override Delegate GetMethod(string name, string[] path, Type[] arguments)
+        public override Delegate ResolveMethod(string name, string[] path, Type[] arguments, CancellationToken ct)
         {
             if (string.Equals(name, "fromFile", StringComparison.InvariantCultureIgnoreCase)
                 && arguments.Length == 1
