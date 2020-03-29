@@ -1623,28 +1623,40 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(OrderByNode node)
         {
-            throw new NotImplementedException();
+            var fieldNodes = new Expression[node.Fields.Length];
+            for (var i = 0; i < node.Fields.Length; i++)
+                fieldNodes[node.Fields.Length - 1 - i] = Nodes.Pop();
 
-            //ParameterExpression source = Expression.Parameter(typeof(IEnumerable<IObjectResolver>), "stream");
-            //var queryableSource = Expression.Call(typeof(Queryable), "AsQueryable", new Type[] { typeof(IObjectResolver) }, source);
+            Expression lastCall = null;
+            for (int i = 0; i < fieldNodes.Length; i++)
+            {
+                var fieldNode = node.Fields[i];
+                var field = fieldNodes[i];
+                if (i == 0)
+                {
+                    lastCall = Expression.Call(
+                       typeof(Queryable),
+                       fieldNode.Order == Order.Ascending ? "OrderBy" : "OrderByDescending",
+                       new Type[] { this._queryState.Item.Type, field.Type },
+                       _queryState.Input,
+                       Expression.Lambda(field, new[] { _queryState.Item }));
+                }
+                else
+                {
+                    lastCall = Expression.Call(
+                        typeof(Queryable),
+                        fieldNode.Order == Order.Ascending ? "ThenBy" : "ThenByDescending",
+                        new Type[] { this._queryState.Item.Type, field.Type },
+                        lastCall,
+                        Expression.Lambda(field, new[] { _queryState.Item }));
+                }
+            }
 
-
-            //var call = Expression.Call(
-            //    typeof(Queryable),
-            //    "OrderByDescending",
-            //    new Type[] { typeof(IObjectResolver), typeof(IObjectResolver) },
-            //    queryableSource,
-            //    selectLambda);
-
-            //Nodes.Push(Expression.Lambda(call, source));
-
-
-            //MethodCallExpression orderByCallExpression = Expression.Call(
-            //    typeof(Queryable),
-            //    "OrderBy",
-            //    new Type[] { queryableData.ElementType, queryableData.ElementType },
-            //    whereCallExpression,
-            //    Expression.Lambda<Func<string, string>>(pe, new ParameterExpression[] { pe }));
+            var orderBy = Expression.Lambda(
+                lastCall,
+                //node.ToString(),
+                new[] { this._queryState.Input });
+            Nodes.Push(orderBy);
         }
 
         public void Visit(CreateTableNode node)
