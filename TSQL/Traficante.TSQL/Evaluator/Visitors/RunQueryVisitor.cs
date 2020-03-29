@@ -1318,6 +1318,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (Nodes.Any())
             {
                 Expression last = Nodes.Pop();
+
+                last = Expression.Call(
+                    typeof(ParallelEnumerable),
+                    "AsParallel",
+                    new Type[] { this._queryState.Item.Type },
+                    last);
+                
                 Expression<Func<object>> toStream = Expression.Lambda<Func<object>>(last);
                 var compiledToStream = toStream.Compile();
                 Result = compiledToStream();
