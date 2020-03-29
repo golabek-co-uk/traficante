@@ -51,6 +51,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         void Visit(HavingNode node);
         void Visit(SkipNode node);
         void Visit(TakeNode node);
+        void Visit(TopNode node);
         void Visit(FromTableNode node);
         void Visit(FromFunctionNode node);
         void Visit(InMemoryTableFromNode node);

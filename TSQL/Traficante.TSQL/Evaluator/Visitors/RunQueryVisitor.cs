@@ -966,6 +966,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(Expression.Lambda(call, _queryState.Input));
         }
 
+        public void Visit(TopNode node)
+        {
+            var takeNumber = Expression.Constant((int)node.Value);
+
+            MethodCallExpression call = Expression.Call(
+                typeof(Queryable),
+                "Take",
+                new Type[] { this._queryState.Item.Type },
+                _queryState.Input,
+                takeNumber);
+
+            Nodes.Push(Expression.Lambda(call, _queryState.Input));
+        }
+
         public IEnumerable<Object[]> AsEnumerable(IDataReader source)
         {
             if (source == null)
@@ -1229,6 +1243,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(QueryNode node)
         {
+            Expression top = node?.Select.Top != null ? Nodes.Pop() : null;
+
             Expression select = node.Select != null ? Nodes.Pop() : null;
 
             Expression orderBy = node.OrderBy != null ? Nodes.Pop() : null;
@@ -1236,7 +1252,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Expression take = node.Take != null ? Nodes.Pop() : null;
             Expression skip = node.Skip != null ? Nodes.Pop() : null;
 
-            Expression having = (node.GroupBy != null && node.GroupBy.Having != null) ? Nodes.Pop() : null;
+            Expression having = node.GroupBy?.Having != null ? Nodes.Pop() : null;
 
             Expression groupBy = node.GroupBy != null ? Nodes.Pop() : null;
 
@@ -1287,6 +1303,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 {
                     last = Expression.Invoke(select);
                 }
+            }
+
+            if (top != null)
+            {
+                last = Expression.Invoke(top, last);
             }
 
             Nodes.Push(last);

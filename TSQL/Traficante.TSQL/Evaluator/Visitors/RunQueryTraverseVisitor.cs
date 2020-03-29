@@ -22,6 +22,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(SelectNode node)
         {
             SetQueryPart(QueryPart.Select);
+            node.Top?.Accept(this);
             foreach (var field in node.Fields)
                 field.Accept(this);
             node.Accept(_visitor);
@@ -148,6 +149,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
 
         public void Visit(TakeNode node)
+        {
+            node.Accept(_visitor);
+        }
+
+        public void Visit(TopNode node)
         {
             node.Accept(_visitor);
         }

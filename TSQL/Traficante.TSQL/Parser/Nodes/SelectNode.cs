@@ -6,14 +6,16 @@ namespace Traficante.TSQL.Parser.Nodes
 {
     public class SelectNode : Node
     {
-        public SelectNode(FieldNode[] fields)
+        public SelectNode(TopNode top, FieldNode[] fields)
         {
             Fields = fields;
+            Top = top;
             var fieldsId = fields.Length == 0 ? string.Empty : fields.Select(f => f.Id).Aggregate((a, b) => a + b);
             Id = $"{nameof(SelectNode)}{fieldsId}";
         }
 
         public FieldNode[] Fields { get; }
+        public TopNode Top { get; }
 
         public override Type ReturnType { get; }
 
@@ -29,7 +31,8 @@ namespace Traficante.TSQL.Parser.Nodes
             var fieldsTxt = Fields.Length == 0
                 ? string.Empty
                 : Fields.Select(FieldToString).Aggregate((a, b) => $"{a}, {b}");
-            return $"select {fieldsTxt}";
+            var topTxt = Top != null ? $"top {Top.Value} " : "";
+            return $"select {topTxt}{fieldsTxt}";
         }
 
         private string FieldToString(FieldNode node)

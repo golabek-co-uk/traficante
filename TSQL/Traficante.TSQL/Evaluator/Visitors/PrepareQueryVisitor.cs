@@ -249,12 +249,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(SelectNode node)
         {
+            
             var fields = new FieldNode[node.Fields.Length];
-
             for (var i = node.Fields.Length - 1; i >= 0; --i)
                 fields[i] = (FieldNode)Nodes.Pop();
 
-            Nodes.Push(new SelectNode(fields.ToArray()));
+            TopNode topNode = node.Top != null ? (TopNode)Nodes.Pop() : null;
+
+            Nodes.Push(new SelectNode(topNode, fields.ToArray()));
         }
 
         public virtual void Visit(StringNode node)
@@ -400,6 +402,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public virtual void Visit(TakeNode node)
         {
             Nodes.Push(new TakeNode((IntegerNode)node.Expression));
+        }
+
+        public void Visit(TopNode node)
+        {
+            Nodes.Push(new TopNode((IntegerNode)node.Expression));
         }
 
         //public virtual void Visit(FromFunctionNode node)

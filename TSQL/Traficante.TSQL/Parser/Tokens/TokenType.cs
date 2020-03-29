@@ -55,6 +55,7 @@
         Contains,
         Skip,
         Take,
+        Top,
         With,
         InnerJoin,
         OuterJoin,

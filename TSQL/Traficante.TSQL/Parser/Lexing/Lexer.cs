@@ -9,23 +9,12 @@ namespace Traficante.TSQL.Parser.Lexing
     {
         private readonly bool _skipWhiteSpaces;
 
-        /// <summary>
-        ///     Initialize instance.
-        /// </summary>
-        /// <param name="input">The query.</param>
-        /// <param name="skipWhiteSpaces">Should skip whitespaces?</param>
         public Lexer(string input, bool skipWhiteSpaces) :
             base(input, new NoneToken(), DefinitionSets.General)
         {
             _skipWhiteSpaces = skipWhiteSpaces;
         }
 
-        /// <summary>
-        ///     Resolve the statement type.
-        /// </summary>
-        /// <param name="tokenText">Text that match some definition</param>
-        /// <param name="matchedDefinition">Definition that text matched.</param>
-        /// <returns>Statement type.</returns>
         private TokenType GetTokenCandidate(string tokenText, TokenDefinition matchedDefinition)
         {
             switch (tokenText.ToLowerInvariant())
@@ -98,6 +87,8 @@ namespace Traficante.TSQL.Parser.Lexing
                     return TokenType.Take;
                 case SkipToken.TokenText:
                     return TokenType.Skip;
+                case TopToken.TokenText:
+                    return TokenType.Top;
                 case WithToken.TokenText:
                     return TokenType.With;
                 case OnToken.TokenText:
@@ -185,9 +176,6 @@ namespace Traficante.TSQL.Parser.Lexing
             return TokenType.Word;
         }
 
-        /// <summary>
-        ///     The token regexes set.
-        /// </summary>
         private static class TokenRegexDefinition
         {
             private const string Keyword = @"(?<=[\s]{1,}|^){keyword}(?=[\s]{1,}|$)";
@@ -242,6 +230,7 @@ namespace Traficante.TSQL.Parser.Lexing
 
             public static readonly string KSkip = Format(Keyword, SkipToken.TokenText);
             public static readonly string KTake = Format(Keyword, TakeToken.TokenText);
+            public static readonly string KTop = Format(Keyword, TopToken.TokenText);
             public static readonly string KWith = Format(Keyword, WithToken.TokenText);
             public static readonly string KInnerJoin = @"(?<=[\s]{1,}|^)inner[\s]{1,}join(?=[\s]{1,}|$)";
 
@@ -282,18 +271,12 @@ namespace Traficante.TSQL.Parser.Lexing
             }
         }
 
-        /// <summary>
-        ///     The token definitions set.
-        /// </summary>
         private static class DefinitionSets
         {
-            /// <summary>
-            ///     All supported by language keyword.
-            /// </summary>
             public static TokenDefinition[] General => new[]
             {
-                new TokenDefinition(TokenRegexDefinition.KDesc),
-                new TokenDefinition(TokenRegexDefinition.KAsc),
+                new TokenDefinition(TokenRegexDefinition.KDesc, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KAsc, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KLike, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KNotLike, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KRLike, RegexOptions.IgnoreCase),
@@ -314,13 +297,13 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KLessEqual),
                 new TokenDefinition(TokenRegexDefinition.KEqual),
                 new TokenDefinition(TokenRegexDefinition.KModulo),
-                new TokenDefinition(TokenRegexDefinition.KNot),
-                new TokenDefinition(TokenRegexDefinition.KOr),
+                new TokenDefinition(TokenRegexDefinition.KNot, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KOr, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KPlus),
                 new TokenDefinition(TokenRegexDefinition.KStar),
-                new TokenDefinition(TokenRegexDefinition.KIs),
-                new TokenDefinition(TokenRegexDefinition.KIn), 
-                new TokenDefinition(TokenRegexDefinition.KNull),
+                new TokenDefinition(TokenRegexDefinition.KIs, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KIn, RegexOptions.IgnoreCase), 
+                new TokenDefinition(TokenRegexDefinition.KNull, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KWith, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KWhere, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KContains, RegexOptions.IgnoreCase),
@@ -336,6 +319,7 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KHaving, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KSkip, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KTake, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KTop, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KNumericArrayAccess),
                 new TokenDefinition(TokenRegexDefinition.Function),
                 new TokenDefinition(TokenRegexDefinition.KKeyObjectAccess),
@@ -348,27 +332,21 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KHFrom, subPattern: TokenRegexDefinition.KHFromValue),
                 new TokenDefinition(TokenRegexDefinition.KVariable),
                 new TokenDefinition(TokenRegexDefinition.KDot),
-                new TokenDefinition(TokenRegexDefinition.KOn),
-                new TokenDefinition(TokenRegexDefinition.KTable),
+                new TokenDefinition(TokenRegexDefinition.KOn, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KTable, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KLeftBracket),
                 new TokenDefinition(TokenRegexDefinition.KRightBracket),
                 new TokenDefinition(TokenRegexDefinition.KSemicolon),
-                new TokenDefinition(TokenRegexDefinition.KCase),
-                new TokenDefinition(TokenRegexDefinition.KWhen),
-                new TokenDefinition(TokenRegexDefinition.KThen),
-                new TokenDefinition(TokenRegexDefinition.KElse),
-                new TokenDefinition(TokenRegexDefinition.KEnd),
-                new TokenDefinition(TokenRegexDefinition.KDeclare),
-                new TokenDefinition(TokenRegexDefinition.KSet),
+                new TokenDefinition(TokenRegexDefinition.KCase, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KWhen, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KElse, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KThen, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KEnd, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KDeclare, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KSet, RegexOptions.IgnoreCase),
             };
         }
 
-        #region Overrides of LexerBase<Token>
-
-        /// <summary>
-        ///     Gets the next token from tokens stream.
-        /// </summary>
-        /// <returns>The token.</returns>
         public override Token Next()
         {
             var token = base.Next();
@@ -377,21 +355,11 @@ namespace Traficante.TSQL.Parser.Lexing
             return token;
         }
 
-        /// <summary>
-        ///     Gets EndOfFile token.
-        /// </summary>
-        /// <returns>End of file token.</returns>
         protected override Token GetEndOfFileToken()
         {
             return new EndOfFileToken(new TextSpan(Input.Length, 0));
         }
 
-        /// <summary>
-        ///     Gets the token.
-        /// </summary>
-        /// <param name="matchedDefinition">The definition of token type that fits requirements.</param>
-        /// <param name="match">The match.</param>
-        /// <returns>The token.</returns>
         protected override Token GetToken(TokenDefinition matchedDefinition, TokenMatch match)
         {
             var tokenText = match.SubMatch != null ? match.SubMatch.Value : match.Match.Value;
@@ -496,6 +464,8 @@ namespace Traficante.TSQL.Parser.Lexing
                     return new SkipToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Take:
                     return new TakeToken(new TextSpan(Position, tokenText.Length));
+                case TokenType.Top:
+                    return new TopToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.With:
                     return new WithToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.On:
@@ -555,7 +525,5 @@ namespace Traficante.TSQL.Parser.Lexing
                 return new WordToken(match.Match.Groups[1].Value, new TextSpan(Position + 1, match.Match.Groups[1].Value.Length));
             return new WordToken(tokenText, new TextSpan(Position, tokenText.Length));
         }
-
-        #endregion
     }
 }

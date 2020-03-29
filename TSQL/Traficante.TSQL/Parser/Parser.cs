@@ -402,6 +402,17 @@ namespace Traficante.TSQL.Parser
             return null;
         }
 
+        private TopNode ComposeTop()
+        {
+            if (Current.TokenType == TokenType.Top)
+            {
+                Consume(TokenType.Top);
+                return new TopNode(ComposeInteger());
+            }
+
+            return null;
+        }
+
         private GroupByNode ComposeGrouByNode()
         {
             if (Current.TokenType == TokenType.GroupBy)
@@ -427,9 +438,11 @@ namespace Traficante.TSQL.Parser
             Consume(TokenType.Select);
             ConsumeWhiteSpaces();
 
+            var top = ComposeTop();
+
             var fields = ComposeFields();
 
-            return new SelectNode(fields);
+            return new SelectNode(top, fields);
         }
 
         private FieldNode[] ComposeFields()
