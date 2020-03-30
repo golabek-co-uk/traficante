@@ -22,6 +22,34 @@ namespace Traficante.Connect.Connectors
             base.Config = config;
         }
 
+        public override Delegate ResolveTable(string name, string[] path, CancellationToken ct)
+        {
+            Func<Task<object>> @delegate = async () =>
+            {
+                MySqlConnection connection = null;
+                try
+                {
+                    string sqlPath = "";
+                    if (path.Length > 1)
+                        sqlPath = string.Join(".", path.Skip(1).Select(x => $"`{x}`")) + ".";
+                    string sqlName = $"`{name}`";
+
+                    connection = new MySqlConnection(this.Config.ToConnectionString());
+                    MySqlCommand command = new MySqlCommand();
+                    command.Connection = connection;
+                    command.CommandText = $"SELECT * FROM {sqlPath}{sqlName}";
+                    await connection.OpenAsync(ct);
+                    return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
+                }
+                catch
+                {
+                    connection?.Dispose();
+                    throw;
+                }
+            };
+            return @delegate;
+        }
+
         public async Task TryConnect(CancellationToken ct = default)
         {
             using (MySqlConnection connection = new MySqlConnection())
@@ -59,12 +87,13 @@ namespace Traficante.Connect.Connectors
                 connection.ConnectionString = this.Config.ToConnectionString();
                 await connection.OpenAsync();
                 connection.ChangeDatabase(database);
-                var tables = connection.GetSchema("Tables")
+                var tables = connection.GetSchema("Tables", new string[2] { null, database })
                     .Select()
                     .Where(x => x["TABLE_TYPE"]?.ToString() == "BASE TABLE")
                     .Where(x => x["TABLE_SCHEMA"]?.ToString() == database)
                     .Select(t => t["TABLE_NAME"]?.ToString())
-                    .OrderBy(x => x);
+                    .OrderBy(x => x)
+                    .ToList();
                 return tables;
             }
         }
@@ -76,13 +105,30 @@ namespace Traficante.Connect.Connectors
                 connection.ConnectionString = this.Config.ToConnectionString();
                 await connection.OpenAsync();
                 connection.ChangeDatabase(database);
-                var views = connection.GetSchema("Tables")
+                var views = connection.GetSchema("Views", new string[2] { null, database })
                     .Select()
-                    .Where(x => x["TABLE_TYPE"]?.ToString() == "VIEW")
+                    //.Where(x => x["TABLE_TYPE"]?.ToString() == "VIEW")
                     .Where(x => x["TABLE_SCHEMA"]?.ToString() == database)
                     .Select(t => t["TABLE_NAME"]?.ToString())
-                    .OrderBy(x => x);
+                    .OrderBy(x => x)
+                    .ToList();
                 return views;
+            }
+        }
+
+        public async Task<IEnumerable<(string Name, string Type, bool? NotNull)>> GetFields(string database, string tableOrView)
+        {
+            using (MySqlConnection connection = new MySqlConnection())
+            {
+                connection.ConnectionString = this.Config.ToConnectionString();
+                await connection.OpenAsync();
+                connection.ChangeDatabase(database);
+                var fields = connection.GetSchema("Columns", new string[3] { null, database, tableOrView })
+                    .Select()
+                    .Select(f => (f["COLUMN_NAME"]?.ToString(), f["DATA_TYPE"]?.ToString(), (bool?)!(string.Equals(f["IS_NULLABLE"]?.ToString(), "NO", StringComparison.OrdinalIgnoreCase))))
+                    .OrderBy(x => x.Item1)
+                    .ToList();
+                return fields;
             }
         }
     }

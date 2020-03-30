@@ -12,9 +12,6 @@ using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
-using Traficante.TSQL.Parser.Tokens;
-using Traficante.TSQL.Schema;
-using Traficante.TSQL.Schema.DataSources;
 using Traficante.TSQL.Schema.Helpers;
 using Traficante.TSQL.Schema.Managers;
 using TextSpan = Traficante.TSQL.Parser.TextSpan;
@@ -1319,12 +1316,34 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 Expression last = Nodes.Pop();
 
+                //    TakeWhile<TSource>(IQueryable<TSource>, Expression<Func<TSource, Boolean>>)
+
+                ////List<string> a = new List<string>();
+                ////a.AsQueryable<string>()
+
+                //    //MethodCallExpression call = Expression.Call(
+                //    //    typeof(Queryable),
+                //    //    "ToListAsync",
+                //    //    new Type[] { this._queryState.Item.Type},
+                //    //    _queryState.Input,
+                //    //    Expression.Constant(this._cancellationToken));
+                //    //var toListLambda = Expression.Lambda(call, _queryState.Input);
+                //    //last = Expression.Invoke(toListLambda, last);
+
+
                 last = Expression.Call(
                     typeof(ParallelEnumerable),
                     "AsParallel",
                     new Type[] { this._queryState.Item.Type },
                     last);
-                
+
+                last = Expression.Call(
+                    typeof(ParallelEnumerable),
+                    "WithCancellation",
+                    new Type[] { this._queryState.Item.Type },
+                    last,
+                    Expression.Constant(this._cancellationToken));
+
                 Expression<Func<object>> toStream = Expression.Lambda<Func<object>>(last);
                 var compiledToStream = toStream.Compile();
                 Result = compiledToStream();

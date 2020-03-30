@@ -10,6 +10,8 @@ using System.Reactive.Disposables;
 using Traficante.Studio.ViewModels;
 using AvaloniaEdit;
 using Avalonia.Input;
+using System.Reactive.Linq;
+using System.Linq;
 
 namespace Traficante.Studio.Views
 {
@@ -17,6 +19,7 @@ namespace Traficante.Studio.Views
     {
         public Grid Grid => this.FindControl<Grid>("Grid");
         public Button Run => this.FindControl<Button>("Run");
+        public Button Cancel => this.FindControl<Button>("Cancel");
         public EditorView Text => this.FindControl<EditorView>("Text");
         public TabControl Results => this.FindControl<TabControl>("Results");
         public DataGrid ResultsData => this.FindControl<DataGrid>("ResultsData");
@@ -42,6 +45,13 @@ namespace Traficante.Studio.Views
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)
                     .DisposeWith(disposables);
+                this.BindCommand(ViewModel, x => x.CancelCommand, x => x.Cancel)
+                    .DisposeWith(disposables);
+                //this.OneWayBind(ViewModel, x => x.RunCommand.IsExecuting.Select(v => !v), x => x.Run.IsVisible)
+                //    .DisposeWith(disposables);
+                //this.OneWayBind(ViewModel, x => x.RunCommand.IsExecuting, x => x.Cancel.IsVisible, x => Observable.LastOrDefault(x, x => true))
+                //    .DisposeWith(disposables);
+
                 this.OneWayBind(ViewModel, x => x.ResultsData, x => x.ResultsData.Items, x => (System.Collections.IEnumerable)x)
                     .DisposeWith(disposables);
                 this.WhenAnyValue(x => x.ViewModel.ResultsError)

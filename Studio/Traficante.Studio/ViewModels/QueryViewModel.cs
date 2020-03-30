@@ -17,6 +17,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect;
 using Traficante.Connect.Connectors;
@@ -80,7 +81,10 @@ namespace Traficante.Studio.ViewModels
             set => this.RaiseAndSetIfChanged(ref _resultsDataColumns, value);
         }
 
+        private CancellationTokenSource _runCancellationToken = null;
+
         public ReactiveCommand<Unit, Unit> RunCommand { get; }
+        public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveResultsAsCommand { get; set; }
         
 
@@ -90,6 +94,7 @@ namespace Traficante.Studio.ViewModels
             Query = query;
             InitQuery();
             RunCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(Run);
+            CancelCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(Cancel);
             SaveResultsAsCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(SaveResultsAs);
             Interactions.SaveQuery.RegisterHandler(Save);
             Interactions.SaveAsQuery.RegisterHandler(SaveAs);
@@ -120,7 +125,7 @@ namespace Traficante.Studio.ViewModels
 
         public Task<Unit> Run(Unit arg)
         {
-
+            _runCancellationToken = new CancellationTokenSource();
             return Task.Run(() =>
             {
                 RxApp.MainThreadScheduler.Schedule(() =>
@@ -150,7 +155,7 @@ namespace Traficante.Studio.ViewModels
                     }
 
                     var sql = string.IsNullOrEmpty(this.SelectedText) == false ? this.SelectedText : this.Query.Text;
-                    var items = connectEngine.RunAndReturnEnumerable(sql);
+                    var items = connectEngine.RunAndReturnEnumerable(sql, this._runCancellationToken.Token);
                     var itemsType = items.GetType().GenericTypeArguments.FirstOrDefault();
 
                     itemsType
@@ -227,7 +232,13 @@ namespace Traficante.Studio.ViewModels
                 }
 
                 return Unit.Default;
-            });
+            }, this._runCancellationToken.Token);
+        }
+
+        public Task<Unit> Cancel(Unit arg)
+        {
+            this._runCancellationToken.Cancel();
+            return Task.FromResult(Unit.Default);
         }
 
         public async Task<Unit> SaveResultsAs(Unit arg)

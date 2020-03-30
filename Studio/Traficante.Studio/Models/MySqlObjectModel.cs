@@ -104,21 +104,32 @@ namespace Traficante.Studio.Models
 
     public class MySqlTableObjectModel : ObjectModel, ITableObjectModel
     {
-        public MySqlDatabaseObjectModel Databse { get; }
+        public MySqlDatabaseObjectModel Database { get; }
         
         public MySqlTableObjectModel(MySqlDatabaseObjectModel databse, string name)
         {
-            Databse = databse;
+            Database = databse;
             Title = name;
         }
 
         public override void LoadItems()
         {
+            Observable
+                .FromAsync(() => Task.Run(async () => await new MySqlConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(this.Database.Title, this.Title)))
+                .SelectMany(x => x)
+                .Select(x => new MySqlFieldObjectModel(Database, x.Name, x.Type, x.NotNull))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Catch<object, Exception>(ex =>
+                {
+                    Interactions.Exceptions.Handle(ex).Subscribe();
+                    return Observable.Empty<object>();
+                })
+                .Subscribe(x => Items.Add(x));
         }
 
         public string[] GetTablePath()
         {
-            return new string[] { Databse.Server.Title, Databse.Title, Title };
+            return new string[] { Database.Server.Title, Database.Title, Title };
         }
 
         public string[] GetTableFields()
@@ -155,21 +166,32 @@ namespace Traficante.Studio.Models
 
     public class MySqlViewObjectModel : ObjectModel, ITableObjectModel
     {
-        public MySqlDatabaseObjectModel Databse { get; }
+        public MySqlDatabaseObjectModel Database { get; }
 
         public MySqlViewObjectModel(MySqlDatabaseObjectModel databse, string name)
         {
-            Databse = databse;
+            Database = databse;
             Title = name;
         }
 
         public override void LoadItems()
         {
+            Observable
+                .FromAsync(() => Task.Run(async () => await new MySqlConnector(Database.Server.ConnectionInfo.ToConectorConfig()).GetFields(Database.Title, this.Title)))
+                .SelectMany(x => x)
+                .Select(x => new MySqlFieldObjectModel(Database, x.Name, x.Type, x.NotNull))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Catch<object, Exception>(ex =>
+                {
+                    Interactions.Exceptions.Handle(ex).Subscribe();
+                    return Observable.Empty<object>();
+                })
+                .Subscribe(x => Items.Add(x));
         }
 
         public string[] GetTablePath()
         {
-            return new string[] { Databse.Server.Title, Databse.Title, Title };
+            return new string[] { Database.Server.Title, Database.Title, Title };
         }
 
         public string[] GetTableFields()
@@ -200,6 +222,26 @@ namespace Traficante.Studio.Models
                 UserId = this.UserId,
                 Password = this.Password
             };
+        }
+    }
+
+    public class MySqlFieldObjectModel : ObjectModel, IFieldObjectModel
+    {
+        public MySqlDatabaseObjectModel Databse { get; }
+        public string Name { get; set; }
+
+        public MySqlFieldObjectModel(MySqlDatabaseObjectModel databse, string name, string type, bool? notNull)
+        {
+            Databse = databse;
+            Title = $"{name} {type}";
+            Name = name;
+        }
+
+        public override ObservableCollection<object> Items => null;
+
+        public string GetFieldName()
+        {
+            return Name;
         }
     }
 }
