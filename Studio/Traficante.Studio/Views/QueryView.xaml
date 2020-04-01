@@ -6,11 +6,11 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
-  <Grid Name="Grid" RowDefinitions="Auto,*,Auto,*" ColumnDefinitions="*">
+  <Grid Name="Grid" RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="*">
     <DockPanel Grid.Row="0" Margin="2 2 2 2">
-      <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,Auto,*,Auto">
+      <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*">
         <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Run</Button>
-        <Button Name="Cancel" Grid.Column="1" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Cancel</Button>
+        <Button Name="Cancel" Grid.Column="0" IsVisible="False" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Cancel</Button>
       </Grid>
     </DockPanel>
     
@@ -18,8 +18,9 @@
       <views:EditorView Name="Text" />
     </DockPanel>
     
-    <GridSplitter Name="ResultsSplitter" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
-    <TabControl Name="Results" Grid.Row="3">
+    <GridSplitter Name="ResultsSplitter" Grid.Row="2"  IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
+    
+    <TabControl Name="Results" Grid.Row="3" IsVisible="False">
       <TabItem>
         <TabItem.Header>
           <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Results</TextBlock>

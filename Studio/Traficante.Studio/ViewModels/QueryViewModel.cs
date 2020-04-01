@@ -53,13 +53,6 @@ namespace Traficante.Studio.ViewModels
             set => this.RaiseAndSetIfChanged(ref _resultsMessage, value);
         }
 
-        private bool _resultsAreVisible = false;
-        public bool ResultsAreVisible
-        {
-            get => _resultsAreVisible;
-            set => this.RaiseAndSetIfChanged(ref _resultsAreVisible, value);
-        }
-
         private string _rowsCount;
         public string ResultsCount
         {
@@ -133,7 +126,6 @@ namespace Traficante.Studio.ViewModels
                     ResultsMessage = string.Empty;
                     ResultsError = string.Empty;
                     ResultsCount = string.Empty;
-                    this.ResultsAreVisible = true;
                     this.ResultsData = new ReadOnlyObservableCollection<object>(new ObservableCollection<object>());
                     this.ResultsDataColumns.Clear();
                 });

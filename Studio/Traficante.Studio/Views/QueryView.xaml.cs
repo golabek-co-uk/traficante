@@ -43,14 +43,27 @@ namespace Traficante.Studio.Views
                     .DisposeWith(disposables);
                 this.Bind(ViewModel, x => x.SelectedText, x => x.Text.SelectedText)
                     .DisposeWith(disposables);
+
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.CancelCommand, x => x.Cancel)
                     .DisposeWith(disposables);
-                //this.OneWayBind(ViewModel, x => x.RunCommand.IsExecuting.Select(v => !v), x => x.Run.IsVisible)
-                //    .DisposeWith(disposables);
-                //this.OneWayBind(ViewModel, x => x.RunCommand.IsExecuting, x => x.Cancel.IsVisible, x => Observable.LastOrDefault(x, x => true))
-                //    .DisposeWith(disposables);
+                this.ViewModel
+                    .RunCommand
+                    .IsExecuting
+                    .Subscribe(isExecuting =>
+                    {
+                        this.Run.IsVisible = !isExecuting;
+                        this.Cancel.IsVisible = isExecuting;
+
+                        if (isExecuting && this.Results.IsVisible == false)
+                        {
+                            this.Results.IsVisible = true;
+                            this.ResultsSplitter.IsVisible = true;
+                            this.Grid.RowDefinitions[3].Height = new GridLength(1, GridUnitType.Star);
+                        }
+                    })
+                    .DisposeWith(disposables);
 
                 this.OneWayBind(ViewModel, x => x.ResultsData, x => x.ResultsData.Items, x => (System.Collections.IEnumerable)x)
                     .DisposeWith(disposables);
@@ -69,12 +82,7 @@ namespace Traficante.Studio.Views
                         this.ResultsMessage.Text = x;
                     })
                     .DisposeWith(disposables);
-                this.Bind(ViewModel, x => x.ResultsAreVisible, x => x.Results.IsVisible)
-                    .DisposeWith(disposables);
-                this.Bind(ViewModel, x => x.ResultsAreVisible, x => x.ResultsSplitter.IsVisible)
-                    .DisposeWith(disposables);
-                this.OneWayBind(ViewModel, x => x.ResultsAreVisible, x => x.Grid.RowDefinitions[3].Height, x => x ? new GridLength(1, GridUnitType.Star) : new GridLength(0, GridUnitType.Auto))
-                    .DisposeWith(disposables);
+      
                 this.ViewModel.ResultsDataColumns = this.ResultsData.Columns;
                 this.BindCommand(ViewModel, x => x.SaveResultsAsCommand, x => x.ExportResultsAs);
 

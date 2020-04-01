@@ -201,7 +201,9 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                     "#A",
                     new[]
                     {
-                        new BasicEntity("ABCAACBA"), new BasicEntity("AAeqwgQEW"), new BasicEntity("XXX"),
+                        new BasicEntity("ABCAACBA"), 
+                        new BasicEntity("AAeqwgQEW"), 
+                        new BasicEntity("XXX"),
                         new BasicEntity("dadsqqAA")
                     }
                 }

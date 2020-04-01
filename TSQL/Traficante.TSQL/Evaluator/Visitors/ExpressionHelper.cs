@@ -298,14 +298,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             il.Emit(OpCodes.Ret); // return number
         }
 
-        public Type GetQueryableItemType(Expression queryable)
+        public Type GetItemType(Expression queryable)
         {
             return queryable.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
         }
 
-        public Expression Select(Expression input, Type outputItemType)
+        public Expression ConvertToType(Expression input, Type outputItemType)
         {
-            var inputItemType = GetQueryableItemType(input);
+            var inputItemType = GetItemType(input);
             var inputItem = Expression.Parameter(inputItemType, "item_" + inputItemType.Name);
 
             List<MemberBinding> bindings = new List<MemberBinding>();
@@ -328,11 +328,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Expression expression = Expression.Lambda(initialization, inputItem);
 
             var call = Expression.Call(
-                typeof(Queryable),
+                typeof(ParallelEnumerable),
                 "Select",
                 new Type[] { inputItemType, outputItemType },
                 input,
                 expression);
+
             return call;
         }
 
@@ -433,20 +434,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
-        public Expression LookUp(Expression sequence, ParameterExpression sequenceElement, Expression predicate)
-        {
-            var predicateLambda = Expression.Lambda(predicate, sequenceElement);
+        //public Expression LookUp(Expression sequence, ParameterExpression sequenceElement, Expression predicate)
+        //{
+        //    var predicateLambda = Expression.Lambda(predicate, sequenceElement);
 
-            MethodCallExpression call = Expression.Call(
-                typeof(Queryable),
-                "FirstOrDefault",
-                new Type[] { sequenceElement.Type },
-                sequence,
-                predicateLambda);
+        //    MethodCallExpression call = Expression.Call(
+        //        typeof(Queryable),
+        //        "FirstOrDefault",
+        //        new Type[] { sequenceElement.Type },
+        //        sequence,
+        //        predicateLambda);
 
-            return call;
-            //return Expression.Lambda(call, sequenceElement);
-        }
+        //    return call;
+        //    //return Expression.Lambda(call, sequenceElement);
+        //}
 
         public Expression PropertyOrField(Expression obj, string fieldName, Type fieldType)
         {

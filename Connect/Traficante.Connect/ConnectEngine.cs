@@ -78,7 +78,7 @@ namespace Traficante.Connect
                     return @delegate;
                 });
 
-                return sqlEngine.RunAndReturnEnumerable(sql);
+                return sqlEngine.RunAndReturnEnumerable(sql, ct);
             }
         }
     }
