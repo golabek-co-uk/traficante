@@ -36,37 +36,6 @@ namespace Traficante.TSQL.Converter
                 throw ex.InnerException;
             }
         }
-
-        public DataTable RunAndReturnTable(string script, TSQLEngine engine, CancellationToken cancellationToken)
-        {
-            object result = Run(script, engine, cancellationToken);
-            if (result is System.Collections.IEnumerable enumerableResult)
-            {
-                var itemType = result.GetType().GenericTypeArguments.FirstOrDefault();
-
-                List<DataColumn> columns2 = new List<DataColumn>();
-                int index = 0;
-                foreach (var field in itemType.GetFields())
-                {
-                    columns2.Add(new DataColumn(field.Name, field.FieldType, index));
-                    index++;
-                }
-
-                DataTable t = new DataTable("entities", columns2.ToArray());
-                foreach (var row in enumerableResult)
-                {
-                    object[] values = new object[columns2.Count];
-                    for (int i = 0; i < columns2.Count; i++)
-                    {
-                        values[i] = itemType.GetField(columns2[i].ColumnName).GetValue(row);
-                    }
-                    DataRow row2 = new DataRow(values);
-                    t.Add(row2);
-                }
-                return t;
-            }
-            return null;
-        }
     }
 
 }

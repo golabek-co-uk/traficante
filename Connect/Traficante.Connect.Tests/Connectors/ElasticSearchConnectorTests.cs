@@ -40,7 +40,7 @@ namespace Traficante.Connect.Tests.Connectors
             ConnectEngine engine = new ConnectEngine();
             engine.AddConector(this.config);
 
-            var results = engine.RunAndReturnTable("SELECT * FROM [elastic].[]");
+            var results = engine.Run("SELECT * FROM [elastic].[]");
         }
 
         [TestMethod]

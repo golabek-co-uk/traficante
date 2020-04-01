@@ -147,7 +147,7 @@ namespace Traficante.Studio.ViewModels
                     }
 
                     var sql = string.IsNullOrEmpty(this.SelectedText) == false ? this.SelectedText : this.Query.Text;
-                    var items = connectEngine.RunAndReturnEnumerable(sql, this._runCancellationToken.Token);
+                    var items = connectEngine.Run(sql, this._runCancellationToken.Token);
                     var itemsType = items.GetType().GenericTypeArguments.FirstOrDefault();
 
                     itemsType

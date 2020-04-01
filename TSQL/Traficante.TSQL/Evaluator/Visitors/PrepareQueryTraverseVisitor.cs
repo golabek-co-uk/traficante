@@ -237,14 +237,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             join.Source.Accept(this);
             join.With.Accept(this);
 
-            //var firstTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.Source.Id]);
-            //var secondTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.With.Id]);
-
-            //var id = $"{Scope[join.Source.Id]}{Scope[join.With.Id]}";
-
-            //Scope.ScopeSymbolTable.AddSymbol(id, firstTableSymbol.MergeSymbols(secondTableSymbol));
-            //Scope["ProcessedQueryId"] = id;
-
             join.Expression.Accept(this);
             join.Accept(_visitor);
 
@@ -252,14 +244,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 join = joins.Pop();
                 join.With.Accept(this);
-
-                //var currentTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(Scope[join.With.Id]);
-                //var previousTableSymbol = Scope.ScopeSymbolTable.GetSymbol<TableSymbol>(id);
-
-                //id = $"{id}{Scope[join.With.Id]}";
-
-                //Scope.ScopeSymbolTable.AddSymbol(id, previousTableSymbol.MergeSymbols(currentTableSymbol));
-                //Scope["ProcessedQueryId"] = id;
 
                 join.Expression.Accept(this);
                 join.Accept(_visitor);

@@ -4,9 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Traficante.TSQL
+namespace Traficante.TSQL.Tests
 {
-    public class DataTable : IEnumerable<DataRow>, IReadOnlyTable
+    public class DataTable : IEnumerable<DataRow>
     {
         private readonly Dictionary<int, DataColumn> _columnsByIndex;
         private readonly Dictionary<string, DataColumn> _columnsByName;
@@ -15,12 +15,43 @@ namespace Traficante.TSQL
         public DataTable(string name, DataColumn[] columns)
         {
             Name = name;
-
             _columnsByIndex = new Dictionary<int, DataColumn>();
             _columnsByName = new Dictionary<string, DataColumn>();
             Rows = new List<DataRow>();
 
             AddColumns(columns);
+        }
+
+        public DataTable(object result)
+        {
+            Name = "entities";
+            _columnsByIndex = new Dictionary<int, DataColumn>();
+            _columnsByName = new Dictionary<string, DataColumn>();
+            Rows = new List<DataRow>();
+
+            if (result is System.Collections.IEnumerable enumerableResult)
+            {
+                var itemType = result.GetType().GenericTypeArguments.FirstOrDefault();
+
+                List<DataColumn> columns2 = new List<DataColumn>();
+                int index = 0;
+                foreach (var field in itemType.GetFields())
+                {
+                    columns2.Add(new DataColumn(field.Name, field.FieldType, index));
+                    index++;
+                }
+                AddColumns(columns2.ToArray());
+                foreach (var row in enumerableResult)
+                {
+                    object[] values = new object[columns2.Count];
+                    for (int i = 0; i < columns2.Count; i++)
+                    {
+                        values[i] = itemType.GetField(columns2[i].ColumnName).GetValue(row);
+                    }
+                    DataRow row2 = new DataRow(values);
+                    Add(row2);
+                }
+            }
         }
 
         public string Name { get; }
@@ -29,7 +60,7 @@ namespace Traficante.TSQL
 
         public IEnumerator<DataRow> CurrentEnumerator { get; private set; }
 
-        IReadOnlyList<IReadOnlyRow> IReadOnlyTable.Rows => Rows;
+        //IReadOnlyList<IReadOnlyRow> IReadOnlyTable.Rows => Rows;
 
         public DataRow this[int index] => Rows[index];
 
@@ -122,7 +153,7 @@ namespace Traficante.TSQL
         }
     }
 
-    public class DataRow : IEquatable<DataRow>, IReadOnlyRow
+    public class DataRow : IEquatable<DataRow>
     {
         private readonly object[] _columns;
         public object this[int columnNumber] => _columns[columnNumber];

@@ -12,6 +12,7 @@ using Traficante.TSQL.Lib;
 using Traficante.TSQL.Schema;
 using Traficante.TSQL.Schema.Managers;
 using Environment = System.Environment;
+using Traficante.TSQL.Tests;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
@@ -67,7 +68,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 engine.AddTable("entities", new string[1] { source.Key }, source.Value);
                 engine.AddFunction("Entities", new string[1] { source.Key }, () => source.Value);
             }
-            return new CompiledQuery( new Runner().RunAndReturnTable(script, engine, CancellationToken.None));
+            return new CompiledQuery(engine.RunAndReturnTable(script));
             //return InstanceCreator.CompileForExecution(script, engine);
         }
 

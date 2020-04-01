@@ -1660,8 +1660,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             this._queryState.Input = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "input");
         }
 
-
-
         public void Visit(JoinNode node)
         {
             throw new NotImplementedException();

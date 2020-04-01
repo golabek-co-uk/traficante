@@ -26,7 +26,7 @@ namespace Traficante.Connect
                 Connectors.Add(new ElasticSearchConnector(elasticConfig));
         }
 
-        public TSQL.DataTable RunAndReturnTable(string sql, CancellationToken ct = default)
+        public IEnumerable Run(string sql, CancellationToken ct = default)
         {
             using (TSQLEngine sqlEngine = new TSQLEngine())
             {
@@ -50,35 +50,7 @@ namespace Traficante.Connect
                     return @delegate;
                 });
 
-                return sqlEngine.RunAndReturnTable(sql);
-            }
-        }
-
-        public IEnumerable RunAndReturnEnumerable(string sql, CancellationToken ct = default)
-        {
-            using (TSQLEngine sqlEngine = new TSQLEngine())
-            {
-                sqlEngine.AddTableResolver((name, path) =>
-                {
-                    var alias = path.FirstOrDefault();
-                    var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
-                    if (connector == null)
-                        throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                    Delegate @delegate = connector.ResolveTable(name, path, ct);
-                    return @delegate;
-                });
-
-                sqlEngine.AddMethodResolver((name, path, arguments) =>
-                {
-                    var alias = path.FirstOrDefault();
-                    var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
-                    if (connector == null)
-                        throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                    Delegate @delegate = connector.ResolveMethod(name, path, arguments, ct);
-                    return @delegate;
-                });
-
-                return sqlEngine.RunAndReturnEnumerable(sql, ct);
+                return sqlEngine.Run(sql, ct);
             }
         }
     }

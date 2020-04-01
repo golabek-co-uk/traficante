@@ -31,24 +31,9 @@ namespace Traficante.TSQL
             SchemaManager.RegisterLibraries(new Library());
         }
 
-        public DataTable RunAndReturnTable(string script)
+        public IEnumerable Run(string script, CancellationToken ct = default)
         {
-            return RunAndReturnTable(script, CancellationToken.None);
-        }
-
-        public DataTable RunAndReturnTable(string script, CancellationToken cancellationToken)
-        {
-            return new Runner().RunAndReturnTable(script, this, cancellationToken);
-        }
-
-        public IEnumerable RunAndReturnEnumerable(string script)
-        {
-            return RunAndReturnEnumerable(script, CancellationToken.None);
-        }
-
-        public IEnumerable RunAndReturnEnumerable(string script, CancellationToken cancellationToken)
-        {
-            return new Runner().Run(script, this, cancellationToken) as IEnumerable;
+            return new Runner().Run(script, this, ct) as IEnumerable;
         }
 
         public void AddTable<T>(string name, IEnumerable<T> items)
