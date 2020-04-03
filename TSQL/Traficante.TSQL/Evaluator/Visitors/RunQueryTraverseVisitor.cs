@@ -190,27 +190,28 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 join = join.Source as JoinFromNode;
             }
 
-            join = joins.Pop();
+            bool isFirstJoin = true;
 
-            join.Source.Accept(this);
-            join.With.Accept(this);
-            join.Expression.Accept(this);
-
-            while (joins.Count > 1)
+            while (joins.Count > 0)
             {
                 join = joins.Pop();
-                join.With.Accept(this);
-                join.Expression.Accept(this);
-            }
 
-            if (joins.Count > 0)
-            {
-                join = joins.Pop();
-                join.With.Accept(this);
-                join.Expression.Accept(this);
-            }
+                if (isFirstJoin)
+                {
+                    join.Source.Accept(this);
+                    isFirstJoin = false;
+                }
 
-            join.Accept(_visitor);
+                join.With.Accept(this);
+                if (join.Expression is EqualityNode equalityNode)
+                {
+                    equalityNode.Left.Accept(this);
+                    equalityNode.Right.Accept(this);
+                }
+                else
+                    throw new Exception("Only equal operation is supported inside ON clausures");
+                join.Accept(_visitor);
+            }
         }
 
         public void Visit(ExpressionFromNode node)

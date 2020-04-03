@@ -1,16 +1,90 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
+using Traficante.TSQL.Tests;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     [TestClass]
     public class JoinTests : TestBase
     {
+        [TestMethod]
+        public void SimpleOneJoinTest()
+        {
+            var query = "select countries.Country, cities.City from #A.entities() countries inner join #B.entities() cities on countries.Country = cities.Country";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("Poland", null),
+                        new BasicEntity("Germany", null)
+                    }
+                },
+                {
+                    "#B", new[]
+                    {
+                        new BasicEntity("Poland", "Krakow"),
+                        new BasicEntity("Poland", "Wroclaw"),
+                        new BasicEntity("Poland", "Warszawa"),
+                        new BasicEntity("Poland", "Gdansk"),
+                        new BasicEntity("Germany", "Berlin"),
+                        new BasicEntity("Czechia", "Prague")
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Columns.Count());
+            Assert.AreEqual(5, table.Rows.Count());
+
+            Assert.AreEqual("countries.Country", table.Columns.ElementAt(0).ColumnName);
+            Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
+            Assert.AreEqual(0, table.Columns.ElementAt(0).ColumnIndex);
+
+            Assert.AreEqual("cities.City", table.Columns.ElementAt(1).ColumnName);
+            Assert.AreEqual(typeof(string), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
+
+            AssertContain(table, new object[] { "Poland", "Krakow"});
+            AssertContain(table, new object[] { "Poland", "Wroclaw" });
+            AssertContain(table, new object[] { "Poland", "Warszawa" });
+            AssertContain(table, new object[] { "Poland", "Gdansk" });
+            AssertContain(table, new object[] { "Germany", "Berlin" });
+        }
+
+        public void AssertContain(DataTable table, object[] values)
+        {
+            foreach(var row in table.Rows)
+            {
+                if (row.Values.Length != values.Length)
+                {
+                    throw new Exception($"Row at index {table.Rows.IndexOf(row)} has array with {row.Values.Length} values. Expected {values.Length} values.");
+                }
+                bool equal = true;
+                for(int i = 0; i < values.Length; i++)
+                {
+                    if (row.Values[i] == default && values[i] != default)
+                        continue;
+
+                    if (row.Values[i]?.ToString() == values[i]?.ToString())
+                        continue;
+                        
+                    equal = false;
+                }
+                if (equal)
+                    return;
+            }
+            throw new Exception($"Table does not contain expected values.");
+        }
 
         [TestMethod]
-        public void SimpleJoinTest()
+        public void SimpleTwoJoinsTest()
         {
             var query =
                 "select countries.Country, cities.City, population.Population from #A.entities() countries inner join #B.entities() cities on countries.Country = cities.Country inner join #C.entities() population on cities.City = population.City";
@@ -63,32 +137,18 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
-            Assert.AreEqual("Poland", table[0][0]);
-            Assert.AreEqual("Krakow", table[0][1]);
-            Assert.AreEqual(400m, table[0][2]);
+            AssertContain(table, new object[] { "Poland", "Krakow", (decimal)400 });
+            AssertContain(table, new object[] { "Poland", "Wroclaw", (decimal)500 });
+            AssertContain(table, new object[] { "Poland", "Warszawa", (decimal)1000 });
+            AssertContain(table, new object[] { "Poland", "Gdansk", (decimal)200 });
+            AssertContain(table, new object[] { "Germany", "Berlin", (decimal)400 });
 
-            Assert.AreEqual("Poland", table[1][0]);
-            Assert.AreEqual("Wroclaw", table[1][1]);
-            Assert.AreEqual(500m, table[1][2]);
-
-            Assert.AreEqual("Poland", table[2][0]);
-            Assert.AreEqual("Warszawa", table[2][1]);
-            Assert.AreEqual(1000m, table[2][2]);
-
-            Assert.AreEqual("Poland", table[3][0]);
-            Assert.AreEqual("Gdansk", table[3][1]);
-            Assert.AreEqual(200m, table[3][2]);
-
-            Assert.AreEqual("Germany", table[4][0]);
-            Assert.AreEqual("Berlin", table[4][1]);
-            Assert.AreEqual(400m, table[4][2]);
         }
 
         [TestMethod]
         public void JoinWithCaseWhen2Test()
         {
-            var query =
-                "select countries.Country, (case when population.Population > 400 then ToUpperInvariant(cities.City) else cities.City end) as 'cities.City', population.Population from #A.entities() countries inner join #B.entities() cities on countries.Country = cities.Country inner join #C.entities() population on cities.City = population.City";
+            var query = "select countries.Country, (case when population.Population > 400 then ToUpperInvariant(cities.City) else cities.City end) as 'cities.City', population.Population from #A.entities() countries inner join #B.entities() cities on countries.Country = cities.Country inner join #C.entities() population on cities.City = population.City";
 
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {
