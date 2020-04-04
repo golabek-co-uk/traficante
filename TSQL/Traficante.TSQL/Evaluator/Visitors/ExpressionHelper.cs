@@ -118,8 +118,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             il.Emit(OpCodes.Ldc_I4_S, 17); // put "17" on the stack
             foreach (var field in fieldsBuilder)
             {
+                if (field.FieldType.GenericTypeArguments.Length > 0)
+                    continue;
+                
                 Label gotoIsNull = il.DefineLabel();
-
+                
                 il.Emit(OpCodes.Ldarg_0); // put "this" on the stack
                 il.Emit(OpCodes.Ldfld, field); // put "this.field" on the stack
                 il.Emit(OpCodes.Ldnull); // put "null" on the stack
@@ -144,6 +147,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     il.Emit(OpCodes.Ldarg_0); // put "this" on the stack
                     il.Emit(OpCodes.Ldfld, field); // put "this.field" on the stack
                 }
+                 
                 il.Emit(OpCodes.Call, field.FieldType.GetMethod("GetHashCode", new Type[] { })); // call "GetHashCode" and put result on the stack
                 il.Emit(OpCodes.Add); // add result of "23 x last hash"  to result of "GetHashCode" and put is on the stack
 

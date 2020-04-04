@@ -12,13 +12,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public List<FieldNode> SelectedFieldsNodes = new List<FieldNode>();
 
-        public ParameterExpression Item = null;
-        public ParameterExpression Item_i = Expression.Parameter(typeof(int), "item_i");
-        public Dictionary<string, Expression> Alias2Item = new Dictionary<string, Expression>();
+        public ParameterExpression QueryItem = null;
+        public ParameterExpression QueryItemIndex = Expression.Parameter(typeof(int), "item_i");
+        public Dictionary<string, Expression> Alias2QueryItem = new Dictionary<string, Expression>();
 
         public ParameterExpression ItemInGroup = null;
 
-        public ParameterExpression Input = null;
+        public ParameterExpression Query = null;
 
         public bool IsSingleRowResult()
         {

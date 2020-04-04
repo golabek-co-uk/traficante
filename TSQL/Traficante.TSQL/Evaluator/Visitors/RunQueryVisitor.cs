@@ -27,7 +27,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         Stack<System.Linq.Expressions.Expression> Nodes { get; set; }
         private TSQLEngine _engine;
         private readonly CancellationToken _cancellationToken;
-        private QueryState _queryState;
+        private QueryState _state;
         private QueryPart _queryPart;
 
         public object Result = null;
@@ -43,7 +43,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void SetQueryState(QueryState queryState)
         {
-            _queryState = queryState;
+            _state = queryState;
         }
 
         public void SetQueryPart(QueryPart queryPart)
@@ -262,7 +262,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             if ((node.Expression is AllColumnsNode) == false && _queryPart == QueryPart.Select)
             {
-                _queryState.SelectedFieldsNodes.Add(node);
+                _state.SelectedFieldsNodes.Add(node);
                 var value = Nodes.Pop();
                 Nodes.Push(Expression.Convert(value, node.ReturnType));
             }
@@ -333,17 +333,17 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             if (node.IsAggregateMethod)
             {
-                if (this._queryState.Item.Type.Name == "IGrouping`2")
+                if (this._state.QueryItem.Type.Name == "IGrouping`2")
                 {
 
                     if (node.Method.Name == "Count")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.ItemInGroup);
-                        var group = Expression.Convert(this._queryState.Item, typeof(IEnumerable<>).MakeGenericType(this._queryState.ItemInGroup.Type));
+                        var selector = Expression.Lambda(args[0], this._state.ItemInGroup);
+                        var group = Expression.Convert(this._state.QueryItem, typeof(IEnumerable<>).MakeGenericType(this._state.ItemInGroup.Type));
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(Enumerable),
                             "Select",
-                            new Type[] { this._queryState.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Type[] { this._state.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
                             new Expression[] { group, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
@@ -355,12 +355,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                     if (node.Method.Name == "Sum")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.ItemInGroup);
-                        var group = Expression.Convert(this._queryState.Item, typeof(IEnumerable<>).MakeGenericType(this._queryState.ItemInGroup.Type));
+                        var selector = Expression.Lambda(args[0], this._state.ItemInGroup);
+                        var group = Expression.Convert(this._state.QueryItem, typeof(IEnumerable<>).MakeGenericType(this._state.ItemInGroup.Type));
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(Enumerable),
                             "Select",
-                            new Type[] { this._queryState.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Type[] { this._state.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
                             new Expression[] { group, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
@@ -372,12 +372,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                     if (node.Method.Name == "Max")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.ItemInGroup);
-                        var group = Expression.Convert(this._queryState.Item, typeof(IEnumerable<>).MakeGenericType(this._queryState.ItemInGroup.Type));
+                        var selector = Expression.Lambda(args[0], this._state.ItemInGroup);
+                        var group = Expression.Convert(this._state.QueryItem, typeof(IEnumerable<>).MakeGenericType(this._state.ItemInGroup.Type));
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(Enumerable),
                             "Select",
-                            new Type[] { this._queryState.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Type[] { this._state.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
                             new Expression[] { group, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
@@ -389,12 +389,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                     if (node.Method.Name == "Min")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.ItemInGroup);
-                        var group = Expression.Convert(this._queryState.Item, typeof(IEnumerable<>).MakeGenericType(this._queryState.ItemInGroup.Type));
+                        var selector = Expression.Lambda(args[0], this._state.ItemInGroup);
+                        var group = Expression.Convert(this._state.QueryItem, typeof(IEnumerable<>).MakeGenericType(this._state.ItemInGroup.Type));
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(Enumerable),
                             "Select",
-                            new Type[] { this._queryState.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Type[] { this._state.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
                             new Expression[] { group, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
@@ -406,12 +406,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                     if (node.Method.Name == "Avg")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.ItemInGroup);
-                        var group = Expression.Convert(this._queryState.Item, typeof(IEnumerable<>).MakeGenericType(this._queryState.ItemInGroup.Type));
+                        var selector = Expression.Lambda(args[0], this._state.ItemInGroup);
+                        var group = Expression.Convert(this._state.QueryItem, typeof(IEnumerable<>).MakeGenericType(this._state.ItemInGroup.Type));
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(Enumerable),
                             "Select",
-                            new Type[] { this._queryState.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
+                            new Type[] { this._state.ItemInGroup.Type, node.Arguments.Args[0].ReturnType },
                             new Expression[] { group, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(Enumerable),
@@ -427,12 +427,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 {
                     if (node.Method.Name == "Count")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.Item);
+                        var selector = Expression.Lambda(args[0], this._state.QueryItem);
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Select",
-                            new Type[] { this._queryState.Item.Type, node.Arguments.Args[0].ReturnType },
-                            new Expression[] { this._queryState.Input, selector });
+                            new Type[] { this._state.QueryItem.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._state.Query, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Count",
@@ -443,12 +443,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                     if (node.Method.Name == "Sum")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.Item);
+                        var selector = Expression.Lambda(args[0], this._state.QueryItem);
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Select",
-                            new Type[] { this._queryState.Item.Type, node.Arguments.Args[0].ReturnType },
-                            new Expression[] { this._queryState.Input, selector });
+                            new Type[] { this._state.QueryItem.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._state.Query, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Sum",
@@ -459,12 +459,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                     if (node.Method.Name == "Avg")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.Item);
+                        var selector = Expression.Lambda(args[0], this._state.QueryItem);
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Select",
-                            new Type[] { this._queryState.Item.Type, node.Arguments.Args[0].ReturnType },
-                            new Expression[] { this._queryState.Input, selector });
+                            new Type[] { this._state.QueryItem.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._state.Query, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Average",
@@ -475,12 +475,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                     if (node.Method.Name == "Max")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.Item);
+                        var selector = Expression.Lambda(args[0], this._state.QueryItem);
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Select",
-                            new Type[] { this._queryState.Item.Type, node.Arguments.Args[0].ReturnType },
-                            new Expression[] { this._queryState.Input, selector });
+                            new Type[] { this._state.QueryItem.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._state.Query, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Max",
@@ -491,12 +491,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     }
                     if (node.Method.Name == "Min")
                     {
-                        var selector = Expression.Lambda(args[0], this._queryState.Item);
+                        var selector = Expression.Lambda(args[0], this._state.QueryItem);
                         MethodCallExpression selectCall = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Select",
-                            new Type[] { this._queryState.Item.Type, node.Arguments.Args[0].ReturnType },
-                            new Expression[] { this._queryState.Input, selector });
+                            new Type[] { this._state.QueryItem.Type, node.Arguments.Args[0].ReturnType },
+                            new Expression[] { this._state.Query, selector });
                         MethodCallExpression call = Expression.Call(
                             typeof(ParallelEnumerable),
                             "Min",
@@ -510,9 +510,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             else
             {
-                if (this._queryState?.Item?.Type.Name == "IGrouping`2")
+                if (this._state?.QueryItem?.Type.Name == "IGrouping`2")
                 {
-                    var key = Expression.PropertyOrField(this._queryState.Item, "Key");
+                    var key = Expression.PropertyOrField(this._state.QueryItem, "Key");
                     if (key.Type.GetFields().Any(x => string.Equals(x.Name, this._currentFieldNode.FieldName)))
                     {
                         Nodes.Push(Expression.PropertyOrField(key, this._currentFieldNode.FieldName));
@@ -522,7 +522,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
                 if (node.Name == "RowNumber")
                 {
-                    Nodes.Push(Expression.Add(this._queryState.Item_i, Expression.Constant(1)));
+                    Nodes.Push(Expression.Add(this._state.QueryItemIndex, Expression.Constant(1)));
                     return;
                 }
 
@@ -576,7 +576,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(AccessColumnNode node)
         {
-            if (_queryState.Item.Type.Name == "IGrouping`2")
+            if (_state.QueryItem.Type.Name == "IGrouping`2")
             {
                 // TODO: just for testing. 
                 // come with idea, how to figure out if the colum is inside aggregation function 
@@ -585,7 +585,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 //{
                 var fieldNameameWithAlias = node.Alias + "." + node.Name;
 
-                var key = Expression.PropertyOrField(this._queryState.Item, "Key");
+                var key = Expression.PropertyOrField(this._state.QueryItem, "Key");
                 if (key.Type.GetFields().Any(x => string.Equals(x.Name, fieldNameameWithAlias)))
                 {
                     //var properyOfKey = Expression.PropertyOrField(key, fieldNameameWithAlias);
@@ -603,13 +603,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
                 else
                 {
-                    var aliasProperty = this._queryState.ItemInGroup.Type.GetFields().FirstOrDefault(x => string.Equals(x.Name, node.Alias));
+                    var aliasProperty = this._state.ItemInGroup.Type.GetFields().FirstOrDefault(x => string.Equals(x.Name, node.Alias));
                     if (aliasProperty != null)
                     {
                         var nameProperty = aliasProperty.FieldType.GetFields().FirstOrDefault(x => string.Equals(x.Name, node.Name));
                         if (nameProperty != null)
                         {
-                            var alias = Expression.PropertyOrField(this._queryState.ItemInGroup, node.Alias);
+                            var alias = Expression.PropertyOrField(this._state.ItemInGroup, node.Alias);
                             var propertyInAlias = this.expressionHelper.PropertyOrField(alias, node.Name, node.ReturnType);
                             Nodes.Push(propertyInAlias);
                             //Nodes.Push(
@@ -620,7 +620,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         }
                     }
                     //var groupItemProperty = Expression.PropertyOrField(this._itemInGroup, node.Name);
-                    var groupItemProperty = this.expressionHelper.PropertyOrField(this._queryState.ItemInGroup, node.Name, node.ReturnType);
+                    var groupItemProperty = this.expressionHelper.PropertyOrField(this._state.ItemInGroup, node.Name, node.ReturnType);
                     Nodes.Push(groupItemProperty);
                     return;
                 }
@@ -632,36 +632,36 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 //}
             }
 
-            if (_queryState.Alias2Item.ContainsKey(node.Alias))
+            if (_state.Alias2QueryItem.ContainsKey(node.Alias))
             {
-                var item = _queryState.Alias2Item[node.Alias];
+                var item = _state.Alias2QueryItem[node.Alias];
                 var property = this.expressionHelper.PropertyOrField(item, node.Name, node.ReturnType);
                 Nodes.Push(property);
             }
             else
             {
-                var property = this.expressionHelper.PropertyOrField(_queryState.Item, node.Name, node.ReturnType);
+                var property = this.expressionHelper.PropertyOrField(_state.QueryItem, node.Name, node.ReturnType);
                 Nodes.Push(property);
             }
         }
 
         public void Visit(AllColumnsNode node)
         {
-            var columns = TypeHelper.GetColumns(this._queryState.Item.Type);
+            var columns = TypeHelper.GetColumns(this._state.QueryItem.Type);
             foreach (var column in columns)
             {
                 IdentifierNode identifierNode = new IdentifierNode(column.ColumnName, column.ColumnType);
                 FieldNode fieldNode = new FieldNode(identifierNode, -1, column.ColumnName);
-                _queryState.SelectedFieldsNodes.Add(fieldNode);
+                _state.SelectedFieldsNodes.Add(fieldNode);
                 Visit(new AccessColumnNode(column.ColumnName, string.Empty, column.ColumnType, TextSpan.Empty));
             }
         }
 
         public void Visit(IdentifierNode node)
         {
-            if (this._queryState.ItemInGroup != null)
+            if (this._state.ItemInGroup != null)
             {
-                var columns = TypeHelper.GetColumns(this._queryState.ItemInGroup.Type);
+                var columns = TypeHelper.GetColumns(this._state.ItemInGroup.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == node.Name);
                 if (column == null)
                     throw new TSQLException($"Column does not exist: {node.Name}");
@@ -670,7 +670,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             else
             {
-                var columns = TypeHelper.GetColumns(this._queryState.Item.Type);
+                var columns = TypeHelper.GetColumns(this._state.QueryItem.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == node.Name);
                 if (column == null)
                     throw new TSQLException($"Column does not exist: {node.Name}");
@@ -762,7 +762,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 IdentifierNode itemNode = (IdentifierNode)node.Expression;
                 IdentifierNode rootNode = (IdentifierNode)node.Root;
 
-                var item = _queryState.Alias2Item[rootNode.Name];
+                var item = _state.Alias2QueryItem[rootNode.Name];
                 var columns = TypeHelper.GetColumns(item.Type);
                 var column = columns.FirstOrDefault(x => x.ColumnName == itemNode.Name);
                 if (column == null)
@@ -789,7 +789,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SelectNode node)
         {
-            var selectedFieldsNodes = _queryState.SelectedFieldsNodes;
+            var selectedFieldsNodes = _state.SelectedFieldsNodes;
 
             var fieldNodes = new Expression[selectedFieldsNodes.Count];
             for (var i = 0; i < selectedFieldsNodes.Count; i++)
@@ -816,7 +816,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
-            if (_queryState.IsSingleRowResult())
+            if (_state.IsSingleRowResult())
             {
                 var array = Expression.NewArrayInit(outputItemType, new Expression[] { initialization });
 
@@ -826,47 +826,45 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     new Type[] { outputItemType },
                     array);
 
-                if (_queryState.Input != null)
-                    Nodes.Push(Expression.Lambda(call, _queryState.Input));
+                if (_state.Query != null)
+                    Nodes.Push(Expression.Lambda(call, _state.Query));
                 else
                     Nodes.Push(Expression.Lambda(call));
             }
             else
             {
                 //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-                Expression expression = Expression.Lambda(initialization, _queryState.Item, _queryState.Item_i);
+                Expression expression = Expression.Lambda(initialization, _state.QueryItem, _state.QueryItemIndex);
 
                 var call = Expression.Call(
                     typeof(ParallelEnumerable),
                     "Select",
-                    new Type[] { this._queryState.Item.Type, outputItemType },
-                    _queryState.Input,
+                    new Type[] { this._state.QueryItem.Type, outputItemType },
+                    _state.Query,
                     expression);
 
-                Nodes.Push(Expression.Lambda(call, _queryState.Input));
+                Nodes.Push(Expression.Lambda(call, _state.Query));
             }
 
-
             //"AnonymousType input"
-            this._queryState.Item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
-
+            this._state.QueryItem = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
             //"IQueryable<AnonymousType> input"
-            this._queryState.Input = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "input");
+            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "query");
         }
 
         public void Visit(WhereNode node)
         {
             var predicate = Nodes.Pop();
-            var predicateLambda = Expression.Lambda(predicate, this._queryState.Item);
+            var predicateLambda = Expression.Lambda(predicate, this._state.QueryItem);
 
             MethodCallExpression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Where",
-                new Type[] { this._queryState.Item.Type },
-                _queryState.Input,
+                new Type[] { this._state.QueryItem.Type },
+                _state.Query,
                 predicateLambda);
 
-            Nodes.Push(Expression.Lambda(call, _queryState.Input));
+            Nodes.Push(Expression.Lambda(call, _state.Query));
         }
 
         public void Visit(GroupByNode node)
@@ -893,60 +891,60 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, _queryState.Item);
+            Expression expression = Expression.Lambda(initialization, _state.QueryItem);
 
             var groupByCall = Expression.Call(
                 typeof(ParallelEnumerable),
                 "GroupBy",
-                new Type[] { this._queryState.Item.Type, outputItemType },
-                _queryState.Input,
+                new Type[] { this._state.QueryItem.Type, outputItemType },
+                _state.Query,
                 expression);
 
-            Nodes.Push(Expression.Lambda(groupByCall, _queryState.Input));
+            Nodes.Push(Expression.Lambda(groupByCall, _state.Query));
 
 
             // "ItemAnonymousType itemInGroup "
-            this._queryState.ItemInGroup = Expression.Parameter(this._queryState.Item.Type, "itemInGroup_" + this._queryState.Item.Type);
+            this._state.ItemInGroup = Expression.Parameter(this._state.QueryItem.Type, "itemInGroup_" + this._state.QueryItem.Type);
 
             // "IGrouping<KeyAnonymousType, ItemAnonymousType>"
-            outputItemType = typeof(IGrouping<,>).MakeGenericType(outputItemType, this._queryState.Item.Type);
+            outputItemType = typeof(IGrouping<,>).MakeGenericType(outputItemType, this._state.QueryItem.Type);
 
             // "IGrouping<KeyAnonymousType, ItemAnonymousType> item"
-            this._queryState.Item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
+            this._state.QueryItem = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
 
             // "IQueryable<IGrouping<KeyAnonymousType, ItemAnonymousType>> input"
-            this._queryState.Input = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "input");
+            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "query");
         }
 
         public void Visit(HavingNode node)
         {
             var predicate = Nodes.Pop();
-            var predicateLambda = Expression.Lambda(predicate, this._queryState.Item);
+            var predicateLambda = Expression.Lambda(predicate, this._state.QueryItem);
 
             MethodCallExpression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Where",
-                new Type[] { this._queryState.Item.Type },
-                _queryState.Input,
+                new Type[] { this._state.QueryItem.Type },
+                _state.Query,
                 predicateLambda);
 
-            Nodes.Push(Expression.Lambda(call, _queryState.Input));
+            Nodes.Push(Expression.Lambda(call, _state.Query));
         }
 
         public void Visit(SkipNode node)
         {
-            this._queryState.Input = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(this._queryState.Item.Type), "input");
+            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(this._state.QueryItem.Type), "query");
 
             var skipNumber = Expression.Constant((int)node.Value);
 
             MethodCallExpression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Skip",
-                new Type[] { this._queryState.Item.Type },
-                _queryState.Input,
+                new Type[] { this._state.QueryItem.Type },
+                _state.Query,
                 skipNumber);
 
-            Nodes.Push(Expression.Lambda(call, _queryState.Input));
+            Nodes.Push(Expression.Lambda(call, _state.Query));
         }
 
         public void Visit(TakeNode node)
@@ -956,11 +954,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             MethodCallExpression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Take",
-                new Type[] { this._queryState.Item.Type },
-                _queryState.Input,
+                new Type[] { this._state.QueryItem.Type },
+                _state.Query,
                 takeNumber);
 
-            Nodes.Push(Expression.Lambda(call, _queryState.Input));
+            Nodes.Push(Expression.Lambda(call, _state.Query));
         }
 
         public void Visit(TopNode node)
@@ -970,11 +968,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             MethodCallExpression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Take",
-                new Type[] { this._queryState.Item.Type },
-                _queryState.Input,
+                new Type[] { this._state.QueryItem.Type },
+                _state.Query,
                 takeNumber);
 
-            Nodes.Push(Expression.Lambda(call, _queryState.Input));
+            Nodes.Push(Expression.Lambda(call, _state.Query));
         }
 
         public IEnumerable<Object[]> AsEnumerable(IDataReader source)
@@ -1046,71 +1044,58 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 new Type[] { resultItemsType },
                 Expression.Constant(result));
 
-            //resultsAsQueryableExpression = Expression.Call(
-            //    typeof(ParallelEnumerable),
-            //    "AsOrdered",
-            //    new Type[] { resultItemsType },
-            //    Expression.Constant(resultsAsQueryableExpression));
+            Expression.Constant(resultsAsQueryableExpression);
 
-            Type outputItemType = expressionHelper.CreateAnonymousType(resultFields);
-            var resultItemExpression = Expression.Parameter(resultItemsType, "entityItem");
+            Type resultItemType = expressionHelper.CreateAnonymousType(resultFields);
+            var resultItemExpression = Expression.Parameter(resultItemsType, node.Table.ToString());
 
-            List<MemberBinding> bindings = new List<MemberBinding>();
+            List<MemberBinding> resultBindings = new List<MemberBinding>();
             int fieldIndex = 0;
             foreach (var field in resultFields)
             {
                 if (resultItemsType == typeof(object[]))
                 {
                     MemberBinding assignment = Expression.Bind(
-                        outputItemType.GetField(field.Name),
+                        resultItemType.GetField(field.Name),
                         Expression.Convert(Expression.ArrayAccess(resultItemExpression, Expression.Constant(fieldIndex)), field.FieldType)
                     );
-                    bindings.Add(assignment);
+                    resultBindings.Add(assignment);
                     fieldIndex++;
                 }
                 else
                 {
                     //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
                     MemberBinding assignment = Expression.Bind(
-                        outputItemType.GetField(field.Name),
+                        resultItemType.GetField(field.Name),
                         Expression.PropertyOrField(resultItemExpression, field.Name)
                         );
-                    bindings.Add(assignment);
+                    resultBindings.Add(assignment);
                 }
             }
 
             //"new AnonymousType()"
-            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
+            var creationExpression = Expression.New(resultItemType.GetConstructor(Type.EmptyTypes));
 
             //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            var initialization = Expression.MemberInit(creationExpression, bindings);
+            var initialization = Expression.MemberInit(creationExpression, resultBindings);
 
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, resultItemExpression, _queryState.Item_i);
-
-            //resultsAsQueryableExpression = Expression.Call(
-            //    typeof(ParallelEnumerable),
-            //    "WithCancellation",
-            //    new Type[] { resultItemsType },
-            //    resultsAsQueryableExpression,
-            //    Expression.Constant(this._cancellationToken));
-
+            Expression expression = Expression.Lambda(initialization, resultItemExpression, _state.QueryItemIndex);
             var call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Select",
-                new Type[] { resultItemsType, outputItemType },
+                new Type[] { resultItemsType, resultItemType },
                 resultsAsQueryableExpression,
                 expression);
 
-
             Nodes.Push(call);
-
+            
             //"AnonymousType input"
-            this._queryState.Item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
-            this._queryState.Alias2Item[node.Alias] = this._queryState.Item;
+            this._state.QueryItem = Expression.Parameter(resultItemType, "item_" + resultItemType.Name);
+            this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
 
             //"IQueryable<AnonymousType> input"
-            this._queryState.Input = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "input");
+            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(resultItemType), "query");
         }
 
         public void From(FromNode node, object result)
@@ -1200,7 +1185,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, resultItemExpression, _queryState.Item_i);
+            Expression expression = Expression.Lambda(initialization, resultItemExpression, _state.QueryItemIndex);
 
             var call = Expression.Call(
                 typeof(ParallelEnumerable),
@@ -1212,11 +1197,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(call);
 
             //"AnonymousType input"
-            this._queryState.Item = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
-            this._queryState.Alias2Item[node.Alias] = this._queryState.Item;
+            this._state.QueryItem = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
+            this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
 
             //"IQueryable<AnonymousType> input"
-            this._queryState.Input = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "input");
+            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "query");
         }
 
         public void Visit(InMemoryTableFromNode node)
@@ -1227,11 +1212,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var outputitemType = table.Type.GetGenericArguments()[0];
 
             //"AnonymousType input"
-            this._queryState.Item = Expression.Parameter(outputitemType, "item_" + outputitemType.Name);
-            this._queryState.Alias2Item[node.Alias] = this._queryState.Item;
+            this._state.QueryItem = Expression.Parameter(outputitemType, "item_" + outputitemType.Name);
+            this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
 
             //"IQueryable<AnonymousType> input"
-            this._queryState.Input = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputitemType), "input");
+            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputitemType), "query");
 
             Nodes.Push(table);
         }
@@ -1522,17 +1507,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var keyType = onNode.Left.ReturnType;
 
-            var secondSequenceExpression = this.Nodes.Pop();
             var secondSequenceKeyExpression = this.Nodes.Pop();
-            var secondSequenceItemType = secondSequenceKeyExpression.Type.GenericTypeArguments[0];
+            var firstSequenceKeyExpression = this.Nodes.Pop();
+
+            var secondSequenceExpression = this.Nodes.Pop();
+            var secondSequenceItemType = secondSequenceExpression.Type.GenericTypeArguments[0];
             var secondSequenceAlias = node.With.Alias;
-            var secondSequenceKeyLambda = Expression.Lambda(secondSequenceKeyExpression, (ParameterExpression)this._queryState.Alias2Item[secondSequenceAlias]);
+            var secondSequenceKeyLambda = Expression.Lambda(secondSequenceKeyExpression, (ParameterExpression)this._state.Alias2QueryItem[secondSequenceAlias]);
 
             var firstSequenceExpression = this.Nodes.Pop();
-            var firstSequenceKeyExpression = this.Nodes.Pop();
-            var firstSequenceItemType = firstSequenceKeyExpression.Type.GenericTypeArguments[0];
+            var firstSequenceItemType = firstSequenceExpression.Type.GenericTypeArguments[0];
             var firstSequenceAlias = node.Source.Alias;
-            var firstSequenceKeyLambda = Expression.Lambda(firstSequenceExpression, (ParameterExpression)this._queryState.Alias2Item[firstSequenceAlias]);
+            var firstSequenceKeyLambda = Expression.Lambda(firstSequenceKeyExpression, (ParameterExpression)this._state.Alias2QueryItem[firstSequenceAlias]);
 
 
             var groupItemFirstParameter = ParameterExpression.Parameter(firstSequenceItemType, firstSequenceAlias);
@@ -1541,7 +1527,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var groupItemType = this.expressionHelper.CreateAnonymousType(new (string Alias, Type Type)[]
             {
                 (firstSequenceAlias, groupItemFirstParameter.Type),
-                (firstSequenceAlias, groupItemSecondParameter.Type)
+                (secondSequenceAlias, groupItemSecondParameter.Type)
             });
 
             var groupItemCreation = Expression.MemberInit(
@@ -1566,12 +1552,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .First()
                 .MakeGenericMethod(
                 new Type[] {
-                    secondSequenceItemType,
                     firstSequenceItemType,
+                    secondSequenceItemType,
                     keyType,
                     groupItemType
                 });
 
+            // returns ParallelQuery<FirstSequenceItemType, IEnumerable<SecondSeqequenceItemType>>
             var groupJoinMethodCall = Expression.Call(
                 groupJoinMethod,
                 firstSequenceExpression,
@@ -1580,31 +1567,46 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 secondSequenceKeyLambda,
                 groupLambda);
 
-            var groupItemParameter = ParameterExpression.Parameter(groupItemType, "group");
+            //<FirstSequenceItemType, IEnumerable<SecondSeqequenceItemType>> group
+            var selectManyItemParameter = ParameterExpression.Parameter(groupItemType, "selectManyItemParameter");
+            //SecondSeqequenceItemType inTheGroup
+            var secondItemParameter = ParameterExpression.Parameter(secondSequenceItemType, "secondItemParameter");
 
+            this._state.Alias2QueryItem[secondSequenceAlias] = secondItemParameter;
+            if (resultItemTypeFields == null)
+            {
+                this._state.Alias2QueryItem[firstSequenceAlias] = Expression.PropertyOrField(selectManyItemParameter, firstSequenceAlias);
+            }
+            else
+            {
+                foreach (var field in resultItemTypeFields)
+                    this._state.Alias2QueryItem[field.Alias] = Expression.PropertyOrField(Expression.PropertyOrField(selectManyItemParameter, firstSequenceAlias), field.Alias);
+            }
             if (resultItemTypeFields == null)
             {
                 resultItemTypeFields = new List<(string Alias, Type Type)>();
-                resultItemTypeFields.Add((node.Source.Alias, firstSequenceItemType));
+                resultItemTypeFields.Add((firstSequenceAlias, firstSequenceItemType));
             }
-            resultItemTypeFields.Add((node.With.Alias, secondSequenceItemType));
+            resultItemTypeFields.Add((secondSequenceAlias, secondSequenceItemType));
             var resultItemType = this.expressionHelper.CreateAnonymousType(resultItemTypeFields.ToArray());
 
             List<MemberBinding> resultBindings = new List<MemberBinding>();
             //"SelectProp = inputItem.Prop"
             foreach (var field in resultItemTypeFields)
-                resultBindings.Add(Expression.Bind(resultItemType.GetField(field.Alias), this._queryState.Alias2Item[field.Alias]));
+            {
+                    resultBindings.Add(Expression.Bind(resultItemType.GetField(field.Alias), this._state.Alias2QueryItem[field.Alias]));
+            }
             var createResultInstance = Expression.MemberInit(
                 Expression.New(resultItemType.GetConstructor(Type.EmptyTypes)),
                 resultBindings);
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression resultLambda = Expression.Lambda(createResultInstance, new ParameterExpression[]
+            Expression selectResultLambda = Expression.Lambda(createResultInstance, new ParameterExpression[]
             {
-                (ParameterExpression)this._queryState.Alias2Item[node.Source.Alias],
-                (ParameterExpression)this._queryState.Alias2Item[node.With.Alias],
+               // (ParameterExpression)this._state.Alias2QueryItem[node.Source.Alias],
+                (ParameterExpression)this._state.Alias2QueryItem[secondSequenceAlias],
              });
 
-            var selectMethods = typeof(ParallelEnumerable)
+            var selectMethods = typeof(Enumerable)
                 .GetMethods()
                 .Where(x => x.Name == "Select")
                 .Where(x => x.GetGenericArguments().Length == 2)
@@ -1612,18 +1614,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .First()
                 .MakeGenericMethod(
                 new Type[] {
-                    groupItemType,
+                    secondSequenceItemType,
                     resultItemType
                 });
 
-            //var selectMethodsCall = Expression.Call(
-            //    selectMethods,
-            //    groupJoinMethodCall,
-            //    secondSequenceExpression,
-            //    firstSequenceKeyLambda,
-            //    secondSequenceKeyLambda,
-            //    resultLambda);
+            var selectMethodsCall = Expression.Call(
+                selectMethods,
+                Expression.PropertyOrField(selectManyItemParameter, secondSequenceAlias),
+                selectResultLambda);
 
+            // ParallelQuery<TResult> SelectMany<TSource, TResult>(
+            //     ParallelQuery<TSource> source, 
+            //     Func<TSource, IEnumerable<TResult>> selector);
             var selectManyMethods = typeof(ParallelEnumerable)
                 .GetMethods()
                 .Where(x => x.Name == "SelectMany")
@@ -1636,13 +1638,31 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     resultItemType
                 });
 
-            
+            var selectManyLambda = Expression.Lambda(
+                    selectMethodsCall,
+                    selectManyItemParameter);
 
+            var selectManyMethodsCall = Expression.Call(
+                selectManyMethods,
+                groupJoinMethodCall,
+                selectManyLambda);
+
+            Nodes.Push(selectManyMethodsCall);
 
             //var selectMethodsCall = Expression.Call(
             //    selectManyMethods,
             //    groupJoinMethodCall,
-                
+
+            this._state.QueryItem = Expression.Parameter(resultItemType, "item_" + resultItemType.Name);
+            this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
+
+            foreach (var field in resultItemTypeFields)
+                this._state.Alias2QueryItem[field.Alias] = Expression.PropertyOrField(this._state.QueryItem, field.Alias);
+            //this._queryState.Alias2Item[join.Alias] = Expression.PropertyOrField(this._queryState.Item, fromItemAlias);
+
+
+            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(resultItemType), "query");
+
 
         }
 
@@ -1657,12 +1677,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var secondSequenceExpression = this.Nodes.Pop();
             var secondSequenceItemType = secondSequenceExpression.Type.GenericTypeArguments[0];
             var secondSequenceAlias = node.With.Alias;
-            var secondSequenceKeyLambda = Expression.Lambda(secondSequenceKeyExpression, (ParameterExpression)this._queryState.Alias2Item[secondSequenceAlias]);
+            var secondSequenceKeyLambda = Expression.Lambda(secondSequenceKeyExpression, (ParameterExpression)this._state.Alias2QueryItem[secondSequenceAlias]);
             
             var firstSequenceExpression = this.Nodes.Pop();
             var firstSequenceItemType = firstSequenceExpression.Type.GenericTypeArguments[0];
             var firstSequenceAlias = node.Source.Alias;
-            var firstSequenceKeyLambda = Expression.Lambda(firstSequenceKeyExpression, (ParameterExpression)this._queryState.Alias2Item[firstSequenceAlias]);
+            var firstSequenceKeyLambda = Expression.Lambda(firstSequenceKeyExpression, (ParameterExpression)this._state.Alias2QueryItem[firstSequenceAlias]);
 
 
             if (resultItemTypeFields == null)
@@ -1676,15 +1696,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
             List<MemberBinding> resultBindings = new List<MemberBinding>();
             //"SelectProp = inputItem.Prop"
             foreach (var field in resultItemTypeFields)
-                resultBindings.Add(Expression.Bind(resultItemType.GetField(field.Alias), this._queryState.Alias2Item[field.Alias]));
+                resultBindings.Add(Expression.Bind(resultItemType.GetField(field.Alias), this._state.Alias2QueryItem[field.Alias]));
             var createOutputInstance = Expression.MemberInit(
                 Expression.New(resultItemType.GetConstructor(Type.EmptyTypes)), 
                 resultBindings);
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             Expression resultLambda = Expression.Lambda(createOutputInstance, new ParameterExpression[]
             {
-                (ParameterExpression)this._queryState.Alias2Item[node.Source.Alias],
-                (ParameterExpression)this._queryState.Alias2Item[node.With.Alias],
+                (ParameterExpression)this._state.Alias2QueryItem[node.Source.Alias],
+                (ParameterExpression)this._state.Alias2QueryItem[node.With.Alias],
              });
 
 
@@ -1713,15 +1733,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(fromCall);
             //countries.Country, .City
             //"AnonymousType input"
-            this._queryState.Item = Expression.Parameter(resultItemType, "item_" + resultItemType.Name);
-            this._queryState.Alias2Item[node.Alias] = this._queryState.Item;
+            this._state.QueryItem = Expression.Parameter(resultItemType, "item_" + resultItemType.Name);
+            this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
 
             foreach (var field in resultItemTypeFields)
-                this._queryState.Alias2Item[field.Alias] = Expression.PropertyOrField(this._queryState.Item, field.Alias);
+                this._state.Alias2QueryItem[field.Alias] = Expression.PropertyOrField(this._state.QueryItem, field.Alias);
             //this._queryState.Alias2Item[join.Alias] = Expression.PropertyOrField(this._queryState.Item, fromItemAlias);
 
 
-            this._queryState.Input = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(resultItemType), "input");
+            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(resultItemType), "query");
         }
 
         public void Visit(JoinsNode node)
@@ -1899,25 +1919,25 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     lastCall = Expression.Call(
                        typeof(ParallelEnumerable),
                        fieldNode.Order == Order.Ascending ? "OrderBy" : "OrderByDescending",
-                       new Type[] { this._queryState.Item.Type, field.Type },
-                       _queryState.Input,
-                       Expression.Lambda(field, new[] { _queryState.Item }));
+                       new Type[] { this._state.QueryItem.Type, field.Type },
+                       _state.Query,
+                       Expression.Lambda(field, new[] { _state.QueryItem }));
                 }
                 else
                 {
                     lastCall = Expression.Call(
                         typeof(ParallelEnumerable),
                         fieldNode.Order == Order.Ascending ? "ThenBy" : "ThenByDescending",
-                        new Type[] { this._queryState.Item.Type, field.Type },
+                        new Type[] { this._state.QueryItem.Type, field.Type },
                         lastCall,
-                        Expression.Lambda(field, new[] { _queryState.Item }));
+                        Expression.Lambda(field, new[] { _state.QueryItem }));
                 }
             }
 
             var orderBy = Expression.Lambda(
                 lastCall,
                 //node.ToString(),
-                new[] { this._queryState.Input });
+                new[] { this._state.Query });
             Nodes.Push(orderBy);
         }
 
@@ -2006,13 +2026,13 @@ static public class Helpers
     static public Expression DefaultIfEmpty(this Expression parameterExpression)
     {
         var itemType = parameterExpression.Type.GenericTypeArguments[0];
-        var defaultIfEmpty = typeof(ParallelEnumerable).GetMethods().First(x => x.Name == "DefaultIfEmpty" && x.GetParameters().Length == 1);
+        var defaultIfEmpty = typeof(Enumerable).GetMethods().First(x => x.Name == "DefaultIfEmpty" && x.GetParameters().Length == 1);
         return Expression.Call(
             null,
             defaultIfEmpty.MakeGenericMethod(itemType),
             new Expression[]
                 {
-                                Expression.Convert(parameterExpression, typeof (ParallelQuery<>).MakeGenericType(itemType))
+                    Expression.Convert(parameterExpression, typeof (IEnumerable<>).MakeGenericType(itemType))
                 });
 
     }
