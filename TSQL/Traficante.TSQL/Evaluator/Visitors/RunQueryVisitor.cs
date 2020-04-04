@@ -1331,36 +1331,21 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(UnionNode node)
         {
-            var right = Nodes.Pop();
-            var rightType = this.expressionHelper.GetItemType(right);
+            var secondSequence = Nodes.Pop();
+            var firstSequence = Nodes.Pop();
 
-            var left = Nodes.Pop();
-            var leftType = this.expressionHelper.GetItemType(left);
+            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(firstSequence.GetItemType());
+            firstSequence = firstSequence.SelectAs(outputItemType);
+            secondSequence = secondSequence.SelectAs(outputItemType);
 
-            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
-            var leftSelect = this.expressionHelper.ConvertToType(left, outputItemType);
-            var rightSelect = this.expressionHelper.ConvertToType(right, outputItemType);
-
-            List<Expression> prameters = new List<Expression> { leftSelect, rightSelect };
+            Expression comparer = null;
             if (node.Keys.Length > 0)
             {
                 var comparerType = expressionHelper.CreateEqualityComparerForType(outputItemType, node.Keys);
-                var comparer = Expression.New(comparerType);
-                prameters.Add(comparer);
+                comparer = Expression.New(comparerType);
             }
 
-            var method = typeof(ParallelEnumerable)
-                .GetMethods()
-                .Where(x => x.Name == "Union")
-                .Where(x => x.GetParameters().Length == 3)
-                .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == left.Type.GetGenericTypeDefinition())
-                .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == rightSelect.Type.GetGenericTypeDefinition())
-                .FirstOrDefault()
-                .MakeGenericMethod(outputItemType);
-
-            var call = Expression.Call(
-                method,
-                prameters.ToArray());
+            var call = firstSequence.Union(secondSequence, comparer);
 
             Nodes.Push(call);
 
@@ -1368,92 +1353,49 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(UnionAllNode node)
         {
-            var right = Nodes.Pop();
-            var rightType = this.expressionHelper.GetItemType(right);
+            var secondSequence = Nodes.Pop();
+            var firstSequence = Nodes.Pop();
 
-            var left = Nodes.Pop();
-            var leftType = this.expressionHelper.GetItemType(left);
+            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(firstSequence.GetItemType());
+            firstSequence = firstSequence.SelectAs(outputItemType);
+            secondSequence = secondSequence.SelectAs(outputItemType);
 
-            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
-            var leftSelect = this.expressionHelper.ConvertToType(left, outputItemType);
-            var rightSelect = this.expressionHelper.ConvertToType(right, outputItemType);
-
-            var method = typeof(ParallelEnumerable)
-                .GetMethods()
-                .Where(x => x.Name == "Concat")
-                .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == left.Type.GetGenericTypeDefinition())
-                .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == rightSelect.Type.GetGenericTypeDefinition())
-                .FirstOrDefault()
-                .MakeGenericMethod(outputItemType);
-
-            var call = Expression.Call(
-                method,
-                leftSelect,
-                rightSelect);
+            var call = firstSequence.Concat(secondSequence);
 
             Nodes.Push(call);
         }
 
         public void Visit(ExceptNode node)
         {
-            var right = Nodes.Pop();
-            var rightType = this.expressionHelper.GetItemType(right);
+            var secondSequence = Nodes.Pop();
+            var firstSequence = Nodes.Pop();
 
-            var left = Nodes.Pop();
-            var leftType = this.expressionHelper.GetItemType(left);
+            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(firstSequence.GetItemType());
+            firstSequence = firstSequence.SelectAs(outputItemType);
+            secondSequence = secondSequence.SelectAs(outputItemType);
 
-            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
-            var leftSelect = this.expressionHelper.ConvertToType(left, outputItemType);
-            var rightSelect = this.expressionHelper.ConvertToType(right, outputItemType);
-
-            List<Expression> prameters = new List<Expression> { leftSelect, rightSelect };
+            Expression comparer = null;
             if (node.Keys.Length > 0)
             {
                 var comparerType = expressionHelper.CreateEqualityComparerForType(outputItemType, node.Keys);
-                var comparer = Expression.New(comparerType);
-                prameters.Add(comparer);
+                comparer = Expression.New(comparerType);
             }
 
-            var method = typeof(ParallelEnumerable)
-                .GetMethods()
-                .Where(x => x.Name == "Except")
-                .Where(x => x.GetParameters().Length == 3)
-                .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == left.Type.GetGenericTypeDefinition())
-                .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == rightSelect.Type.GetGenericTypeDefinition())
-                .FirstOrDefault()
-                .MakeGenericMethod(outputItemType);
-
-            var call = Expression.Call(
-                method,
-                prameters.ToArray());
+            var call = firstSequence.Except(secondSequence, comparer);
 
             Nodes.Push(call);
         }
 
         public void Visit(IntersectNode node)
         {
-            var right = Nodes.Pop();
-            var rightType = right.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+            var secondSequence = Nodes.Pop();
+            var firstSequence = Nodes.Pop();
 
-            var left = Nodes.Pop();
-            var leftType = left.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
+            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(firstSequence.GetItemType());
+            firstSequence = firstSequence.SelectAs(outputItemType);
+            secondSequence = secondSequence.SelectAs(outputItemType);
 
-            var outputItemType = expressionHelper.CreateAnonymousTypeSameAs(leftType);
-            var leftSelect = this.expressionHelper.ConvertToType(left, outputItemType);
-            var rightSelect = this.expressionHelper.ConvertToType(right, outputItemType);
-
-            var method = typeof(ParallelEnumerable)
-                .GetMethods()
-                .Where(x => x.Name == "Intersect")
-                .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == left.Type.GetGenericTypeDefinition())
-                .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == rightSelect.Type.GetGenericTypeDefinition())
-                .FirstOrDefault()
-                .MakeGenericMethod(outputItemType);
-
-            var call = Expression.Call(
-                method,
-                leftSelect,
-                rightSelect);
+            var call = firstSequence.Intersect(secondSequence);
 
             Nodes.Push(call);
         }
@@ -1485,8 +1427,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             _cte[node.Name] = Nodes.Pop();
         }
-
-        private List<(string Alias, Type Type)> resultItemTypeFields = null;
 
         public void Visit(JoinFromNode node)
         {
@@ -1613,63 +1553,74 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void VisitInnerJoin(JoinFromNode node)
         {
             var onNode = ((EqualityNode)node.Expression);
-            var keyType = onNode.Left.ReturnType;
 
             var secondSequenceKeyExpression = this.Nodes.Pop();
             var firstSequenceKeyExpression = this.Nodes.Pop();
 
-            var secondSequenceExpression = this.Nodes.Pop();
-            var secondSequenceItemType = secondSequenceExpression.Type.GenericTypeArguments[0];
+            var secondSequence = this.Nodes.Pop();
             var secondSequenceAlias = node.With.Alias;
             var secondSequenceKeyLambda = Expression.Lambda(secondSequenceKeyExpression, (ParameterExpression)this._state.Alias2QueryItem[secondSequenceAlias]);
             
-            var firstSequenceExpression = this.Nodes.Pop();
-            var firstSequenceItemType = firstSequenceExpression.Type.GenericTypeArguments[0];
+            var firstSequence = this.Nodes.Pop();
             var firstSequenceAlias = node.Source.Alias;
             var firstSequenceKeyLambda = Expression.Lambda(firstSequenceKeyExpression, (ParameterExpression)this._state.Alias2QueryItem[firstSequenceAlias]);
 
 
-            if (resultItemTypeFields == null)
-            {
-                resultItemTypeFields = new List<(string Alias, Type Type)>();
-                resultItemTypeFields.Add((node.Source.Alias, firstSequenceItemType));
-            }
-            resultItemTypeFields.Add((node.With.Alias, secondSequenceItemType));
-            var resultItemType = this.expressionHelper.CreateAnonymousType(resultItemTypeFields.ToArray());
+            bool isFirstJoin = (node.Source is JoinFromNode) == false;
 
-            List<MemberBinding> resultBindings = new List<MemberBinding>();
-            //"SelectProp = inputItem.Prop"
-            foreach (var field in resultItemTypeFields)
-                resultBindings.Add(Expression.Bind(resultItemType.GetField(field.Alias), this._state.Alias2QueryItem[field.Alias]));
-            var createOutputInstance = Expression.MemberInit(
-                Expression.New(resultItemType.GetConstructor(Type.EmptyTypes)), 
-                resultBindings);
-            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            LambdaExpression resultLambda = Expression.Lambda(createOutputInstance, new ParameterExpression[]
-            {
-                (ParameterExpression)this._state.Alias2QueryItem[node.Source.Alias],
-                (ParameterExpression)this._state.Alias2QueryItem[node.With.Alias],
-             });
-
-            var fromCall = firstSequenceExpression.Join(
-                secondSequenceExpression,
+            var join = firstSequence.Join(
+                secondSequence,
                 firstSequenceKeyLambda,
                 secondSequenceKeyLambda,
-                resultLambda
+                (firstItem, secondItem) =>
+                {
+                    List<(string Alias, Type Type)> returnFields = new List<(string Alias, Type Type)>();
+                    List<(string Alias, Expression Value)> returnFieldsBindings = new List<(string Alias, Expression Value)>();
+
+
+                    if (isFirstJoin)
+                    {
+                        returnFields.Add((firstSequenceAlias, firstSequence.GetItemType()));
+                        returnFieldsBindings.Add((firstSequenceAlias, firstItem));
+                    }
+                    else
+                    {
+                        foreach (var field in firstSequence.GetItemType().GetFields())
+                        {
+                            returnFields.Add((field.Name, field.FieldType));
+                            returnFieldsBindings.Add((field.Name, Expression.PropertyOrField(firstItem, field.Name)));
+                        }
+                    }
+                    returnFields.Add((secondSequenceAlias, secondSequence.GetItemType()));
+                    returnFieldsBindings.Add((secondSequenceAlias, secondItem));
+
+                    var returnType = this.expressionHelper.CreateAnonymousType(returnFields.ToArray());
+                    List<MemberBinding> resultBindings = new List<MemberBinding>();
+                    //"SelectProp = inputItem.Prop"
+                    foreach (var binding in returnFieldsBindings)
+                    {
+                        resultBindings.Add(Expression.Bind(returnType.GetField(binding.Alias), binding.Value));
+                    }
+                    var createResultInstance = Expression.MemberInit(
+                        Expression.New(returnType.GetConstructor(Type.EmptyTypes)),
+                        resultBindings);
+
+                    return createResultInstance;
+                }
             );
 
-            Nodes.Push(fromCall);
+            Nodes.Push(join);
             //countries.Country, .City
             //"AnonymousType input"
-            this._state.QueryItem = Expression.Parameter(resultItemType, "item_" + resultItemType.Name);
+            this._state.QueryItem = Expression.Parameter(join.GetItemType(), "item_" + join.GetItemType().Name);
             this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
 
-            foreach (var field in resultItemTypeFields)
-                this._state.Alias2QueryItem[field.Alias] = Expression.PropertyOrField(this._state.QueryItem, field.Alias);
+            foreach (var field in join.GetItemType().GetFields())
+                this._state.Alias2QueryItem[field.Name] = Expression.PropertyOrField(this._state.QueryItem, field.Name);
             //this._queryState.Alias2Item[join.Alias] = Expression.PropertyOrField(this._queryState.Item, fromItemAlias);
 
 
-            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(resultItemType), "query");
+            this._state.Query = Expression.Parameter(join.Type, "query");
         }
 
         public void Visit(JoinsNode node)

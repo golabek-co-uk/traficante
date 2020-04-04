@@ -103,9 +103,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return selectManyMethodsCall;
         }
 
-        static public Expression Join(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> resultLambda)
+        static public Expression Join(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
         {
-            return null;
+            var firstItem = ParameterExpression.Parameter(firstSequence.GetItemType(), "firstItem");
+            var secondItem = ParameterExpression.Parameter(secondSequence.GetItemType(), "secondItem");
+
+            var func = selectFunc(firstItem, secondItem);
+
+            LambdaExpression selectLambda = Expression.Lambda(func, new ParameterExpression[]
+            {
+                        firstItem,
+                        secondItem,
+            });
+
+            return firstSequence.Join(secondSequence, firstSequenceKeyLambda, secondSequenceKeyLambda, selectLambda);
         }
 
         static public Expression Join(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, LambdaExpression resultLambda)
@@ -179,6 +190,140 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             return groupJoinMethodCall;
         }
+
+        static public Expression Union(this Expression firstSequence, Expression secondSequence, Expression comparer)
+        {
+            var method = typeof(ParallelEnumerable)
+                .GetMethods()
+                .Where(x => x.Name == "Union")
+                .Where(x => x.GetParameters().Length == 3)
+                .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == firstSequence.Type.GetGenericTypeDefinition())
+                .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == secondSequence.Type.GetGenericTypeDefinition())
+                .FirstOrDefault()
+                .MakeGenericMethod(firstSequence.GetItemType());
+
+            if (comparer != null)
+            {
+                var call = Expression.Call(
+                    method,
+                    firstSequence,
+                    secondSequence,
+                    comparer);
+                return call;
+            }
+            else
+            {
+                var call = Expression.Call(
+                    method,
+                    firstSequence,
+                    secondSequence);
+                return call;
+            }
+
+        }
+
+        static public Expression Except(this Expression firstSequence, Expression secondSequence, Expression comparer)
+        {
+            var method = typeof(ParallelEnumerable)
+                .GetMethods()
+                .Where(x => x.Name == "Except")
+                .Where(x => x.GetParameters().Length == 3)
+                .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == firstSequence.Type.GetGenericTypeDefinition())
+                .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == secondSequence.Type.GetGenericTypeDefinition())
+                .FirstOrDefault()
+                .MakeGenericMethod(firstSequence.GetItemType());
+
+            if (comparer != null)
+            {
+                var call = Expression.Call(
+                    method,
+                    firstSequence,
+                    secondSequence,
+                    comparer);
+                return call;
+            }
+            else
+            {
+                var call = Expression.Call(
+                    method,
+                    firstSequence,
+                    secondSequence);
+                return call;
+            }
+        }
+
+        static public Expression Concat(this Expression firstSequence, Expression secondSequence)
+        {
+            var method = typeof(ParallelEnumerable)
+                .GetMethods()
+                .Where(x => x.Name == "Concat")
+                .Where(x => x.GetParameters().Length == 2)
+                .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == firstSequence.Type.GetGenericTypeDefinition())
+                .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == secondSequence.Type.GetGenericTypeDefinition())
+                .FirstOrDefault()
+                .MakeGenericMethod(firstSequence.GetItemType());
+
+            var call = Expression.Call(
+                method,
+                firstSequence,
+                secondSequence);
+
+            return call;
+        }
+
+        static public Expression Intersect(this Expression firstSequence, Expression secondSequence)
+        {
+            var method = typeof(ParallelEnumerable)
+                .GetMethods()
+                .Where(x => x.Name == "Intersect")
+                .Where(x => x.GetParameters().Length == 2)
+                .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == firstSequence.Type.GetGenericTypeDefinition())
+                .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == secondSequence.Type.GetGenericTypeDefinition())
+                .FirstOrDefault()
+                .MakeGenericMethod(firstSequence.GetItemType());
+
+            var call = Expression.Call(
+                method,
+                firstSequence,
+                secondSequence);
+
+            return call;
+        }
+
+        static public Expression SelectAs(this Expression sequence, Type outputItemType)
+        {
+            var inputItemType = GetItemType(sequence);
+            var inputItem = Expression.Parameter(inputItemType, "item_" + inputItemType.Name);
+
+            List<MemberBinding> bindings = new List<MemberBinding>();
+            foreach (var field in outputItemType.GetFields())
+            {
+                //"SelectProp = inputItem.Prop"
+                MemberBinding assignment = Expression.Bind(
+                    field,
+                    Expression.PropertyOrField(inputItem, field.Name));
+                bindings.Add(assignment);
+            }
+
+            //"new AnonymousType()"
+            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
+
+            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            var initialization = Expression.MemberInit(creationExpression, bindings);
+
+            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            Expression expression = Expression.Lambda(initialization, inputItem);
+
+            var call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "Select",
+                new Type[] { inputItemType, outputItemType },
+                sequence,
+                expression);
+
+            return call;
+        }
+
     }
 
 }
