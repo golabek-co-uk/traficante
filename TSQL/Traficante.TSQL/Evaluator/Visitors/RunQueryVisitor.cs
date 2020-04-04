@@ -1505,159 +1505,103 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var onNode = ((EqualityNode)node.Expression);
 
-            var keyType = onNode.Left.ReturnType;
 
             var secondSequenceKeyExpression = this.Nodes.Pop();
             var firstSequenceKeyExpression = this.Nodes.Pop();
 
-            var secondSequenceExpression = this.Nodes.Pop();
-            var secondSequenceItemType = secondSequenceExpression.Type.GenericTypeArguments[0];
+            var secondSequence = this.Nodes.Pop();
             var secondSequenceAlias = node.With.Alias;
             var secondSequenceKeyLambda = Expression.Lambda(secondSequenceKeyExpression, (ParameterExpression)this._state.Alias2QueryItem[secondSequenceAlias]);
 
-            var firstSequenceExpression = this.Nodes.Pop();
-            var firstSequenceItemType = firstSequenceExpression.Type.GenericTypeArguments[0];
+            var firstSequence = this.Nodes.Pop();
             var firstSequenceAlias = node.Source.Alias;
             var firstSequenceKeyLambda = Expression.Lambda(firstSequenceKeyExpression, (ParameterExpression)this._state.Alias2QueryItem[firstSequenceAlias]);
 
+            bool isFirstJoin = (node.Source is JoinFromNode) == false;
 
-            var groupItemFirstParameter = ParameterExpression.Parameter(firstSequenceItemType, firstSequenceAlias);
-            var groupItemSecondParameter = ParameterExpression.Parameter(typeof(IEnumerable<>).MakeGenericType(secondSequenceItemType), secondSequenceAlias);
-
-            var groupItemType = this.expressionHelper.CreateAnonymousType(new (string Alias, Type Type)[]
-            {
-                (firstSequenceAlias, groupItemFirstParameter.Type),
-                (secondSequenceAlias, groupItemSecondParameter.Type)
-            });
-
-            var groupItemCreation = Expression.MemberInit(
-                Expression.New(groupItemType.GetConstructor(Type.EmptyTypes)),
-                new List<MemberBinding>()
-                {
-                    Expression.Bind(groupItemType.GetField(firstSequenceAlias), groupItemFirstParameter),
-                    Expression.Bind(groupItemType.GetField(secondSequenceAlias), groupItemSecondParameter.DefaultIfEmpty())
-                });
-
-            Expression groupLambda = Expression.Lambda(groupItemCreation, new ParameterExpression[]
-            {
-                groupItemFirstParameter,
-                groupItemSecondParameter,
-             });
-
-
-            var groupJoinMethod = typeof(ParallelEnumerable)
-                .GetMethods()
-                .Where(x => x.Name == "GroupJoin")
-                .ToList()
-                .First()
-                .MakeGenericMethod(
-                new Type[] {
-                    firstSequenceItemType,
-                    secondSequenceItemType,
-                    keyType,
-                    groupItemType
-                });
-
-            // returns ParallelQuery<FirstSequenceItemType, IEnumerable<SecondSeqequenceItemType>>
-            var groupJoinMethodCall = Expression.Call(
-                groupJoinMethod,
-                firstSequenceExpression,
-                secondSequenceExpression,
+            var groupJoin = firstSequence.GroupJoin(
+                secondSequence,
                 firstSequenceKeyLambda,
                 secondSequenceKeyLambda,
-                groupLambda);
+                //FirstSequenceItemType firstItem, IEnumerable<SecondSequenceItemType> secondItemsList
+                (firstItem, secondItemsList) =>
+                {
+                    var returnType = this.expressionHelper.CreateAnonymousType(new (string Alias, Type Type)[]
+                    {
+                        (firstSequenceAlias, firstItem.Type),
+                        (secondSequenceAlias, secondItemsList.Type)
+                    });
 
-            //<FirstSequenceItemType, IEnumerable<SecondSeqequenceItemType>> group
-            var selectManyItemParameter = ParameterExpression.Parameter(groupItemType, "selectManyItemParameter");
-            //SecondSeqequenceItemType inTheGroup
-            var secondItemParameter = ParameterExpression.Parameter(secondSequenceItemType, "secondItemParameter");
+                    var newItem = Expression.MemberInit(
+                        Expression.New(returnType.GetConstructor(Type.EmptyTypes)),
+                        new List<MemberBinding>()
+                        {
+                            Expression.Bind(returnType.GetField(firstSequenceAlias), firstItem),
+                            Expression.Bind(returnType.GetField(secondSequenceAlias), secondItemsList.DefaultIfEmpty())
+                        });
 
-            this._state.Alias2QueryItem[secondSequenceAlias] = secondItemParameter;
-            if (resultItemTypeFields == null)
-            {
-                this._state.Alias2QueryItem[firstSequenceAlias] = Expression.PropertyOrField(selectManyItemParameter, firstSequenceAlias);
-            }
-            else
-            {
-                foreach (var field in resultItemTypeFields)
-                    this._state.Alias2QueryItem[field.Alias] = Expression.PropertyOrField(Expression.PropertyOrField(selectManyItemParameter, firstSequenceAlias), field.Alias);
-            }
-            if (resultItemTypeFields == null)
-            {
-                resultItemTypeFields = new List<(string Alias, Type Type)>();
-                resultItemTypeFields.Add((firstSequenceAlias, firstSequenceItemType));
-            }
-            resultItemTypeFields.Add((secondSequenceAlias, secondSequenceItemType));
-            var resultItemType = this.expressionHelper.CreateAnonymousType(resultItemTypeFields.ToArray());
-
-            List<MemberBinding> resultBindings = new List<MemberBinding>();
-            //"SelectProp = inputItem.Prop"
-            foreach (var field in resultItemTypeFields)
-            {
-                    resultBindings.Add(Expression.Bind(resultItemType.GetField(field.Alias), this._state.Alias2QueryItem[field.Alias]));
-            }
-            var createResultInstance = Expression.MemberInit(
-                Expression.New(resultItemType.GetConstructor(Type.EmptyTypes)),
-                resultBindings);
-            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression selectResultLambda = Expression.Lambda(createResultInstance, new ParameterExpression[]
-            {
-               // (ParameterExpression)this._state.Alias2QueryItem[node.Source.Alias],
-                (ParameterExpression)this._state.Alias2QueryItem[secondSequenceAlias],
-             });
-
-            var selectMethods = typeof(Enumerable)
-                .GetMethods()
-                .Where(x => x.Name == "Select")
-                .Where(x => x.GetGenericArguments().Length == 2)
-                .ToList()
-                .First()
-                .MakeGenericMethod(
-                new Type[] {
-                    secondSequenceItemType,
-                    resultItemType
+                    return newItem;
                 });
 
-            var selectMethodsCall = Expression.Call(
-                selectMethods,
-                Expression.PropertyOrField(selectManyItemParameter, secondSequenceAlias),
-                selectResultLambda);
 
-            // ParallelQuery<TResult> SelectMany<TSource, TResult>(
-            //     ParallelQuery<TSource> source, 
-            //     Func<TSource, IEnumerable<TResult>> selector);
-            var selectManyMethods = typeof(ParallelEnumerable)
-                .GetMethods()
-                .Where(x => x.Name == "SelectMany")
-                .Where(x => x.GetGenericArguments().Length == 2)
-                .ToList()
-                .First()
-                .MakeGenericMethod(
-                new Type[] {
-                    groupItemType,
-                    resultItemType
-                });
+ 
+            //<FirstSequenceItemType, IEnumerable<SecondSeqequenceItemType>> selectManyItemParameter
+            var selectManyMethodsCall = groupJoin.SelectMany((groupItem) =>
+            {
+                var firstItem = Expression.PropertyOrField(groupItem, firstSequenceAlias);
+                var selectMethodsCall = groupItem.PropertyOrField(secondSequenceAlias)
+                    .Select((secondItem) =>
+                    {
+                        //SecondSeqequenceItemType inTheGroup
+                        
+                        List<(string Alias, Type Type)> returnFields = new List<(string Alias, Type Type)>();
+                        List<(string Alias, Expression Value)> returnFieldsBindings = new List<(string Alias, Expression Value)>();
 
-            var selectManyLambda = Expression.Lambda(
-                    selectMethodsCall,
-                    selectManyItemParameter);
 
-            var selectManyMethodsCall = Expression.Call(
-                selectManyMethods,
-                groupJoinMethodCall,
-                selectManyLambda);
+                        if (isFirstJoin)
+                        {
+                            returnFields.Add((firstSequenceAlias, firstSequence.GetItemType()));
+                            returnFieldsBindings.Add((firstSequenceAlias, firstItem));
+                        }
+                        else
+                        {
+                            foreach(var field in firstSequence.GetItemType().GetFields())
+                            {
+                                returnFields.Add((field.Name, field.FieldType));
+                                returnFieldsBindings.Add((field.Name, Expression.PropertyOrField(firstItem, field.Name)));
+                            }
+                        }
+                        returnFields.Add((secondSequenceAlias, secondSequence.GetItemType()));
+                        returnFieldsBindings.Add((secondSequenceAlias, secondItem));
+
+                        var returnType = this.expressionHelper.CreateAnonymousType(returnFields.ToArray());
+                        List<MemberBinding> resultBindings = new List<MemberBinding>();
+                        //"SelectProp = inputItem.Prop"
+                        foreach (var binding in returnFieldsBindings)
+                        {
+                            resultBindings.Add(Expression.Bind(returnType.GetField(binding.Alias), binding.Value));
+                        }
+                        var createResultInstance = Expression.MemberInit(
+                            Expression.New(returnType.GetConstructor(Type.EmptyTypes)),
+                            resultBindings);
+
+                        return createResultInstance;
+
+
+                    });
+
+                return selectMethodsCall;
+
+            });
 
             Nodes.Push(selectManyMethodsCall);
 
-            //var selectMethodsCall = Expression.Call(
-            //    selectManyMethods,
-            //    groupJoinMethodCall,
-
+            var resultItemType = selectManyMethodsCall.GetItemType();
             this._state.QueryItem = Expression.Parameter(resultItemType, "item_" + resultItemType.Name);
             this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
 
-            foreach (var field in resultItemTypeFields)
-                this._state.Alias2QueryItem[field.Alias] = Expression.PropertyOrField(this._state.QueryItem, field.Alias);
+            foreach (var field in resultItemType.GetFields())
+                this._state.Alias2QueryItem[field.Name] = Expression.PropertyOrField(this._state.QueryItem, field.Name);
             //this._queryState.Alias2Item[join.Alias] = Expression.PropertyOrField(this._queryState.Item, fromItemAlias);
 
 
@@ -1701,34 +1645,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 Expression.New(resultItemType.GetConstructor(Type.EmptyTypes)), 
                 resultBindings);
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression resultLambda = Expression.Lambda(createOutputInstance, new ParameterExpression[]
+            LambdaExpression resultLambda = Expression.Lambda(createOutputInstance, new ParameterExpression[]
             {
                 (ParameterExpression)this._state.Alias2QueryItem[node.Source.Alias],
                 (ParameterExpression)this._state.Alias2QueryItem[node.With.Alias],
              });
 
-
-            var method = typeof(ParallelEnumerable)
-                .GetMethods()
-                .Where(x => x.Name == "Join")
-                .ToList()
-                .First()
-                .MakeGenericMethod(
-                new Type[] {
-                    firstSequenceItemType,
-                    secondSequenceItemType,
-                    keyType,
-                    resultItemType
-                });
-
-
-            var fromCall = Expression.Call(
-                method,
-                firstSequenceExpression,
+            var fromCall = firstSequenceExpression.Join(
                 secondSequenceExpression,
                 firstSequenceKeyLambda,
                 secondSequenceKeyLambda,
-                resultLambda);
+                resultLambda
+            );
 
             Nodes.Push(fromCall);
             //countries.Country, .City
@@ -2020,22 +1948,5 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         }
     }
-
-static public class Helpers
-{
-    static public Expression DefaultIfEmpty(this Expression parameterExpression)
-    {
-        var itemType = parameterExpression.Type.GenericTypeArguments[0];
-        var defaultIfEmpty = typeof(Enumerable).GetMethods().First(x => x.Name == "DefaultIfEmpty" && x.GetParameters().Length == 1);
-        return Expression.Call(
-            null,
-            defaultIfEmpty.MakeGenericMethod(itemType),
-            new Expression[]
-                {
-                    Expression.Convert(parameterExpression, typeof (IEnumerable<>).MakeGenericType(itemType))
-                });
-
-    }
-}
 
 }
