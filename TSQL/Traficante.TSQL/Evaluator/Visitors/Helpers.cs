@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
@@ -288,6 +289,60 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 secondSequence);
 
             return call;
+        }
+
+        static public Expression Where(this Expression sequence, Func<ParameterExpression, Expression> predicate)
+        {
+            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
+            var func = predicate(item);
+            var predicateLambda = Expression.Lambda(func, item);
+
+            MethodCallExpression call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "Where",
+                new Type[] { sequence.GetItemType() },
+                sequence,
+                predicateLambda);
+
+            return call;
+        }
+
+        static public Expression Take(this Expression sequence, int number)
+        {
+            var takeNumber = Expression.Constant(number);
+
+            MethodCallExpression call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "Take",
+                new Type[] { sequence.GetItemType() },
+                sequence,
+                takeNumber);
+
+            return call;
+        }
+
+        static public Expression Skip(this Expression sequence, int number)
+        {
+            var takeNumber = Expression.Constant(number);
+
+            MethodCallExpression call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "Skip",
+                new Type[] { sequence.GetItemType() },
+                sequence,
+                takeNumber);
+
+            return call;
+        }
+
+        static public Expression WithCancellation(this Expression sequence, CancellationToken ct)
+        {
+            return Expression.Call(
+                    typeof(ParallelEnumerable),
+                    "WithCancellation",
+                    new Type[] { sequence.GetItemType() },
+                    sequence,
+                    Expression.Constant(ct));
         }
 
         static public Expression SelectAs(this Expression sequence, Type outputItemType)

@@ -854,6 +854,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(WhereNode node)
         {
+            //_state.Query.Where((item) =>
+            //{
+                
+            //});
+
             var predicate = Nodes.Pop();
             var predicateLambda = Expression.Lambda(predicate, this._state.QueryItem);
 
@@ -933,45 +938,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SkipNode node)
         {
-            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(this._state.QueryItem.Type), "query");
-
-            var skipNumber = Expression.Constant((int)node.Value);
-
-            MethodCallExpression call = Expression.Call(
-                typeof(ParallelEnumerable),
-                "Skip",
-                new Type[] { this._state.QueryItem.Type },
-                _state.Query,
-                skipNumber);
-
+            var call = _state.Query.Skip((int)node.Value);
             Nodes.Push(Expression.Lambda(call, _state.Query));
         }
 
         public void Visit(TakeNode node)
         {
-            var takeNumber = Expression.Constant((int)node.Value);
-
-            MethodCallExpression call = Expression.Call(
-                typeof(ParallelEnumerable),
-                "Take",
-                new Type[] { this._state.QueryItem.Type },
-                _state.Query,
-                takeNumber);
-
+            var call = _state.Query.Take((int)node.Value);
             Nodes.Push(Expression.Lambda(call, _state.Query));
         }
 
         public void Visit(TopNode node)
         {
-            var takeNumber = Expression.Constant((int)node.Value);
-
-            MethodCallExpression call = Expression.Call(
-                typeof(ParallelEnumerable),
-                "Take",
-                new Type[] { this._state.QueryItem.Type },
-                _state.Query,
-                takeNumber);
-
+            var call = _state.Query.Take((int)node.Value);
             Nodes.Push(Expression.Lambda(call, _state.Query));
         }
 
@@ -1310,14 +1289,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (Nodes.Any())
             {
                 Expression last = Nodes.Pop();
-
-                last = Expression.Call(
-                    typeof(ParallelEnumerable),
-                    "WithCancellation",
-                    new Type[] { last.Type.GenericTypeArguments[0] },
-                    last,
-                    Expression.Constant(this._cancellationToken));
-
+                last = last.WithCancellation(this._cancellationToken);
                 Expression<Func<object>> toStream = Expression.Lambda<Func<object>>(last);
                 var compiledToStream = toStream.Compile();
                 Result = compiledToStream();
