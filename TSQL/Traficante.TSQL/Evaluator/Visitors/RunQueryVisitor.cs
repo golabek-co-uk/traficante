@@ -827,9 +827,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     array);
 
                 if (_state.Query != null)
-                    Nodes.Push(Expression.Lambda(call, _state.Query));
+                {
+                    var lambda = Expression.Lambda(call, _state.Query);
+                    Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
+                }
                 else
-                    Nodes.Push(Expression.Lambda(call));
+                {
+                    var lambda = Expression.Lambda(call);
+                    Nodes.Push(lambda.Invoke());
+                }
             }
             else
             {
@@ -843,7 +849,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     _state.Query,
                     expression);
 
-                Nodes.Push(Expression.Lambda(call, _state.Query));
+                var lambda = Expression.Lambda(call, _state.Query);
+                Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
             }
 
             //"AnonymousType input"
@@ -869,7 +876,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 _state.Query,
                 predicateLambda);
 
-            Nodes.Push(Expression.Lambda(call, _state.Query));
+            var lambda = Expression.Lambda(call, _state.Query);
+            Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
         }
 
         public void Visit(GroupByNode node)
@@ -898,14 +906,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             Expression expression = Expression.Lambda(initialization, _state.QueryItem);
 
-            var groupByCall = Expression.Call(
+            var call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "GroupBy",
                 new Type[] { this._state.QueryItem.Type, outputItemType },
                 _state.Query,
                 expression);
 
-            Nodes.Push(Expression.Lambda(groupByCall, _state.Query));
+            var lambda = Expression.Lambda(call, _state.Query);
+            Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
 
 
             // "ItemAnonymousType itemInGroup "
@@ -933,25 +942,29 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 _state.Query,
                 predicateLambda);
 
-            Nodes.Push(Expression.Lambda(call, _state.Query));
+            var lambda = Expression.Lambda(call, _state.Query);
+            Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
         }
 
         public void Visit(SkipNode node)
         {
             var call = _state.Query.Skip((int)node.Value);
-            Nodes.Push(Expression.Lambda(call, _state.Query));
+            var lambda = Expression.Lambda(call, _state.Query);
+            Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
         }
 
         public void Visit(TakeNode node)
         {
             var call = _state.Query.Take((int)node.Value);
-            Nodes.Push(Expression.Lambda(call, _state.Query));
+            var lambda = Expression.Lambda(call, _state.Query);
+            Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
         }
 
         public void Visit(TopNode node)
         {
             var call = _state.Query.Take((int)node.Value);
-            Nodes.Push(Expression.Lambda(call, _state.Query));
+            var lambda = Expression.Lambda(call, _state.Query);
+            Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
         }
 
         public IEnumerable<Object[]> AsEnumerable(IDataReader source)
@@ -1012,87 +1025,65 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
 
             var tableData = this._engine.DataManager.GeTable(node.Table.TableOrView, node.Table.Path).Result;
-
-            var result = tableData.Results;
-            var resultItemsType = tableData.ResultItemsType;
-            var resultFields = tableData.ResultFields;
-
-            Expression resultsAsQueryableExpression = Expression.Call(
-                typeof(ParallelEnumerable),
-                "AsParallel",
-                new Type[] { resultItemsType },
-                Expression.Constant(result));
-
-            Expression.Constant(resultsAsQueryableExpression);
-
-            Type resultItemType = expressionHelper.CreateAnonymousType(resultFields);
-            var resultItemExpression = Expression.Parameter(resultItemsType, node.Table.ToString());
-
-            List<MemberBinding> resultBindings = new List<MemberBinding>();
-            int fieldIndex = 0;
-            foreach (var field in resultFields)
+            Expression sequence = Helpers.AsParallel(tableData.Results, tableData.ResultItemsType);
+            sequence = sequence.Select(resultItemExpression =>
             {
-                if (resultItemsType == typeof(object[]))
+                Type resultItemType = expressionHelper.CreateAnonymousType(tableData.ResultFields);
+
+                List<MemberBinding> resultBindings = new List<MemberBinding>();
+                int fieldIndex = 0;
+                foreach (var field in tableData.ResultFields)
                 {
-                    MemberBinding assignment = Expression.Bind(
-                        resultItemType.GetField(field.Name),
-                        Expression.Convert(Expression.ArrayAccess(resultItemExpression, Expression.Constant(fieldIndex)), field.FieldType)
-                    );
-                    resultBindings.Add(assignment);
-                    fieldIndex++;
-                }
-                else
-                {
-                    //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
-                    MemberBinding assignment = Expression.Bind(
-                        resultItemType.GetField(field.Name),
-                        Expression.PropertyOrField(resultItemExpression, field.Name)
+                    if (tableData.ResultItemsType == typeof(object[]))
+                    {
+                        MemberBinding assignment = Expression.Bind(
+                            resultItemType.GetField(field.Name),
+                            Expression.Convert(Expression.ArrayAccess(resultItemExpression, Expression.Constant(fieldIndex)), field.FieldType)
                         );
-                    resultBindings.Add(assignment);
+                        resultBindings.Add(assignment);
+                        fieldIndex++;
+                    }
+                    else
+                    {
+                        //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
+                        MemberBinding assignment = Expression.Bind(
+                            resultItemType.GetField(field.Name),
+                            Expression.PropertyOrField(resultItemExpression, field.Name)
+                            );
+                        resultBindings.Add(assignment);
+                    }
                 }
-            }
 
-            //"new AnonymousType()"
-            var creationExpression = Expression.New(resultItemType.GetConstructor(Type.EmptyTypes));
+                //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+                var newResult = Expression.MemberInit(
+                    Expression.New(resultItemType.GetConstructor(Type.EmptyTypes)), 
+                    resultBindings);
 
-            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            var initialization = Expression.MemberInit(creationExpression, resultBindings);
+                return newResult;
+            });
+            
 
-            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, resultItemExpression, _state.QueryItemIndex);
-            var call = Expression.Call(
-                typeof(ParallelEnumerable),
-                "Select",
-                new Type[] { resultItemsType, resultItemType },
-                resultsAsQueryableExpression,
-                expression);
-
-            Nodes.Push(call);
+            Nodes.Push(sequence);
             
             //"AnonymousType input"
-            this._state.QueryItem = Expression.Parameter(resultItemType, "item_" + resultItemType.Name);
+            this._state.QueryItem = Expression.Parameter(sequence.GetItemType(), "item_" + sequence.GetItemType().Name);
             this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
 
             //"IQueryable<AnonymousType> input"
-            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(resultItemType), "query");
+            this._state.Query = Expression.Parameter(sequence.Type, "query");
         }
 
         public void From(FromNode node, object result)
         {
             var resultType = result.GetType();
             var resultItemsType = result.GetType().GetElementType();
-            Expression resultsAsQueryableExpression = null;
+            Expression sequence = null;
 
             List<(string Name, Type FieldType)> resultFields = null;
             if (resultItemsType != null)
             {
                 resultFields = resultItemsType.GetProperties().Select(x => (x.Name, x.PropertyType)).ToList();
-
-                resultsAsQueryableExpression = Expression.Call(
-                    typeof(ParallelEnumerable),
-                    "AsParallel",
-                    new Type[] { resultItemsType },
-                    Expression.Constant(result));
+                sequence = Helpers.AsParallel(result, resultItemsType);
             }
             else if (typeof(IAsyncDataReader).IsAssignableFrom(resultType))
             {
@@ -1103,13 +1094,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     .Select(x => (resultReader.GetName(x), resultReader.GetFieldType(x)))
                     .ToList();
 
-                resultsAsQueryableExpression = Expression.Call(
-                    typeof(ParallelEnumerable),
-                    "AsParallel",
-                    new Type[] { resultItemsType },
-                    Expression.Constant(new AsyncDataReaderEnumerable(resultReader, this._cancellationToken)));
-                //Expression.Constant(AsEnumerable(resultReader)));
-
+                sequence = Helpers.AsParallel(
+                    new AsyncDataReaderEnumerable(resultReader, this._cancellationToken), 
+                    resultItemsType);
             }
             else if (typeof(IDataReader).IsAssignableFrom(resultType))
             {
@@ -1120,67 +1107,99 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     .Select(x => (resultReader.GetName(x), resultReader.GetFieldType(x)))
                     .ToList();
 
-                resultsAsQueryableExpression = Expression.Call(
-                    typeof(ParallelEnumerable),
-                    "AsParallel",
-                    new Type[] { resultItemsType },
-                    Expression.Constant(new DataReaderEnumerable(resultReader, this._cancellationToken)));
-                //Expression.Constant(AsEnumerable(resultReader)));
-
+                sequence = Helpers.AsParallel(
+                    new DataReaderEnumerable(resultReader, this._cancellationToken),
+                    resultItemsType);
             }
 
+            //Type outputItemType = expressionHelper.CreateAnonymousType(resultFields);
+            //var resultItemExpression = Expression.Parameter(resultItemsType, "entityItem");
 
-            Type outputItemType = expressionHelper.CreateAnonymousType(resultFields);
-            var resultItemExpression = Expression.Parameter(resultItemsType, "entityItem");
+            //List<MemberBinding> bindings = new List<MemberBinding>();
+            //int fieldIndex = 0;
+            //foreach (var field in resultFields)
+            //{
+            //    if (resultItemsType == typeof(object[]))
+            //    {
+            //        MemberBinding assignment = Expression.Bind(
+            //            outputItemType.GetField(field.Name),
+            //            Expression.Convert(Expression.ArrayAccess(resultItemExpression, Expression.Constant(fieldIndex)), field.FieldType)
+            //        );
+            //        bindings.Add(assignment);
+            //        fieldIndex++;
+            //    }
+            //    else
+            //    {
+            //        //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
+            //        MemberBinding assignment = Expression.Bind(
+            //            outputItemType.GetField(field.Name),
+            //            Expression.PropertyOrField(resultItemExpression, field.Name)
+            //            );
+            //        bindings.Add(assignment);
+            //    }
+            //}
 
-            List<MemberBinding> bindings = new List<MemberBinding>();
-            int fieldIndex = 0;
-            foreach (var field in resultFields)
+            ////"new AnonymousType()"
+            //var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
+
+            ////"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            //var initialization = Expression.MemberInit(creationExpression, bindings);
+
+            ////"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            //Expression expression = Expression.Lambda(initialization, resultItemExpression, _state.QueryItemIndex);
+
+            //var call = Expression.Call(
+            //    typeof(ParallelEnumerable),
+            //    "Select",
+            //    new Type[] { resultItemsType, outputItemType },
+            //    sequence,
+            //    expression);
+
+            sequence = sequence.Select(resultItemExpression =>
             {
-                if (resultItemsType == typeof(object[]))
+                Type outputItemType = expressionHelper.CreateAnonymousType(resultFields);
+
+                List<MemberBinding> bindings = new List<MemberBinding>();
+                int fieldIndex = 0;
+                foreach (var field in resultFields)
                 {
-                    MemberBinding assignment = Expression.Bind(
-                        outputItemType.GetField(field.Name),
-                        Expression.Convert(Expression.ArrayAccess(resultItemExpression, Expression.Constant(fieldIndex)), field.FieldType)
-                    );
-                    bindings.Add(assignment);
-                    fieldIndex++;
-                }
-                else
-                {
-                    //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
-                    MemberBinding assignment = Expression.Bind(
-                        outputItemType.GetField(field.Name),
-                        Expression.PropertyOrField(resultItemExpression, field.Name)
+                    if (resultItemsType == typeof(object[]))
+                    {
+                        MemberBinding assignment = Expression.Bind(
+                            outputItemType.GetField(field.Name),
+                            Expression.Convert(Expression.ArrayAccess(resultItemExpression, Expression.Constant(fieldIndex)), field.FieldType)
                         );
-                    bindings.Add(assignment);
+                        bindings.Add(assignment);
+                        fieldIndex++;
+                    }
+                    else
+                    {
+                        //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
+                        MemberBinding assignment = Expression.Bind(
+                            outputItemType.GetField(field.Name),
+                            Expression.PropertyOrField(resultItemExpression, field.Name)
+                            );
+                        bindings.Add(assignment);
+                    }
                 }
-            }
 
-            //"new AnonymousType()"
-            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
+                //"new AnonymousType()"
+                var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
 
-            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            var initialization = Expression.MemberInit(creationExpression, bindings);
+                //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+                var initialization = Expression.MemberInit(creationExpression, bindings);
 
-            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, resultItemExpression, _state.QueryItemIndex);
+                return initialization;
+            });
 
-            var call = Expression.Call(
-                typeof(ParallelEnumerable),
-                "Select",
-                new Type[] { resultItemsType, outputItemType },
-                resultsAsQueryableExpression,
-                expression);
-
-            Nodes.Push(call);
+            Nodes.Push(sequence);
 
             //"AnonymousType input"
-            this._state.QueryItem = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
+            this._state.QueryItem = Expression.Parameter(sequence.GetItemType(), "item_" + sequence.GetItemType().Name);
             this._state.Alias2QueryItem[node.Alias] = this._state.QueryItem;
 
             //"IQueryable<AnonymousType> input"
-            this._state.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "query");
+            this._state.Query = Expression.Parameter(sequence.Type, "query");
         }
 
         public void Visit(InMemoryTableFromNode node)
@@ -1214,74 +1233,74 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(QueryNode node)
         {
-            Expression top = node?.Select.Top != null ? Nodes.Pop() : null;
+            //Expression top = node?.Select.Top != null ? Nodes.Pop() : null;
 
-            Expression select = node.Select != null ? Nodes.Pop() : null;
+            //Expression select = node.Select != null ? Nodes.Pop() : null;
 
-            Expression orderBy = node.OrderBy != null ? Nodes.Pop() : null;
+            //Expression orderBy = node.OrderBy != null ? Nodes.Pop() : null;
 
-            Expression take = node.Take != null ? Nodes.Pop() : null;
-            Expression skip = node.Skip != null ? Nodes.Pop() : null;
+            //Expression take = node.Take != null ? Nodes.Pop() : null;
+            //Expression skip = node.Skip != null ? Nodes.Pop() : null;
 
-            Expression having = node.GroupBy?.Having != null ? Nodes.Pop() : null;
+            //Expression having = node.GroupBy?.Having != null ? Nodes.Pop() : null;
 
-            Expression groupBy = node.GroupBy != null ? Nodes.Pop() : null;
+            //Expression groupBy = node.GroupBy != null ? Nodes.Pop() : null;
 
-            Expression where = node.Where != null ? Nodes.Pop() : null;
+            //Expression where = node.Where != null ? Nodes.Pop() : null;
 
-            Expression from = node.From != null ? Nodes.Pop() : null;
+            //Expression from = node.From != null ? Nodes.Pop() : null;
 
 
-            Expression last = from;
+            //Expression last = from;
 
-            if (where != null)
-            {
-                last = Expression.Invoke(where, last);
-            }
+            //if (where != null)
+            //{
+            //    last = Expression.Invoke(where, last);
+            //}
 
-            if (groupBy != null)
-            {
-                last = Expression.Invoke(groupBy, last);
-            }
+            //if (groupBy != null)
+            //{
+            //    last = Expression.Invoke(groupBy, last);
+            //}
 
-            if (having != null)
-            {
-                last = Expression.Invoke(having, last);
-            }
+            //if (having != null)
+            //{
+            //    last = Expression.Invoke(having, last);
+            //}
 
-            if (skip != null)
-            {
-                last = Expression.Invoke(skip, last);
-            }
+            //if (skip != null)
+            //{
+            //    last = Expression.Invoke(skip, last);
+            //}
 
-            if (take != null)
-            {
-                last = Expression.Invoke(take, last);
-            }
+            //if (take != null)
+            //{
+            //    last = Expression.Invoke(take, last);
+            //}
 
-            if (orderBy != null)
-            {
-                last = Expression.Invoke(orderBy, last);
-            }
+            //if (orderBy != null)
+            //{
+            //    last = Expression.Invoke(orderBy, last);
+            //}
 
-            if (select != null)
-            {
-                if (last != null)
-                {
-                    last = Expression.Invoke(select, last);
-                }
-                else
-                {
-                    last = Expression.Invoke(select);
-                }
-            }
+            //if (select != null)
+            //{
+            //    if (last != null)
+            //    {
+            //        last = Expression.Invoke(select, last);
+            //    }
+            //    else
+            //    {
+            //        last = Expression.Invoke(select);
+            //    }
+            //}
 
-            if (top != null)
-            {
-                last = Expression.Invoke(top, last);
-            }
+            //if (top != null)
+            //{
+            //    last = Expression.Invoke(top, last);
+            //}
 
-            Nodes.Push(last);
+            //Nodes.Push(last);
         }
 
         public void Visit(RootNode node)
@@ -1789,7 +1808,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 lastCall,
                 //node.ToString(),
                 new[] { this._state.Query });
-            Nodes.Push(orderBy);
+            Nodes.Push(orderBy.Invoke(Nodes.Pop()));
         }
 
         public void Visit(CreateTableNode node)

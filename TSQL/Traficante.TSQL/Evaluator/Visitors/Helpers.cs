@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -50,24 +51,49 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         static public Expression Select(this Expression sequence, LambdaExpression selectLambda)
         {
-            var selectMethods = typeof(Enumerable)
-                .GetMethods()
-                .Where(x => x.Name == "Select")
-                .Where(x => x.GetGenericArguments().Length == 2)
-                .ToList()
-                .First()
-                .MakeGenericMethod(
-                new Type[] {
-                    sequence.Type.GetGenericArguments()[0],
+            if (sequence.Type.GetGenericTypeDefinition() == typeof(ParallelQuery<>))
+            {
+                var selectMethods = typeof(ParallelEnumerable)
+                    .GetMethods()
+                    .Where(x => x.Name == "Select")
+                    .Where(x => x.GetGenericArguments().Length == 2)
+                    .ToList()
+                    .First()
+                    .MakeGenericMethod(
+                    new Type[] {
+                        sequence.GetItemType(),
+                        selectLambda.ReturnType
+                    });
+
+                var selectMethodsCall = Expression.Call(
+                    selectMethods,
+                    sequence,
+                    selectLambda);
+
+                return selectMethodsCall;
+            }
+            else
+            {
+
+                var selectMethods = typeof(Enumerable)
+                    .GetMethods()
+                    .Where(x => x.Name == "Select")
+                    .Where(x => x.GetGenericArguments().Length == 2)
+                    .ToList()
+                    .First()
+                    .MakeGenericMethod(
+                    new Type[] {
+                    sequence.GetItemType(),
                     selectLambda.ReturnType
-                });
+                    });
 
-            var selectMethodsCall = Expression.Call(
-                selectMethods,
-                sequence,
-                selectLambda);
+                var selectMethodsCall = Expression.Call(
+                    selectMethods,
+                    sequence,
+                    selectLambda);
 
-            return selectMethodsCall;
+                return selectMethodsCall;
+            }
         }
 
         static public Expression SelectMany(this Expression sequence, Func<ParameterExpression, Expression> selectFunc)
@@ -92,7 +118,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .First()
                 .MakeGenericMethod(
                 new Type[] {
-                    sequence.Type.GetGenericArguments()[0],
+                    sequence.GetItemType(),
                     selectLambda.ReturnType.GetGenericArguments()[0]
                 });
 
@@ -333,6 +359,108 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 takeNumber);
 
             return call;
+        }
+
+        
+        static public Expression OrderBy(this Expression sequence, Func<Expression, LambdaExpression> predicate)
+        {
+            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
+            var field = predicate(item);
+
+            MethodCallExpression call = Expression.Call(
+                           typeof(ParallelEnumerable),
+                           "OrderBy",
+                           new Type[] { sequence.GetItemType(), field.Type },
+                           sequence,
+                           Expression.Lambda(field, new[] { item }));
+
+            return call;
+        }
+
+        static public Expression OrderByDescending(this Expression sequence, Func<Expression, LambdaExpression> predicate)
+        {
+            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
+            var field = predicate(item);
+
+            MethodCallExpression call = Expression.Call(
+                           typeof(ParallelEnumerable),
+                           "OrderByDescending",
+                           new Type[] { sequence.GetItemType(), field.Type },
+                           sequence,
+                           Expression.Lambda(field, new[] { item }));
+
+            return call;
+        }
+
+        static public Expression ThenBy(this Expression sequence, Func<Expression, LambdaExpression> predicate)
+        {
+            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
+            var field = predicate(item);
+
+            MethodCallExpression call = Expression.Call(
+                           typeof(ParallelEnumerable),
+                           "ThenBy",
+                           new Type[] { sequence.GetItemType(), field.Type },
+                           sequence,
+                           Expression.Lambda(field, new[] { item }));
+
+            return call;
+        }
+
+        static public Expression ThenByDescending(this Expression sequence, Func<Expression, LambdaExpression> predicate)
+        {
+            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
+            var field = predicate(item);
+
+            MethodCallExpression call = Expression.Call(
+                           typeof(ParallelEnumerable),
+                           "ThenByDescending",
+                           new Type[] { sequence.GetItemType(), field.Type },
+                           sequence,
+                           Expression.Lambda(field, new[] { item }));
+
+            return call;
+        }
+
+        static public Expression AsParallel(this Expression sequence)
+        {
+            //
+            Expression call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "AsParallel",
+                new Type[] { sequence.GetItemType() },
+                sequence);
+
+            call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "AsOrdered",
+                new Type[] { sequence.GetItemType() },
+                call);
+
+            return call;
+        }
+
+        static public Expression AsParallel(object sequence, Type itemType)
+        {
+
+            Expression call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "AsParallel",
+                new Type[] { itemType },
+                Expression.Constant(sequence));
+
+            call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "AsOrdered",
+                new Type[] { itemType },
+                call);
+            return call;
+        }
+
+
+        static public Expression Invoke(this Expression lambda, params Expression[] parameters)
+        {
+            return Expression.Invoke(lambda, parameters);
         }
 
         static public Expression WithCancellation(this Expression sequence, CancellationToken ct)
