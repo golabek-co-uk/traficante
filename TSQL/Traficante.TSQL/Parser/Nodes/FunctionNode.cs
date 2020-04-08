@@ -27,9 +27,18 @@ namespace Traficante.TSQL.Parser.Nodes
         public string[] Path { get; private set; }
         public string Name { get; }
 
-        public bool IsAggregateMethod =>
-            Method != null && Method.FunctionMethod.GetCustomAttribute<AggregationMethodAttribute>() != null;
-
+        public bool IsAggregateMethod {
+            get
+            {
+                return new string[] {
+                    "Count",
+                    "Sum",
+                    "Avg",
+                    "Max",
+                    "Min" }
+                .Any(x => x.ToLower() == Name.ToLower());
+            }
+        }
         public int ArgsCount => Arguments.Args.Length;
 
         public override Type ReturnType => Method != null ? ResolveGenericMethodReturnType() : typeof(void);

@@ -51,11 +51,13 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(1).ColumnType);
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
-            AssertContain(table, new object[] { "Poland", "Krakow"});
-            AssertContain(table, new object[] { "Poland", "Wroclaw" });
-            AssertContain(table, new object[] { "Poland", "Warszawa" });
-            AssertContain(table, new object[] { "Poland", "Gdansk" });
-            AssertContain(table, new object[] { "Germany", "Berlin" });
+            AreEquivalent(new [] {
+                    new object[] { "Poland", "Krakow" },
+                    new object[] { "Poland", "Wroclaw" },
+                    new object[] { "Poland", "Warszawa" },
+                    new object[] { "Poland", "Gdansk" },
+                    new object[] { "Germany", "Berlin" }
+                }, table);
         }
 
         public void AssertContain(DataTable table, object[] values)
@@ -137,11 +139,16 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
-            AssertContain(table, new object[] { "Poland", "Krakow", (decimal)400 });
-            AssertContain(table, new object[] { "Poland", "Wroclaw", (decimal)500 });
-            AssertContain(table, new object[] { "Poland", "Warszawa", (decimal)1000 });
-            AssertContain(table, new object[] { "Poland", "Gdansk", (decimal)200 });
-            AssertContain(table, new object[] { "Germany", "Berlin", (decimal)400 });
+            AreEquivalent(
+                new[]
+                {
+                    new object[] { "Poland", "Krakow", (decimal)400 },
+                    new object[] { "Poland", "Wroclaw", (decimal)500 },
+                    new object[] { "Poland", "Warszawa", (decimal)1000 },
+                    new object[] { "Poland", "Gdansk", (decimal)200 },
+                    new object[] { "Germany", "Berlin", (decimal)400 }
+                },
+                table);
 
         }
 
@@ -198,25 +205,14 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
-            Assert.AreEqual("Poland", table[0][0]);
-            Assert.AreEqual("Krakow", table[0][1]);
-            Assert.AreEqual(400m, table[0][2]);
-
-            Assert.AreEqual("Poland", table[1][0]);
-            Assert.AreEqual("WROCLAW", table[1][1]);
-            Assert.AreEqual(500m, table[1][2]);
-
-            Assert.AreEqual("Poland", table[2][0]);
-            Assert.AreEqual("WARSZAWA", table[2][1]);
-            Assert.AreEqual(1000m, table[2][2]);
-
-            Assert.AreEqual("Poland", table[3][0]);
-            Assert.AreEqual("Gdansk", table[3][1]);
-            Assert.AreEqual(200m, table[3][2]);
-
-            Assert.AreEqual("Germany", table[4][0]);
-            Assert.AreEqual("Berlin", table[4][1]);
-            Assert.AreEqual(400m, table[4][2]);
+            AreEquivalent(new[] {
+                    new object[] { "Poland", "Krakow", 400m },
+                    new object[] { "Poland", "WROCLAW", 500m },
+                    new object[] { "Poland", "WARSZAWA",  1000m },
+                    new object[] { "Poland", "Gdansk", 200m },
+                    new object[] { "Germany", "Berlin", 400m },
+                    },
+                table);
         }
 
         [TestMethod]
@@ -273,25 +269,14 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
-            Assert.AreEqual("Poland", table[0][0]);
-            Assert.AreEqual("low", table[0][1]);
-            Assert.AreEqual(400m, table[0][2]);
-
-            Assert.AreEqual("Poland", table[1][0]);
-            Assert.AreEqual("big", table[1][1]);
-            Assert.AreEqual(500m, table[1][2]);
-
-            Assert.AreEqual("Poland", table[2][0]);
-            Assert.AreEqual("big", table[2][1]);
-            Assert.AreEqual(1000m, table[2][2]);
-
-            Assert.AreEqual("Poland", table[3][0]);
-            Assert.AreEqual("low", table[3][1]);
-            Assert.AreEqual(200m, table[3][2]);
-
-            Assert.AreEqual("Germany", table[4][0]);
-            Assert.AreEqual("low", table[4][1]);
-            Assert.AreEqual(400m, table[4][2]);
+            AreEquivalent(new[] {
+                    new object[] { "Poland", "low", 400m},
+                    new object[] { "Poland", "big", 500m },
+                    new object[] { "Poland", "big", 1000m },
+                    new object[] { "Poland", "low", 200m },
+                    new object[] { "Germany", "low", 400m},
+                    },
+            table);
         }
 
         [TestMethod]
@@ -344,11 +329,11 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(1).ColumnType);
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
-            Assert.AreEqual("Poland", table[0][0]);
-            Assert.AreEqual(2100m, table[0][1]);
-
-            Assert.AreEqual("Germany", table[1][0]);
-            Assert.AreEqual(400m, table[1][1]);
+            AreEquivalent(new[] {
+                    new object[] { "Poland",  2100m },
+                    new object[] { "Germany",  400m },
+                    },
+            table);
         }
 
         [TestMethod]
@@ -484,28 +469,18 @@ inner join #C.entities() population on cities.City = population.City";
             Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
-            Assert.AreEqual(5, table.Count);
+            AreEquivalent(new[] {
+                    new object[] { "Poland", "Krakow", 400m },
+                    new object[] { "Poland", "Wroclaw", 500m },
+                    new object[] { "Poland", "Warszawa", 1000m },
+                    new object[] { "Poland", "Gdansk", 200m },
+                    new object[] { "Germany", "Berlin", 400m },
+                    },
+                    table);
+                
 
-            Assert.AreEqual("Poland", table[0][0]);
-            Assert.AreEqual("Krakow", table[0][1]);
-            Assert.AreEqual(400m, table[0][2]);
-
-            Assert.AreEqual("Poland", table[1][0]);
-            Assert.AreEqual("Wroclaw", table[1][1]);
-            Assert.AreEqual(500m, table[1][2]);
-
-            Assert.AreEqual("Poland", table[2][0]);
-            Assert.AreEqual("Warszawa", table[2][1]);
-            Assert.AreEqual(1000m, table[2][2]);
-
-            Assert.AreEqual("Poland", table[3][0]);
-            Assert.AreEqual("Gdansk", table[3][1]);
-            Assert.AreEqual(200m, table[3][2]);
-
-            Assert.AreEqual("Germany", table[4][0]);
-            Assert.AreEqual("Berlin", table[4][1]);
-            Assert.AreEqual(400m, table[4][2]);
         }
+
 
         [TestMethod]
         public void JoinWithUnionAllTest()
@@ -574,45 +549,20 @@ inner join #C.entities() population on cities.City = population.City";
 
             Assert.AreEqual(10, table.Count);
 
-            Assert.AreEqual("Poland", table[0][0]);
-            Assert.AreEqual("Krakow", table[0][1]);
-            Assert.AreEqual(400m, table[0][2]);
+            AreEquivalent(new[] {
+                new object[] { "Poland", "Krakow", 400m },
+                new object[] { "Poland", "Wroclaw", 500m },
+                new object[] { "Poland", "Warszawa", 1000m },
+                new object[] { "Poland", "Gdansk", 200m },
+                new object[] { "Germany", "Berlin", 400m },
+                new object[] { "Poland", "Krakow", 400m },
+                new object[] { "Poland", "Wroclaw", 500m },
+                new object[] { "Poland", "Warszawa", 1000m },
+                new object[] { "Poland", "Gdansk", 200m },
+                new object[] { "Germany", "Berlin", 400m },
+                    },
+                table);
 
-            Assert.AreEqual("Poland", table[1][0]);
-            Assert.AreEqual("Wroclaw", table[1][1]);
-            Assert.AreEqual(500m, table[1][2]);
-
-            Assert.AreEqual("Poland", table[2][0]);
-            Assert.AreEqual("Warszawa", table[2][1]);
-            Assert.AreEqual(1000m, table[2][2]);
-
-            Assert.AreEqual("Poland", table[3][0]);
-            Assert.AreEqual("Gdansk", table[3][1]);
-            Assert.AreEqual(200m, table[3][2]);
-
-            Assert.AreEqual("Germany", table[4][0]);
-            Assert.AreEqual("Berlin", table[4][1]);
-            Assert.AreEqual(400m, table[4][2]);
-
-            Assert.AreEqual("Poland", table[5][0]);
-            Assert.AreEqual("Krakow", table[5][1]);
-            Assert.AreEqual(400m, table[5][2]);
-
-            Assert.AreEqual("Poland", table[6][0]);
-            Assert.AreEqual("Wroclaw", table[6][1]);
-            Assert.AreEqual(500m, table[6][2]);
-
-            Assert.AreEqual("Poland", table[7][0]);
-            Assert.AreEqual("Warszawa", table[7][1]);
-            Assert.AreEqual(1000m, table[7][2]);
-
-            Assert.AreEqual("Poland", table[8][0]);
-            Assert.AreEqual("Gdansk", table[8][1]);
-            Assert.AreEqual(200m, table[8][2]);
-
-            Assert.AreEqual("Germany", table[9][0]);
-            Assert.AreEqual("Berlin", table[9][1]);
-            Assert.AreEqual(400m, table[9][2]);
         }
 
         [TestMethod]
@@ -654,20 +604,14 @@ select p.Id, x.Id from p inner join x on p.Country = x.Country";
             Assert.AreEqual(5, table.Count);
             Assert.AreEqual(2, table.Columns.Count());
 
-            Assert.AreEqual(0, table[0][0]);
-            Assert.AreEqual(0, table[0][1]);
-
-            Assert.AreEqual(0, table[1][0]);
-            Assert.AreEqual(1, table[1][1]);
-
-            Assert.AreEqual(0, table[2][0]);
-            Assert.AreEqual(2, table[2][1]);
-
-            Assert.AreEqual(0, table[3][0]);
-            Assert.AreEqual(3, table[3][1]);
-
-            Assert.AreEqual(1, table[4][0]);
-            Assert.AreEqual(4, table[4][1]);
+            AreEquivalent(new[] {
+                    new object[] { 0, 0 },
+                    new object[] { 0, 1 },
+                    new object[] { 0, 2 },
+                    new object[] { 0, 3 },
+                    new object[] { 1, 4 },
+                    },
+            table);
         }
 
         [TestMethod]
@@ -699,14 +643,12 @@ select p.Id, x.Id from p inner join x on p.Country = x.Country";
             Assert.AreEqual(3, table.Count);
             Assert.AreEqual(2, table.Columns.Count());
 
-            Assert.AreEqual(0, table[0][0]);
-            Assert.AreEqual(0, table[0][1]);
-
-            Assert.AreEqual(1, table[1][0]);
-            Assert.AreEqual(1, table[1][1]);
-
-            Assert.AreEqual(2, table[2][0]);
-            Assert.AreEqual(2, table[2][1]);
+            AreEquivalent(new[] {
+                    new object[] { 0, 0 },
+                    new object[] { 1, 1 },
+                    new object[] { 2, 2 }
+                    },
+            table);
         }
 
         [TestMethod]
@@ -743,8 +685,10 @@ select p.Country, x.Country from p inner join x on p.Country = x.Country where p
             Assert.AreEqual(1, table.Count);
             Assert.AreEqual(2, table.Columns.Count());
 
-            Assert.AreEqual("Poland", table[0][0]);
-            Assert.AreEqual("Poland", table[0][1]);
+            AreEquivalent(new[] {
+                    new object[] { "Poland", "Poland" }
+                    },
+                table);
         }
 
         [TestMethod]
@@ -782,8 +726,12 @@ select p.Country, Count(p.Country) from p inner join x on p.Country = x.Country 
             Assert.AreEqual(1, table.Count);
             Assert.AreEqual(2, table.Columns.Count());
 
-            Assert.AreEqual("Poland", table[0][0]);
-            Assert.AreEqual(2, table[0][1]);
+            AreEquivalent(new[] {
+                new object[] { "Poland", 2 }
+            },
+            table);
+            //Assert.AreEqual("Poland", table[0][0]);
+            //Assert.AreEqual(2, table[0][1]);
         }
 
         [TestMethod]

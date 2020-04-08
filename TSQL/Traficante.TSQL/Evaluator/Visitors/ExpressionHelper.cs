@@ -24,10 +24,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             dynamicModule = dynamicAssembly.DefineDynamicModule("Types");
         }
 
-        public Type CreateAnonymousTypeSameAs(Type type)
+        public Type CreateAnonymousTypeSameAs(Type type, string table = null, string alias = null)
         {
             var fields = type.GetFields().Select(x => (x.Name, x.FieldType));
-            var newType = CreateAnonymousType(fields);
+            var newType = CreateAnonymousType(fields, table, alias);
             return newType;
         }
 
@@ -60,7 +60,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return dynamicType;
         }
 
-        public Type CreateAnonymousType(IEnumerable<(string, Type)> fields)
+        public Type CreateAnonymousType(IEnumerable<(string Name, Type Type)> fields, string table = null, string alias = null)
         {
             TypeBuilder dynamicTypeBuilder = dynamicModule.DefineType(GenerateAnonymousTypeName(), TypeAttributes.Public);
 
@@ -68,6 +68,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             List<FieldInfo> fieldsInfo = fieldsBuilder.Select(x => (FieldInfo)x).ToList();
             OverrideEquals(dynamicTypeBuilder, fieldsInfo);
             OverrideGetHashCode(dynamicTypeBuilder, fieldsInfo);
+            if (alias != null)
+                AddAliasAttribute(dynamicTypeBuilder, alias);
+            if (table != null)
+                AddTableAttribute(dynamicTypeBuilder, table);
 
             var dynamicType = dynamicTypeBuilder.CreateTypeInfo();
             _anonymousTypes.Add(dynamicType);
@@ -82,12 +86,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return nextLetter;
         }
 
-        private static List<FieldBuilder> AddFields(TypeBuilder dynamicTypeBuilder, IEnumerable<(string, Type)> fields)
+        private static List<FieldBuilder> AddFields(TypeBuilder dynamicTypeBuilder, IEnumerable<(string Name, Type Type)> fields)
         {
             List<FieldBuilder> fieldsBuilder = new List<FieldBuilder>();
             foreach (var field in fields)
             {
-                var fieldBuilder = dynamicTypeBuilder.DefineField(field.Item1, field.Item2, FieldAttributes.Public);
+                var fieldBuilder = dynamicTypeBuilder.DefineField(field.Name, field.Type, FieldAttributes.Public);
                 fieldsBuilder.Add(fieldBuilder);
             }
 
@@ -302,43 +306,23 @@ namespace Traficante.TSQL.Evaluator.Visitors
             il.Emit(OpCodes.Ret); // return number
         }
 
+        private void AddAliasAttribute(TypeBuilder dynamicTypeBuilder, string alias)
+        {
+            var aliasAttributeConctructor = typeof(AliasAttribute).GetConstructor(new Type[] { typeof(string) });
+            var aliasAttributeBuilder = new CustomAttributeBuilder(aliasAttributeConctructor, new object[] { alias });
+            dynamicTypeBuilder.SetCustomAttribute(aliasAttributeBuilder);
+        }
+
+        private void AddTableAttribute(TypeBuilder dynamicTypeBuilder, string table)
+        {
+            var aliasAttributeConctructor = typeof(TableAttribute).GetConstructor(new Type[] { typeof(string) });
+            var aliasAttributeBuilder = new CustomAttributeBuilder(aliasAttributeConctructor, new object[] { table });
+            dynamicTypeBuilder.SetCustomAttribute(aliasAttributeBuilder);
+        }
+        
         public Type GetItemType(Expression queryable)
         {
             return queryable.Type.GetGenericArguments()[0]; //IQueryable<AnonymousType>
-        }
-
-        public Expression ConvertToType(Expression input, Type outputItemType)
-        {
-            var inputItemType = GetItemType(input);
-            var inputItem = Expression.Parameter(inputItemType, "item_" + inputItemType.Name);
-
-            List<MemberBinding> bindings = new List<MemberBinding>();
-            foreach (var field in outputItemType.GetFields())
-            {
-                //"SelectProp = inputItem.Prop"
-                MemberBinding assignment = Expression.Bind(
-                    field,
-                    Expression.PropertyOrField(inputItem, field.Name));
-                bindings.Add(assignment);
-            }
-
-            //"new AnonymousType()"
-            var creationExpression = Expression.New(outputItemType.GetConstructor(Type.EmptyTypes));
-
-            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            var initialization = Expression.MemberInit(creationExpression, bindings);
-
-            //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
-            Expression expression = Expression.Lambda(initialization, inputItem);
-
-            var call = Expression.Call(
-                typeof(ParallelEnumerable),
-                "Select",
-                new Type[] { inputItemType, outputItemType },
-                input,
-                expression);
-
-            return call;
         }
 
         public  (Expression, Expression) AlignSimpleTypes(Expression left, Expression right)
@@ -438,21 +422,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
-        //public Expression LookUp(Expression sequence, ParameterExpression sequenceElement, Expression predicate)
-        //{
-        //    var predicateLambda = Expression.Lambda(predicate, sequenceElement);
-
-        //    MethodCallExpression call = Expression.Call(
-        //        typeof(Queryable),
-        //        "FirstOrDefault",
-        //        new Type[] { sequenceElement.Type },
-        //        sequence,
-        //        predicateLambda);
-
-        //    return call;
-        //    //return Expression.Lambda(call, sequenceElement);
-        //}
-
+        
         public Expression PropertyOrField(Expression obj, string fieldName, Type fieldType)
         {
             return
@@ -463,5 +433,23 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
     }
 
+    public class AliasAttribute : Attribute
+    {
+        public string Alias { get; set; }
 
+        public AliasAttribute(string alias)
+        {
+            Alias = alias;
+        }
+    }
+
+    public class TableAttribute : Attribute
+    {
+        public string Table { get; set; }
+
+        public TableAttribute(string table)
+        {
+            Table = table;
+        }
+    }
 }

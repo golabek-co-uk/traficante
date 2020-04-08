@@ -6,19 +6,16 @@ using Traficante.TSQL.Parser.Nodes;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
-    public class QueryState : IDisposable
+    public class Query : IDisposable
     {
         public  QueryNode QueryNode { get; set; }
 
         public List<FieldNode> SelectedFieldsNodes = new List<FieldNode>();
 
-        public ParameterExpression QueryItem = null;
-        public ParameterExpression QueryItemIndex = Expression.Parameter(typeof(int), "item_i");
-        public Dictionary<string, Expression> Alias2QueryItem = new Dictionary<string, Expression>();
-
-        public ParameterExpression ItemInGroup = null;
-
-        public ParameterExpression Query = null;
+        public bool HasFromClosure()
+        {
+            return QueryNode?.From != null;
+        }
 
         public bool IsSingleRowResult()
         {

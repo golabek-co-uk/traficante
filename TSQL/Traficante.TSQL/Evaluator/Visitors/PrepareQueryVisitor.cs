@@ -49,9 +49,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromFunctionNode node)
         {
-            _queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
-            _generatedAliases.Add(_queryAlias);
-            var aliasedSchemaFromNode = new FromFunctionNode(node.Function, _queryAlias);
+            //_queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
+            //_generatedAliases.Add(_queryAlias);
+            var aliasedSchemaFromNode = new FromFunctionNode(node.Function, node.Alias);
             Nodes.Push(aliasedSchemaFromNode);
         }
 
@@ -63,8 +63,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromTableNode node)
         {
-            var alisa = string.IsNullOrEmpty(node.Alias) ? node.Table.TableOrView : node.Alias;
-            var aliasedSchemaFromNode = new FromTableNode(node.Table, alisa);
+            //var alisa = string.IsNullOrEmpty(node.Alias) ? node.Table.TableOrView : node.Alias;
+            var aliasedSchemaFromNode = new FromTableNode(node.Table, node.Alias);
             Nodes.Push(aliasedSchemaFromNode);
         }
 

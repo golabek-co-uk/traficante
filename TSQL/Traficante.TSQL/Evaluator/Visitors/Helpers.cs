@@ -10,14 +10,168 @@ namespace Traficante.TSQL.Evaluator.Visitors
     static public class Helpers
     {
 
-        static public Type GetItemType(this Expression sequence)
+        static public Type GetElementType(this Expression sequence)
         {
             return sequence.Type.GetGenericArguments()[0];
         }
 
+        static public bool HasAlias(this Type type)
+        {
+            var aliasAttribute = (AliasAttribute)(type).GetCustomAttributes(typeof(AliasAttribute), false).FirstOrDefault();
+            return aliasAttribute != null;
+        }
+
+        static public string GetAlias(this Type type)
+        {
+            var aliasAttribute = (AliasAttribute)(type).GetCustomAttributes(typeof(AliasAttribute), false).FirstOrDefault();
+            return aliasAttribute?.Alias;
+        }
+
+        static public bool HasTable(this Type type)
+        {
+            var aliasAttribute = (TableAttribute)(type).GetCustomAttributes(typeof(TableAttribute), false).FirstOrDefault();
+            return aliasAttribute != null;
+        }
+
+        static public string GetTable(this Type type)
+        {
+            var aliasAttribute = (TableAttribute)(type).GetCustomAttributes(typeof(TableAttribute), false).FirstOrDefault();
+            return aliasAttribute?.Table;
+        }
+
+        static public bool IsGrouping(this Type type)
+        {
+            return type.Name == "IGrouping`2";
+        }
+
+        static public bool IsSequence(this Type type)
+        {
+            return type.Name == "ParallelQuery`1";
+        }
+
+        static public Type GetGropingKeyType(this Type type)
+        {
+            return type.GetGenericArguments()[0];
+        }
+
+        static public Type GetGroupingElementType(this Type type)
+        {
+            return type.GetGenericArguments()[1];
+        }
+
+        static public Expression AccessAlias(this Expression parameter, string alias)
+        {
+            if (parameter.Type.Name == "IGrouping`2")
+            {
+                parameter = parameter.PropertyOrField("Key");
+            }
+            var type = parameter.Type;
+
+            if (type.HasAlias())
+            {
+                if (string.Equals(type.GetAlias(), alias, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return parameter;
+                }
+            }
+
+            foreach (var field in type.GetFields())
+            {
+                if (field.FieldType.HasAlias())
+                {
+                    if (string.Equals(field.FieldType.GetAlias(), alias, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return parameter.PropertyOrField(field.Name);
+                    }
+                }
+            }
+
+            throw new Exception($"Cannot find alias: {alias}");
+        }
+
+        static public List<(string Name, Type Type, string Table, string Alias, Expression Expression)> GetAllFields(this Expression parameter)
+        {
+            List<(string Name, Type Type, string Table, string Alias, Expression Expression)> fields = new List<(string Name, Type Type, string Table, string Alias, Expression Expression)>();
+            if (parameter.Type.Name == "IGrouping`2")
+            {
+                parameter = parameter.PropertyOrField("Key");
+            }
+            var type = parameter.Type;
+
+            if (type.HasAlias() || type.HasTable())
+            {
+                var alias = type.GetAlias();
+                var table = type.GetTable();
+                foreach (var field in type.GetFields())
+                {
+                    fields.Add((field.Name, field.FieldType, table, alias, parameter.PropertyOrField(field.Name)));
+                }
+            }
+            else
+            {
+                foreach (var innerField in type.GetFields())
+                {
+                    if (innerField.FieldType.HasAlias() || innerField.FieldType.HasTable())
+                    {
+                        var alias = innerField.FieldType.GetAlias();
+                        var table = innerField.FieldType.GetTable();
+                        foreach (var field in innerField.FieldType.GetFields())
+                        {
+                            fields.Add((field.Name, field.FieldType, table, alias, parameter.PropertyOrField(innerField.Name).PropertyOrField(field.Name)));
+                        }
+                    }
+                }
+            }
+            return fields;
+        }
+
+        static public List<(string Name, Type Type, string Table, string Alias, Expression Expression)> GetFields(this Expression parameter, string fieldName)
+        {
+            var allFields = parameter.GetAllFields();
+            return allFields.Where(x => 
+            string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase))
+                .ToList();
+
+            //if (matchedFields.Count > 1 || matchedFieldsWithEmptyAlias.Count > 1)
+            //{
+            //    throw new TSQLException($"Disambiguate field name: {fieldName}");
+            //}
+
+            //throw new TSQLException($"Field does not exist: {fieldName}");
+        }
+
+        static public (string Name, Type Type, string Table, string Alias, Expression Expression) GetField(this Expression parameter, string fieldName, string alias)
+        {
+            var allFields = parameter.GetAllFields();
+            return allFields.Where(x =>
+                string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) &&
+                (string.Equals(x.Alias, alias, StringComparison.InvariantCultureIgnoreCase) ||
+                 string.Equals(x.Table, alias, StringComparison.InvariantCultureIgnoreCase)))
+                .FirstOrDefault();
+        }
+
+
         static public Expression PropertyOrField(this Expression expression, string propertyOrField)
         {
-            return Expression.PropertyOrField(expression, propertyOrField);
+            var field = expression.Type.GetFields().FirstOrDefault(x => string.Equals(x.Name, propertyOrField, StringComparison.InvariantCultureIgnoreCase));
+            if (field != null)
+            {
+                return Expression.Condition(
+                    Expression.Equal(expression, Expression.Default(expression.Type)),
+                    Expression.Default(field.FieldType),
+                    Expression.PropertyOrField(expression, field.Name));
+            }
+
+            var property = expression.Type.GetProperties().FirstOrDefault(x => string.Equals(x.Name, propertyOrField, StringComparison.InvariantCultureIgnoreCase));
+            if (property != null)
+            {
+                return Expression.Condition(
+                    Expression.Equal(expression, Expression.Default(expression.Type)),
+                    Expression.Default(property.PropertyType),
+                    Expression.PropertyOrField(expression, property.Name));
+            }
+
+            throw new TSQLException($"Field does not exist: {propertyOrField}");
         }
 
         static public Expression DefaultIfEmpty(this Expression sequence)
@@ -36,7 +190,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         static public Expression Select(this Expression sequence, Func<ParameterExpression, Expression> selectFunc)
         {
-            var secondItemParameter = ParameterExpression.Parameter(sequence.GetItemType(), "secondItemParameter");
+            var secondItemParameter = ParameterExpression.Parameter(sequence.GetElementType(), "secondItemParameter");
 
             var func = selectFunc(secondItemParameter);
             //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
@@ -61,7 +215,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     .First()
                     .MakeGenericMethod(
                     new Type[] {
-                        sequence.GetItemType(),
+                        sequence.GetElementType(),
                         selectLambda.ReturnType
                     });
 
@@ -83,7 +237,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     .First()
                     .MakeGenericMethod(
                     new Type[] {
-                    sequence.GetItemType(),
+                    sequence.GetElementType(),
                     selectLambda.ReturnType
                     });
 
@@ -98,7 +252,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         static public Expression SelectMany(this Expression sequence, Func<ParameterExpression, Expression> selectFunc)
         {
-            var selectManyItemParameter = ParameterExpression.Parameter(sequence.GetItemType(), "selectManyItemParameter");
+            var selectManyItemParameter = ParameterExpression.Parameter(sequence.GetElementType(), "selectManyItemParameter");
 
             var funcCall = selectFunc(selectManyItemParameter);
             var selectManyLambda = Expression.Lambda(
@@ -118,7 +272,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .First()
                 .MakeGenericMethod(
                 new Type[] {
-                    sequence.GetItemType(),
+                    sequence.GetElementType(),
                     selectLambda.ReturnType.GetGenericArguments()[0]
                 });
 
@@ -132,8 +286,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         static public Expression Join(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
         {
-            var firstItem = ParameterExpression.Parameter(firstSequence.GetItemType(), "firstItem");
-            var secondItem = ParameterExpression.Parameter(secondSequence.GetItemType(), "secondItem");
+            var firstItem = ParameterExpression.Parameter(firstSequence.GetElementType(), "firstItem");
+            var secondItem = ParameterExpression.Parameter(secondSequence.GetElementType(), "secondItem");
 
             var func = selectFunc(firstItem, secondItem);
 
@@ -177,8 +331,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         static public Expression GroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
         {
-            var firstItem = ParameterExpression.Parameter(firstSequence.GetItemType(), "firstItem");
-            var secondItemsList = ParameterExpression.Parameter(typeof(IEnumerable<>).MakeGenericType(secondSequence.GetItemType()), "secondItemsList");
+            var firstItem = ParameterExpression.Parameter(firstSequence.GetElementType(), "firstItem");
+            var secondItemsList = ParameterExpression.Parameter(typeof(IEnumerable<>).MakeGenericType(secondSequence.GetElementType()), "secondItemsList");
 
             var func = selectFunc(firstItem, secondItemsList);
 
@@ -200,8 +354,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .First()
                 .MakeGenericMethod(
                 new Type[] {
-                    firstSequence.GetItemType(),
-                    secondSequence.GetItemType(),
+                    firstSequence.GetElementType(),
+                    secondSequence.GetElementType(),
                     firstSequenceKeyLambda.ReturnType,
                     groupLambda.ReturnType
                 });
@@ -227,7 +381,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == firstSequence.Type.GetGenericTypeDefinition())
                 .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == secondSequence.Type.GetGenericTypeDefinition())
                 .FirstOrDefault()
-                .MakeGenericMethod(firstSequence.GetItemType());
+                .MakeGenericMethod(firstSequence.GetElementType());
 
             if (comparer != null)
             {
@@ -258,7 +412,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == firstSequence.Type.GetGenericTypeDefinition())
                 .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == secondSequence.Type.GetGenericTypeDefinition())
                 .FirstOrDefault()
-                .MakeGenericMethod(firstSequence.GetItemType());
+                .MakeGenericMethod(firstSequence.GetElementType());
 
             if (comparer != null)
             {
@@ -288,7 +442,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == firstSequence.Type.GetGenericTypeDefinition())
                 .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == secondSequence.Type.GetGenericTypeDefinition())
                 .FirstOrDefault()
-                .MakeGenericMethod(firstSequence.GetItemType());
+                .MakeGenericMethod(firstSequence.GetElementType());
 
             var call = Expression.Call(
                 method,
@@ -307,7 +461,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .Where(x => x.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == firstSequence.Type.GetGenericTypeDefinition())
                 .Where(x => x.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == secondSequence.Type.GetGenericTypeDefinition())
                 .FirstOrDefault()
-                .MakeGenericMethod(firstSequence.GetItemType());
+                .MakeGenericMethod(firstSequence.GetElementType());
 
             var call = Expression.Call(
                 method,
@@ -319,14 +473,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         static public Expression Where(this Expression sequence, Func<ParameterExpression, Expression> predicate)
         {
-            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
+            var item = ParameterExpression.Parameter(sequence.GetElementType(), "item");
             var func = predicate(item);
             var predicateLambda = Expression.Lambda(func, item);
-
+            return sequence.Where(predicateLambda);
+        }
+        
+        static public Expression Where(this Expression sequence, LambdaExpression predicateLambda)
+        {
             MethodCallExpression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Where",
-                new Type[] { sequence.GetItemType() },
+                new Type[] { sequence.GetElementType() },
                 sequence,
                 predicateLambda);
 
@@ -340,7 +498,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             MethodCallExpression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Take",
-                new Type[] { sequence.GetItemType() },
+                new Type[] { sequence.GetElementType() },
                 sequence,
                 takeNumber);
 
@@ -354,71 +512,138 @@ namespace Traficante.TSQL.Evaluator.Visitors
             MethodCallExpression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "Skip",
-                new Type[] { sequence.GetItemType() },
+                new Type[] { sequence.GetElementType() },
                 sequence,
                 takeNumber);
 
             return call;
         }
 
-        
         static public Expression OrderBy(this Expression sequence, Func<Expression, LambdaExpression> predicate)
         {
-            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
-            var field = predicate(item);
+            var item = ParameterExpression.Parameter(sequence.GetElementType(), "item");
+            var lambda = predicate(item);
+            return sequence.OrderBy(lambda);
+        }
 
+        static public Expression OrderBy(this Expression sequence, LambdaExpression lambdaExpression)
+        {
             MethodCallExpression call = Expression.Call(
                            typeof(ParallelEnumerable),
                            "OrderBy",
-                           new Type[] { sequence.GetItemType(), field.Type },
+                           new Type[] { sequence.GetElementType(), lambdaExpression.ReturnType },
                            sequence,
-                           Expression.Lambda(field, new[] { item }));
-
+                           lambdaExpression);
             return call;
         }
 
         static public Expression OrderByDescending(this Expression sequence, Func<Expression, LambdaExpression> predicate)
         {
-            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
-            var field = predicate(item);
+            var item = ParameterExpression.Parameter(sequence.GetElementType(), "item");
+            var lambda = predicate(item);
+            return sequence.OrderByDescending(lambda);
+        }
 
+        static public Expression OrderByDescending(this Expression sequence, LambdaExpression lambdaExpression)
+        {
             MethodCallExpression call = Expression.Call(
-                           typeof(ParallelEnumerable),
-                           "OrderByDescending",
-                           new Type[] { sequence.GetItemType(), field.Type },
-                           sequence,
-                           Expression.Lambda(field, new[] { item }));
-
+               typeof(ParallelEnumerable),
+               "OrderByDescending",
+               new Type[] { sequence.GetElementType(), lambdaExpression.ReturnType },
+               sequence,
+               lambdaExpression);
             return call;
         }
 
         static public Expression ThenBy(this Expression sequence, Func<Expression, LambdaExpression> predicate)
         {
-            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
-            var field = predicate(item);
+            var item = ParameterExpression.Parameter(sequence.GetElementType(), "item");
+            var lambda = predicate(item);
+            return sequence.ThenBy(lambda);
+        }
 
+        static public Expression ThenBy(this Expression sequence, LambdaExpression lambdaExpression)
+        {
             MethodCallExpression call = Expression.Call(
                            typeof(ParallelEnumerable),
                            "ThenBy",
-                           new Type[] { sequence.GetItemType(), field.Type },
+                           new Type[] { sequence.GetElementType(), lambdaExpression.ReturnType },
                            sequence,
-                           Expression.Lambda(field, new[] { item }));
-
+                           lambdaExpression);
             return call;
         }
 
         static public Expression ThenByDescending(this Expression sequence, Func<Expression, LambdaExpression> predicate)
         {
-            var item = ParameterExpression.Parameter(sequence.GetItemType(), "item");
-            var field = predicate(item);
+            var item = ParameterExpression.Parameter(sequence.GetElementType(), "item");
+            var lambda = predicate(item);
+            return sequence.ThenByDescending(lambda);
+        }
 
+        static public Expression ThenByDescending(this Expression sequence, LambdaExpression lambdaExpression)
+        {
             MethodCallExpression call = Expression.Call(
                            typeof(ParallelEnumerable),
                            "ThenByDescending",
-                           new Type[] { sequence.GetItemType(), field.Type },
+                           new Type[] { sequence.GetElementType(), lambdaExpression.ReturnType },
                            sequence,
-                           Expression.Lambda(field, new[] { item }));
+                           lambdaExpression);
+            return call;
+        }
 
+        static public Expression Min(this Expression sequence)
+        {
+            return Expression.Call(
+                 typeof(Enumerable),
+                 "Min",
+                 new Type[] { },
+                 new Expression[] { sequence });
+        }
+
+        static public Expression Max(this Expression sequence)
+        {
+            return Expression.Call(
+                 typeof(Enumerable),
+                 "Max",
+                 new Type[] { },
+                 new Expression[] { sequence });
+        }
+
+        static public Expression Sum(this Expression sequence)
+        {
+            return Expression.Call(
+                 typeof(Enumerable),
+                 "Sum",
+                 new Type[] { },
+                 new Expression[] { sequence });
+        }
+
+        static public Expression Average(this Expression sequence)
+        {
+            return Expression.Call(
+                 typeof(Enumerable),
+                 "Average",
+                 new Type[] { },
+                 new Expression[] { sequence });
+        }
+
+        static public Expression Count(this Expression sequence)
+        {
+            return Expression.Call(
+                 typeof(Enumerable),
+                 "Count",
+                 new Type[] { sequence.GetElementType()},
+                 new Expression[] { sequence });
+        }
+
+        static public Expression GroupBy(this Expression sequence, LambdaExpression lambdaExpression)
+        {
+            var call = Expression.Call(
+                typeof(ParallelEnumerable),
+                "GroupBy",
+                new Type[] { sequence.GetElementType(), lambdaExpression.ReturnType },
+                sequence,
+                lambdaExpression);
             return call;
         }
 
@@ -428,13 +653,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Expression call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "AsParallel",
-                new Type[] { sequence.GetItemType() },
+                new Type[] { sequence.GetElementType() },
                 sequence);
 
             call = Expression.Call(
                 typeof(ParallelEnumerable),
                 "AsOrdered",
-                new Type[] { sequence.GetItemType() },
+                new Type[] { sequence.GetElementType() },
                 call);
 
             return call;
@@ -457,7 +682,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return call;
         }
 
-
         static public Expression Invoke(this Expression lambda, params Expression[] parameters)
         {
             return Expression.Invoke(lambda, parameters);
@@ -468,14 +692,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return Expression.Call(
                     typeof(ParallelEnumerable),
                     "WithCancellation",
-                    new Type[] { sequence.GetItemType() },
+                    new Type[] { sequence.GetElementType() },
                     sequence,
                     Expression.Constant(ct));
         }
 
         static public Expression SelectAs(this Expression sequence, Type outputItemType)
         {
-            var inputItemType = GetItemType(sequence);
+            var inputItemType = GetElementType(sequence);
             var inputItem = Expression.Parameter(inputItemType, "item_" + inputItemType.Name);
 
             List<MemberBinding> bindings = new List<MemberBinding>();

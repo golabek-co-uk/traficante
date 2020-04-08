@@ -5,6 +5,8 @@ using System.Text;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
@@ -21,6 +23,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SelectNode node)
         {
+            if (_visitor.CurrentQuery.IsSingleRowResult() == false)
+            {
+                Expression sequence = _visitor.Nodes.Peek();
+                this._visitor.ScopedParamters.Push(Expression.Parameter(typeof(int), "item_i"));
+                this._visitor.ScopedParamters.Push(Expression.Parameter(sequence.GetElementType(), "item_" + sequence.GetElementType().Name));
+            }
+
             SetQueryPart(QueryPart.Select);
             node.Top?.Accept(this);
             foreach (var field in node.Fields)
@@ -56,6 +65,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FunctionNode node)
         {
+            if (this._visitor.CurrentQuery != null && this._visitor.CurrentQuery.HasFromClosure())
+            {
+                ParameterExpression item = _visitor.ScopedParamters.Peek();
+                if (item.Type.IsGrouping())
+                {
+                    this._visitor.ScopedParamters.Push(Expression.Parameter(item.Type.GetGroupingElementType(), "itemInGroup_" + item.Type.GetGroupingElementType().Name));
+                }
+                else
+                {
+                    this._visitor.ScopedParamters.Push(item);
+                }
+            }
+
             node.Arguments.Accept(this);
             node.Accept(_visitor);
         }
@@ -121,6 +143,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public virtual void Visit(WhereNode node)
         {
+            Expression sequence = _visitor.Nodes.Peek();
+            this._visitor.ScopedParamters.Push(Expression.Parameter(sequence.GetElementType(), "item_" + sequence.GetElementType().Name));
+            this._visitor.ScopedParamters.Push(Expression.Parameter(typeof(int), "item_i"));
+
             SetQueryPart(QueryPart.Where);
             node.Expression.Accept(this);
             node.Accept(_visitor);
@@ -129,6 +155,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(GroupByNode node)
         {
             SetQueryPart(QueryPart.GroupBy);
+
+            Expression sequence = _visitor.Nodes.Peek();
+            this._visitor.ScopedParamters.Push(Expression.Parameter(sequence.GetElementType(), "item_" + sequence.GetElementType().Name));
+
             foreach (var field in node.Fields)
                 field.Accept(this);
 
@@ -139,6 +169,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(HavingNode node)
         {
             SetQueryPart(QueryPart.Having);
+
+            Expression sequence = _visitor.Nodes.Peek();
+            this._visitor.ScopedParamters.Push(Expression.Parameter(sequence.GetElementType(), "item_" + sequence.GetElementType().Name));
+
+
             node.Expression.Accept(this);
             node.Accept(_visitor);
         }
@@ -195,17 +230,25 @@ namespace Traficante.TSQL.Evaluator.Visitors
             while (joins.Count > 0)
             {
                 join = joins.Pop();
-
                 if (isFirstJoin)
                 {
                     join.Source.Accept(this);
                     isFirstJoin = false;
                 }
 
+                var sourceSequence = this._visitor.Nodes.Peek();
+                this._visitor.ScopedParamters.Push(Expression.Parameter(sourceSequence.GetElementType(), "item_" + sourceSequence.GetElementType().Name));
+
                 join.With.Accept(this);
+                var withSequence = this._visitor.Nodes.Peek();
+                this._visitor.ScopedParamters.Push(Expression.Parameter(withSequence.GetElementType(), "item_" + withSequence.GetElementType().Name));
+                
                 if (join.Expression is EqualityNode equalityNode)
                 {
+                    //this._visitor.QueryState.QueryItem = Expression.Parameter(join.Source.ReturnType.GetElementType());
                     equalityNode.Left.Accept(this);
+
+                    //this._visitor.QueryState.QueryItem = Expression.Parameter(join.With.ReturnType.GetElementType());
                     equalityNode.Right.Accept(this);
                 }
                 else
@@ -233,9 +276,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(QueryNode node)
         {
-            QueryState queryState = new QueryState();
+            Query queryState = new Query();
             queryState.QueryNode = node;
-            _visitor.SetQueryState(queryState);
+            _visitor.SetQuery(queryState);
 
             node.From?.Accept(this);
             node.Where?.Accept(this);
@@ -324,16 +367,26 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(LikeNode node)
         {
-            node.Left.Accept(this);
-            node.Right.Accept(this);
-            node.Accept(_visitor);
+            Visit(new FunctionNode(nameof(Operators.Like),
+                new ArgsListNode(new[] { node.Left, node.Right }),
+                new string[0],
+                new Traficante.TSQL.Schema.Managers.MethodInfo { FunctionMethod = typeof(Operators).GetMethod(nameof(Operators.Like)) }));
+
+            //node.Left.Accept(this);
+            //node.Right.Accept(this);
+            //node.Accept(_visitor);
         }
 
         public void Visit(RLikeNode node)
         {
-            node.Left.Accept(this);
-            node.Right.Accept(this);
-            node.Accept(_visitor);
+            Visit(new FunctionNode(nameof(Operators.RLike),
+                new ArgsListNode(new[] { node.Left, node.Right }),
+                new string[0],
+                new Traficante.TSQL.Schema.Managers.MethodInfo { FunctionMethod = typeof(Operators).GetMethod(nameof(Operators.RLike)) }));
+
+            //node.Left.Accept(this);
+            //node.Right.Accept(this);
+            //node.Accept(_visitor);
         }
 
         public void Visit(InNode node)
@@ -486,6 +539,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(OrderByNode node)
         {
+            Expression sequence = _visitor.Nodes.Peek();
+            this._visitor.ScopedParamters.Push(Expression.Parameter(sequence.GetElementType(), "item_" + sequence.GetElementType().Name));
+
             foreach (var field in node.Fields)
                 field.Accept(this);
 
