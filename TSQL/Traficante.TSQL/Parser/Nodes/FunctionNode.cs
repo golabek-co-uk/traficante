@@ -41,9 +41,13 @@ namespace Traficante.TSQL.Parser.Nodes
         }
         public int ArgsCount => Arguments.Args.Length;
 
-        public override Type ReturnType => Method != null ? ResolveGenericMethodReturnType() : typeof(void);
+        public override Type ReturnType =>
+            _returnType != null ? _returnType :
+            (Method != null ? ResolveGenericMethodReturnType() : typeof(void));
 
         public override string Id { get; }
+
+        private Type _returnType = null;
 
         public override void Accept(IExpressionVisitor visitor)
         {
@@ -100,6 +104,11 @@ namespace Traficante.TSQL.Parser.Nodes
         public void ChangePath(string[] path)
         {
             Path = path;
+        }
+
+        public void ChangeReturnType(Type type)
+        {
+            _returnType = type;
         }
 
         public override string ToString()

@@ -334,35 +334,29 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var argsTypes = args.Select(x => x.Type).ToArray();
             MethodInfo methodInfo = node.Method ?? this._engine.ResolveMethod(node.Name, node.Path, argsTypes);
             node.ChangeMethod(methodInfo);
-
-            ParameterExpression item = null;
-            Expression sequence = null;
-            if (this.CurrentQuery != null && this.CurrentQuery.HasFromClosure())
-            {
-                item = this.ScopedParamters.Pop();
-                sequence = null;
-                if (this.ScopedParamters.Peek().Type.IsGrouping())
-                {
-                    sequence = this.ScopedParamters.Peek();
-                    sequence = Expression.Convert(
-                        sequence,
-                        typeof(IEnumerable<>).MakeGenericType(sequence.Type.GetGroupingElementType()));
-                }
-                else
-                {
-                    sequence = this.Nodes
-                        .First(x => x.Type.IsSequence());
-                    //.First(x => x.GetElementType().IsGrouping());
-                }
-            }
             
 
             if (node.IsAggregateMethod)
             {
+                ParameterExpression groupItem = this.ScopedParamters.Pop();
+                Expression groupSequence = null;
+                if (this.ScopedParamters.Peek().Type.IsGrouping())
+                {
+                    groupSequence = this.ScopedParamters.Peek();
+                    groupSequence = Expression.Convert(
+                        groupSequence,
+                        typeof(IEnumerable<>).MakeGenericType(groupSequence.Type.GetGroupingElementType()));
+                }
+                else
+                {
+                    groupSequence = this.Nodes.Last(x => x.Type.IsSequence());
+                }
+
+
                 if (node.Method.Name == "Count")
                 {
-                    var selector = Expression.Lambda(args[0], item);
-                    Expression count = sequence
+                    var selector = Expression.Lambda(args[0], groupItem);
+                    Expression count = groupSequence
                         .Select(selector)
                         .Count();
                     Nodes.Push(count);
@@ -370,8 +364,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
                 if (node.Method.Name == "Sum")
                 {
-                    var selector = Expression.Lambda(args[0], item);
-                    Expression sum = sequence
+                    var selector = Expression.Lambda(args[0], groupItem);
+                    Expression sum = groupSequence
                         .Select(selector)
                         .Sum();
                     Nodes.Push(sum);
@@ -379,8 +373,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
                 if (node.Method.Name == "Max")
                 {
-                    var selector = Expression.Lambda(args[0], item);
-                    Expression max = sequence
+                    var selector = Expression.Lambda(args[0], groupItem);
+                    Expression max = groupSequence
                         .Select(selector)
                         .Max();
                     Nodes.Push(max);
@@ -388,8 +382,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
                 if (node.Method.Name == "Min")
                 {
-                    var selector = Expression.Lambda(args[0], item);
-                    Expression min = sequence
+                    var selector = Expression.Lambda(args[0], groupItem);
+                    Expression min = groupSequence
                         .Select(selector)
                         .Min();
                     Nodes.Push(min);
@@ -397,8 +391,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
                 if (node.Method.Name == "Avg")
                 {
-                    var selector = Expression.Lambda(args[0], item);
-                    Expression avg = sequence
+                    var selector = Expression.Lambda(args[0], groupItem);
+                    Expression avg = groupSequence
                         .Select(selector)
                         .Average();
                     Nodes.Push(avg);
@@ -408,7 +402,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             else
             {
-                var itemIndex = this.ScopedParamters.Skip(1).FirstOrDefault();
+                if (string.Equals(node.Name, "RowNumber", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var item = this.ScopedParamters.Peek();
+                    var itemIndex = this.ScopedParamters.Skip(1).FirstOrDefault();
+
+                    Nodes.Push(Expression.Add(itemIndex, Expression.Constant(1)));
+                    return;
+                }
+
+
+
+
+                //var sequence = this.Nodes.First(x => x.Type.IsSequence());
+                //.First(x => x.GetElementType().IsGrouping());
                 //if (this.ScopedParamters.Peek().Type.IsGrouping())
                 //{
                 //    sequence = this.ScopedParamters.Peek();
@@ -423,7 +430,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 //        .First(x => x.GetElementType().IsGrouping());
                 //}
 
-                
+
                 //if (item.Type.IsGrouping())
                 //{
 
@@ -435,11 +442,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 //    }
                 //}
 
-                if (string.Equals(node.Name, "RowNumber", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    Nodes.Push(Expression.Add(itemIndex, Expression.Constant(1)));
-                    return;
-                }
+
 
                 if (methodInfo == null)
                     throw new TSQLException($"Function does not exist: {node.Name}");
@@ -581,7 +584,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     IdentifierNode identifierNode = new IdentifierNode(field.Name, field.Type);
                     FieldNode fieldNode = new FieldNode(identifierNode, fieldOrder, field.Name);
                     CurrentQuery.SelectedFieldsNodes.Add(fieldNode);
-                    Visit(new AccessColumnNode(field.Name, field.Alias, field.Type, TextSpan.Empty));
+                    Visit(new AccessColumnNode(field.Name, field.TableAlias, field.Type, TextSpan.Empty));
                 }
             }
 
@@ -638,7 +641,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (fields.Count == 0)
                 throw new TSQLException($"Field does not exist: {node.Name}");
 
-            var fieldsWithEmptyAlias = fields.Where(x => string.IsNullOrEmpty(x.Alias)).ToList();
+            var fieldsWithEmptyAlias = fields.Where(x => string.IsNullOrEmpty(x.TableAlias)).ToList();
             if (fieldsWithEmptyAlias.Count == 1)
             {
                 var field = fieldsWithEmptyAlias.FirstOrDefault();
@@ -752,37 +755,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
-        public ParameterExpression FindSequenceItem(string alias)
-        {
-            foreach (var parameter in this.ScopedParamters)
-            {
-                var type = parameter.Type.Name == "IGrouping`2" ?
-                    parameter.Type.GetGenericArguments()[0] :
-                    parameter.Type;
-
-
-                if (type.HasAlias())
-                {
-                    if (string.Equals(type.GetAlias(), alias, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        return parameter;
-                    }
-                }
-
-                foreach (var field in type.GetFields())
-                {
-                    if (field.FieldType.HasAlias())
-                    {
-                        if (string.Equals(field.FieldType.GetAlias(), alias, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            return parameter;
-                        }
-                    }
-                }
-            }
-
-            throw new TSQLException($"Cannot find scope: {alias}");
-        }
 
         public void Visit(ArgsListNode node)
         {
@@ -818,7 +790,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
             var initialization = Expression.MemberInit(creationExpression, bindings);
 
-            if (CurrentQuery.IsSingleRowResult())
+            if (CurrentQuery == null || CurrentQuery.HasFromClosure() == false)
             {
                 var array = Expression.NewArrayInit(outputItemType, new Expression[] { initialization });
 
@@ -828,28 +800,42 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     new Type[] { outputItemType },
                     array);
 
-                if (CurrentQuery.HasFromClosure())
-                {
-                    var item = this.ScopedParamters.Pop();
-                    var sequence = this.Nodes.Pop();
-                    var lambda = Expression.Lambda(call, item);
-                    Nodes.Push(lambda.Invoke(sequence));
-                }
-                else
-                {
-                    var lambda = Expression.Lambda(call);
-                    Nodes.Push(lambda.Invoke());
-                }
+                var lambda = Expression.Lambda(call);
+                Nodes.Push(lambda.Invoke());
+                return;
+            }
+
+            if (CurrentQuery.IsSingleRowResult())
+            {
+                var item = this.ScopedParamters.Pop();
+                var item_i = this.ScopedParamters.Pop();
+                var sequence = this.Nodes.Pop();
+
+                var array = Expression.NewArrayInit(outputItemType, new Expression[] { initialization });
+
+                sequence = Expression.Call(
+                    typeof(ParallelEnumerable),
+                    "AsParallel",
+                    new Type[] { outputItemType },
+                    array);
+
+                var lambda = Expression.Lambda(sequence);
+                Nodes.Push(lambda.Invoke());
+
+                //var lambda = Expression.Lambda(sequence, item, item_i);
+                //Nodes.Push(lambda.Invoke(sequence));
+
             }
             else
             {
                 var item = this.ScopedParamters.Pop();
                 var item_i = this.ScopedParamters.Pop();
+                var sequence = this.Nodes.Pop();
 
                 //"item => new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
                 Expression expression = Expression.Lambda(initialization, item, item_i);
 
-                var sequence = this.Nodes.Pop();
+                
                 sequence = Expression.Call(
                     typeof(ParallelEnumerable),
                     "Select",
@@ -915,19 +901,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             sequence = sequence.GroupBy(lambdaPredicate);
 
             Nodes.Push(sequence);
-
-
-            //// "ItemAnonymousType itemInGroup "
-            //this.QueryState.ItemInGroup = Expression.Parameter(this.QueryState.QueryItem.Type, "itemInGroup_" + this.QueryState.QueryItem.Type);
-
-            //// "IGrouping<KeyAnonymousType, ItemAnonymousType>"
-            //outputItemType = typeof(IGrouping<,>).MakeGenericType(outputItemType, this.QueryState.QueryItem.Type);
-
-            //// "IGrouping<KeyAnonymousType, ItemAnonymousType> item"
-            //this.QueryState.QueryItem = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
-
-            //// "IQueryable<IGrouping<KeyAnonymousType, ItemAnonymousType>> input"
-            //this.QueryState.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "query");
         }
 
         public void Visit(HavingNode node)
@@ -1472,8 +1445,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var secondSequenceItem = this.ScopedParamters.Pop();
             var secondSequenceAlias = new string[] {
                     node.With.Alias,
-                    secondSequenceItem.Type.GetAlias(),
-                    secondSequenceItem.Type.GetTable() }
+                    secondSequenceItem.Type.GetTableAttribute()?.Alias,
+                    secondSequenceItem.Type.GetTableAttribute()?.Name }
                 .FirstOrDefault(s => !string.IsNullOrEmpty(s));
             var secondSequenceKeyLambda = Expression.Lambda(secondSequenceKeyExpression, secondSequenceItem);
             
@@ -1482,8 +1455,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var firstSequenceAlias
                  = new string[] {
                     node.Source.Alias,
-                    firstSequenceItem.Type.GetAlias(),
-                    firstSequenceItem.Type.GetTable() }
+                    firstSequenceItem.Type.GetTableAttribute()?.Alias,
+                    firstSequenceItem.Type.GetTableAttribute()?.Name }
                 .FirstOrDefault(s => !string.IsNullOrEmpty(s));
             var firstSequenceKeyLambda = Expression.Lambda(firstSequenceKeyExpression, firstSequenceItem);
 

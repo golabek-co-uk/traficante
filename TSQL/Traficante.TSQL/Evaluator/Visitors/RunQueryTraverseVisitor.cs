@@ -7,6 +7,7 @@ using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Linq;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {
@@ -23,14 +24,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SelectNode node)
         {
-            if (_visitor.CurrentQuery.IsSingleRowResult() == false)
+            SetQueryPart(QueryPart.Select);
+
+            if (_visitor.CurrentQuery != null && _visitor.CurrentQuery.HasFromClosure())
             {
                 Expression sequence = _visitor.Nodes.Peek();
                 this._visitor.ScopedParamters.Push(Expression.Parameter(typeof(int), "item_i"));
                 this._visitor.ScopedParamters.Push(Expression.Parameter(sequence.GetElementType(), "item_" + sequence.GetElementType().Name));
             }
 
-            SetQueryPart(QueryPart.Select);
             node.Top?.Accept(this);
             foreach (var field in node.Fields)
                 field.Accept(this);
@@ -68,13 +70,30 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (this._visitor.CurrentQuery != null && this._visitor.CurrentQuery.HasFromClosure())
             {
                 ParameterExpression item = _visitor.ScopedParamters.Peek();
-                if (item.Type.IsGrouping())
+                if (node.IsAggregateMethod)
                 {
-                    this._visitor.ScopedParamters.Push(Expression.Parameter(item.Type.GetGroupingElementType(), "itemInGroup_" + item.Type.GetGroupingElementType().Name));
+                    if (item.Type.IsGrouping())
+                    {
+                        var itemInGroup = Expression.Parameter(item.Type.GetGroupingElementType(), "itemInGroup_" + item.Type.GetGroupingElementType().Name);
+                        this._visitor.ScopedParamters.Push(itemInGroup);
+                    }
+                    else
+                    {
+                        this._visitor.ScopedParamters.Push(item);
+                    }
                 }
                 else
                 {
-                    this._visitor.ScopedParamters.Push(item);
+                    if (item.Type.IsGrouping())
+                    {
+                        var fields = item.GetFields(node.ToString());
+                        if (fields.Count == 1)
+                        {
+                            node.ChangeReturnType(fields.First().Type);
+                            Visit(new IdentifierNode(node.ToString()));
+                            return;
+                        }
+                    }
                 }
             }
 

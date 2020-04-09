@@ -60,7 +60,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return dynamicType;
         }
 
-        public Type CreateAnonymousType(IEnumerable<(string Name, Type Type)> fields, string table = null, string alias = null)
+        public Type CreateAnonymousType(IEnumerable<(string Name, Type Type)> fields, string tableName = null, string tableAlias = null)
         {
             TypeBuilder dynamicTypeBuilder = dynamicModule.DefineType(GenerateAnonymousTypeName(), TypeAttributes.Public);
 
@@ -68,10 +68,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             List<FieldInfo> fieldsInfo = fieldsBuilder.Select(x => (FieldInfo)x).ToList();
             OverrideEquals(dynamicTypeBuilder, fieldsInfo);
             OverrideGetHashCode(dynamicTypeBuilder, fieldsInfo);
-            if (alias != null)
-                AddAliasAttribute(dynamicTypeBuilder, alias);
-            if (table != null)
-                AddTableAttribute(dynamicTypeBuilder, table);
+            if (tableName != null || tableAlias != null)
+                AddTableAttribute(dynamicTypeBuilder, tableName, tableAlias);
 
             var dynamicType = dynamicTypeBuilder.CreateTypeInfo();
             _anonymousTypes.Add(dynamicType);
@@ -306,17 +304,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             il.Emit(OpCodes.Ret); // return number
         }
 
-        private void AddAliasAttribute(TypeBuilder dynamicTypeBuilder, string alias)
+        private void AddTableAttribute(TypeBuilder dynamicTypeBuilder, string name, string alias)
         {
-            var aliasAttributeConctructor = typeof(AliasAttribute).GetConstructor(new Type[] { typeof(string) });
-            var aliasAttributeBuilder = new CustomAttributeBuilder(aliasAttributeConctructor, new object[] { alias });
-            dynamicTypeBuilder.SetCustomAttribute(aliasAttributeBuilder);
-        }
-
-        private void AddTableAttribute(TypeBuilder dynamicTypeBuilder, string table)
-        {
-            var aliasAttributeConctructor = typeof(TableAttribute).GetConstructor(new Type[] { typeof(string) });
-            var aliasAttributeBuilder = new CustomAttributeBuilder(aliasAttributeConctructor, new object[] { table });
+            var aliasAttributeConctructor = typeof(TableAttribute).GetConstructor(new Type[] { typeof(string), typeof(string) });
+            var aliasAttributeBuilder = new CustomAttributeBuilder(aliasAttributeConctructor, new object[] { name, alias });
             dynamicTypeBuilder.SetCustomAttribute(aliasAttributeBuilder);
         }
         
@@ -433,23 +424,15 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
     }
 
-    public class AliasAttribute : Attribute
-    {
-        public string Alias { get; set; }
-
-        public AliasAttribute(string alias)
-        {
-            Alias = alias;
-        }
-    }
-
     public class TableAttribute : Attribute
     {
-        public string Table { get; set; }
+        public string Name { get; set; }
+        public string Alias { get; set; }
 
-        public TableAttribute(string table)
+        public TableAttribute(string table, string alias)
         {
-            Table = table;
+            Name = table;
+            Alias = alias;
         }
     }
 }
