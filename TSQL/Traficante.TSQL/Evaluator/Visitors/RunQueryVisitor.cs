@@ -312,20 +312,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var rightNode = node.Right as ArgsListNode;
             var rightArgs = Enumerable.Range(0, rightNode.Args.Length).Select(x => Nodes.Pop());
             var right = Expression.NewArrayInit(rightNode.Args[0].ReturnType, rightArgs);
-            var rightQueryable = Expression.Call(
-                typeof(ParallelEnumerable),
-                "AsParallel", new Type[] { rightNode.Args[0].ReturnType }, right);
-
             var left = Nodes.Pop();
+            var result = right
+                .AsParallel()
+                .Contains(left);
 
-            MethodCallExpression containsCall = Expression.Call(
-                typeof(ParallelEnumerable),
-                "Contains",
-                new Type[] { right.Type.GetElementType() },
-                rightQueryable,
-                left);
-
-            Nodes.Push(containsCall);
+            Nodes.Push(result);
         }
 
         public void Visit(FunctionNode node)
@@ -412,38 +404,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
 
 
-
-
-                //var sequence = this.Nodes.First(x => x.Type.IsSequence());
-                //.First(x => x.GetElementType().IsGrouping());
-                //if (this.ScopedParamters.Peek().Type.IsGrouping())
-                //{
-                //    sequence = this.ScopedParamters.Peek();
-                //    sequence = Expression.Convert(
-                //        sequence,
-                //        typeof(IEnumerable<>).MakeGenericType(sequence.Type.GetGroupingElementType()));
-                //}
-                //else
-                //{
-                //    sequence = this.Nodes
-                //        .Where(x => x.Type.IsSequence())
-                //        .First(x => x.GetElementType().IsGrouping());
-                //}
-
-
-                //if (item.Type.IsGrouping())
-                //{
-
-                //    var key = Expression.PropertyOrField(item, "Key");
-                //    if (key.Type.GetFields().Any(x => string.Equals(x.Name, this._currentFieldNode.FieldName)))
-                //    {
-                //        Nodes.Push(Expression.PropertyOrField(key, this._currentFieldNode.FieldName));
-                //        return;
-                //    }
-                //}
-
-
-
                 if (methodInfo == null)
                     throw new TSQLException($"Function does not exist: {node.Name}");
                 var instance = methodInfo.FunctionMethod.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
@@ -507,68 +467,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 throw new TSQLException($"Disambiguate field name: {node.Name}");
 
             this.Nodes.Push(fields.FirstOrDefault().Expression);
-
-            //var item = this.ScopedParamters.Peek();
-            //var field = item.GetField(node.Name, node.Alias);
-            //this.Nodes.Push(field.Expression);
-
-            //if (item.Type.Name == "IGrouping`2")
-            //{
-            //    // TODO: just for testing. 
-            //    // come with idea, how to figure out if the colum is inside aggregation function 
-            //    // or is just column to display
-            //    //try
-            //    //{
-            //    var fieldNameameWithAlias = node.Alias + "." + node.Name;
-
-            //    var key = Expression.PropertyOrField(item, "Key");
-            //    if (key.Type.GetFields().Any(x => string.Equals(x.Name, fieldNameameWithAlias)))
-            //    {
-            //        //var properyOfKey = Expression.PropertyOrField(key, fieldNameameWithAlias);
-            //        var properyOfKey = this.expressionHelper.PropertyOrField(key, fieldNameameWithAlias, node.ReturnType);
-            //        Nodes.Push(properyOfKey);
-            //        return;
-            //    }
-            //    else
-            //    if (key.Type.GetFields().Any(x => string.Equals(x.Name, node.Name)))
-            //    {
-            //        //var properyOfKey = Expression.PropertyOrField(key, node.Name);
-            //        var properyOfKey = this.expressionHelper.PropertyOrField(key, node.Name, node.ReturnType);
-            //        Nodes.Push(properyOfKey);
-            //        return;
-            //    }
-            //    else
-            //    {
-            //        var aliasProperty = item.Type.GetFields().FirstOrDefault(x => string.Equals(x.Name, node.Alias));
-            //        if (aliasProperty != null)
-            //        {
-            //            var nameProperty = aliasProperty.FieldType.GetFields().FirstOrDefault(x => string.Equals(x.Name, node.Name));
-            //            if (nameProperty != null)
-            //            {
-            //                var alias = Expression.PropertyOrField(this.QueryState.ItemInGroup, node.Alias);
-            //                var propertyInAlias = this.expressionHelper.PropertyOrField(alias, node.Name, node.ReturnType);
-            //                Nodes.Push(propertyInAlias);
-            //                //Nodes.Push(
-            //                //    Expression.PropertyOrField(
-            //                //        Expression.PropertyOrField(this._itemInGroup, node.Alias),
-            //                //        node.Name));
-            //                return;
-            //            }
-            //        }
-            //        //var groupItemProperty = Expression.PropertyOrField(this._itemInGroup, node.Name);
-            //        var groupItemProperty = this.expressionHelper.PropertyOrField(this.QueryState.ItemInGroup, node.Name, node.ReturnType);
-            //        Nodes.Push(groupItemProperty);
-            //        return;
-            //    }
-            //    //}
-            //    //catch (Exception ex)
-            //    //{
-            //    //    var groupItemProperty = Expression.PropertyOrField(this._itemInGroup, node.Name);
-            //    //    Nodes.Push(groupItemProperty);
-            //    //}
-            //}
-
-            //Nodes.Push(this.expressionHelper.PropertyOrField(item, node.Name, node.ReturnType));
         }
 
         public void Visit(AllColumnsNode node)
@@ -587,47 +485,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     Visit(new AccessColumnNode(field.Name, field.TableAlias, field.Type, TextSpan.Empty));
                 }
             }
-
-            //foreach (var parameter in this.ScopedParamters)
-            //{
-            //    var type = parameter.Type;
-            //    if (type.HasAlias())
-            //    {
-            //        foreach (var field in type.GetFields())
-            //        {
-            //            bool alreadyHasField = this.QueryState.SelectedFieldsNodes.Any(x => string.Equals(x.FieldName, field.Name, StringComparison.OrdinalIgnoreCase));
-            //            if (alreadyHasField == false)
-            //            {
-            //                fieldOrder++;
-            //                IdentifierNode identifierNode = new IdentifierNode(field.Name, field.FieldType);
-            //                FieldNode fieldNode = new FieldNode(identifierNode, fieldOrder, field.Name);
-            //                QueryState.SelectedFieldsNodes.Add(fieldNode);
-            //                Visit(new AccessColumnNode(field.Name, string.Empty, field.FieldType, TextSpan.Empty));
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        foreach (var aliasField in type.GetFields())
-            //        {
-            //            if (aliasField.FieldType.HasAlias())
-            //            {
-            //                foreach (var field in aliasField.FieldType.GetFields())
-            //                {
-            //                    bool alreadyHasField = this.QueryState.SelectedFieldsNodes.Any(x => string.Equals(x.FieldName, field.Name, StringComparison.OrdinalIgnoreCase));
-            //                    if (alreadyHasField == false)
-            //                    {
-            //                        fieldOrder++;
-            //                        IdentifierNode identifierNode = new IdentifierNode(field.Name, field.FieldType);
-            //                        FieldNode fieldNode = new FieldNode(identifierNode, fieldOrder, field.Name);
-            //                        QueryState.SelectedFieldsNodes.Add(fieldNode);
-            //                        Visit(new AccessColumnNode(field.Name, string.Empty, field.FieldType, TextSpan.Empty));
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
         }
 
         public void Visit(IdentifierNode node)
@@ -656,7 +513,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 this.Nodes.Push(field.Expression);
                 return;
             }
-
             throw new TSQLException($"Disambiguate field name: {node.Name}");
         }
 
@@ -793,14 +649,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (CurrentQuery == null || CurrentQuery.HasFromClosure() == false)
             {
                 var array = Expression.NewArrayInit(outputItemType, new Expression[] { initialization });
-
-                var call = Expression.Call(
-                    typeof(ParallelEnumerable),
-                    "AsParallel",
-                    new Type[] { outputItemType },
-                    array);
-
-                var lambda = Expression.Lambda(call);
+                var sequence = array.AsParallel();
+                var lambda = Expression.Lambda(sequence);
                 Nodes.Push(lambda.Invoke());
                 return;
             }
@@ -812,19 +662,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var sequence = this.Nodes.Pop();
 
                 var array = Expression.NewArrayInit(outputItemType, new Expression[] { initialization });
-
-                sequence = Expression.Call(
-                    typeof(ParallelEnumerable),
-                    "AsParallel",
-                    new Type[] { outputItemType },
-                    array);
-
+                sequence = array.AsParallel();
                 var lambda = Expression.Lambda(sequence);
                 Nodes.Push(lambda.Invoke());
-
-                //var lambda = Expression.Lambda(sequence, item, item_i);
-                //Nodes.Push(lambda.Invoke(sequence));
-
             }
             else
             {
@@ -846,10 +686,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 Nodes.Push(sequence);
             }
 
-            ////"AnonymousType input"
-            //this.QueryState.QueryItem = Expression.Parameter(outputItemType, "item_" + outputItemType.Name);
-            ////"IQueryable<AnonymousType> input"
-            //this.QueryState.Query = Expression.Parameter(typeof(ParallelQuery<>).MakeGenericType(outputItemType), "query");
+
         }
 
         public void Visit(WhereNode node)
@@ -864,8 +701,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             sequence = sequence.Where(predicateLambda);
             Nodes.Push(sequence);
 
-            //var lambda = Expression.Lambda(call, QueryState.Query);
-            //Nodes.Push(lambda.Invoke(this.Nodes.Pop()));
         }
 
         public void Visit(GroupByNode node)
@@ -875,8 +710,16 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var outputFields = new (FieldNode Field, Expression Value)[node.Fields.Length];
             for (var i = 0; i < node.Fields.Length; i++)
                 outputFields[node.Fields.Length - 1 - i] = (node.Fields[node.Fields.Length - 1 - i], Nodes.Pop());
-            var outputItemType = expressionHelper.CreateAnonymousType(outputFields.Select(x => (x.Field.FieldName, x.Field.ReturnType)), string.Empty, string.Empty);
 
+            var outputItemType = expressionHelper.CreateAnonymousType(
+                outputFields.Select<(FieldNode Field, Expression Value),(string, Type ReturnType, string ColumnName, string TableName, string TableAlias)>(x => (
+                    x.Field.FieldName,
+                    x.Field.ReturnType,
+                    (x.Value as FieldExpression)?.ColumnName,
+                    (x.Value as FieldExpression)?.TableName,
+                    (x.Value as FieldExpression)?.TableAlias)),
+                tableName: string.Empty,
+                tableAlias: string.Empty);
             var sequence = this.Nodes.Pop();
 
             List<MemberBinding> bindings = new List<MemberBinding>();
@@ -1137,74 +980,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(QueryNode node)
         {
-            //Expression top = node?.Select.Top != null ? Nodes.Pop() : null;
-
-            //Expression select = node.Select != null ? Nodes.Pop() : null;
-
-            //Expression orderBy = node.OrderBy != null ? Nodes.Pop() : null;
-
-            //Expression take = node.Take != null ? Nodes.Pop() : null;
-            //Expression skip = node.Skip != null ? Nodes.Pop() : null;
-
-            //Expression having = node.GroupBy?.Having != null ? Nodes.Pop() : null;
-
-            //Expression groupBy = node.GroupBy != null ? Nodes.Pop() : null;
-
-            //Expression where = node.Where != null ? Nodes.Pop() : null;
-
-            //Expression from = node.From != null ? Nodes.Pop() : null;
-
-
-            //Expression last = from;
-
-            //if (where != null)
-            //{
-            //    last = Expression.Invoke(where, last);
-            //}
-
-            //if (groupBy != null)
-            //{
-            //    last = Expression.Invoke(groupBy, last);
-            //}
-
-            //if (having != null)
-            //{
-            //    last = Expression.Invoke(having, last);
-            //}
-
-            //if (skip != null)
-            //{
-            //    last = Expression.Invoke(skip, last);
-            //}
-
-            //if (take != null)
-            //{
-            //    last = Expression.Invoke(take, last);
-            //}
-
-            //if (orderBy != null)
-            //{
-            //    last = Expression.Invoke(orderBy, last);
-            //}
-
-            //if (select != null)
-            //{
-            //    if (last != null)
-            //    {
-            //        last = Expression.Invoke(select, last);
-            //    }
-            //    else
-            //    {
-            //        last = Expression.Invoke(select);
-            //    }
-            //}
-
-            //if (top != null)
-            //{
-            //    last = Expression.Invoke(top, last);
-            //}
-
-            //Nodes.Push(last);
+       
         }
 
         public void Visit(RootNode node)

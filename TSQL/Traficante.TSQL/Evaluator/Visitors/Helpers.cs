@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 
 namespace Traficante.TSQL.Evaluator.Visitors
@@ -12,18 +13,25 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         static public Type GetElementType(this Expression sequence)
         {
-            return sequence.Type.GetGenericArguments()[0];
+            return sequence.Type.GenericTypeArguments.Length > 0 ?
+                sequence.Type.GetGenericArguments()[0] :
+                sequence.Type.GetElementType();
         }
 
         static public bool HasTableAttribute(this Type type)
         {
-            var aliasAttribute = (TableAttribute)(type).GetCustomAttributes(typeof(TableAttribute), false).FirstOrDefault();
+            var aliasAttribute = (TableAttribute)type.GetCustomAttributes(typeof(TableAttribute), false).FirstOrDefault();
             return aliasAttribute != null;
         }
 
         static public TableAttribute GetTableAttribute(this Type type)
         {
-            return (TableAttribute)(type).GetCustomAttributes(typeof(TableAttribute), false).FirstOrDefault();
+            return (TableAttribute)type.GetCustomAttributes(typeof(TableAttribute), false).FirstOrDefault();
+        }
+
+        static public FieldAttribute GetFieldAttribute(this FieldInfo fieldInfo)
+        {
+            return (FieldAttribute)fieldInfo.GetCustomAttributes(typeof(FieldAttribute), false).FirstOrDefault();
         }
 
         static public bool IsGrouping(this Type type)
@@ -46,43 +54,43 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return type.GetGenericArguments()[1];
         }
 
-        static public Expression AccessAlias(this Expression parameter, string alias)
+        //static public Expression AccessAlias(this Expression parameter, string alias)
+        //{
+        //    if (parameter.Type.Name == "IGrouping`2")
+        //    {
+        //        parameter = parameter.PropertyOrField("Key");
+        //    }
+
+        //    var type = parameter.Type;
+        //    var tableAttribute = type.GetTableAttribute();
+        //    if (tableAttribute != null)
+        //    {
+        //        if (string.Equals(tableAttribute.Alias, alias, StringComparison.InvariantCultureIgnoreCase) ||
+        //            string.Equals(tableAttribute.Name, alias, StringComparison.InvariantCultureIgnoreCase))
+        //        {
+        //            return parameter;
+        //        }
+        //    }
+
+        //    foreach (var field in type.GetFields())
+        //    {
+        //        tableAttribute = field.FieldType.GetTableAttribute();
+        //        if (tableAttribute != null)
+        //        {
+        //            if (string.Equals(tableAttribute.Alias, alias, StringComparison.InvariantCultureIgnoreCase) ||
+        //                string.Equals(tableAttribute.Name, alias, StringComparison.InvariantCultureIgnoreCase))
+        //            {
+        //                return parameter.PropertyOrField(field.Name);
+        //            }
+        //        }
+        //    }
+
+        //    throw new Exception($"Cannot find alias: {alias}");
+        //}
+
+        static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetAllFields(this Expression parameter)
         {
-            if (parameter.Type.Name == "IGrouping`2")
-            {
-                parameter = parameter.PropertyOrField("Key");
-            }
-
-            var type = parameter.Type;
-            var tableAttribute = type.GetTableAttribute();
-            if (tableAttribute != null)
-            {
-                if (string.Equals(tableAttribute.Alias, alias, StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals(tableAttribute.Name, alias, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return parameter;
-                }
-            }
-
-            foreach (var field in type.GetFields())
-            {
-                tableAttribute = field.FieldType.GetTableAttribute();
-                if (tableAttribute != null)
-                {
-                    if (string.Equals(tableAttribute.Alias, alias, StringComparison.InvariantCultureIgnoreCase) ||
-                        string.Equals(tableAttribute.Name, alias, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        return parameter.PropertyOrField(field.Name);
-                    }
-                }
-            }
-
-            throw new Exception($"Cannot find alias: {alias}");
-        }
-
-        static public List<(string Name, Type Type, string TableName, string TableAlias, Expression Expression)> GetAllFields(this Expression parameter)
-        {
-            List<(string Name, Type Type, string Table, string Alias, Expression Expression)> fields = new List<(string Name, Type Type, string Table, string Alias, Expression Expression)>();
+            List<(string Name, Type Type, string ColumnName, string Table, string Alias, Expression Expression)> fields = new List<(string Name, Type Type, string ColumnName, string Table, string Alias, Expression Expression)>();
             if (parameter.Type.Name == "IGrouping`2")
             {
                 parameter = parameter.PropertyOrField("Key");
@@ -94,7 +102,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var tableAttribute = type.GetTableAttribute();
                 foreach (var field in type.GetFields())
                 {
-                    fields.Add((field.Name, field.FieldType, tableAttribute.Name, tableAttribute.Alias, parameter.PropertyOrField(field.Name)));
+                    var fieldAttribute = field.GetFieldAttribute();
+                    if (fieldAttribute != null)
+                        fields.Add((field.Name, field.FieldType, fieldAttribute.ColumnName, fieldAttribute.TableName, fieldAttribute.TableAlias, parameter.PropertyOrField(field.Name)));
+                    else
+                        fields.Add((field.Name, field.FieldType, field.Name, tableAttribute.Name, tableAttribute.Alias, parameter.PropertyOrField(field.Name)));
                 }
             }
             else
@@ -106,7 +118,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     {
                         foreach (var field in innerField.FieldType.GetFields())
                         {
-                            fields.Add((field.Name, field.FieldType, tableAttribute.Name, tableAttribute.Alias, parameter.PropertyOrField(innerField.Name).PropertyOrField(field.Name)));
+                            var fieldAttribute = field.GetFieldAttribute();
+                            if (fieldAttribute != null)
+                                fields.Add((field.Name, field.FieldType, fieldAttribute.ColumnName, fieldAttribute.TableName, fieldAttribute.TableAlias, parameter.PropertyOrField(innerField.Name).PropertyOrField(field.Name)));
+                            else
+                                fields.Add((field.Name, field.FieldType, field.Name, tableAttribute.Name, tableAttribute.Alias, parameter.PropertyOrField(innerField.Name).PropertyOrField(field.Name)));
                         }
                     }
                 }
@@ -114,26 +130,22 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return fields;
         }
 
-        static public List<(string Name, Type Type, string TableName, string TableAlias, Expression Expression)> GetFields(this Expression parameter, string fieldName)
+        static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetFields(this Expression parameter, string fieldName)
         {
             var allFields = parameter.GetAllFields();
             return allFields.Where(x => 
-            string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase))
+                    string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) ||
+                    string.Equals(x.ColumnName, fieldName, StringComparison.InvariantCultureIgnoreCase))
                 .ToList();
-
-            //if (matchedFields.Count > 1 || matchedFieldsWithEmptyAlias.Count > 1)
-            //{
-            //    throw new TSQLException($"Disambiguate field name: {fieldName}");
-            //}
-
-            //throw new TSQLException($"Field does not exist: {fieldName}");
         }
 
-        static public (string Name, Type Type, string TableName, string TableAlias, Expression Expression) GetField(this Expression parameter, string fieldName, string alias)
+        static public (string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression) GetField(this Expression parameter, string fieldName, string alias)
         {
             var allFields = parameter.GetAllFields();
             return allFields.Where(x =>
-                string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) &&
+                (string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) ||
+                 string.Equals(x.ColumnName, fieldName, StringComparison.InvariantCultureIgnoreCase)) 
+                &&
                 (string.Equals(x.TableAlias, alias, StringComparison.InvariantCultureIgnoreCase) ||
                  string.Equals(x.TableName, alias, StringComparison.InvariantCultureIgnoreCase)))
                 .FirstOrDefault();
@@ -142,22 +154,27 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         static public Expression PropertyOrField(this Expression expression, string propertyOrField)
         {
+            var tableAttribute = expression.Type.GetTableAttribute();
             var field = expression.Type.GetFields().FirstOrDefault(x => string.Equals(x.Name, propertyOrField, StringComparison.InvariantCultureIgnoreCase));
             if (field != null)
             {
-                return Expression.Condition(
+                var e =  Expression.Condition(
                     Expression.Equal(expression, Expression.Default(expression.Type)),
                     Expression.Default(field.FieldType),
                     Expression.PropertyOrField(expression, field.Name));
+                return new FieldExpression(e, propertyOrField, tableAttribute?.Name, tableAttribute?.Alias);
+                //return e;
             }
 
             var property = expression.Type.GetProperties().FirstOrDefault(x => string.Equals(x.Name, propertyOrField, StringComparison.InvariantCultureIgnoreCase));
             if (property != null)
             {
-                return Expression.Condition(
+                var e =  Expression.Condition(
                     Expression.Equal(expression, Expression.Default(expression.Type)),
                     Expression.Default(property.PropertyType),
                     Expression.PropertyOrField(expression, property.Name));
+                return new FieldExpression(e, propertyOrField, tableAttribute?.Name, tableAttribute?.Alias);
+                //return e;
             }
 
             throw new TSQLException($"Field does not exist: {propertyOrField}");
@@ -671,6 +688,16 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return call;
         }
 
+        static public Expression Contains(this Expression sequence, Expression sequence2)
+        {
+            return Expression.Call(
+                typeof(ParallelEnumerable),
+                "Contains",
+                new Type[] { sequence.GetElementType() },
+                sequence,
+                sequence2);
+        }
+
         static public Expression Invoke(this Expression lambda, params Expression[] parameters)
         {
             return Expression.Invoke(lambda, parameters);
@@ -720,6 +747,33 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return call;
         }
 
+    }
+
+    public class FieldExpression : Expression
+    {
+        private Expression _inner;
+        public string TableName { get; set; }
+        public string TableAlias { get; set; }
+        public string ColumnName { get; set; }
+
+        public FieldExpression(Expression inner, string fieldName, string tableName, string tableAlias) : base()
+        {
+            _inner = inner;
+            this.TableName = tableName;
+            this.TableAlias = tableAlias;
+            this.ColumnName = fieldName;
+        }
+
+        public override ExpressionType NodeType => ExpressionType.Extension;
+
+        public override Type Type => _inner.Type;
+
+        public override bool CanReduce => true;
+
+        public override Expression Reduce()
+        {
+            return _inner;
+        }
     }
 
 }

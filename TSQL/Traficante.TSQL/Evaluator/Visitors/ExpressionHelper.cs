@@ -77,6 +77,24 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return dynamicType;
         }
 
+        public Type CreateAnonymousType(IEnumerable<(string Name, Type Type, string ColumnName, string TableName, string TableAlias)> fields, string tableName = null, string tableAlias = null)
+        {
+            TypeBuilder dynamicTypeBuilder = dynamicModule.DefineType(GenerateAnonymousTypeName(), TypeAttributes.Public);
+
+            List<FieldBuilder> fieldsBuilder = AddFields(dynamicTypeBuilder, fields);
+            List<FieldInfo> fieldsInfo = fieldsBuilder.Select(x => (FieldInfo)x).ToList();
+            OverrideEquals(dynamicTypeBuilder, fieldsInfo);
+            OverrideGetHashCode(dynamicTypeBuilder, fieldsInfo);
+            if (tableName != null || tableAlias != null)
+                AddTableAttribute(dynamicTypeBuilder, tableName, tableAlias);
+
+            var dynamicType = dynamicTypeBuilder.CreateTypeInfo();
+            _anonymousTypes.Add(dynamicType);
+
+            return dynamicType;
+        }
+
+
         private string GenerateAnonymousTypeName()
         {
             var alpha = "abcdefghijklmnopqrstuwxyz".ToCharArray().Select(x => x.ToString());
@@ -90,6 +108,23 @@ namespace Traficante.TSQL.Evaluator.Visitors
             foreach (var field in fields)
             {
                 var fieldBuilder = dynamicTypeBuilder.DefineField(field.Name, field.Type, FieldAttributes.Public);
+                fieldsBuilder.Add(fieldBuilder);
+            }
+
+            return fieldsBuilder;
+        }
+
+        private static List<FieldBuilder> AddFields(TypeBuilder dynamicTypeBuilder, IEnumerable<(string Name, Type Type, string ColumnName, string TableName, string TableAlias)> fields)
+        {
+            List<FieldBuilder> fieldsBuilder = new List<FieldBuilder>();
+            foreach (var field in fields)
+            {
+                var fieldBuilder = dynamicTypeBuilder.DefineField(field.Name, field.Type, FieldAttributes.Public);
+
+                var attributeConctructor = typeof(FieldAttribute).GetConstructor(new Type[] { typeof(string), typeof(string), typeof(string) });
+                var attributeBuilder = new CustomAttributeBuilder(attributeConctructor, new object[] { field.ColumnName, field.TableName, field.TableAlias });
+                fieldBuilder.SetCustomAttribute(attributeBuilder);
+
                 fieldsBuilder.Add(fieldBuilder);
             }
 
@@ -433,6 +468,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             Name = table;
             Alias = alias;
+        }
+    }
+
+    public class FieldAttribute : Attribute
+    {
+        public string TableName { get; set; }
+        public string TableAlias { get; set; }
+        public string ColumnName { get; set; }
+
+        public FieldAttribute(string columnName, string tableName, string tableAlias)
+        {
+            TableName = tableName;
+            TableAlias = tableAlias;
+            ColumnName = columnName;
         }
     }
 }
