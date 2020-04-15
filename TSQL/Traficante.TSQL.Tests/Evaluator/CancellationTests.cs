@@ -5,7 +5,6 @@ using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
-    [Ignore]
     [TestClass]
     public class CancellationTests : TestBase
     {
@@ -19,9 +18,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 {"#A", new[] {new BasicEntity("001"), new BasicEntity("002")}}
             };
 
-            var vm = CreateAndRunVirtualMachine(query, sources);
             TokenSource.Cancel();
-            vm.Run(TokenSource.Token);
+            var vm = CreateAndRunVirtualMachine(query, sources, TokenSource.Token);
         }
 
         [ExpectedException(typeof(OperationCanceledException))]
@@ -39,9 +37,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 }
             };
 
-            var vm = CreateAndRunVirtualMachine(query, sources);
             TokenSource.Cancel();
-            var table = vm.Run(TokenSource.Token);
+            var vm = CreateAndRunVirtualMachine(query, sources, TokenSource.Token);
         }
 
 
@@ -60,9 +57,8 @@ select Name from #A.Entities() where Name = '002'";
                 {"#A", new[] {new BasicEntity("001"), new BasicEntity("002")}}
             };
 
-            var vm = CreateAndRunVirtualMachine(query, sources);
             TokenSource.Cancel();
-            vm.Run(TokenSource.Token);
+            var vm = CreateAndRunVirtualMachine(query, sources, TokenSource.Token);
         }
 
         [ExpectedException(typeof(OperationCanceledException))]
@@ -96,9 +92,8 @@ select City, Sum(Population) from #C.Entities() group by City";
                 {"#C", new[] {new BasicEntity("002", "", 14), new BasicEntity("002", "", 14)}}
             };
 
-            var vm = CreateAndRunVirtualMachine(query, sources);
             TokenSource.Cancel();
-            vm.Run(TokenSource.Token);
+            var vm = CreateAndRunVirtualMachine(query, sources, TokenSource.Token);
         }
 
         [ExpectedException(typeof(OperationCanceledException))]
@@ -114,9 +109,8 @@ select City, Sum(Population) from #C.Entities() group by City";
                 {"#C", new[] {new BasicEntity("002"), new BasicEntity("001")}}
             };
 
-            var vm = CreateAndRunVirtualMachine(query, sources);
             TokenSource.Cancel();
-            vm.Run(TokenSource.Token);
+            var vm = CreateAndRunVirtualMachine(query, sources, TokenSource.Token);
         }
 
 
@@ -131,9 +125,8 @@ select City, Sum(Population) from #C.Entities() group by City";
                 {"#B", new[] {new BasicEntity("003"), new BasicEntity("004"), new BasicEntity("001")}}
             };
 
-            var vm = CreateAndRunVirtualMachine(query, sources);
             TokenSource.Cancel();
-            vm.Run(TokenSource.Token);
+            var vm = CreateAndRunVirtualMachine(query, sources, TokenSource.Token);
         }
 
         [ExpectedException(typeof(OperationCanceledException))]
@@ -156,9 +149,8 @@ select City, Sum(Population) from #C.Entities() group by City";
                 }
             };
 
-            var vm = CreateAndRunVirtualMachine(query, sources);
             TokenSource.Cancel();
-            vm.Run(TokenSource.Token);
+            var vm = CreateAndRunVirtualMachine(query, sources, TokenSource.Token);
         }
     }
 }

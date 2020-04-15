@@ -41,7 +41,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         protected CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
         Random _random = new Random();
 
-        protected CompiledQuery CreateAndRunVirtualMachine<T>(string script, IDictionary<string, IEnumerable<T>> sources)
+        protected CompiledQuery CreateAndRunVirtualMachine<T>(string script, IDictionary<string, IEnumerable<T>> sources, CancellationToken ct = default)
         {
             var engine = new TSQLEngine();
             //new TestLibrary()
@@ -69,7 +69,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 engine.AddTable("entities", new string[1] { source.Key }, source.Value);
                 engine.AddFunction("Entities", new string[1] { source.Key }, () => source.Value);
             }
-            return new CompiledQuery(engine.RunAndReturnTable(script));
+            return new CompiledQuery(engine.RunAndReturnTable(script, ct));
             //return InstanceCreator.CompileForExecution(script, engine);
         }
 
