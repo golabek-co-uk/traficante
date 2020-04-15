@@ -99,7 +99,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var alpha = "abcdefghijklmnopqrstuwxyz".ToCharArray().Select(x => x.ToString());
             var nextLetter = alpha.Except(_anonymousTypes.Select(x => x.Name)).First();
-            return nextLetter;
+            return "Traficante." + nextLetter;
         }
 
         private static List<FieldBuilder> AddFields(TypeBuilder dynamicTypeBuilder, IEnumerable<(string Name, Type Type)> fields)

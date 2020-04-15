@@ -86,7 +86,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 {
                     if (item.Type.IsGrouping())
                     {
-                        var fields = item.GetFields(node.ToString());
+                        var fields = item.GetFields(new[] { node.ToString() });
                         if (fields.Count == 1)
                         {
                             node.ChangeReturnType(fields.First().Type);

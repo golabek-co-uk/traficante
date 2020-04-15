@@ -91,16 +91,20 @@ namespace Traficante.TSQL.Evaluator.Visitors
         static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetAllFields(this Expression parameter)
         {
             List<(string Name, Type Type, string ColumnName, string Table, string Alias, Expression Expression)> fields = new List<(string Name, Type Type, string ColumnName, string Table, string Alias, Expression Expression)>();
+            
             if (parameter.Type.Name == "IGrouping`2")
             {
                 parameter = parameter.PropertyOrField("Key");
             }
-            var type = parameter.Type;
 
-            if (type.HasTableAttribute())
+            var type = parameter.Type;
+            if (type.Namespace.StartsWith("System"))
+                return fields;
+
+            var tableAttribute = type.GetTableAttribute();
+            if (tableAttribute != null)
             {
-                var tableAttribute = type.GetTableAttribute();
-                foreach (var field in type.GetFields())
+                foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
                 {
                     var fieldAttribute = field.GetFieldAttribute();
                     if (fieldAttribute != null)
@@ -111,9 +115,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
             else
             {
-                foreach (var innerField in type.GetFields())
+                foreach (var innerField in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    var tableAttribute = innerField.FieldType.GetTableAttribute();
+                    tableAttribute = innerField.FieldType.GetTableAttribute();
                     if (tableAttribute != null)
                     {
                         foreach (var field in innerField.FieldType.GetFields())
@@ -130,25 +134,105 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return fields;
         }
 
-        static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetFields(this Expression parameter, string fieldName)
+        static public List<(string Name, Type Type, Expression Expression)> GetInnerFields(this Expression parameter)
         {
-            var allFields = parameter.GetAllFields();
-            return allFields.Where(x => 
-                    string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals(x.ColumnName, fieldName, StringComparison.InvariantCultureIgnoreCase))
-                .ToList();
+            List<(string Name, Type Type, Expression Expression)> fields = new List<(string Name, Type Type, Expression Expression)>();
+
+            var type = parameter.Type;
+            if (type.Namespace.StartsWith("System"))
+                return fields;
+
+            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                fields.Add((field.Name, field.FieldType,  parameter.PropertyOrField(field.Name)));
+            }
+            foreach (var property in type
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Except(type.GetDefaultMembers().OfType<PropertyInfo>()))
+            {
+                fields.Add((property.Name, property.PropertyType, parameter.PropertyOrField(property.Name)));
+            }
+
+            return fields;
         }
 
-        static public (string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression) GetField(this Expression parameter, string fieldName, string alias)
+
+        //static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetFields(this Expression parameter, string fieldName)
+        //{
+        //    var allFields = parameter.GetAllFields();
+        //    return allFields.Where(x => 
+        //            string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) ||
+        //            string.Equals(x.ColumnName, fieldName, StringComparison.InvariantCultureIgnoreCase))
+        //        .ToList();
+        //}
+
+        //static public (string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression) GetField(this Expression parameter, string fieldName, string alias)
+        //{
+        //    var allFields = parameter.GetAllFields();
+        //    return allFields.Where(x =>
+        //        (string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) ||
+        //         string.Equals(x.ColumnName, fieldName, StringComparison.InvariantCultureIgnoreCase)) 
+        //        &&
+        //        (string.Equals(x.TableAlias, alias, StringComparison.InvariantCultureIgnoreCase) ||
+        //         string.Equals(x.TableName, alias, StringComparison.InvariantCultureIgnoreCase)))
+        //        .FirstOrDefault();
+        //}
+
+        static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetFields(this Expression parameter, string[] path)
         {
-            var allFields = parameter.GetAllFields();
-            return allFields.Where(x =>
-                (string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) ||
-                 string.Equals(x.ColumnName, fieldName, StringComparison.InvariantCultureIgnoreCase)) 
-                &&
-                (string.Equals(x.TableAlias, alias, StringComparison.InvariantCultureIgnoreCase) ||
-                 string.Equals(x.TableName, alias, StringComparison.InvariantCultureIgnoreCase)))
-                .FirstOrDefault();
+            if (path.Length == 0)
+                return default;
+
+            if (path.Length == 1)
+            {
+                var allFields = parameter.GetAllFields();
+                return allFields.Where(x =>
+                     (string.Equals(x.Name, path[0], StringComparison.InvariantCultureIgnoreCase) ||
+                      string.Equals(x.ColumnName, path[0], StringComparison.InvariantCultureIgnoreCase))
+                    ||
+                     (string.Equals(x.TableAlias, path[0], StringComparison.InvariantCultureIgnoreCase) ||
+                      string.Equals(x.TableName, path[0], StringComparison.InvariantCultureIgnoreCase)))
+                    .ToList();
+            }
+            else
+            {
+                var allFields = parameter.GetAllFields();
+                var startingWithAlias =
+                    allFields.Where(x =>
+                        (string.Equals(x.TableAlias, path[0], StringComparison.InvariantCultureIgnoreCase) ||
+                        string.Equals(x.TableName, path[0], StringComparison.InvariantCultureIgnoreCase))
+                        &&
+                        (string.Equals(x.Name, path[1], StringComparison.InvariantCultureIgnoreCase) ||
+                        string.Equals(x.ColumnName, path[1], StringComparison.InvariantCultureIgnoreCase)))
+                    .SelectMany(x => path.Length > 2 ?
+                        x.Expression.GetInnerFields(path.Skip(2).ToArray()).Select(y => (y.Name, y.Type, x.ColumnName, x.TableName, x.TableAlias, y.Expression)).ToList() :
+                        new List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> { x })
+                .ToList();
+
+                var startingWithField = allFields.Where(x =>
+                        (string.Equals(x.Name, path[0], StringComparison.InvariantCultureIgnoreCase) ||
+                        string.Equals(x.ColumnName, path[0], StringComparison.InvariantCultureIgnoreCase)))
+                    .SelectMany(x => path.Length > 1 ?
+                        x.Expression.GetInnerFields(path.Skip(1).ToArray()).Select(y => (y.Name, y.Type, x.ColumnName, x.TableName, x.TableAlias, y.Expression)).ToList() :
+                        new List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> { x })
+                .ToList();
+
+                return startingWithAlias.Union(startingWithField).ToList();
+            }
+        }
+
+        static public List<(string Name, Type Type, Expression Expression)> GetInnerFields(this Expression parameter, string[] path)
+        {
+            if (path.Length == 0)
+                return default;
+
+            return parameter
+                .GetInnerFields()
+                .Where(x => string.Equals(x.Name, path[0], StringComparison.InvariantCultureIgnoreCase))
+                .SelectMany(x => path.Length > 1 ?
+                    x.Expression.GetInnerFields(path.Skip(1).ToArray()) :
+                    new List<(string Name, Type Type, Expression Expression)> { x })
+                .ToList();
         }
 
 

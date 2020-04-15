@@ -455,7 +455,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(AccessColumnNode node)
         {
             var fields = this.ScopedParamters
-                .Select(x => x.GetField(node.Name, node.Alias))
+                .SelectMany(x => x.GetFields(new[] { node.Alias, node.Name }))
                 .Where(x => x != default)
                 .GroupBy(x => x.Expression.Type)
                 .Select(x => x.FirstOrDefault())
@@ -464,7 +464,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (fields.Count == 0)
                 throw new TSQLException($"Column does not exist: {node.Alias} -> {node.Name}");
             if (fields.Count > 1)
-                throw new TSQLException($"Disambiguate field name: {node.Name}");
+                throw new TSQLException($"Disambiguate column name: {node.Alias} -> {node.Name}");
 
             this.Nodes.Push(fields.FirstOrDefault().Expression);
         }
@@ -490,13 +490,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(IdentifierNode node)
         {
             var fields = this.ScopedParamters
-                .SelectMany(x => x.GetFields(node.Name))
+                .SelectMany(x => x.GetFields(new[] { node.Name }))
                 .Where(x => x != default)
                 .GroupBy(x => x.Expression.Type)
                 .Select(x => x.FirstOrDefault())
                 .ToList();
             if (fields.Count == 0)
-                throw new TSQLException($"Field does not exist: {node.Name}");
+                throw new TSQLException($"Column does not exist: {node.Name}");
 
             var fieldsWithEmptyAlias = fields.Where(x => string.IsNullOrEmpty(x.TableAlias)).ToList();
             if (fieldsWithEmptyAlias.Count == 1)
@@ -513,7 +513,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 this.Nodes.Push(field.Expression);
                 return;
             }
-            throw new TSQLException($"Disambiguate field name: {node.Name}");
+
+            throw new TSQLException($"Disambiguate column name: {node.Name}");
         }
 
 
@@ -558,53 +559,100 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             if (node.Expression is FunctionNode)
             {
-                List<string> accessors = new List<string>();
+                List<string> path = new List<string>();
                 Node parentNode = node.Root;
                 while (parentNode is null == false)
                 {
                     if (parentNode is IdentifierNode)
-                        accessors.Add(((IdentifierNode)parentNode).Name);
+                        path.Add(((IdentifierNode)parentNode).Name);
                     if (parentNode is PropertyValueNode)
-                        accessors.Add(((PropertyValueNode)parentNode).Name);
+                        path.Add(((PropertyValueNode)parentNode).Name);
                     if (parentNode is DotNode)
                     {
                         var dot = (DotNode)parentNode;
                         if (dot.Expression is IdentifierNode)
-                            accessors.Add(((IdentifierNode)dot.Expression).Name);
+                            path.Add(((IdentifierNode)dot.Expression).Name);
                         if (parentNode is PropertyValueNode)
-                            accessors.Add(((PropertyValueNode)dot.Expression).Name);
+                            path.Add(((PropertyValueNode)dot.Expression).Name);
                     }
                     parentNode = (parentNode as DotNode)?.Root;
                 }
 
-                accessors.Reverse();
+                path.Reverse();
 
                 FunctionNode function = node.Expression as FunctionNode;
-                function.ChangePath(accessors.ToArray());
+                function.ChangePath(path.ToArray());
                 Visit(function);
                 return;
             }
 
-            if (node.Expression is IdentifierNode)
+            if (node.Expression is IdentifierNode identifierNode)
             {
-                IdentifierNode columNode = (IdentifierNode)node.Expression;
-                IdentifierNode aliasNode = (IdentifierNode)node.Root;
-                
+                List<string> path = new List<string>();
+                Node parentNode = node.Root;
+                while (parentNode is null == false)
+                {
+                    if (parentNode is IdentifierNode)
+                        path.Add(((IdentifierNode)parentNode).Name);
+                    if (parentNode is PropertyValueNode)
+                        path.Add(((PropertyValueNode)parentNode).Name);
+                    if (parentNode is DotNode)
+                    {
+                        var dot = (DotNode)parentNode;
+                        if (dot.Expression is IdentifierNode)
+                            path.Add(((IdentifierNode)dot.Expression).Name);
+                        if (parentNode is PropertyValueNode)
+                            path.Add(((PropertyValueNode)dot.Expression).Name);
+                    }
+                    parentNode = (parentNode as DotNode)?.Root;
+                }
+                path.Reverse();
+                path.Add(identifierNode.Name);
+
+
+
+                foreach (var p in this.ScopedParamters)
+                {
+                    var xxx = p.GetFields(path.ToArray())
+                    .Where(x => x != default)
+                    .GroupBy(x => x.Expression.Type)
+                    .Select(x => x.FirstOrDefault())
+                    .ToList();
+                    var yyy = 0;
+                }
+
                 var fields = this.ScopedParamters
-                    .Select(x => x.GetField(columNode.Name, aliasNode.Name))
+                    .SelectMany(x => x.GetFields(path.ToArray()))
                     .Where(x => x != default)
                     .GroupBy(x => x.Expression.Type)
                     .Select(x => x.FirstOrDefault())
                     .ToList();
 
+                //var fields = this.ScopedParamters
+                //    .Select(x => x.GetField(accessors))
+                //    .Where(x => x != default)
+                //    .GroupBy(x => x.Expression.Type)
+                //    .Select(x => x.FirstOrDefault())
+                //    .ToList();
+
+                //IdentifierNode columNode = (IdentifierNode)node.Expression;
+                //IdentifierNode aliasNode = (IdentifierNode)node.Root;
+
+                //var fields = this.ScopedParamters
+                //    .Select(x => x.GetField(columNode.Name, aliasNode.Name))
+                //    .Where(x => x != default)
+                //    .GroupBy(x => x.Expression.Type)
+                //    .Select(x => x.FirstOrDefault())
+                //    .ToList();
+
                 if (fields.Count == 0)
-                    throw new TSQLException($"Column does not exist: {aliasNode.Name} -> {columNode.Name}");
+                    throw new TSQLException($"Column does not exist: {string.Join(" -> ", path)}");
                 if (fields.Count > 1)
-                    throw new TSQLException($"Disambiguate field name: {node.Name}");
+                    throw new TSQLException($"Disambiguate column: {string.Join(" -> ", path)}");
 
                 var field = fields.FirstOrDefault();
-                columNode.ChangeReturnType(field.Type);
-                aliasNode.ChangeReturnType(field.Type);
+                identifierNode.ChangeReturnType(field.Type);
+                //aliasNode.ChangeReturnType(field.Type);
                 this.Nodes.Push(field.Expression);
                 return;
 
