@@ -315,6 +315,46 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        public void SimpleAccessArrayTest2()
+        {
+            var query = @"select Array[2] from #A.Entities()";
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {"#A", new[] {new BasicEntity("001"), new BasicEntity("002")}}
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual("Array[2]", table.Columns.ElementAt(0).ColumnName);
+            Assert.AreEqual(typeof(int), table.Columns.ElementAt(0).ColumnType);
+
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual(2, table[0].Values[0]);
+            Assert.AreEqual(2, table[1].Values[0]);
+        }
+
+        [TestMethod]
+        public void SimpleAccessArrayTest3()
+        {
+            var query = @"select e.Array[2] from #A.Entities() e";
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {"#A", new[] {new BasicEntity("001"), new BasicEntity("002")}}
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual("e.Array[2]", table.Columns.ElementAt(0).ColumnName);
+            Assert.AreEqual(typeof(int), table.Columns.ElementAt(0).ColumnType);
+
+            Assert.AreEqual(2, table.Count);
+            Assert.AreEqual(2, table[0].Values[0]);
+            Assert.AreEqual(2, table[1].Values[0]);
+        }
+
+        [TestMethod]
         public void SimpleAccessObjectTest()
         {
             var query = @"select Self.Array from #A.Entities()";

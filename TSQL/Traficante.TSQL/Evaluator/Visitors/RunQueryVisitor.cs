@@ -93,7 +93,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     columnsType.GetMethod("Add", new Type[] { descType }).Invoke(columns, new object[] { descObj });
                 }
 
-                Nodes.Push(Expression.Constant(columns));
+                Nodes.Push(Expression.Constant(columns).AsParallel());
                 return;
             }
             if (node.Type == DescForType.Schema)
@@ -520,10 +520,36 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(AccessObjectArrayNode node)
         {
-            var property = Nodes.Pop();
-            var array = Expression.PropertyOrField(property, node.ObjectName);
-            var index = Expression.Constant(node.Token.Index);
-            Nodes.Push(Expression.ArrayAccess(array, index));
+            var fields = this.ScopedParamters
+                .SelectMany(x => x.GetFields(new[] { node.Name }))
+                .Where(x => x != default)
+                .GroupBy(x => x.Expression.Type)
+                .Select(x => x.FirstOrDefault())
+                .ToList();
+            if (fields.Count == 0)
+                throw new TSQLException($"Column does not exist: {node.Name}");
+
+            var fieldsWithEmptyAlias = fields.Where(x => string.IsNullOrEmpty(x.TableAlias)).ToList();
+            if (fieldsWithEmptyAlias.Count == 1)
+            {
+                var field = fieldsWithEmptyAlias.FirstOrDefault();
+                field.Expression = Expression.ArrayAccess(field.Expression, Expression.Constant(node.Token.Index));
+                field.Type = field.Expression.Type;
+                node.ChangeReturnType(field.Type);
+                this.Nodes.Push(field.Expression);
+                return;
+            }
+            if (fields.Count == 1)
+            {
+                var field = fields.FirstOrDefault();
+                field.Expression = Expression.ArrayAccess(field.Expression, Expression.Constant(node.Token.Index));
+                field.Type = field.Expression.Type;
+                node.ChangeReturnType(field.Type);
+                this.Nodes.Push(field.Expression);
+                return;
+            }
+
+            throw new TSQLException($"Disambiguate column name: {node.Name}");
         }
 
         public void Visit(AccessObjectKeyNode node)
@@ -609,18 +635,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 path.Reverse();
                 path.Add(identifierNode.Name);
 
-
-
-                foreach (var p in this.ScopedParamters)
-                {
-                    var xxx = p.GetFields(path.ToArray())
-                    .Where(x => x != default)
-                    .GroupBy(x => x.Expression.Type)
-                    .Select(x => x.FirstOrDefault())
-                    .ToList();
-                    var yyy = 0;
-                }
-
                 var fields = this.ScopedParamters
                     .SelectMany(x => x.GetFields(path.ToArray()))
                     .Where(x => x != default)
@@ -628,34 +642,22 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     .Select(x => x.FirstOrDefault())
                     .ToList();
 
-                //var fields = this.ScopedParamters
-                //    .Select(x => x.GetField(accessors))
-                //    .Where(x => x != default)
-                //    .GroupBy(x => x.Expression.Type)
-                //    .Select(x => x.FirstOrDefault())
-                //    .ToList();
-
-                //IdentifierNode columNode = (IdentifierNode)node.Expression;
-                //IdentifierNode aliasNode = (IdentifierNode)node.Root;
-
-                //var fields = this.ScopedParamters
-                //    .Select(x => x.GetField(columNode.Name, aliasNode.Name))
-                //    .Where(x => x != default)
-                //    .GroupBy(x => x.Expression.Type)
-                //    .Select(x => x.FirstOrDefault())
-                //    .ToList();
-
                 if (fields.Count == 0)
                     throw new TSQLException($"Column does not exist: {string.Join(" -> ", path)}");
                 if (fields.Count > 1)
                     throw new TSQLException($"Disambiguate column: {string.Join(" -> ", path)}");
 
                 var field = fields.FirstOrDefault();
+
+                if (identifierNode is AccessObjectArrayNode accessObjectArray)
+                {
+                    field.Expression = Expression.ArrayAccess(field.Expression, Expression.Constant(accessObjectArray.Token.Index));
+                    field.Type = field.Expression.Type;
+                }
+
                 identifierNode.ChangeReturnType(field.Type);
-                //aliasNode.ChangeReturnType(field.Type);
                 this.Nodes.Push(field.Expression);
                 return;
-
             }
         }
 

@@ -319,13 +319,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public virtual void Visit(AccessObjectArrayNode node)
         {
             var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new AccessObjectArrayNode(node.Token, parentNodeType.GetProperty(node.Name)));
+            Nodes.Push(new AccessObjectArrayNode(node.Token));//, parentNodeType.GetProperty(node.Name)));
         }
 
         public virtual void Visit(AccessObjectKeyNode node)
         {
             var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new AccessObjectKeyNode(node.Token, parentNodeType.GetProperty(node.ObjectName)));
+            Nodes.Push(new AccessObjectKeyNode(node.Token));//, parentNodeType.GetProperty(node.ObjectName)));
         }
 
         public virtual void Visit(PropertyValueNode node)

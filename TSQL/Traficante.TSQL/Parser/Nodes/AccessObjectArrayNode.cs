@@ -13,20 +13,13 @@ namespace Traficante.TSQL.Parser.Nodes
             Id = $"{nameof(AccessObjectArrayNode)}{token.Value}";
         }
 
-        public AccessObjectArrayNode(NumericAccessToken token, PropertyInfo propertyInfo)
-            : this(token)
-        {
-            PropertyInfo = propertyInfo;
-        }
-
         public NumericAccessToken Token { get; }
 
         public string ObjectName => Token.Name;
 
-        public override Type ReturnType => PropertyInfo.PropertyType.GetElementType();
+        public override Type ReturnType => base.ReturnType;
 
         public override string Id { get; }
-        public PropertyInfo PropertyInfo { get; private set; }
 
         public override void Accept(IExpressionVisitor visitor)
         {
