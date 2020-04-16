@@ -82,19 +82,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         this._visitor.ScopedParamters.Push(item);
                     }
                 }
-                else
-                {
-                    if (item.Type.IsGrouping())
-                    {
-                        var fields = item.GetFields(new[] { node.ToString() });
-                        if (fields.Count == 1)
-                        {
-                            node.ChangeReturnType(fields.First().Type);
-                            Visit(new IdentifierNode(node.ToString()));
-                            return;
-                        }
-                    }
-                }
             }
 
             node.Arguments.Accept(this);
@@ -418,6 +405,24 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(FieldNode node)
         {
             _visitor.SetFieldNode(node);
+
+            if (this._visitor.CurrentQuery != null && this._visitor.CurrentQuery.HasFromClosure())
+            {
+                ParameterExpression item = _visitor.ScopedParamters.Peek();
+                if (item.Type.IsGrouping())
+                {
+                    var fields = item.GetFields(new[] { node.Expression.ToString() });
+                    if (fields.Count == 1)
+                    {
+                        node.ChangeReturnType(fields.First().Type);
+                        Visit(new IdentifierNode(node.Expression.ToString()));
+                        node.Accept(_visitor);
+                        _visitor.SetFieldNode(null);
+                        return;
+                    }
+                }
+            }
+
             node.Expression.Accept(this);
             node.Accept(_visitor);
             _visitor.SetFieldNode(null);

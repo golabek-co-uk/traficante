@@ -954,7 +954,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        [Ignore]
+        //[Ignore]
         public void DescSchemaTest()
         {
             var query = "desc #A";
@@ -980,7 +980,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        [Ignore]
+        //[Ignore]
         public void AggregateValuesTest()
         {
             var query = @"select AggregateValues(Name) from #A.entities() a group by Name";
@@ -1005,7 +1005,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        [Ignore]
+       // [Ignore]
         public void AggregateValuesParentTest()
         {
             var query = @"select AggregateValues(Name, 1) from #A.entities() a group by Name";

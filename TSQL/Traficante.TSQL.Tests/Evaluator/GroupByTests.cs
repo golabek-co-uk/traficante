@@ -879,7 +879,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        [Ignore("Group by complex object is not supported")]
+        //[Ignore("Group by complex object is not supported")]
         public void GroupByComplexObjectAccessTest()
         {
             var query = @"select Self.Month from #A.Entities() group by Self.Month";
@@ -903,7 +903,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        [Ignore("Group by complex object is not supported")]
+        //[Ignore("Group by complex object is not supported")]
         public void GroupByComplexObjectAccessWithSumTest()
         {
             var query = @"select Self.Month, Sum(Self.Money) from #A.Entities() group by Self.Month";

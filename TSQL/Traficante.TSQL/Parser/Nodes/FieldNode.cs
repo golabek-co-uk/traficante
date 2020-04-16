@@ -6,6 +6,7 @@ namespace Traficante.TSQL.Parser.Nodes
     public class FieldNode : Node
     {
         private readonly string _fieldName;
+        private Type _type;
 
         public FieldNode(Node expression, int fieldOrder, string fieldName)
         {
@@ -21,9 +22,14 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public string FieldName => string.IsNullOrEmpty(_fieldName) ? Expression.ToString() : _fieldName;
 
-        public override Type ReturnType => Expression.ReturnType;
+        public override Type ReturnType => _type ?? Expression.ReturnType;
 
         public override string Id { get; }
+
+        public void ChangeReturnType(Type type)
+        {
+            this._type = type;
+        }
 
         public override void Accept(IExpressionVisitor visitor)
         {
