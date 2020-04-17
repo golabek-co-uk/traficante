@@ -6,9 +6,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 
-namespace Traficante.TSQL.Evaluator.Visitors
+namespace Traficante.TSQL.Evaluator.Helpers
 {
-    static public class Helpers
+    static public class ExpressionHelpers
     {
 
         static public Type GetElementType(this Expression sequence)
@@ -235,7 +235,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .ToList();
         }
 
-
         static public Expression PropertyOrField(this Expression expression, string propertyOrField)
         {
             var tableAttribute = expression.Type.GetTableAttribute();
@@ -416,9 +415,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             return fromCall;
         }
-
-        
-
+    
         static public Expression GroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
         {
             var firstItem = ParameterExpression.Parameter(firstSequence.GetElementType(), "firstItem");
@@ -831,6 +828,66 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return call;
         }
 
+        static public Expression MapTo(this Expression item, Type type)
+        {
+            List<MemberBinding> resultBindings = new List<MemberBinding>();
+            int fieldIndex = 0;
+            foreach (var field in type.GetFields())
+            {
+                if (item.Type == typeof(object[]))
+                {
+                    MemberBinding assignment = Expression.Bind(
+                        type.GetField(field.Name),
+                        Expression.Convert(Expression.ArrayAccess(item, Expression.Constant(fieldIndex)), field.FieldType)
+                    );
+                    resultBindings.Add(assignment);
+                    fieldIndex++;
+                }
+                else
+                {
+                    FieldInfo resultItemField = type.GetField(field.Name);
+                    Expression resultItemValue = Expression
+                        .PropertyOrField(item, field.Name)
+                        .ConvertTo(resultItemField.FieldType);
+
+                    //"SelectProp = rowOfDataSource.GetValue(..fieldName..)"
+                    MemberBinding assignment = Expression.Bind(
+                        resultItemField,
+                        resultItemValue
+                    );
+                    resultBindings.Add(assignment);
+                }
+            }
+
+            //"new AnonymousType() { SelectProp = item.name, SelectProp2 = item.SelectProp2) }"
+            var result = Expression.MemberInit(
+                Expression.New(type.GetConstructor(Type.EmptyTypes)),
+                resultBindings);
+
+            return result;
+        }
+
+        static public Expression ConvertTo(this Expression expression, Type type)
+        {
+            if (expression.Type == type)
+                return expression;
+
+            if (type == typeof(string))
+            {
+                var toString = typeof(Object).GetMethod("ToString");
+                return Expression.Call(expression, toString);
+            }
+
+            return Expression.Convert(expression, type);
+        }
+
+        static public Expression ConverToNullable(this Expression expression)
+        {
+            if (expression.Type.IsValueType)
+                return Expression.Convert(expression, expression.Type.MakeNullableType());
+            return expression;
+        }
+        
     }
 
     public class FieldExpression : Expression

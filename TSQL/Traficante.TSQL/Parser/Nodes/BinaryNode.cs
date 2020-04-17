@@ -1,5 +1,7 @@
 ﻿using System;
+using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Parser.Helpers;
+using Traficante.TSQL.Evaluator.Helpers;
 
 namespace Traficante.TSQL.Parser.Nodes
 {
@@ -18,7 +20,7 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public override Type ReturnType => IsNullOrVoid(Left.ReturnType) || IsNullOrVoid(Right.ReturnType)
             ? typeof(void)
-            : NodeHelper.GetReturnTypeMap(Left.ReturnType, Right.ReturnType);
+            : TypeHelper.GetReturnType(Left.ReturnType, Right.ReturnType);
 
         protected static string CalculateId<T>(T node)
             where T : BinaryNode

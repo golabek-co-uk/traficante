@@ -11,7 +11,7 @@ namespace Traficante.TSQL.Lib
         private readonly Soundex _soundex = new Soundex();
 
         [BindableMethod]
-        public string Substr(string value, int index, int length)
+        public string Substr(string value, int? index, int? length)
         {
             if (string.IsNullOrEmpty(value))
                 return value;
@@ -25,11 +25,11 @@ namespace Traficante.TSQL.Lib
             if (valueLastIndex < computedLastIndex)
                 length = ((value.Length - 1) - index) + 1;
 
-            return value.Substring(index, length);
+            return value.Substring(index.Value, length.Value);
         }
 
         [BindableMethod]
-        public string Substr(string value, int length)
+        public string Substr(string value, int? length)
         {
             return Substr(value, 0, length);
         }
@@ -57,7 +57,7 @@ namespace Traficante.TSQL.Lib
         }
 
         [BindableMethod]
-        public bool Contains(string content, string what)
+        public bool? Contains(string content, string what)
         {
             if (string.IsNullOrEmpty(content) || string.IsNullOrEmpty(what))
                 return false;
@@ -66,7 +66,7 @@ namespace Traficante.TSQL.Lib
         }
 
         [BindableMethod]
-        public int IndexOf(string value, string text)
+        public int? IndexOf(string value, string text)
         {
             return value.IndexOf(text, StringComparison.OrdinalIgnoreCase);
         }

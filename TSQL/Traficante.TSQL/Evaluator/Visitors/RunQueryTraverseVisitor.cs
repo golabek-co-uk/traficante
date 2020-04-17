@@ -8,6 +8,7 @@ using Traficante.TSQL.Parser.Nodes;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
+using Traficante.TSQL.Evaluator.Helpers;
 
 namespace Traficante.TSQL.Evaluator.Visitors
 {

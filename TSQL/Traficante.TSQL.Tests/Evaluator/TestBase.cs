@@ -14,6 +14,7 @@ using Traficante.TSQL.Schema.Managers;
 using Environment = System.Environment;
 using Traficante.TSQL.Tests;
 using System.Collections;
+using Traficante.TSQL.Evaluator.Helpers;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
@@ -46,15 +47,15 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var engine = new TSQLEngine();
             //new TestLibrary()
             engine.AddFunction<int?, int?>("NullableMethod", null, x => x);
-            engine.AddFunction<int>("RandomNumber", () => _random.Next(0, 100));
-            engine.AddFunction<decimal>("GetOne", () => 1);
-            engine.AddFunction<decimal, string,string>("GetTwo", (a,b) => 2.ToString());
-            engine.AddFunction<decimal, decimal>("Inc", (number) => number + 1);
-            engine.AddFunction<long, long>("Inc", (number) => number + 1);
+            engine.AddFunction<int?>("RandomNumber", () => _random.Next(0, 100));
+            engine.AddFunction<decimal?>("GetOne", () => 1);
+            engine.AddFunction<decimal?, string, string>("GetTwo", (a,b) => 2.ToString());
+            engine.AddFunction<decimal?, decimal?>("Inc", (number) => number + 1);
+            engine.AddFunction<long?, long?>("Inc", (number) => number + 1);
             engine.AddFunction<BasicEntity, BasicEntity>("NothingToDo", (entity) => entity);
             engine.AddFunction<int?, int?>("NullableMethod", (value) => value);
             engine.AddFunction<object, string>("ToString", (obj) => obj.ToString());
-            engine.AddFunction<long, decimal, bool, bool, string, int>("PrimitiveArgumentsMethod", (a, b, tr, fl, text) =>
+            engine.AddFunction<long?, decimal?, bool?, bool?, string, int?>("PrimitiveArgumentsMethod", (a, b, tr, fl, text) =>
             {
                 Assert.AreEqual(1L, a);
                 Assert.AreEqual(2m, b);
@@ -85,7 +86,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var table = vm.Run();
 
             Assert.AreEqual(1, table.Count);
-            Assert.AreEqual(typeof(TResult), table.Columns.ElementAt(0).ColumnType);
+            Assert.AreEqual(typeof(TResult).MakeNullableType(), table.Columns.ElementAt(0).ColumnType);
 
             Assert.AreEqual(score, table[0][0]);
         }
@@ -106,30 +107,6 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Array.Sort((Array)values, new ObjectsArrayComparer());
             CollectionAssert.AreEqual(expected, values, new ObjectsArrayComparer());
 
-            //foreach (var row in result.Rows)
-            //{
-            //    foreach (var values in expected)
-            //    {
-            //        if (row.Values.Length != values.Length)
-            //        {
-            //            throw new Exception($"Row at index {result.Rows.IndexOf(row)} has array with {row.Values.Length} values. Expected {values.Length} values.");
-            //        }
-            //        bool equal = true;
-            //        for (int i = 0; i < values.Length; i++)
-            //        {
-            //            if (row.Values[i] == default && values[i] != default)
-            //                continue;
-
-            //            if (row.Values[i]?.ToString() == values[i]?.ToString())
-            //                continue;
-
-            //            equal = false;
-            //        }
-            //        if (equal)
-            //            return;
-            //    }
-            //}
-            //throw new Exception($"Table does not contain expected values.");
         }
     }
 
@@ -144,9 +121,20 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             for(var i = 0; i < arrayX.Length; i++)
             {
-                int r = ((IComparable)arrayX[i]).CompareTo(arrayY[i]);
-                if (r != 0)
-                    return r;
+                if (arrayX[i] == null && arrayY[i] == null)
+                    continue;
+                if (arrayX[i] != null)
+                {
+                    int r = ((IComparable)arrayX[i]).CompareTo(arrayY[i]);
+                    if (r != 0)
+                        return r;
+                }
+                else
+                {
+                    int r = ((IComparable)arrayY[i]).CompareTo(arrayX[i]);
+                    if (r != 0)
+                        return r;
+                }
             }
             return 0;
         }

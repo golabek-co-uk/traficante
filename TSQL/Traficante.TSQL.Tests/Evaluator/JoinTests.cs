@@ -136,7 +136,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
             Assert.AreEqual("population.Population", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
             AreEquivalent(
@@ -202,7 +202,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
             Assert.AreEqual("population.Population", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
             AreEquivalent(new[] {
@@ -266,7 +266,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
             Assert.AreEqual("population.Population", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
             AreEquivalent(new[] {
@@ -330,7 +330,7 @@ group by cities.Country";
             Assert.AreEqual(0, table.Columns.ElementAt(0).ColumnIndex);
 
             Assert.AreEqual("Sum(population.Population)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(1).ColumnType);
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
             AreEquivalent(new[] {
@@ -402,7 +402,7 @@ inner join #C.entities() population on cities.City = population.City";
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
             Assert.AreEqual("population.Population", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
             Assert.AreEqual(0, table.Count);
@@ -470,7 +470,7 @@ inner join #C.entities() population on cities.City = population.City";
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
             Assert.AreEqual("population.Population", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
             AreEquivalent(new[] {
@@ -548,7 +548,7 @@ inner join #C.entities() population on cities.City = population.City";
             Assert.AreEqual(1, table.Columns.ElementAt(1).ColumnIndex);
 
             Assert.AreEqual("population.Population", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual(2, table.Columns.ElementAt(2).ColumnIndex);
 
             Assert.AreEqual(10, table.Count);
@@ -739,7 +739,7 @@ select p.Country, Count(p.Country) from p inner join x on p.Country = x.Country 
         }
 
         [TestMethod]
-        public void SimpleLeftJoinTest()
+        public void SimpleLeftOuterJoinTest()
         {
             var query = @"
 select a.Id, b.Id from #A.entities() a 
@@ -750,15 +750,15 @@ left outer join #B.entities() b on a.Id = b.Id";
                 {
                     "#A", new[]
                     {
-                        new BasicEntity("Poland", "Krakow") {Id = 0},
-                        new BasicEntity("Germany", "Berlin") {Id = 1},
-                        new BasicEntity("Russia", "Moscow") {Id = 2}
+                        new BasicEntity("Poland", "Krakow") {Id = 1},
+                        new BasicEntity("Germany", "Berlin") {Id = 2},
+                        new BasicEntity("Russia", "Moscow") {Id = 3}
                     }
                 },
                 {
                     "#B", new[]
                     {
-                        new BasicEntity("Poland", "Krakow") {Id = 0}
+                        new BasicEntity("Poland", "Krakow") {Id = 1}
                     }
                 }
             };
@@ -768,6 +768,56 @@ left outer join #B.entities() b on a.Id = b.Id";
 
             Assert.AreEqual(2, table.Columns.Count());
             Assert.AreEqual(3, table.Count);
+
+            AreEquivalent(
+new[]
+{
+                new object[] { 1, 1 },
+                new object[] { 2, null },
+                new object[] { 3, null }
+},
+table);
+        }
+
+        [TestMethod]
+        public void SimpleLeftJoinTest()
+        {
+            var query = @"
+select a.Id, b.Id from #A.entities() a 
+left join #B.entities() b on a.Id = b.Id";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("Poland", "Krakow") {Id = 1},
+                        new BasicEntity("Germany", "Berlin") {Id = 2},
+                        new BasicEntity("Russia", "Moscow") {Id = 3}
+                    }
+                },
+                {
+                    "#B", new[]
+                    {
+                        new BasicEntity("Poland", "Krakow") {Id = 1}
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Columns.Count());
+            Assert.AreEqual(3, table.Count);
+
+            AreEquivalent(
+            new[]
+            {
+                new object[] { 1, 1 },
+                new object[] { 2, null },
+                new object[] { 3, null }
+            },
+            table);
         }
 
         [TestMethod]

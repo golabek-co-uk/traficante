@@ -235,7 +235,7 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KInnerJoin = @"(?<=[\s]{1,}|^)inner[\s]{1,}join(?=[\s]{1,}|$)";
 
             public static readonly string KOuterJoin =
-                @"(?<=[\s]{1,}|^)(left|right)[\s]{1,}(outer[\s]{1,}join)(?=[\s]{1,}|$)";
+                @"(?<=[\s]{1,}|^)(left|right)[\s]{1,}(outer[\s]{0,1})?(join[\s]{0,1})(?=[\s]{1,}|$)";
 
             public static readonly string KOn = Format(Keyword, OnToken.TokenText);
             public static readonly string KOrderBy = @"(?<=[\s]{1,}|^)order[\s]{1,}by(?=[\s]{1,}|$)";

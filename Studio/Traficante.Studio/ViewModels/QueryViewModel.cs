@@ -23,6 +23,7 @@ using Traficante.Connect;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Models;
 using Traficante.TSQL;
+using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.Studio.ViewModels
@@ -162,7 +163,7 @@ namespace Traficante.Studio.ViewModels
                            .Subscribe(this.ResultsDataColumns.Add);
 
 
-                    Type itemWrapperType = new ExpressionHelper().CreateWrapperTypeFor(itemsType); ;
+                    Type itemWrapperType = new TypeHelper().CreateWrapperTypeFor(itemsType); ;
                     FieldInfo itemWrapperInnerField = itemWrapperType.GetFields().FirstOrDefault(x => x.Name == "_inner"); ;
           
                     ReadOnlyObservableCollection<object> data;

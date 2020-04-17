@@ -4,16 +4,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Traficante.TSQL.Evaluator.Helpers;
 
-namespace Traficante.TSQL.Evaluator.Tests.Core
+namespace Traficante.TSQL.Tests.Evaluator.Helpers
 {
     [TestClass]
-    public class ExpressionHelperTests
+    public class TypeHelperTests
     {
         [TestMethod]
         public void Equals_SameFieldValue_ReturnsTrue()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] { ("Name", typeof(string)) });
 
             var object1 = t.GetConstructors()[0].Invoke(new object[0]);
@@ -28,7 +29,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Equals_DifferentFieldValue_ReturnsFalse()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] { ("Name", typeof(string)) });
 
             var object1 = t.GetConstructors()[0].Invoke(new object[0]);
@@ -43,7 +44,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void Equals_FieldValueIsNull_ReturnsFalse()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] { ("Name", typeof(string)) });
 
             var object1 = t.GetConstructors()[0].Invoke(new object[0]);
@@ -58,7 +59,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void GetHashCode_FieldValueIsNull_ReturnsHash()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] { ("Name", typeof(string)) });
 
             var object1 = t.GetConstructors()[0].Invoke(new object[0]);
@@ -70,7 +71,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void GetHashCode_FieldValueIsInt_ReturnsHash()
         {
-           ExpressionHelper sut = new ExpressionHelper();
+           TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] { ("Age", typeof(int)) });
 
             var object1 = t.GetConstructors()[0].Invoke(new object[0]);
@@ -85,7 +86,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void GetHashCode_FieldValueIsString_ReturnsHash()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] { ("Name", typeof(string)) });
 
             var object1 = t.GetConstructors()[0].Invoke(new object[0]);
@@ -100,7 +101,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void GetHashCode_CombplexObject_ReturnsHash()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] {
                 ("Id", typeof(int)),
                 ("Name", typeof(string)),
@@ -110,16 +111,16 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             });
 
             var object1 = t.GetConstructors()[0].Invoke(new object[0]);
-            t.GetField("Id").SetValue(object1, (int)123);
+            t.GetField("Id").SetValue(object1, (int?)123);
             t.GetField("Name").SetValue(object1, "daniel");
-            t.GetField("Age").SetValue(object1, (short)30);
+            t.GetField("Age").SetValue(object1, (short?)30);
             t.GetField("Address").SetValue(object1, "London");
             t.GetField("Created").SetValue(object1, new DateTime(2019,4,12));
 
             int expectedhash = 17;
-            expectedhash = expectedhash * 23 + 123.GetHashCode();
+            expectedhash = expectedhash * 23 + ((int?)123).GetHashCode();
             expectedhash = expectedhash * 23 + "daniel".GetHashCode();
-            expectedhash = expectedhash * 23 + ((short)30).GetHashCode();
+            expectedhash = expectedhash * 23 + ((short?)30).GetHashCode();
             expectedhash = expectedhash * 23 + "London".GetHashCode();
             expectedhash = expectedhash * 23 + new DateTime(2019, 4, 12).GetHashCode();
             
@@ -129,7 +130,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void TwoObjects_AreEqual()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] {
                 ("Substr(Name, 0, 2)", typeof(System.String))
             });
@@ -147,7 +148,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void EqualityCompare_ImplementsInterface()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] {
                 ("Id", typeof(int)),
                 ("Name", typeof(string))
@@ -162,7 +163,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void EqualityCompare_GetHashCode_SameObjectsReturnsSameHash()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] {
                 ("Id", typeof(int)),
                 ("Name", typeof(string))
@@ -188,7 +189,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void EqualityCompare_GetHashCode_DifferentObjectsReturnsDifferentHash()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] {
                 ("Id", typeof(int)),
                 ("Name", typeof(string))
@@ -214,7 +215,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void EqualityCompare_Equals_SameObjectsAreEquals()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] {
                 ("Id", typeof(int)),
                 ("Name", typeof(string))
@@ -239,7 +240,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void EqualityCompare_Equals_DifferentObjectsAreDifferen()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type t = sut.CreateAnonymousType(new[] {
                 ("Id", typeof(int)),
                 ("Name", typeof(string))
@@ -264,7 +265,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void CreateWrapperTypeFor()
         {
-            ExpressionHelper sut = new ExpressionHelper();
+            TypeHelper sut = new TypeHelper();
             Type type = sut.CreateAnonymousType(new[] {
                 ("Id", typeof(int)),
                 ("Name", typeof(string))

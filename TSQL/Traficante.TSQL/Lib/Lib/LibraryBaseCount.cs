@@ -6,9 +6,9 @@ namespace Traficante.TSQL.Lib
     public partial class Library
     {
         [AggregationGetMethod]
-        public int Count(object name)
+        public int? Count(object name)
         {
-            return default(int);
+            return default(int?);
         }
 
     }

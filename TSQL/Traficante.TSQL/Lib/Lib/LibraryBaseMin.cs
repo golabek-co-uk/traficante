@@ -8,9 +8,9 @@ namespace Traficante.TSQL.Lib
     public partial class Library
     {
         [AggregationGetMethod]
-        public decimal Min(decimal val)
+        public decimal? Min(decimal? val)
         {
-            return default(decimal);
+            return default(decimal?);
         }
     }
 }

@@ -44,7 +44,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void Select_Function_WithDatabaseAndSchema()
         {
             TSQLEngine sut = new TSQLEngine();
-            sut.AddFunction<bool>("fn_syspolicy_is_automation_enabled", new string[2] { "msdb", "dbo" }, () => true);
+            sut.AddFunction<bool?>("fn_syspolicy_is_automation_enabled", new string[2] { "msdb", "dbo" }, () => true);
 
             var result = sut.RunAndReturnTable("SELECT msdb.dbo.fn_syspolicy_is_automation_enabled()");
             Assert.IsNotNull(result);
@@ -128,7 +128,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         public void Select_From_FunctionArguments()
         {
             TSQLEngine sut = new TSQLEngine();
-            sut.AddFunction("get_entities", (int a, string b) =>
+            sut.AddFunction("get_entities", (int? a, string b) =>
             {
                 return new[]
                     {
@@ -149,7 +149,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         {
             using (TSQLEngine sut = new TSQLEngine())
             {
-                sut.AddFunction("get_entities", (int a, string b) =>
+                sut.AddFunction("get_entities", (int? a, string b) =>
                 {
 
                     var reader = new StreamReader("csv.csv");
@@ -445,12 +445,12 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var table = vm.Run();
 
             Assert.AreEqual(6, table.Count);
-            Assert.AreEqual(1, table[0].Values[0]);
-            Assert.AreEqual(2, table[1].Values[0]);
-            Assert.AreEqual(3, table[2].Values[0]);
-            Assert.AreEqual(4, table[3].Values[0]);
-            Assert.AreEqual(5, table[4].Values[0]);
-            Assert.AreEqual(6, table[5].Values[0]);
+            Assert.AreEqual((int?)1, table[0].Values[0]);
+            Assert.AreEqual((int?)2, table[1].Values[0]);
+            Assert.AreEqual((int?)3, table[2].Values[0]);
+            Assert.AreEqual((int?)4, table[3].Values[0]);
+            Assert.AreEqual((int?)5, table[4].Values[0]);
+            Assert.AreEqual((int?)6, table[5].Values[0]);
         }
 
         [TestMethod]

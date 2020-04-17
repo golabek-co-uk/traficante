@@ -21,7 +21,7 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public override object ObjValue { get; }
 
-        public override Type ReturnType => ObjValue.GetType();
+        public override Type ReturnType => typeof(int?);
 
         public override string Id { get; }
 

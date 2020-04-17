@@ -17,9 +17,9 @@ namespace Traficante.TSQL.Lib
         }
 
         [BindableMethod]
-        public int RowNumber()
+        public int? RowNumber()
         {
-            return default(int);
+            return default(int?);
         }
 
         [BindableMethod]

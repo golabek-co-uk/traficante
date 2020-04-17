@@ -25,7 +25,7 @@ namespace Traficante.TSQL.Lib
         }
 
         [BindableMethod]
-        public bool Match(string regex, string content)
+        public bool? Match(string regex, string content)
         {
             return Regex.IsMatch(content, regex);
         }

@@ -298,15 +298,7 @@ namespace Traficante.TSQL
 
         public void SetVariable<T>(string name, T value)
         {
-            var variable = Variables.FirstOrDefault(x => string.Equals(x.Name, name, StringComparison.CurrentCultureIgnoreCase));
-            if (variable != null)
-            {
-                variable.Value = value;
-            }
-            else
-            {
-                Variables.Add(new Variable(name, typeof(T), value));
-            }
+            SetVariable(name, typeof(T), value);
         }
 
         public void SetVariable(string name, Type type, object value)
@@ -318,7 +310,10 @@ namespace Traficante.TSQL
             }
             else
             {
-                Variables.Add(new Variable(name, type, value));
+                Variables.Add(new Variable(
+                    name, 
+                    type.IsValueType ? type.MakeNullableType() : type, 
+                    value));
             }
         }
 

@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Lib;
 using Traficante.TSQL.Lib.Attributes;
-using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Schema.Managers
 {

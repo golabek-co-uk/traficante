@@ -16,7 +16,7 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public override object ObjValue => Value;
 
-        public override Type ReturnType => typeof(bool);
+        public override Type ReturnType => typeof(bool?);
 
         public override string Id { get; }
 

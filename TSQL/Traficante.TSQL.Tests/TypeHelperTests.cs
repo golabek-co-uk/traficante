@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Traficante.TSQL.Schema.Helpers;
 
 namespace Traficante.TSQL.Tests
 {

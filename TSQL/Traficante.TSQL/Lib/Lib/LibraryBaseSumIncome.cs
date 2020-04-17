@@ -8,9 +8,9 @@ namespace Traficante.TSQL.Lib
     public partial class Library
     {
         [AggregationGetMethod]
-        public decimal SumIncome(decimal name)
+        public decimal? SumIncome(decimal? name)
         {
-            return default(decimal);
+            return default(decimal?);
         }
 
     }

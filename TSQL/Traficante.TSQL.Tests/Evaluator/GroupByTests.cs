@@ -117,7 +117,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("Name", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Count(Name)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("ABBA", table[0].Values[0]);
@@ -186,9 +186,9 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("Name", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Count(Name)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(1).ColumnType);
             Assert.AreEqual("RowNumber()", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(2).ColumnType);
 
             Assert.AreEqual(3, table.Count);
             Assert.AreEqual("ABBA", table[0].Values[0]);
@@ -231,7 +231,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("Name", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Count(Name)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(1, table.Count);
             Assert.AreEqual("CECCA", table[0].Values[0]);
@@ -266,7 +266,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("Name", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Count(Name)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("ABBA", table[0].Values[0]);
@@ -302,7 +302,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("Name", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Count(Name)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(1, table.Count);
             Assert.AreEqual("CECCA", table[0].Values[0]);
@@ -335,7 +335,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("Country", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Sum(Population)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(3, table.Count);
             Assert.AreEqual("ABBA", table[0].Values[0]);
@@ -374,9 +374,9 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("City", table.Columns.ElementAt(1).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(1).ColumnType);
             Assert.AreEqual("Count(Country)", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual("Count(City)", table.Columns.ElementAt(3).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(3).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(3).ColumnType);
 
             Assert.AreEqual(5, table.Count);
             Assert.AreEqual("POLAND", table[0].Values[0]);
@@ -461,7 +461,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("Substr(Name, 0, 2)", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Count(Substr(Name, 0, 2))", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(3, table.Count);
 
@@ -502,11 +502,11 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("Name", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Count(Name)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(1).ColumnType);
             Assert.AreEqual("Inc(10)", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual("1", table.Columns.ElementAt(3).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(3).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(3).ColumnType);
 
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("ABBA", table[0].Values[0]);
@@ -546,9 +546,9 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("City", table.Columns.ElementAt(1).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(1).ColumnType);
             Assert.AreEqual("Count", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(2).ColumnType);
             Assert.AreEqual("Sum", table.Columns.ElementAt(3).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(3).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(3).ColumnType);
 
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual("POLAND", table[0].Values[0]);
@@ -652,7 +652,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("City", table.Columns.ElementAt(1).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(1).ColumnType);
             Assert.AreEqual("CountOfCities", table.Columns.ElementAt(2).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(2).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(2).ColumnType);
 
             Assert.AreEqual(3, table.Count);
             Assert.AreEqual("POLAND", table[0].Values[0]);
@@ -692,7 +692,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             Assert.AreEqual(1, table.Columns.Count());
             Assert.AreEqual("Count(Country)", table.Columns.ElementAt(0).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(0).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(0).ColumnType);
 
             Assert.AreEqual(2, table.Count);
             Assert.AreEqual(3, table[0].Values[0]);
@@ -723,7 +723,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             Assert.AreEqual(1, table.Columns.Count());
             Assert.AreEqual("Count(Country)", table.Columns.ElementAt(0).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(0).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(0).ColumnType);
 
             Assert.AreEqual(1, table.Count);
             Assert.AreEqual(5, table[0].Values[0]);
@@ -753,9 +753,9 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             Assert.AreEqual(2, table.Columns.Count());
             Assert.AreEqual("Count(Country)", table.Columns.ElementAt(0).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(0).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Sum(Population)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(1, table.Count);
             Assert.AreEqual(5, table[0].Values[0]);
@@ -787,9 +787,9 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             Assert.AreEqual(2, table.Columns.Count());
             Assert.AreEqual("Count(Country)", table.Columns.ElementAt(0).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(0).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("RowNumber()", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(int), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(int?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(5, table.Count);
 
@@ -835,7 +835,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("City", table.Columns.ElementAt(0).ColumnName);
             Assert.AreEqual(typeof(string), table.Columns.ElementAt(0).ColumnType);
             Assert.AreEqual("Sum(Population)", table.Columns.ElementAt(1).ColumnName);
-            Assert.AreEqual(typeof(decimal), table.Columns.ElementAt(1).ColumnType);
+            Assert.AreEqual(typeof(decimal?), table.Columns.ElementAt(1).ColumnType);
 
             Assert.AreEqual(5, table.Count);
 
