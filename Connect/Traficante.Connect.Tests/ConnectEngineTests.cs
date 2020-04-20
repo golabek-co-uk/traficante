@@ -17,10 +17,10 @@ namespace Traficante.Connect.Tests
             var result = connectEngine.Run("SELECT id,email FROM csv.fromFile('employees.csv')").Cast<object>().ToList();
             var itemType = result[0].GetType();
             Assert.AreEqual(8, result.Count);
-            Assert.AreEqual("27", itemType.GetField("id").GetValue(result[0]));
-            Assert.AreEqual("andrew@chinookcorp.com", itemType.GetField("email").GetValue(result[0]));
-            Assert.AreEqual("175", itemType.GetField("id").GetValue(result[1]));
-            Assert.AreEqual("nancy@chinookcorp.com", itemType.GetField("email").GetValue(result[1]));
+            Assert.AreEqual("27", result[0].GetValue<string>("id"));
+            Assert.AreEqual("andrew@chinookcorp.com", result[0].GetValue<string>("email"));
+            Assert.AreEqual("175", result[1].GetValue<string>("id"));
+            Assert.AreEqual("nancy@chinookcorp.com", result[1].GetValue<string>("email"));
         }
 
         [TestMethod]
@@ -31,10 +31,10 @@ namespace Traficante.Connect.Tests
             var result = connectEngine.Run("SELECT EmployeeId, Email FROM chinook.employees").Cast<object>().ToList();
             var itemType = result[0].GetType();
             Assert.AreEqual(8, result.Count);
-            Assert.AreEqual((Int64)1, itemType.GetField("EmployeeId").GetValue(result[0]));
-            Assert.AreEqual("andrew@chinookcorp.com", itemType.GetField("Email").GetValue(result[0]));
-            Assert.AreEqual((Int64)2, itemType.GetField("EmployeeId").GetValue(result[1]));
-            Assert.AreEqual("nancy@chinookcorp.com", itemType.GetField("Email").GetValue(result[1]));
+            Assert.AreEqual(1, result[0].GetValue<int>("EmployeeId"));
+            Assert.AreEqual("andrew@chinookcorp.com", result[0].GetValue<string>("Email"));
+            Assert.AreEqual(2, result[1].GetValue<int>("EmployeeId"));
+            Assert.AreEqual("nancy@chinookcorp.com", result[1].GetValue<string>("Email"));
         }
 
         [TestMethod]
@@ -45,14 +45,24 @@ namespace Traficante.Connect.Tests
             connectEngine.AddConector(new SqliteConnectorConfig { Alias = "chinook", Database = "chinook.db" });
             var result = connectEngine.Run(@"
                 SELECT e2.EmployeeId, e1.last_name FROM csv.fromFile('employees.csv') e1
-                INNER JOIN chinook.employees e2 ON e2.Email = e1.email
+                INNER JOIN chinook.employees e2 ON e1.Email = e2.email
                 ").Cast<object>().ToList();
             var itemType = result[0].GetType();
             Assert.AreEqual(8, result.Count);
-            Assert.AreEqual((Int64)1, itemType.GetField("e2.EmployeeId").GetValue(result[0]));
-            Assert.AreEqual("Adams", itemType.GetField("e1.last_name").GetValue(result[0]));
-            Assert.AreEqual((Int64)2, itemType.GetField("e2.EmployeeId").GetValue(result[1]));
-            Assert.AreEqual("Edwards", itemType.GetField("e1.last_name").GetValue(result[1]));
+            Assert.AreEqual(1, result[0].GetValue<int>("e2.EmployeeId"));
+            Assert.AreEqual("Adams", result[0].GetValue<string>("e1.last_name"));
+            Assert.AreEqual(2, result[1].GetValue<int>("e2.EmployeeId"));
+            Assert.AreEqual("Edwards", result[1].GetValue<string>("e1.last_name"));
+        }
+    }
+
+    static public class ObjectExtensions
+    {
+        static public T GetValue<T>(this object obj, string fieldName)
+        {
+            return (T)Convert.ChangeType(
+                obj.GetType().GetField(fieldName).GetValue(obj),
+                typeof(T));
         }
     }
 }

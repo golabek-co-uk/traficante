@@ -71,6 +71,12 @@ namespace Traficante.TSQL.Evaluator.Helpers
             if (left == typeof(string) || right == typeof(string))
                 return typeof(string);
 
+            if (left == typeof(JsonElement?) || right == typeof(JsonElement?))
+                if (left == typeof(JsonElement?))
+                    return right;
+                else
+                    return left;
+
             if (left == typeof(object) || right == typeof(object))
                 return typeof(object);
 

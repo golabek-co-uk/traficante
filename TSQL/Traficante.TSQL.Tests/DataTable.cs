@@ -46,7 +46,7 @@ namespace Traficante.TSQL.Tests
                     object[] values = new object[columns2.Count];
                     for (int i = 0; i < columns2.Count; i++)
                     {
-                        values[i] = itemType.GetField(columns2[i].ColumnName).GetValue(row);
+                      values[i] = itemType.GetField(columns2[i].ColumnName).GetValue(row);
                     }
                     DataRow row2 = new DataRow(values);
                     Add(row2);

@@ -898,6 +898,8 @@ namespace Traficante.TSQL.Evaluator.Visitors
         {
             var function = node.Function;
             var method = _engine.ResolveMethod(function.Name, function.Path, function.ArgumentsTypes);
+            if (method == null)
+                throw new TSQLException($"Cannot resolve function \"{function.Name}\" under path \"{string.Join(".", function.Path.Select(p =>$"[{p}]"))}\"  with arguments \"{string.Join(", ", function.ArgumentsTypes.Select(x => x.Name))}\"");
 
             List<Expression> functionExpressionArgumetns = new List<Expression>();
             for (int i = 0; i < function.ArgsCount; i++)

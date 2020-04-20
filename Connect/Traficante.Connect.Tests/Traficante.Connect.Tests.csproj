@@ -20,6 +20,9 @@
     <None Update="chinook.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Connectors\data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="employees.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

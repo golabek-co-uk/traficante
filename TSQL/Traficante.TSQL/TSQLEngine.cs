@@ -31,9 +31,11 @@ namespace Traficante.TSQL
             SchemaManager.RegisterLibraries(new Library());
         }
 
+        private Runner runner;
         public IEnumerable Run(string script, CancellationToken ct = default)
         {
-            return new Runner().Run(script, this, ct) as IEnumerable;
+            runner = new Runner();
+            return runner.Run(script, this, ct) as IEnumerable;
         }
 
         public void AddTable<T>(string name, IEnumerable<T> items)

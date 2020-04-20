@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 
 namespace Traficante.TSQL.Evaluator.Helpers
@@ -226,6 +227,25 @@ namespace Traficante.TSQL.Evaluator.Helpers
             if (path.Length == 0)
                 return default;
 
+            if (parameter.Type == typeof(JsonElement?))
+            {
+                return 
+                    new List<(string Name, Type Type, Expression Expression)>() {
+                    (
+                        (
+                        path[0],
+                        typeof(JsonElement?),
+                        Expression.Call(typeof(JsonElementExtension),
+                            "GetPropertyOrDefault", new Type[] { }, 
+                            parameter, Expression.Constant(path[0]))
+                        )
+                    )}
+                    .SelectMany(x => path.Length > 1 ?
+                        x.Expression.GetInnerFields(path.Skip(1).ToArray()) :
+                        new List<(string Name, Type Type, Expression Expression)> { x })
+                    .ToList();
+            }
+
             return parameter
                 .GetInnerFields()
                 .Where(x => string.Equals(x.Name, path[0], StringComparison.InvariantCultureIgnoreCase))
@@ -235,6 +255,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 .ToList();
         }
 
+
         static public Expression PropertyOrField(this Expression expression, string propertyOrField)
         {
             var tableAttribute = expression.Type.GetTableAttribute();
@@ -242,7 +263,9 @@ namespace Traficante.TSQL.Evaluator.Helpers
             if (field != null)
             {
                 var e =  Expression.Condition(
-                    Expression.Equal(expression, Expression.Default(expression.Type)),
+                    expression.Type.IsNullable() ?
+                        (Expression)Expression.IsFalse(Expression.PropertyOrField(expression, "HasValue")) :
+                        (Expression)Expression.Equal(expression, Expression.Default(expression.Type)),
                     Expression.Default(field.FieldType),
                     Expression.PropertyOrField(expression, field.Name));
                 return new FieldExpression(e, propertyOrField, tableAttribute?.Name, tableAttribute?.Alias);
@@ -253,7 +276,9 @@ namespace Traficante.TSQL.Evaluator.Helpers
             if (property != null)
             {
                 var e =  Expression.Condition(
-                    Expression.Equal(expression, Expression.Default(expression.Type)),
+                    expression.Type.IsNullable() ? 
+                        (Expression)Expression.IsFalse(Expression.PropertyOrField(expression, "HasValue")) :
+                        (Expression)Expression.Equal(expression, Expression.Default(expression.Type)),
                     Expression.Default(property.PropertyType),
                     Expression.PropertyOrField(expression, property.Name));
                 return new FieldExpression(e, propertyOrField, tableAttribute?.Name, tableAttribute?.Alias);
@@ -872,13 +897,27 @@ namespace Traficante.TSQL.Evaluator.Helpers
             if (expression.Type == type)
                 return expression;
 
-            if (type == typeof(string))
+            if (expression.Type == typeof(JsonElement?))
             {
-                var toString = typeof(Object).GetMethod("ToString");
-                return Expression.Call(expression, toString);
+                var getValueMethodName = "GetValue" + type.GetUnderlyingNullable().Name;
+                var getValueMethod = typeof(JsonElementExtension).GetMethod(getValueMethodName);
+                if (getValueMethod != null)
+                    return Expression.Call(getValueMethod, expression);
             }
 
-            return Expression.Convert(expression, type);
+            if (type == typeof(string))
+                return Expression.Call(typeof(ObjectExtensions), "ToStringOrDefault", new Type[0], Expression.Convert(expression, typeof(object)));
+
+            try
+            {
+                return Expression.Convert(expression, type);
+            }
+            catch
+            {
+                return Expression.Call(typeof(ObjectExtensions), 
+                    "ConvertTo", new Type[] { type},
+                    Expression.Convert(expression, typeof(object)));
+            }
         }
 
         static public Expression ConverToNullable(this Expression expression)
@@ -887,7 +926,15 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 return Expression.Convert(expression, expression.Type.MakeNullableType());
             return expression;
         }
-        
+
+        static public Expression ToStringExpression(this Expression obj)
+        {
+            var toStringMethodInfo = obj.Type.GetMethod("ToString");
+            return Expression.Call(
+                 obj,
+                 toStringMethodInfo);
+        }
+
     }
 
     public class FieldExpression : Expression
@@ -916,5 +963,4 @@ namespace Traficante.TSQL.Evaluator.Helpers
             return _inner;
         }
     }
-
 }

@@ -26,6 +26,11 @@ namespace Traficante.Connect
                 Connectors.Add(new ElasticSearchConnector(elasticConfig));
         }
 
+        public void AddConector(Connector connector)
+        {
+            Connectors.Add(connector);
+        }
+
         public IEnumerable Run(string sql, CancellationToken ct = default)
         {
             using (TSQLEngine sqlEngine = new TSQLEngine())

@@ -4,6 +4,7 @@ using Traficante.Connect.Connectors;
 
 namespace Traficante.Connect.Tests.Connectors
 {
+    // MariaDB Sakila test database
     [TestClass]
     public class MySqlConnectorTests
     {
@@ -19,9 +20,9 @@ namespace Traficante.Connect.Tests.Connectors
         private MySqlConnectorConfig config = new MySqlConnectorConfig
         {
             Alias = "mysql",
-            UserId = "lmbwf4cy2b9sr25e",
-            Password = "bnhrfyde4mm465pb",
-            Server = "dz8959rne9lumkkw.chr7pe7iynqr.eu-west-1.rds.amazonaws.com:3306"
+            UserId = "root",
+            Password = "qwerty",
+            Server = "UATLDNVMES1"
             //Database = "maidc1q2wm11dbzj"
         };
 
@@ -31,7 +32,7 @@ namespace Traficante.Connect.Tests.Connectors
         public void TryConnect_Server()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            connector.TryConnect("maidc1q2wm11dbzj").Wait();
+            connector.TryConnect("sakila").Wait();
         }
 
         [TestMethod]
@@ -39,15 +40,15 @@ namespace Traficante.Connect.Tests.Connectors
         {
             MySqlConnector connector = new MySqlConnector(this.config);
             var databases = connector.GetDatabases().Result.ToList();
-            CollectionAssert.Contains(databases, "sys");
+            CollectionAssert.Contains(databases, "sakila");
         }
 
         [TestMethod]
         public void GetTables()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            var tables = connector.GetTables("sys").Result.ToList();
-            CollectionAssert.Contains(tables, "sys_config");
+            var tables = connector.GetTables("sakila").Result.ToList();
+            CollectionAssert.Contains(tables, "actor");
         }
 
 
@@ -55,8 +56,8 @@ namespace Traficante.Connect.Tests.Connectors
         public void GetViews()
         {
             MySqlConnector connector = new MySqlConnector(this.config);
-            var views = connector.GetViews("sys").Result.ToList();
-            CollectionAssert.Contains(views, "host_summary");
+            var views = connector.GetViews("sakila").Result.ToList();
+            CollectionAssert.Contains(views, "actor_info");
         }
 
     }
