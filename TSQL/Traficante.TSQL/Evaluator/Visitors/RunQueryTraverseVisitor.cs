@@ -132,6 +132,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(DeclareNode node)
         {
+            node.Value?.Accept(this);
             node.Accept(_visitor);
         }
 

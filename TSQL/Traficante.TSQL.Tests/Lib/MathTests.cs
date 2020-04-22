@@ -27,8 +27,8 @@ namespace Traficante.TSQL.Lib.Tests
         [TestMethod]
         public void AbsIntTest()
         {
-            Assert.AreEqual(112, Library.Abs(112));
-            Assert.AreEqual(112, Library.Abs(-112));
+            Assert.AreEqual(112, Library.Abs((int?)112));
+            Assert.AreEqual(112, Library.Abs((int?)-112));
             Assert.AreEqual(null, Library.Abs(null));
         }
 
@@ -37,7 +37,7 @@ namespace Traficante.TSQL.Lib.Tests
         {
             Assert.AreEqual(113m, Library.Ceil(112.5734m));
             Assert.AreEqual(-112m, Library.Ceil(-112.5734m));
-            Assert.AreEqual(null, Library.Ceil(null));
+            Assert.AreEqual(null, Library.Ceil((double?)null));
         }
 
         [TestMethod]
@@ -45,7 +45,7 @@ namespace Traficante.TSQL.Lib.Tests
         {
             Assert.AreEqual(112m, Library.Floor(112.5734m));
             Assert.AreEqual(-113m, Library.Floor(-112.5734m));
-            Assert.AreEqual(null, Library.Floor(null));
+            Assert.AreEqual(null, Library.Floor((decimal?)null));
         }
 
         [TestMethod]
@@ -60,9 +60,9 @@ namespace Traficante.TSQL.Lib.Tests
         [TestMethod]
         public void SignLongTest()
         {
-            Assert.AreEqual(1, Library.Sign(13));
-            Assert.AreEqual(0, Library.Sign(0));
-            Assert.AreEqual(-1, Library.Sign(-13));
+            Assert.AreEqual(1, Library.Sign((int?)13));
+            Assert.AreEqual(0, Library.Sign((int?)0));
+            Assert.AreEqual(-1, Library.Sign((int?)-13));
             Assert.AreEqual(null, Library.Sign(null));
         }
 
@@ -70,16 +70,16 @@ namespace Traficante.TSQL.Lib.Tests
         public void RoundTest()
         {
             Assert.AreEqual(2.1m, Library.Round(2.1351m, 1));
-            Assert.AreEqual(null, Library.Round(null, 1));
+            Assert.AreEqual(null, Library.Round((double?)null, 1));
         }
 
         [TestMethod]
         public void PercentOfTest()
         {
-            Assert.AreEqual(25m, Library.PercentOf(25, 100));
-            Assert.AreEqual(null, Library.PercentOf(null, 100));
-            Assert.AreEqual(null, Library.PercentOf(25, null));
-            Assert.AreEqual(null, Library.PercentOf(null, null));
+            Assert.AreEqual(25m, Library.PercentOf((decimal?)25, 100));
+            Assert.AreEqual(null, Library.PercentOf((decimal?)null, 100));
+            Assert.AreEqual(null, Library.PercentOf((double?)25, null));
+            Assert.AreEqual(null, Library.PercentOf((double?)null, null));
         }
     }
 }

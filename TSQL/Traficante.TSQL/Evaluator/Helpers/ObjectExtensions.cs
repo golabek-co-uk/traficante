@@ -10,7 +10,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             return obj?.ToString();
         }
 
-        static public T ConvertTo<T>(this object obj)
+        static public T ConvertOrDefault<T>(this object obj)
         {
             try
             {

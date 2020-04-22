@@ -44,6 +44,20 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
+        public void DeclareAndSet_Variable()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            var result = sut.RunAndReturnTable("DECLARE @d DATETIME = '12/01/2018'");
+            Assert.IsNull(result);
+            var variable = sut.GetVariable("@d");
+            Assert.AreEqual("@d", variable.Name);
+            Assert.AreEqual(typeof(DateTime?), variable.Type);
+            Assert.AreEqual(2018, ((DateTime)variable.Value).Year);
+            Assert.AreEqual(1, ((DateTime)variable.Value).Month);
+            Assert.AreEqual(12, ((DateTime)variable.Value).Day);
+        }
+
+        [TestMethod]
         public void Declare_SetString()
         {
             TSQLEngine sut = new TSQLEngine();

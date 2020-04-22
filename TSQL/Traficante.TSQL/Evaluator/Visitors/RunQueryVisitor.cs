@@ -605,12 +605,22 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(DeclareNode node)
         {
+            if (node.Value != null)
+            {
+                Expression valueExpression = Nodes.Pop();
+                valueExpression = valueExpression.ConvertTo(node.Type.ReturnType).ConvertTo(typeof(object));
+                var value = Expression.Lambda<Func<object>>(valueExpression).Compile()();
+                _engine.SetVariable(node.Variable.Name, node.Type.ReturnType, value);
+                return;
+            }
             _engine.SetVariable(node.Variable.Name, node.Type.ReturnType, null);
         }
 
         public void Visit(SetNode node)
         {
             Expression valueExpression = Nodes.Pop();
+            var variableType = _engine.GetVariable(node.Variable.Name).Type;
+            valueExpression = valueExpression.ConvertTo(variableType).ConvertTo(typeof(object));
             var value = Expression.Lambda<Func<object>>(valueExpression).Compile()();
             _engine.SetVariable(node.Variable.Name, value);
         }

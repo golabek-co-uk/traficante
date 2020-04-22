@@ -44,7 +44,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(DeclareNode node)
         {
             _engine.SetVariable(node.Variable.Name, node.Type.ReturnType, null);
-            Nodes.Push(new DeclareNode(node.Variable, node.Type));
+            Nodes.Push(new DeclareNode(node.Variable, node.Type, node.Value));
         }
 
         public void Visit(FromFunctionNode node)

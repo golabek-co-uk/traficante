@@ -24,7 +24,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 return null;
             } catch
             {
-                return jsonElement.ConvertTo<Int32?>();
+                return jsonElement.ConvertOrDefault<Int32?>();
             }
         }
 
@@ -41,7 +41,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<Int64?>();
+                return jsonElement.ConvertOrDefault<Int64?>();
             }
         }
 
@@ -57,7 +57,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<Byte?>();
+                return jsonElement.ConvertOrDefault<Byte?>();
             }
         }
 
@@ -74,7 +74,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<DateTime?>();
+                return jsonElement.ConvertOrDefault<DateTime?>();
             }
         }
 
@@ -91,7 +91,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<DateTimeOffset?>();
+                return jsonElement.ConvertOrDefault<DateTimeOffset?>();
             }
         }
 
@@ -107,7 +107,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<Decimal?>();
+                return jsonElement.ConvertOrDefault<Decimal?>();
             }
         }
 
@@ -124,7 +124,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<Double?>();
+                return jsonElement.ConvertOrDefault<Double?>();
             }
         }
 
@@ -141,7 +141,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<Int16?>();
+                return jsonElement.ConvertOrDefault<Int16?>();
             }
         }
 
@@ -158,7 +158,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<SByte?>();
+                return jsonElement.ConvertOrDefault<SByte?>();
             }
         }
 
@@ -175,7 +175,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<Single?>();
+                return jsonElement.ConvertOrDefault<Single?>();
             }
         }
 
@@ -192,7 +192,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<UInt16?>();
+                return jsonElement.ConvertOrDefault<UInt16?>();
             }
         }
 
@@ -209,7 +209,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<UInt32?>();
+                return jsonElement.ConvertOrDefault<UInt32?>();
             }
         }
 
@@ -225,7 +225,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<string>();
+                return jsonElement.ConvertOrDefault<string>();
             }
         }
 
@@ -242,7 +242,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return jsonElement.ConvertTo<UInt64?>();
+                return jsonElement.ConvertOrDefault<UInt64?>();
             }
 
         }

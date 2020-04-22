@@ -116,6 +116,13 @@ namespace Traficante.TSQL.Parser
             var variableNode = new VariableNode(variable.Value);
             var typeNode = ComposeType();
             
+            if (Current.TokenType == TokenType.Equality)
+            {
+                Consume(TokenType.Equality);
+                var valueNode = ComposeBaseTypes();
+                return new DeclareNode(variableNode, typeNode, valueNode);
+            }
+
             return new DeclareNode(variableNode, typeNode);
         }
 

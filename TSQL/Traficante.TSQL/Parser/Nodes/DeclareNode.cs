@@ -6,13 +6,15 @@ namespace Traficante.TSQL.Parser.Nodes
     public class DeclareNode : Node
     {
 
-        public DeclareNode(VariableNode variable, TypeNode type)
+        public DeclareNode(VariableNode variable, TypeNode type, Node value = null)
         {
             Variable = variable;
             Type = type;
+            Value = value;
         }
 
         public VariableNode Variable { get; }
+        public Node Value { get; }
         public TypeNode Type { get; }
 
         public override Type ReturnType => typeof(void);

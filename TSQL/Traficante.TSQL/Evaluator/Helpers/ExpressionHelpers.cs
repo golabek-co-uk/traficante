@@ -914,8 +914,8 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
             catch
             {
-                return Expression.Call(typeof(ObjectExtensions), 
-                    "ConvertTo", new Type[] { type},
+                return Expression.Call(typeof(ObjectExtensions),
+                    "ConvertOrDefault", new Type[] { type},
                     Expression.Convert(expression, typeof(object)));
             }
         }
@@ -925,14 +925,6 @@ namespace Traficante.TSQL.Evaluator.Helpers
             if (expression.Type.IsValueType)
                 return Expression.Convert(expression, expression.Type.MakeNullableType());
             return expression;
-        }
-
-        static public Expression ToStringExpression(this Expression obj)
-        {
-            var toStringMethodInfo = obj.Type.GetMethod("ToString");
-            return Expression.Call(
-                 obj,
-                 toStringMethodInfo);
         }
 
     }
