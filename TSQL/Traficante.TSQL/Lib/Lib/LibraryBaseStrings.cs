@@ -132,17 +132,17 @@ namespace Traficante.TSQL.Lib
         }
 
         [BindableMethod]
-        public char? NCHAR(byte? value)
+        public char? NCHAR(short? value)
         {
             if (!value.HasValue) return null;
-            return Encoding.Unicode.GetChars(new byte[1] { value.Value })[0];
+            return Encoding.Unicode.GetChars(BitConverter.GetBytes(value.Value))[0];
         }
 
         [BindableMethod]
-        public byte? UNICODE(string value)
+        public short? UNICODE(string value)
         {
             if (value == null || value.Length == 0) return null;
-            return Encoding.Unicode.GetBytes(new char[1] { value[0] })[0];
+            return BitConverter.ToInt16(Encoding.Unicode.GetBytes(new char[1] { value[0] }), 0);
         }
 
 

@@ -1130,12 +1130,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(JoinFromNode node)
         {
             if (node.JoinType == JoinType.Inner)
-                VisitInnerJoin(node);
+                VisitHashInnerJoin(node);
             if (node.JoinType == JoinType.OuterLeft)
-                VisitLeftJoin(node);
+                VisitHashLeftJoin(node);
         }
 
-        public void VisitLeftJoin(JoinFromNode node)
+        public void VisitHashLeftJoin(JoinFromNode node)
         {
             //new List<JoinFromNode>().AsParallel<JoinFromNode>()
             //    .GroupJoin(new List<CteExpressionNode>().AsParallel<CteExpressionNode>(), x => x.Id, x => x.Id, (x, y) => new { x = x, y = y })
@@ -1160,7 +1160,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             bool isFirstJoin = (node.Source is JoinFromNode) == false;
 
-            var groupJoin = firstSequence.GroupJoin(
+            var groupJoin = firstSequence.HashGroupJoin(
                 secondSequence,
                 firstSequenceKeyLambda,
                 secondSequenceKeyLambda,
@@ -1238,7 +1238,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(selectManyMethodsCall);
         }
 
-        public void VisitInnerJoin(JoinFromNode node)
+        public void VisitHashInnerJoin(JoinFromNode node)
         {
             var onNode = ((EqualityNode)node.Expression);
 
@@ -1266,10 +1266,178 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             bool isFirstJoin = (node.Source is JoinFromNode) == false;
 
-            var join = firstSequence.Join(
+            var join = firstSequence.HashJoin(
                 secondSequence,
                 firstSequenceKeyLambda,
                 secondSequenceKeyLambda,
+                (firstItem, secondItem) =>
+                {
+                    List<(string Alias, Type Type)> returnFields = new List<(string Alias, Type Type)>();
+                    List<(string Alias, Expression Value)> returnFieldsBindings = new List<(string Alias, Expression Value)>();
+
+
+                    if (isFirstJoin)
+                    {
+                        returnFields.Add((firstSequenceAlias, firstSequence.GetElementType()));
+                        returnFieldsBindings.Add((firstSequenceAlias, firstItem));
+                    }
+                    else
+                    {
+                        foreach (var field in firstSequence.GetElementType().GetFields())
+                        {
+                            returnFields.Add((field.Name, field.FieldType));
+                            returnFieldsBindings.Add((field.Name, Expression.PropertyOrField(firstItem, field.Name)));
+                        }
+                    }
+                    returnFields.Add((secondSequenceAlias, secondSequence.GetElementType()));
+                    returnFieldsBindings.Add((secondSequenceAlias, secondItem));
+
+                    var returnType = this.typeHelper.CreateAnonymousType(returnFields.ToArray());
+                    List<MemberBinding> resultBindings = new List<MemberBinding>();
+                    //"SelectProp = inputItem.Prop"
+                    foreach (var binding in returnFieldsBindings)
+                    {
+                        resultBindings.Add(Expression.Bind(returnType.GetField(binding.Alias), binding.Value));
+                    }
+                    var createResultInstance = Expression.MemberInit(
+                        Expression.New(returnType.GetConstructor(Type.EmptyTypes)),
+                        resultBindings);
+
+                    return createResultInstance;
+                }
+            );
+
+            Nodes.Push(join);
+        }
+
+        public void VisitLoopLeftJoin(JoinFromNode node)
+        {
+
+            var onNode = ((EqualityNode)node.Expression);
+
+
+            var onExpression = this.Nodes.Pop();
+
+            var secondSequence = this.Nodes.Pop();
+            var secondSequenceAlias = node.With.Alias;
+            var secondSequenceItem = this.ScopedParamters.Pop();
+
+            var firstSequence = this.Nodes.Pop();
+            var firstSequenceAlias = node.Source.Alias;
+            var firstSequenceItem = this.ScopedParamters.Pop();
+
+            var onLambda = Expression.Lambda(onExpression, firstSequenceItem, secondSequenceItem);
+
+            bool isFirstJoin = (node.Source is JoinFromNode) == false;
+
+            var groupJoin = firstSequence.LoopGroupJoin(
+                secondSequence,
+                onLambda,
+                //FirstSequenceItemType firstItem, IEnumerable<SecondSequenceItemType> secondItemsList
+                (firstItem, secondItemsList) =>
+                {
+                    var returnType = this.typeHelper.CreateAnonymousType(new (string Alias, Type Type)[]
+                    {
+                        (firstSequenceAlias, firstItem.Type),
+                        (secondSequenceAlias, secondItemsList.Type)
+                    });
+
+                    var newItem = Expression.MemberInit(
+                        Expression.New(returnType.GetConstructor(Type.EmptyTypes)),
+                        new List<MemberBinding>()
+                        {
+                            Expression.Bind(returnType.GetField(firstSequenceAlias), firstItem),
+                            Expression.Bind(returnType.GetField(secondSequenceAlias), secondItemsList.DefaultIfEmpty())
+                        });
+
+                    return newItem;
+                });
+
+
+
+            //<FirstSequenceItemType, IEnumerable<SecondSeqequenceItemType>> selectManyItemParameter
+            var selectManyMethodsCall = groupJoin.SelectMany((groupItem) =>
+            {
+                var firstItem = Expression.PropertyOrField(groupItem, firstSequenceAlias);
+                var selectMethodsCall = groupItem.PropertyOrField(secondSequenceAlias)
+                    .Select((secondItem) =>
+                    {
+                        //SecondSeqequenceItemType inTheGroup
+
+                        List<(string Alias, Type Type)> returnFields = new List<(string Alias, Type Type)>();
+                        List<(string Alias, Expression Value)> returnFieldsBindings = new List<(string Alias, Expression Value)>();
+
+
+                        if (isFirstJoin)
+                        {
+                            returnFields.Add((firstSequenceAlias, firstSequence.GetElementType()));
+                            returnFieldsBindings.Add((firstSequenceAlias, firstItem));
+                        }
+                        else
+                        {
+                            foreach (var field in firstSequence.GetElementType().GetFields())
+                            {
+                                returnFields.Add((field.Name, field.FieldType));
+                                returnFieldsBindings.Add((field.Name, Expression.PropertyOrField(firstItem, field.Name)));
+                            }
+                        }
+                        returnFields.Add((secondSequenceAlias, secondSequence.GetElementType()));
+                        returnFieldsBindings.Add((secondSequenceAlias, secondItem));
+
+                        var returnType = this.typeHelper.CreateAnonymousType(returnFields.ToArray());
+                        List<MemberBinding> resultBindings = new List<MemberBinding>();
+                        //"SelectProp = inputItem.Prop"
+                        foreach (var binding in returnFieldsBindings)
+                        {
+                            resultBindings.Add(Expression.Bind(returnType.GetField(binding.Alias), binding.Value));
+                        }
+                        var createResultInstance = Expression.MemberInit(
+                            Expression.New(returnType.GetConstructor(Type.EmptyTypes)),
+                            resultBindings);
+
+                        return createResultInstance;
+
+
+                    });
+
+                return selectMethodsCall;
+
+            });
+
+            Nodes.Push(selectManyMethodsCall);
+        }
+
+        public void VisitLoopInnerJoin(JoinFromNode node)
+        {
+            var onNode = ((EqualityNode)node.Expression);
+
+            var onExpression = this.Nodes.Pop();
+
+            var secondSequence = this.Nodes.Pop();
+            var secondSequenceItem = this.ScopedParamters.Pop();
+            var secondSequenceAlias = new string[] {
+                    node.With.Alias,
+                    secondSequenceItem.Type.GetTableAttribute()?.Alias,
+                    secondSequenceItem.Type.GetTableAttribute()?.Name }
+                .FirstOrDefault(s => !string.IsNullOrEmpty(s));
+            //var secondSequenceKeyLambda = Expression.Lambda(secondSequenceKeyExpression, secondSequenceItem);
+
+            var firstSequence = this.Nodes.Pop();
+            var firstSequenceItem = this.ScopedParamters.Pop();
+            var firstSequenceAlias
+                 = new string[] {
+                    node.Source.Alias,
+                    firstSequenceItem.Type.GetTableAttribute()?.Alias,
+                    firstSequenceItem.Type.GetTableAttribute()?.Name }
+                .FirstOrDefault(s => !string.IsNullOrEmpty(s));
+            
+            var onLambda = Expression.Lambda(onExpression, firstSequenceItem, secondSequenceItem);
+
+            bool isFirstJoin = (node.Source is JoinFromNode) == false;
+
+            var join = firstSequence.LoopJoin(
+                secondSequence,
+                onLambda,
                 (firstItem, secondItem) =>
                 {
                     List<(string Alias, Type Type)> returnFields = new List<(string Alias, Type Type)>();

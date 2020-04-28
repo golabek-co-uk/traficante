@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
 using Traficante.TSQL.Tests;
@@ -46,6 +47,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         [TestMethod]
         public void DeclareAndSet_Variable()
         {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
             TSQLEngine sut = new TSQLEngine();
             var result = sut.RunAndReturnTable("DECLARE @d DATETIME = '12/01/2018'");
             Assert.IsNull(result);
@@ -53,8 +56,8 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("@d", variable.Name);
             Assert.AreEqual(typeof(DateTime?), variable.Type);
             Assert.AreEqual(2018, ((DateTime)variable.Value).Year);
-            Assert.AreEqual(1, ((DateTime)variable.Value).Month);
-            Assert.AreEqual(12, ((DateTime)variable.Value).Day);
+            Assert.AreEqual(12, ((DateTime)variable.Value).Month);
+            Assert.AreEqual(1, ((DateTime)variable.Value).Day);
         }
 
         [TestMethod]

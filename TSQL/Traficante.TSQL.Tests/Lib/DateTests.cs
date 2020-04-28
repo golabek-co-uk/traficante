@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Traficante.TSQL.Lib.Tests
@@ -41,6 +43,7 @@ namespace Traficante.TSQL.Lib.Tests
         [TestMethod]
         public void YearTest()
         {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-GB");
             Assert.AreEqual(2012, Library.Year(DateTimeOffset.Parse("01/01/2012 00:00:00 +00:00")));
             Assert.AreEqual(null, Library.Year(null));
         }
@@ -55,6 +58,7 @@ namespace Traficante.TSQL.Lib.Tests
         [TestMethod]
         public void DayTest()
         {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-GB");
             Assert.AreEqual(1, Library.Day(DateTimeOffset.Parse("01/02/2012 00:00:00 +00:00")));
             Assert.AreEqual(null, Library.Day(null));
         }

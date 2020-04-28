@@ -398,7 +398,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             return selectManyMethodsCall;
         }
 
-        static public Expression Join(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
+        static public Expression HashJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
         {
             var firstItem = ParameterExpression.Parameter(firstSequence.GetElementType(), "firstItem");
             var secondItem = ParameterExpression.Parameter(secondSequence.GetElementType(), "secondItem");
@@ -411,10 +411,10 @@ namespace Traficante.TSQL.Evaluator.Helpers
                         secondItem,
             });
 
-            return firstSequence.Join(secondSequence, firstSequenceKeyLambda, secondSequenceKeyLambda, selectLambda);
+            return firstSequence.HashJoin(secondSequence, firstSequenceKeyLambda, secondSequenceKeyLambda, selectLambda);
         }
 
-        static public Expression Join(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, LambdaExpression resultLambda)
+        static public Expression HashJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, LambdaExpression resultLambda)
         {
             var method = typeof(ParallelEnumerable)
                 .GetMethods()
@@ -440,8 +440,36 @@ namespace Traficante.TSQL.Evaluator.Helpers
 
             return fromCall;
         }
-    
-        static public Expression GroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
+
+        static public Expression LoopJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression onLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
+        {
+            var firstItem = ParameterExpression.Parameter(firstSequence.GetElementType(), "firstItem");
+            var secondItem = ParameterExpression.Parameter(secondSequence.GetElementType(), "secondItem");
+
+            var func = selectFunc(firstItem, secondItem);
+
+            LambdaExpression selectLambda = Expression.Lambda(func, new ParameterExpression[]
+            {
+                        firstItem,
+                        secondItem,
+            });
+
+            return firstSequence.LoopJoin(secondSequence, onLambda, selectLambda);
+        }
+
+        static public Expression LoopJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression onLambda, LambdaExpression selectLambda)
+        {
+            return firstSequence.SelectMany(first =>
+            {
+                return 
+                    secondSequence
+                    .Where(second => onLambda.Invoke(first, second))
+                    .Select(second => selectLambda.Invoke(first, second));
+
+            });
+        }
+
+        static public Expression HashGroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
         {
             var firstItem = ParameterExpression.Parameter(firstSequence.GetElementType(), "firstItem");
             var secondItemsList = ParameterExpression.Parameter(typeof(IEnumerable<>).MakeGenericType(secondSequence.GetElementType()), "secondItemsList");
@@ -454,10 +482,10 @@ namespace Traficante.TSQL.Evaluator.Helpers
                         secondItemsList,
             });
 
-            return firstSequence.GroupJoin(secondSequence, firstSequenceKeyLambda, secondSequenceKeyLambda, selectLambda);
+            return firstSequence.HashGroupJoin(secondSequence, firstSequenceKeyLambda, secondSequenceKeyLambda, selectLambda);
         }
 
-        static public Expression GroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, LambdaExpression groupLambda)
+        static public Expression HashGroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression firstSequenceKeyLambda, LambdaExpression secondSequenceKeyLambda, LambdaExpression groupLambda)
         {
             var groupJoinMethod = typeof(ParallelEnumerable)
                 .GetMethods()
@@ -482,6 +510,33 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 groupLambda);
 
             return groupJoinMethodCall;
+        }
+
+        static public Expression LoopGroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression onLambda, Func<ParameterExpression, ParameterExpression, Expression> selectFunc)
+        {
+            var firstItem = ParameterExpression.Parameter(firstSequence.GetElementType(), "firstItem");
+            var secondItemsList = ParameterExpression.Parameter(typeof(IEnumerable<>).MakeGenericType(secondSequence.GetElementType()), "secondItemsList");
+
+            var func = selectFunc(firstItem, secondItemsList);
+
+            LambdaExpression selectLambda = Expression.Lambda(func, new ParameterExpression[]
+            {
+                        firstItem,
+                        secondItemsList,
+            });
+
+            return firstSequence.LoopGroupJoin(secondSequence, onLambda, selectLambda);
+        }
+
+        static public Expression LoopGroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression onLambda, LambdaExpression selectLambda)
+        {
+            return firstSequence.SelectMany(first =>
+            {
+                return selectLambda.Invoke(
+                    first,
+                    secondSequence.Where(second => onLambda.Invoke(first, second)));
+
+            });
         }
 
         static public Expression Union(this Expression firstSequence, Expression secondSequence, Expression comparer)
@@ -758,6 +813,13 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 lambdaExpression);
             return call;
         }
+
+        //static public Expression LoopJoin(this Expression sequence, Expression joinSequence, Expression predicate)
+        //{
+        //    sequence.SelectMany(
+        //            joinSequence.Where(predicate).
+        //        )
+        //}
 
         static public Expression AsParallel(this Expression sequence)
         {

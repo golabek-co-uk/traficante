@@ -442,7 +442,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             var vm = CreateAndRunVirtualMachine(query, sources);
             var table = vm.Run();
 
-            Assert.AreEqual((byte?)65, table[0][0]);
+            Assert.AreEqual((short?)65, table[0][0]);
         }
 
         [TestMethod]
