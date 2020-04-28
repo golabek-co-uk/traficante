@@ -6,4 +6,10 @@
         OuterLeft,
         OuterRight
     }
+
+    public enum JoinOperator
+    {
+        Loop,
+        Hash
+    }
 }

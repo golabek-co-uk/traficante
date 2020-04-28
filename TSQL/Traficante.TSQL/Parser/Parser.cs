@@ -353,22 +353,20 @@ namespace Traficante.TSQL.Parser
                     {
                         case TokenType.InnerJoin:
                             Consume(TokenType.InnerJoin);
-                            from = new JoinFromNode(from,
+                            from = new JoinNode(from,
                                 ComposeAndSkip(parser => parser.ComposeFrom(false), TokenType.On), ComposeOperations(),
                                 JoinType.Inner);
                             break;
                         case TokenType.OuterJoin:
                             var outerToken = (OuterJoinToken) Current;
                             Consume(TokenType.OuterJoin);
-                            from = new JoinFromNode(from,
+                            from = new JoinNode(from,
                                 ComposeAndSkip(parser => parser.ComposeFrom(false), TokenType.On), ComposeOperations(),
-                                outerToken.Type == OuterJoinNode.OuterJoinType.Left
+                                outerToken.Type == "left"
                                     ? JoinType.OuterLeft
                                     : JoinType.OuterRight);
                             break;
                     }
-
-                from = new JoinsNode((JoinFromNode) from);
             }
 
             return new ExpressionFromNode(from);

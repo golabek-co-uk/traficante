@@ -221,16 +221,16 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(JoinFromNode node)
+        public void Visit(JoinNode node)
         {
             SetQueryPart(QueryPart.From);
-            var joins = new Stack<JoinFromNode>();
+            var joins = new Stack<JoinNode>();
 
             var join = node;
             while (join != null)
             {
                 joins.Push(join);
-                join = join.Source as JoinFromNode;
+                join = join.Source as JoinNode;
             }
 
             bool isFirstJoin = true;
@@ -250,17 +250,24 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 join.With.Accept(this);
                 var withSequence = this._visitor.Nodes.Peek();
                 this._visitor.ScopedParamters.Push(Expression.Parameter(withSequence.GetElementType(), "item_" + withSequence.GetElementType().Name));
-                
-                if (join.Expression is EqualityNode equalityNode)
-                {
-                    //this._visitor.QueryState.QueryItem = Expression.Parameter(join.Source.ReturnType.GetElementType());
-                    equalityNode.Left.Accept(this);
 
-                    //this._visitor.QueryState.QueryItem = Expression.Parameter(join.With.ReturnType.GetElementType());
-                    equalityNode.Right.Accept(this);
+                if (join.JoinOperator == JoinOperator.Hash)
+                {
+                    if (join.Expression is EqualityNode equalityNode)
+                    {
+                        //this._visitor.QueryState.QueryItem = Expression.Parameter(join.Source.ReturnType.GetElementType());
+                        equalityNode.Left.Accept(this);
+
+                        //this._visitor.QueryState.QueryItem = Expression.Parameter(join.With.ReturnType.GetElementType());
+                        equalityNode.Right.Accept(this);
+                    }
+                    else
+                        throw new Exception("Only equal operation is supported inside ON clausures");
                 }
                 else
-                    throw new Exception("Only equal operation is supported inside ON clausures");
+                {
+                    join.Expression.Accept(this);
+                }
                 join.Accept(_visitor);
             }
         }
@@ -545,18 +552,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(JoinsNode node)
-        {
-            node.Joins.Accept(this);
-            node.Accept(_visitor);
-        }
-
-        public void Visit(JoinNode node)
-        {
-            node.From.Accept(this);
-            node.Expression.Accept(this);
-            node.Accept(_visitor);
-        }
 
         public void Visit(FromNode node)
         {

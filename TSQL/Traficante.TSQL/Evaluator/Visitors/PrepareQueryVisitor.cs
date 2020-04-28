@@ -68,12 +68,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(aliasedSchemaFromNode);
         }
 
-        public void Visit(JoinFromNode node)
+        public void Visit(JoinNode node)
         {
             var expression = Nodes.Pop();
             var joinedTable = (FromNode)Nodes.Pop();
             var source = (FromNode)Nodes.Pop();
-            var joinedFrom = new JoinFromNode(source, joinedTable, expression, node.JoinType);
+            var joinedFrom = new JoinNode(source, joinedTable, expression, node.JoinType);
             Nodes.Push(joinedFrom);
         }
 
@@ -617,22 +617,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void SetQueryPart(QueryPart part)
         {
             QueryPart = part;
-        }
-
-        public virtual void Visit(JoinsNode node)
-        {
-            Nodes.Push(new JoinsNode((JoinFromNode)Nodes.Pop()));
-        }
-
-        public virtual void Visit(JoinNode node)
-        {
-            var expression = Nodes.Pop();
-            var fromNode = (FromNode)Nodes.Pop();
-
-            if (node is OuterJoinNode outerJoin)
-                Nodes.Push(new OuterJoinNode(outerJoin.Type, fromNode, expression));
-            else
-                Nodes.Push(new InnerJoinNode(fromNode, expression));
         }
 
     }

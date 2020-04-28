@@ -63,12 +63,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new FromTableNode(node.Table, node.Alias));
         }
 
-        public void Visit(JoinFromNode node)
+        public void Visit(JoinNode node)
         {
             var expression = Nodes.Pop();
             var joinedTable = (FromNode)Nodes.Pop();
             var source = (FromNode)Nodes.Pop();
-            Nodes.Push(new JoinFromNode(source, joinedTable, expression, node.JoinType));
+            Nodes.Push(new JoinNode(source, joinedTable, expression, node.JoinType));
         }
 
         public void Visit(ExpressionFromNode node)
@@ -529,22 +529,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void SetQueryPart(QueryPart part)
         {
             CurrentQueryPart = part;
-        }
-
-        public virtual void Visit(JoinsNode node)
-        {
-            Nodes.Push(new JoinsNode((JoinFromNode)Nodes.Pop()));
-        }
-
-        public virtual void Visit(JoinNode node)
-        {
-            var expression = Nodes.Pop();
-            var fromNode = (FromNode)Nodes.Pop();
-
-            if (node is OuterJoinNode outerJoin)
-                Nodes.Push(new OuterJoinNode(outerJoin.Type, fromNode, expression));
-            else
-                Nodes.Push(new InnerJoinNode(fromNode, expression));
         }
 
     }

@@ -222,16 +222,16 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(JoinFromNode node)
+        public void Visit(JoinNode node)
         {
             SetQueryPart(QueryPart.From);
-            var joins = new Stack<JoinFromNode>();
+            var joins = new Stack<JoinNode>();
 
             var join = node;
             while (join != null)
             {
                 joins.Push(join);
-                join = join.Source as JoinFromNode;
+                join = join.Source as JoinNode;
             }
 
             join = joins.Pop();
@@ -503,19 +503,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Value.Accept(this);
             node.Accept(_visitor);
             RestoreScope();
-        }
-
-        public void Visit(JoinsNode node)
-        {
-            node.Joins.Accept(this);
-            node.Accept(_visitor);
-        }
-
-        public void Visit(JoinNode node)
-        {
-            node.From.Accept(this);
-            node.Expression.Accept(this);
-            node.Accept(_visitor);
         }
 
         private void LoadScope(string name)

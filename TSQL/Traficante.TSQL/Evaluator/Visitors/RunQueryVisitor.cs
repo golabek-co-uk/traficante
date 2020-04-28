@@ -1127,15 +1127,25 @@ namespace Traficante.TSQL.Evaluator.Visitors
             _cte[node.Name] = Nodes.Pop();
         }
 
-        public void Visit(JoinFromNode node)
+        public void Visit(JoinNode node)
         {
-            if (node.JoinType == JoinType.Inner)
-                VisitHashInnerJoin(node);
-            if (node.JoinType == JoinType.OuterLeft)
-                VisitHashLeftJoin(node);
+            if (node.JoinOperator == JoinOperator.Hash)
+            {
+                if (node.JoinType == JoinType.Inner)
+                    VisitHashInnerJoin(node);
+                if (node.JoinType == JoinType.OuterLeft)
+                    VisitHashLeftJoin(node);
+            }
+            else
+            {
+                if (node.JoinType == JoinType.Inner)
+                    VisitLoopInnerJoin(node);
+                if (node.JoinType == JoinType.OuterLeft)
+                    VisitLoopLeftJoin(node);
+            }
         }
 
-        public void VisitHashLeftJoin(JoinFromNode node)
+        public void VisitHashLeftJoin(JoinNode node)
         {
             //new List<JoinFromNode>().AsParallel<JoinFromNode>()
             //    .GroupJoin(new List<CteExpressionNode>().AsParallel<CteExpressionNode>(), x => x.Id, x => x.Id, (x, y) => new { x = x, y = y })
@@ -1158,7 +1168,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var firstSequenceItem = this.ScopedParamters.Pop();
             var firstSequenceKeyLambda = Expression.Lambda(firstSequenceKeyExpression, firstSequenceItem);
 
-            bool isFirstJoin = (node.Source is JoinFromNode) == false;
+            bool isFirstJoin = (node.Source is JoinNode) == false;
 
             var groupJoin = firstSequence.HashGroupJoin(
                 secondSequence,
@@ -1238,7 +1248,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(selectManyMethodsCall);
         }
 
-        public void VisitHashInnerJoin(JoinFromNode node)
+        public void VisitHashInnerJoin(JoinNode node)
         {
             var onNode = ((EqualityNode)node.Expression);
 
@@ -1264,7 +1274,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 .FirstOrDefault(s => !string.IsNullOrEmpty(s));
             var firstSequenceKeyLambda = Expression.Lambda(firstSequenceKeyExpression, firstSequenceItem);
 
-            bool isFirstJoin = (node.Source is JoinFromNode) == false;
+            bool isFirstJoin = (node.Source is JoinNode) == false;
 
             var join = firstSequence.HashJoin(
                 secondSequence,
@@ -1310,7 +1320,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(join);
         }
 
-        public void VisitLoopLeftJoin(JoinFromNode node)
+        public void VisitLoopLeftJoin(JoinNode node)
         {
 
             var onNode = ((EqualityNode)node.Expression);
@@ -1328,7 +1338,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             var onLambda = Expression.Lambda(onExpression, firstSequenceItem, secondSequenceItem);
 
-            bool isFirstJoin = (node.Source is JoinFromNode) == false;
+            bool isFirstJoin = (node.Source is JoinNode) == false;
 
             var groupJoin = firstSequence.LoopGroupJoin(
                 secondSequence,
@@ -1407,7 +1417,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(selectManyMethodsCall);
         }
 
-        public void VisitLoopInnerJoin(JoinFromNode node)
+        public void VisitLoopInnerJoin(JoinNode node)
         {
             var onNode = ((EqualityNode)node.Expression);
 
@@ -1433,7 +1443,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             
             var onLambda = Expression.Lambda(onExpression, firstSequenceItem, secondSequenceItem);
 
-            bool isFirstJoin = (node.Source is JoinFromNode) == false;
+            bool isFirstJoin = (node.Source is JoinNode) == false;
 
             var join = firstSequence.LoopJoin(
                 secondSequence,
@@ -1476,15 +1486,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             );
 
             Nodes.Push(join);
-        }
-
-        public void Visit(JoinsNode node)
-        {
-        }
-
-        public void Visit(JoinNode node)
-        {
-            throw new NotImplementedException();
         }
 
         public void Visit(OrderByNode node)

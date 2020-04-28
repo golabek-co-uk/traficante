@@ -474,8 +474,8 @@ namespace Traficante.TSQL.Parser.Lexing
                     return new InnerJoinToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.OuterJoin:
                     var type = match.Match.Groups[1].Value.ToLowerInvariant() == "left"
-                        ? OuterJoinNode.OuterJoinType.Left
-                        : OuterJoinNode.OuterJoinType.Right;
+                        ? "left"
+                        : "right";
 
                     return new OuterJoinToken(type, new TextSpan(Position, tokenText.Length));
                 //case TokenType.Function:

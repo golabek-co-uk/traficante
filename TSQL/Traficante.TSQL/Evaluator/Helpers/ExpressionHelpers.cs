@@ -530,12 +530,11 @@ namespace Traficante.TSQL.Evaluator.Helpers
 
         static public Expression LoopGroupJoin(this Expression firstSequence, Expression secondSequence, LambdaExpression onLambda, LambdaExpression selectLambda)
         {
-            return firstSequence.SelectMany(first =>
+            return firstSequence.Select(first =>
             {
                 return selectLambda.Invoke(
                     first,
                     secondSequence.Where(second => onLambda.Invoke(first, second)));
-
             });
         }
 
