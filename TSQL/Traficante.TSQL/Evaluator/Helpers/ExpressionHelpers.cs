@@ -55,43 +55,9 @@ namespace Traficante.TSQL.Evaluator.Helpers
             return type.GetGenericArguments()[1];
         }
 
-        //static public Expression AccessAlias(this Expression parameter, string alias)
-        //{
-        //    if (parameter.Type.Name == "IGrouping`2")
-        //    {
-        //        parameter = parameter.PropertyOrField("Key");
-        //    }
-
-        //    var type = parameter.Type;
-        //    var tableAttribute = type.GetTableAttribute();
-        //    if (tableAttribute != null)
-        //    {
-        //        if (string.Equals(tableAttribute.Alias, alias, StringComparison.InvariantCultureIgnoreCase) ||
-        //            string.Equals(tableAttribute.Name, alias, StringComparison.InvariantCultureIgnoreCase))
-        //        {
-        //            return parameter;
-        //        }
-        //    }
-
-        //    foreach (var field in type.GetFields())
-        //    {
-        //        tableAttribute = field.FieldType.GetTableAttribute();
-        //        if (tableAttribute != null)
-        //        {
-        //            if (string.Equals(tableAttribute.Alias, alias, StringComparison.InvariantCultureIgnoreCase) ||
-        //                string.Equals(tableAttribute.Name, alias, StringComparison.InvariantCultureIgnoreCase))
-        //            {
-        //                return parameter.PropertyOrField(field.Name);
-        //            }
-        //        }
-        //    }
-
-        //    throw new Exception($"Cannot find alias: {alias}");
-        //}
-
-        static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetAllFields(this Expression parameter)
+        static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression, Expression Parameter)> GetAllFields(this Expression parameter)
         {
-            List<(string Name, Type Type, string ColumnName, string Table, string Alias, Expression Expression)> fields = new List<(string Name, Type Type, string ColumnName, string Table, string Alias, Expression Expression)>();
+            List<(string Name, Type Type, string ColumnName, string Table, string Alias, Expression Expression, Expression Parameter)> fields = new List<(string Name, Type Type, string ColumnName, string Table, string Alias, Expression Expression, Expression Parameter)>();
             
             if (parameter.Type.Name == "IGrouping`2")
             {
@@ -109,9 +75,9 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 {
                     var fieldAttribute = field.GetFieldAttribute();
                     if (fieldAttribute != null)
-                        fields.Add((field.Name, field.FieldType, fieldAttribute.ColumnName, fieldAttribute.TableName, fieldAttribute.TableAlias, parameter.PropertyOrField(field.Name)));
+                        fields.Add((field.Name, field.FieldType, fieldAttribute.ColumnName, fieldAttribute.TableName, fieldAttribute.TableAlias, parameter.PropertyOrField(field.Name), parameter));
                     else
-                        fields.Add((field.Name, field.FieldType, field.Name, tableAttribute.Name, tableAttribute.Alias, parameter.PropertyOrField(field.Name)));
+                        fields.Add((field.Name, field.FieldType, field.Name, tableAttribute.Name, tableAttribute.Alias, parameter.PropertyOrField(field.Name), parameter));
                 }
             }
             else
@@ -125,9 +91,9 @@ namespace Traficante.TSQL.Evaluator.Helpers
                         {
                             var fieldAttribute = field.GetFieldAttribute();
                             if (fieldAttribute != null)
-                                fields.Add((field.Name, field.FieldType, fieldAttribute.ColumnName, fieldAttribute.TableName, fieldAttribute.TableAlias, parameter.PropertyOrField(innerField.Name).PropertyOrField(field.Name)));
+                                fields.Add((field.Name, field.FieldType, fieldAttribute.ColumnName, fieldAttribute.TableName, fieldAttribute.TableAlias, parameter.PropertyOrField(innerField.Name).PropertyOrField(field.Name), parameter));
                             else
-                                fields.Add((field.Name, field.FieldType, field.Name, tableAttribute.Name, tableAttribute.Alias, parameter.PropertyOrField(innerField.Name).PropertyOrField(field.Name)));
+                                fields.Add((field.Name, field.FieldType, field.Name, tableAttribute.Name, tableAttribute.Alias, parameter.PropertyOrField(innerField.Name).PropertyOrField(field.Name), parameter));
                         }
                     }
                 }
@@ -135,30 +101,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             return fields;
         }
 
-        static public List<(string Name, Type Type, Expression Expression)> GetInnerFields(this Expression parameter)
-        {
-            List<(string Name, Type Type, Expression Expression)> fields = new List<(string Name, Type Type, Expression Expression)>();
-
-            var type = parameter.Type;
-            if (type.Namespace.StartsWith("System"))
-                return fields;
-
-            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
-            {
-                fields.Add((field.Name, field.FieldType,  parameter.PropertyOrField(field.Name)));
-            }
-            foreach (var property in type
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Except(type.GetDefaultMembers().OfType<PropertyInfo>()))
-            {
-                fields.Add((property.Name, property.PropertyType, parameter.PropertyOrField(property.Name)));
-            }
-
-            return fields;
-        }
-
-
-        static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetFields(this Expression parameter, string[] path)
+        static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression, Expression Parameter)> GetFields(this Expression parameter, string[] path)
         {
             if (path.Length == 0)
                 return default;
@@ -185,20 +128,42 @@ namespace Traficante.TSQL.Evaluator.Helpers
                         (string.Equals(x.Name, path[1], StringComparison.InvariantCultureIgnoreCase) ||
                         string.Equals(x.ColumnName, path[1], StringComparison.InvariantCultureIgnoreCase)))
                     .SelectMany(x => path.Length > 2 ?
-                        x.Expression.GetInnerFields(path.Skip(2).ToArray()).Select(y => (y.Name, y.Type, x.ColumnName, x.TableName, x.TableAlias, y.Expression)).ToList() :
-                        new List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> { x })
+                        x.Expression.GetInnerFields(path.Skip(2).ToArray()).Select(y => (y.Name, y.Type, x.ColumnName, x.TableName, x.TableAlias, y.Expression, parameter)).ToList() :
+                        new List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression, Expression Parameter)> { x })
                 .ToList();
 
                 var startingWithField = allFields.Where(x =>
                         (string.Equals(x.Name, path[0], StringComparison.InvariantCultureIgnoreCase) ||
                         string.Equals(x.ColumnName, path[0], StringComparison.InvariantCultureIgnoreCase)))
                     .SelectMany(x => path.Length > 1 ?
-                        x.Expression.GetInnerFields(path.Skip(1).ToArray()).Select(y => (y.Name, y.Type, x.ColumnName, x.TableName, x.TableAlias, y.Expression)).ToList() :
-                        new List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> { x })
+                        x.Expression.GetInnerFields(path.Skip(1).ToArray()).Select(y => (y.Name, y.Type, x.ColumnName, x.TableName, x.TableAlias, y.Expression, parameter)).ToList() :
+                        new List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression, Expression Parameter)> { x })
                 .ToList();
 
                 return startingWithAlias.Union(startingWithField).ToList();
             }
+        }
+
+        static public List<(string Name, Type Type, Expression Expression)> GetInnerFields(this Expression parameter)
+        {
+            List<(string Name, Type Type, Expression Expression)> fields = new List<(string Name, Type Type, Expression Expression)>();
+
+            var type = parameter.Type;
+            if (type.Namespace.StartsWith("System"))
+                return fields;
+
+            foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                fields.Add((field.Name, field.FieldType, parameter.PropertyOrField(field.Name)));
+            }
+            foreach (var property in type
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Except(type.GetDefaultMembers().OfType<PropertyInfo>()))
+            {
+                fields.Add((property.Name, property.PropertyType, parameter.PropertyOrField(property.Name)));
+            }
+
+            return fields;
         }
 
         static public List<(string Name, Type Type, Expression Expression)> GetInnerFields(this Expression parameter, string[] path)

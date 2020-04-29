@@ -20,27 +20,23 @@ namespace Traficante.TSQL.Evaluator.Visitors
 {
     public class RunQueryVisitor : IExpressionVisitor
     {
-        TypeHelper typeHelper = new TypeHelper();
-
-        Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
-
-        public Stack<Expression> Nodes { get; set; }
-        public Stack<ParameterExpression> ScopedParamters { get; set; } = new Stack<ParameterExpression>();
+        private TypeHelper _typeHelper = new TypeHelper();
+        private Dictionary<string, Expression> _cte = new Dictionary<string, Expression>();
         
-        public Query CurrentQuery { get; set; }
-        public QueryPart QueryPart { get; set; }
-
         private TSQLEngine _engine;
         private readonly CancellationToken _cancellationToken;
+
+        public Stack<Expression> Nodes { get; set; } = new Stack<Expression>();
+        public Stack<ParameterExpression> ScopedParamters { get; set; } = new Stack<ParameterExpression>();
+        public Query CurrentQuery { get; set; }
+        public QueryPart CurrentQueryPart { get; set; }
+        public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression, Expression Parameter)> AccessedFields { get; set; } = new List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression, Expression Parameter)>();
 
 
         public object Result = null;
 
-
-
         public RunQueryVisitor(TSQLEngine engine, CancellationToken cancellationToken)
         {
-            Nodes = new Stack<Expression>();
             this._engine = engine;
             this._cancellationToken = cancellationToken;
         }
@@ -52,7 +48,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void SetQueryPart(QueryPart queryPart)
         {
-            QueryPart = queryPart;
+            CurrentQueryPart = queryPart;
         }
 
 
@@ -229,19 +225,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var rightIsNotNull = Expression.NotEqual(right, Expression.Default(right.Type));
             var bothAreNotNull = Expression.And(leftIsNotNull, rightIsNotNull);
             return Expression.And(bothAreNotNull, operation(left, right));
-
-            //if (left.Type.IsValueType && right.Type.IsValueType && left.Type.Name != "Nullable`1")
-            //{
-
-            //    return operation(left, right);
-            //}
-            //else
-            //{
-            //    var leftIsNotNull = Expression.NotEqual(left, Expression.Default(left.Type));
-            //    var rightIsNotNull = Expression.NotEqual(right, Expression.Default(right.Type));
-            //    var bothAreNotNull = Expression.And(leftIsNotNull, rightIsNotNull);
-            //    return Expression.And(bothAreNotNull, operation(left, right));
-            //}
         }
 
         public void Visit(NotNode node)
@@ -295,7 +278,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FieldNode node)
         {
-            if ((node.Expression is AllColumnsNode) == false && QueryPart == QueryPart.Select)
+            if ((node.Expression is AllColumnsNode) == false && CurrentQueryPart == QueryPart.Select)
             {
                 CurrentQuery.SelectedFieldsNodes.Add(node);
                 var value = Nodes.Pop();
@@ -486,7 +469,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
-        public void Visit(AccessColumnNode node)
+        public void Visit(AccessFieldNode node)
         {
             var fields = this.ScopedParamters
                 .SelectMany(x => x.GetFields(new[] { node.Alias, node.Name }))
@@ -500,6 +483,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (fields.Count > 1)
                 throw new TSQLException($"Disambiguate column name: {node.Alias} -> {node.Name}");
 
+            this.AccessedFields.Add(fields.FirstOrDefault());
             this.Nodes.Push(fields.FirstOrDefault().Expression);
         }
 
@@ -516,7 +500,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     IdentifierNode identifierNode = new IdentifierNode(field.Name, field.Type);
                     FieldNode fieldNode = new FieldNode(identifierNode, fieldOrder, field.Name);
                     CurrentQuery.SelectedFieldsNodes.Add(fieldNode);
-                    Visit(new AccessColumnNode(field.Name, field.TableAlias, field.Type, TextSpan.Empty));
+                    Visit(new AccessFieldNode(field.Name, field.TableAlias, field.Type, TextSpan.Empty));
                 }
             }
         }
@@ -537,6 +521,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var field = fieldsWithEmptyAlias.FirstOrDefault();
                 node.ChangeReturnType(field.Type);
+                this.AccessedFields.Add(field);
                 this.Nodes.Push(field.Expression);
                 return;
             }
@@ -544,6 +529,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             {
                 var field = fields.FirstOrDefault();
                 node.ChangeReturnType(field.Type);
+                this.AccessedFields.Add(field);
                 this.Nodes.Push(field.Expression);
                 return;
             }
@@ -552,7 +538,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         }
 
 
-        public void Visit(AccessObjectArrayNode node)
+        public void Visit(AccessArrayFieldNode node)
         {
             var fields = this.ScopedParamters
                 .SelectMany(x => x.GetFields(new[] { node.Name }))
@@ -570,6 +556,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 field.Expression = Expression.ArrayAccess(field.Expression, Expression.Constant(node.Token.Index)).ConverToNullable();
                 field.Type = field.Expression.Type;
                 node.ChangeReturnType(field.Type);
+                this.AccessedFields.Add(field);
                 this.Nodes.Push(field.Expression);
                 return;
             }
@@ -579,6 +566,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 field.Expression = Expression.ArrayAccess(field.Expression, Expression.Constant(node.Token.Index)).ConverToNullable();
                 field.Type = field.Expression.Type;
                 node.ChangeReturnType(field.Type);
+                this.AccessedFields.Add(field);
                 this.Nodes.Push(field.Expression);
                 return;
             }
@@ -692,8 +680,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     throw new TSQLException($"Disambiguate column: {string.Join(" -> ", path)}");
 
                 var field = fields.FirstOrDefault();
+                this.AccessedFields.Add(field);
 
-                if (identifierNode is AccessObjectArrayNode accessObjectArray)
+                if (identifierNode is AccessArrayFieldNode accessObjectArray)
                 {
                     field.Expression = Expression.ArrayAccess(field.Expression, Expression.Constant(accessObjectArray.Token.Index)).ConverToNullable();
                     field.Type = field.Expression.Type;
@@ -720,7 +709,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 fieldNodes[selectedFieldsNodes.Count - 1 - i] = Nodes.Pop();
 
 
-            var outputItemType = typeHelper.CreateAnonymousType(selectedFieldsNodes.Select(x => (x.FieldName, x.ReturnType)).Distinct());
+            var outputItemType = _typeHelper.CreateAnonymousType(selectedFieldsNodes.Select(x => (x.FieldName, x.ReturnType)).Distinct());
 
             List<MemberBinding> bindings = new List<MemberBinding>();
             for (int i = 0; i < selectedFieldsNodes.Count; i++)
@@ -805,7 +794,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             for (var i = 0; i < node.Fields.Length; i++)
                 outputFields[node.Fields.Length - 1 - i] = (node.Fields[node.Fields.Length - 1 - i], Nodes.Pop());
 
-            var outputItemType = typeHelper.CreateAnonymousType(
+            var outputItemType = _typeHelper.CreateAnonymousType(
                 outputFields.Select<(FieldNode Field, Expression Value),(string, Type ReturnType, string ColumnName, string TableName, string TableAlias)>(x => (
                     x.Field.FieldName,
                     x.Field.ReturnType,
@@ -960,7 +949,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
             sequence = sequence.Select(resultItemExpression =>
             {
-                Type resultItemType = typeHelper.CreateAnonymousType(resultFields, null, node.Alias);
+                Type resultItemType = _typeHelper.CreateAnonymousType(resultFields, null, node.Alias);
                 return resultItemExpression.MapTo(resultItemType);
             });
 
@@ -979,7 +968,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Expression sequence = ExpressionHelpers.AsParallel(tableData.Results, tableData.ResultItemsType);
             sequence = sequence.Select(resultItemExpression =>
             {
-                Type resultItemType = typeHelper.CreateAnonymousType(tableData.ResultFields, node.Table.TableOrView, node.Alias);
+                Type resultItemType = _typeHelper.CreateAnonymousType(tableData.ResultFields, node.Table.TableOrView, node.Alias);
                 return resultItemExpression.MapTo(resultItemType);
             });
             
@@ -990,7 +979,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(InMemoryTableFromNode node)
         {
             var table = _cte[node.VariableName];
-            table = table.SelectAs(this.typeHelper.CreateAnonymousTypeSameAs(table.GetElementType(), node.VariableName, null));
+            table = table.SelectAs(this._typeHelper.CreateAnonymousTypeSameAs(table.GetElementType(), node.VariableName, null));
             Nodes.Push(table);
         }
 
@@ -1033,14 +1022,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var secondSequence = Nodes.Pop();
             var firstSequence = Nodes.Pop();
 
-            var outputItemType = typeHelper.CreateAnonymousTypeSameAs(firstSequence.GetElementType());
+            var outputItemType = _typeHelper.CreateAnonymousTypeSameAs(firstSequence.GetElementType());
             firstSequence = firstSequence.SelectAs(outputItemType);
             secondSequence = secondSequence.SelectAs(outputItemType);
 
             Expression comparer = null;
             if (node.Keys.Length > 0)
             {
-                var comparerType = typeHelper.CreateEqualityComparerForType(outputItemType, node.Keys);
+                var comparerType = _typeHelper.CreateEqualityComparerForType(outputItemType, node.Keys);
                 comparer = Expression.New(comparerType);
             }
 
@@ -1055,7 +1044,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var secondSequence = Nodes.Pop();
             var firstSequence = Nodes.Pop();
 
-            var outputItemType = typeHelper.CreateAnonymousTypeSameAs(firstSequence.GetElementType());
+            var outputItemType = _typeHelper.CreateAnonymousTypeSameAs(firstSequence.GetElementType());
             firstSequence = firstSequence.SelectAs(outputItemType);
             secondSequence = secondSequence.SelectAs(outputItemType);
 
@@ -1069,14 +1058,14 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var secondSequence = Nodes.Pop();
             var firstSequence = Nodes.Pop();
 
-            var outputItemType = typeHelper.CreateAnonymousTypeSameAs(firstSequence.GetElementType());
+            var outputItemType = _typeHelper.CreateAnonymousTypeSameAs(firstSequence.GetElementType());
             firstSequence = firstSequence.SelectAs(outputItemType);
             secondSequence = secondSequence.SelectAs(outputItemType);
 
             Expression comparer = null;
             if (node.Keys.Length > 0)
             {
-                var comparerType = typeHelper.CreateEqualityComparerForType(outputItemType, node.Keys);
+                var comparerType = _typeHelper.CreateEqualityComparerForType(outputItemType, node.Keys);
                 comparer = Expression.New(comparerType);
             }
 
@@ -1090,7 +1079,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var secondSequence = Nodes.Pop();
             var firstSequence = Nodes.Pop();
 
-            var outputItemType = typeHelper.CreateAnonymousTypeSameAs(firstSequence.GetElementType());
+            var outputItemType = _typeHelper.CreateAnonymousTypeSameAs(firstSequence.GetElementType());
             firstSequence = firstSequence.SelectAs(outputItemType);
             secondSequence = secondSequence.SelectAs(outputItemType);
 
@@ -1151,9 +1140,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             //    .GroupJoin(new List<CteExpressionNode>().AsParallel<CteExpressionNode>(), x => x.Id, x => x.Id, (x, y) => new { x = x, y = y })
             //    .SelectMany(x => x.y.Select())
 
-
             var onNode = ((EqualityNode)node.Expression);
-
 
             var secondSequenceKeyExpression = this.Nodes.Pop();
             var firstSequenceKeyExpression = this.Nodes.Pop();
@@ -1177,7 +1164,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 //FirstSequenceItemType firstItem, IEnumerable<SecondSequenceItemType> secondItemsList
                 (firstItem, secondItemsList) =>
                 {
-                    var returnType = this.typeHelper.CreateAnonymousType(new (string Alias, Type Type)[]
+                    var returnType = this._typeHelper.CreateAnonymousType(new (string Alias, Type Type)[]
                     {
                         (firstSequenceAlias, firstItem.Type),
                         (secondSequenceAlias, secondItemsList.Type)
@@ -1225,7 +1212,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         returnFields.Add((secondSequenceAlias, secondSequence.GetElementType()));
                         returnFieldsBindings.Add((secondSequenceAlias, secondItem));
 
-                        var returnType = this.typeHelper.CreateAnonymousType(returnFields.ToArray());
+                        var returnType = this._typeHelper.CreateAnonymousType(returnFields.ToArray());
                         List<MemberBinding> resultBindings = new List<MemberBinding>();
                         //"SelectProp = inputItem.Prop"
                         foreach (var binding in returnFieldsBindings)
@@ -1302,7 +1289,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     returnFields.Add((secondSequenceAlias, secondSequence.GetElementType()));
                     returnFieldsBindings.Add((secondSequenceAlias, secondItem));
 
-                    var returnType = this.typeHelper.CreateAnonymousType(returnFields.ToArray());
+                    var returnType = this._typeHelper.CreateAnonymousType(returnFields.ToArray());
                     List<MemberBinding> resultBindings = new List<MemberBinding>();
                     //"SelectProp = inputItem.Prop"
                     foreach (var binding in returnFieldsBindings)
@@ -1322,10 +1309,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void VisitLoopLeftJoin(JoinNode node)
         {
-
-            var onNode = ((EqualityNode)node.Expression);
-
-
             var onExpression = this.Nodes.Pop();
 
             var secondSequence = this.Nodes.Pop();
@@ -1346,7 +1329,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 //FirstSequenceItemType firstItem, IEnumerable<SecondSequenceItemType> secondItemsList
                 (firstItem, secondItemsList) =>
                 {
-                    var returnType = this.typeHelper.CreateAnonymousType(new (string Alias, Type Type)[]
+                    var returnType = this._typeHelper.CreateAnonymousType(new (string Alias, Type Type)[]
                     {
                         (firstSequenceAlias, firstItem.Type),
                         (secondSequenceAlias, secondItemsList.Type)
@@ -1394,7 +1377,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         returnFields.Add((secondSequenceAlias, secondSequence.GetElementType()));
                         returnFieldsBindings.Add((secondSequenceAlias, secondItem));
 
-                        var returnType = this.typeHelper.CreateAnonymousType(returnFields.ToArray());
+                        var returnType = this._typeHelper.CreateAnonymousType(returnFields.ToArray());
                         List<MemberBinding> resultBindings = new List<MemberBinding>();
                         //"SelectProp = inputItem.Prop"
                         foreach (var binding in returnFieldsBindings)
@@ -1419,8 +1402,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void VisitLoopInnerJoin(JoinNode node)
         {
-            var onNode = ((EqualityNode)node.Expression);
-
             var onExpression = this.Nodes.Pop();
 
             var secondSequence = this.Nodes.Pop();
@@ -1470,7 +1451,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     returnFields.Add((secondSequenceAlias, secondSequence.GetElementType()));
                     returnFieldsBindings.Add((secondSequenceAlias, secondItem));
 
-                    var returnType = this.typeHelper.CreateAnonymousType(returnFields.ToArray());
+                    var returnType = this._typeHelper.CreateAnonymousType(returnFields.ToArray());
                     List<MemberBinding> resultBindings = new List<MemberBinding>();
                     //"SelectProp = inputItem.Prop"
                     foreach (var binding in returnFieldsBindings)

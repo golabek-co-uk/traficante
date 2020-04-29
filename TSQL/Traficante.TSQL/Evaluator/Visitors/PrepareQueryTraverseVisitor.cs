@@ -72,7 +72,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(AccessColumnNode node)
+        public void Visit(AccessFieldNode node)
         {
             node.Accept(_visitor);
         }
@@ -87,7 +87,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(AccessObjectArrayNode node)
+        public void Visit(AccessArrayFieldNode node)
         {
             node.Accept(_visitor);
         }

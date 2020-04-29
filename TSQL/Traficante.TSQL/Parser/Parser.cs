@@ -863,7 +863,7 @@ namespace Traficante.TSQL.Parser
                 case TokenType.NumericAccess:
                     var numiercAccess = (NumericAccessToken) Current;
                     Consume(TokenType.NumericAccess);
-                    return new AccessObjectArrayNode(numiercAccess);
+                    return new AccessArrayFieldNode(numiercAccess);
                 //case TokenType.Function:
                 //    //var methodAccess = (MethodAccessToken) Current;
                 //    //Consume(TokenType.MethodAccess);

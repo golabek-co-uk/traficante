@@ -858,5 +858,46 @@ left outer join #C.entities() c on b.Id = c.Id";
             Assert.AreEqual(3, table.Columns.Count());
             Assert.AreEqual(3, table.Count);
         }
+
+        [TestMethod]
+        public void SimpleLeftJoinWithComplexOnTest()
+        {
+            var query = @"
+select a.Id, b.Id from #A.entities() a 
+left join #B.entities() b on a.Id = b.Id AND a.Id > 0";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("Poland", "Krakow") {Id = 1},
+                        new BasicEntity("Germany", "Berlin") {Id = 2},
+                        new BasicEntity("Russia", "Moscow") {Id = 3}
+                    }
+                },
+                {
+                    "#B", new[]
+                    {
+                        new BasicEntity("Poland", "Krakow") {Id = 1}
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual(2, table.Columns.Count());
+            Assert.AreEqual(3, table.Count);
+
+            AreEquivalent(
+            new[]
+            {
+                new object[] { 1, 1 },
+                new object[] { 2, null },
+                new object[] { 3, null }
+            },
+            table);
+        }
     }
 }

@@ -95,7 +95,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(AccessColumnNode node)
+        public void Visit(AccessFieldNode node)
         {
             node.Accept(_visitor);
         }
@@ -110,7 +110,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
-        public void Visit(AccessObjectArrayNode node)
+        public void Visit(AccessArrayFieldNode node)
         {
             node.Accept(_visitor);
         }
@@ -251,24 +251,53 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 var withSequence = this._visitor.Nodes.Peek();
                 this._visitor.ScopedParamters.Push(Expression.Parameter(withSequence.GetElementType(), "item_" + withSequence.GetElementType().Name));
 
-                if (join.JoinOperator == JoinOperator.Hash)
-                {
-                    if (join.Expression is EqualityNode equalityNode)
-                    {
-                        //this._visitor.QueryState.QueryItem = Expression.Parameter(join.Source.ReturnType.GetElementType());
-                        equalityNode.Left.Accept(this);
 
-                        //this._visitor.QueryState.QueryItem = Expression.Parameter(join.With.ReturnType.GetElementType());
+
+                if (join.Expression is EqualityNode equalityNode)
+                {
+                    if (equalityNode.Left is BinaryNode == false || equalityNode.Right is BinaryNode == false)
+                    {
+                        bool canDoGroupJoin = true;
+                        _visitor.AccessedFields.Clear();
+                        equalityNode.Left.Accept(this);
+                        if (_visitor.AccessedFields.GroupBy(x => x.Parameter).Count() > 1)
+                            canDoGroupJoin = false;
+
+                        _visitor.AccessedFields.Clear();
                         equalityNode.Right.Accept(this);
+                        if (_visitor.AccessedFields.GroupBy(x => x.Parameter).Count() > 1)
+                            canDoGroupJoin = false;
+
+                        if (canDoGroupJoin)
+                        {
+                            join.JoinOperator = JoinOperator.Hash;
+                            join.Accept(_visitor);
+                        }
+                        else
+                        {
+                            //remove left
+                           _visitor.Nodes.Pop();
+                            //remove rigth
+                           _visitor.Nodes.Pop();
+
+                            join.JoinOperator = JoinOperator.Loop;
+                            join.Expression.Accept(this);
+                            join.Accept(_visitor);
+                        }
                     }
                     else
-                        throw new Exception("Only equal operation is supported inside ON clausures");
+                    {
+                        join.JoinOperator = JoinOperator.Loop;
+                        join.Expression.Accept(this);
+                        join.Accept(_visitor);
+                    }
                 }
                 else
                 {
+                    join.JoinOperator = JoinOperator.Loop;
                     join.Expression.Accept(this);
+                    join.Accept(_visitor);
                 }
-                join.Accept(_visitor);
             }
         }
 

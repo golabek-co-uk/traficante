@@ -34,10 +34,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
         void Visit(ExecuteNode node);
         void Visit(FunctionNode node);
         void Visit(IsNullNode node);
-        void Visit(AccessColumnNode node);
+        void Visit(AccessFieldNode node);
         void Visit(AllColumnsNode node);
         void Visit(IdentifierNode node);
-        void Visit(AccessObjectArrayNode node);
+        void Visit(AccessArrayFieldNode node);
         void Visit(AccessObjectKeyNode node);
         void Visit(PropertyValueNode node);
         void Visit(VariableNode node);

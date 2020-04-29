@@ -301,9 +301,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new IsNullNode(Nodes.Pop(), node.IsNegated));
         }
 
-        public virtual void Visit(AccessColumnNode node)
+        public virtual void Visit(AccessFieldNode node)
         {
-            Nodes.Push(new AccessColumnNode(node.Name, node.Alias, node.ReturnType, node.Span));
+            Nodes.Push(new AccessFieldNode(node.Name, node.Alias, node.ReturnType, node.Span));
         }
 
         public virtual void Visit(AllColumnsNode node)
@@ -316,10 +316,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new IdentifierNode(node.Name));
         }
 
-        public virtual void Visit(AccessObjectArrayNode node)
+        public virtual void Visit(AccessArrayFieldNode node)
         {
             var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new AccessObjectArrayNode(node.Token));//, parentNodeType.GetProperty(node.Name)));
+            Nodes.Push(new AccessArrayFieldNode(node.Token));//, parentNodeType.GetProperty(node.Name)));
         }
 
         public virtual void Visit(AccessObjectKeyNode node)

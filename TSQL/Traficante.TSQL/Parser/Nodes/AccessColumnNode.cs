@@ -3,23 +3,23 @@ using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.TSQL.Parser.Nodes
 {
-    public class AccessColumnNode : IdentifierNode
+    public class AccessFieldNode : IdentifierNode
     {
         private Type _returnType;
 
-        public AccessColumnNode(string column, string alias, TextSpan span)
+        public AccessFieldNode(string column, string alias, TextSpan span)
             : this(column, alias, typeof(void), span)
         {
-            Id = $"{nameof(AccessColumnNode)}{column}";
+            Id = $"{nameof(AccessFieldNode)}{column}";
         }
 
-        public AccessColumnNode(string column, string alias, Type returnType, TextSpan span)
+        public AccessFieldNode(string column, string alias, Type returnType, TextSpan span)
             : base(column)
         {
             Alias = alias;
             Span = span;
             _returnType = returnType;
-            Id = $"{nameof(AccessColumnNode)}{column}{returnType.Name}";
+            Id = $"{nameof(AccessFieldNode)}{column}{returnType.Name}";
         }
 
         public string Alias { get; }

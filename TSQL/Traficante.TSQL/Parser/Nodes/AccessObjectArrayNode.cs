@@ -4,13 +4,13 @@ using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.TSQL.Parser.Nodes
 {
-    public class AccessObjectArrayNode : IdentifierNode
+    public class AccessArrayFieldNode : IdentifierNode
     {
-        public AccessObjectArrayNode(NumericAccessToken token)
+        public AccessArrayFieldNode(NumericAccessToken token)
             : base(token.Name)
         {
             Token = token;
-            Id = $"{nameof(AccessObjectArrayNode)}{token.Value}";
+            Id = $"{nameof(AccessArrayFieldNode)}{token.Value}";
         }
 
         public NumericAccessToken Token { get; }
