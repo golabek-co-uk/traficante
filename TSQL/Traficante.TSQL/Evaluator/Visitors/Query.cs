@@ -74,12 +74,9 @@ namespace Traficante.TSQL.Evaluator.Visitors
             return (aggregateFields.ToArray(), notAggregateFields.ToArray());
         }
 
-        public List<IDisposable> Disposables = new List<IDisposable>();
 
         public void Dispose()
         {
-            foreach (var disposable in Disposables)
-                disposable.Dispose();
         }
     }
 }

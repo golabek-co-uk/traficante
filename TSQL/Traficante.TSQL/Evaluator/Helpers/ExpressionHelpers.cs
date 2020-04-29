@@ -158,27 +158,6 @@ namespace Traficante.TSQL.Evaluator.Helpers
         }
 
 
-        //static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetFields(this Expression parameter, string fieldName)
-        //{
-        //    var allFields = parameter.GetAllFields();
-        //    return allFields.Where(x => 
-        //            string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) ||
-        //            string.Equals(x.ColumnName, fieldName, StringComparison.InvariantCultureIgnoreCase))
-        //        .ToList();
-        //}
-
-        //static public (string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression) GetField(this Expression parameter, string fieldName, string alias)
-        //{
-        //    var allFields = parameter.GetAllFields();
-        //    return allFields.Where(x =>
-        //        (string.Equals(x.Name, fieldName, StringComparison.InvariantCultureIgnoreCase) ||
-        //         string.Equals(x.ColumnName, fieldName, StringComparison.InvariantCultureIgnoreCase)) 
-        //        &&
-        //        (string.Equals(x.TableAlias, alias, StringComparison.InvariantCultureIgnoreCase) ||
-        //         string.Equals(x.TableName, alias, StringComparison.InvariantCultureIgnoreCase)))
-        //        .FirstOrDefault();
-        //}
-
         static public List<(string Name, Type Type, string ColumnName, string TableName, string TableAlias, Expression Expression)> GetFields(this Expression parameter, string[] path)
         {
             if (path.Length == 0)
