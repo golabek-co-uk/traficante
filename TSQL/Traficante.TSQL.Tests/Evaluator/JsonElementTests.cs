@@ -177,6 +177,59 @@ namespace Traficante.TSQL.Tests.Evaluator
             Assert.AreEqual(4, resunt[1][0]);
             Assert.AreEqual("Joe", resunt[1][1].ToString());
         }
+
+        [TestMethod]
+        public void Select_OrderByInt()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            sut.AddTable("Persons", new Person[] {
+                new Person
+                {
+                    Id = 1,
+                    FirstName = "John",
+                    LastName = "Smith",
+                    Json = JsonDocument.Parse("{ \"name\":\"John\", \"age\":23, \"address\": { \"city\":\"London\", \"street\":\"Moorgate Street\" }}").RootElement
+                },
+                new Person
+                {
+                    Id = 2,
+                    FirstName = "Stive",
+                    LastName = "Smith",
+                    Json = JsonDocument.Parse("{  \"name\":\"Stive\", \"address\": { \"city\":\"London\", \"street\":\"Moorgate Street\" }}").RootElement
+                },
+                new Person
+                {
+                    Id = 3,
+                    FirstName = "Tom",
+                    LastName = "Smith",
+                    Json = JsonDocument.Parse("{ \"name\":\"Tom\", \"age\":25, \"address\": { \"city\":\"London\", \"street\":\"Moorgate Street\" }}").RootElement
+                }
+                ,
+                new Person
+                {
+                    Id = 4,
+                    FirstName = "Joe",
+                    LastName = "Smith",
+                    Json = JsonDocument.Parse("{ \"name\":\"Joe\", \"age\":\"24\", \"address\": { \"city\":\"London\", \"street\":\"Moorgate Street\" }}").RootElement
+                }
+                 ,
+                new Person
+                {
+                    Id = 5,
+                    FirstName = "Dan",
+                    LastName = "Smith",
+                    Json = JsonDocument.Parse("{ \"name\":\"Dan\", \"age\":\"29\", \"address\": { \"city\":\"London\", \"street\":\"Moorgate Street\" }}").RootElement
+                }
+            });
+
+            var resunt = sut.RunAndReturnTable("SELECT Id, Json.name FROM Persons ORDER BY Json.age desc");
+            Assert.AreEqual(5, resunt.Count);
+            Assert.AreEqual("Dan", resunt[0][1].ToString());
+            Assert.AreEqual("Tom", resunt[1][1].ToString());
+            Assert.AreEqual("Joe", resunt[2][1].ToString());
+            Assert.AreEqual("John", resunt[3][1].ToString());
+            Assert.AreEqual("Stive", resunt[4][1].ToString());
+        }
     }
 
     public class Person

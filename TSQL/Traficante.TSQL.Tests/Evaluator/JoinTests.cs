@@ -784,7 +784,7 @@ table);
         {
             var query = @"
 select a.Id, b.Id from #A.entities() a 
-left join #B.entities() b on a.Id = b.Id";
+left join #B.entities() b ON b.Id = a.Id";
 
             var sources = new Dictionary<string, IEnumerable<BasicEntity>>
             {

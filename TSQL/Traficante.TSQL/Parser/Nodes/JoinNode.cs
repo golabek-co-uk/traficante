@@ -17,8 +17,13 @@ namespace Traficante.TSQL.Parser.Nodes
         public FromNode With { get; }
         public Node Expression { get; }
         public JoinType JoinType { get; }
-        public JoinOperator? JoinOperator { get; set; }
+        public JoinOperator? JoinOperator { get; private set; }
         public override string Id => $"{typeof(JoinNode)}{Source.Id}{With.Id}{Expression.Id}";
+
+        public void ChangeJoinOperator(JoinOperator joinOperator)
+        {
+            JoinOperator = joinOperator;
+        }
 
         public override void Accept(IExpressionVisitor visitor)
         {

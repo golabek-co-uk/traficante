@@ -1482,7 +1482,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             for (int i = 0; i < fieldNodes.Length; i++)
             {
                 var fieldNode = node.Fields[i];
-                var fieldPredicate = fieldNodes[i];
+                var fieldPredicate = fieldNodes[i].ConverToComparableType();
                 if (i == 0)
                 {
                     if (fieldNode.Order == Order.Ascending)

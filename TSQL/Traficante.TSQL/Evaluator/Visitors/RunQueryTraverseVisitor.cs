@@ -245,11 +245,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 }
 
                 var sourceSequence = this._visitor.Nodes.Peek();
-                this._visitor.ScopedParamters.Push(Expression.Parameter(sourceSequence.GetElementType(), "item_" + sourceSequence.GetElementType().Name));
+                var sourceSequenceParameter = Expression.Parameter(sourceSequence.GetElementType(), "item_" + sourceSequence.GetElementType().Name);
+                this._visitor.ScopedParamters.Push(sourceSequenceParameter);
 
                 join.With.Accept(this);
                 var withSequence = this._visitor.Nodes.Peek();
-                this._visitor.ScopedParamters.Push(Expression.Parameter(withSequence.GetElementType(), "item_" + withSequence.GetElementType().Name));
+                var withSequenceParameter = Expression.Parameter(withSequence.GetElementType(), "item_" + withSequence.GetElementType().Name);
+                this._visitor.ScopedParamters.Push(withSequenceParameter);
 
 
 
@@ -260,41 +262,72 @@ namespace Traficante.TSQL.Evaluator.Visitors
                         bool canDoGroupJoin = true;
                         _visitor.AccessedFields.Clear();
                         equalityNode.Left.Accept(this);
-                        if (_visitor.AccessedFields.GroupBy(x => x.Parameter).Count() > 1)
+                        var leftParameter = _visitor.AccessedFields.GroupBy(x => x.Parameter).ToList();
+                        if (leftParameter.Count != 1)
                             canDoGroupJoin = false;
 
                         _visitor.AccessedFields.Clear();
                         equalityNode.Right.Accept(this);
-                        if (_visitor.AccessedFields.GroupBy(x => x.Parameter).Count() > 1)
+                        var rightParameter = _visitor.AccessedFields.GroupBy(x => x.Parameter).ToList();
+                        if (rightParameter.Count != 1)
                             canDoGroupJoin = false;
 
                         if (canDoGroupJoin)
                         {
-                            join.JoinOperator = JoinOperator.Hash;
-                            join.Accept(_visitor);
+                            if (sourceSequenceParameter == leftParameter[0].Key && 
+                                withSequenceParameter == rightParameter[0].Key)
+                            {
+                                join.ChangeJoinOperator(JoinOperator.Hash);
+                                join.Accept(_visitor);
+                            }
+                            else if(sourceSequenceParameter == rightParameter[0].Key &&
+                                withSequenceParameter == leftParameter[0].Key)
+                            {
+                                //remove left
+                                var l = _visitor.Nodes.Pop();
+                                //remove rigth
+                                var r = _visitor.Nodes.Pop();
+                                //reverse order
+                                _visitor.Nodes.Push(l);
+                                _visitor.Nodes.Push(r);
+
+                                join.ChangeJoinOperator(JoinOperator.Hash);
+                                join.Accept(_visitor);
+                            }
+                            else
+                            {
+                                //remove left and right
+                                _visitor.Nodes.Pop();
+                                _visitor.Nodes.Pop();
+
+                                //do loop join
+                                join.ChangeJoinOperator(JoinOperator.Loop);
+                                join.Expression.Accept(this);
+                                join.Accept(_visitor);
+                            }
                         }
                         else
                         {
-                            //remove left
-                           _visitor.Nodes.Pop();
-                            //remove rigth
+                            //remove left and right
+                            _visitor.Nodes.Pop();
                            _visitor.Nodes.Pop();
 
-                            join.JoinOperator = JoinOperator.Loop;
+                            //do loop join
+                            join.ChangeJoinOperator(JoinOperator.Loop);
                             join.Expression.Accept(this);
                             join.Accept(_visitor);
                         }
                     }
                     else
                     {
-                        join.JoinOperator = JoinOperator.Loop;
+                        join.ChangeJoinOperator(JoinOperator.Loop);
                         join.Expression.Accept(this);
                         join.Accept(_visitor);
                     }
                 }
                 else
                 {
-                    join.JoinOperator = JoinOperator.Loop;
+                    join.ChangeJoinOperator(JoinOperator.Loop);
                     join.Expression.Accept(this);
                     join.Accept(_visitor);
                 }

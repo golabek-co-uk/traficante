@@ -897,6 +897,11 @@ namespace Traficante.TSQL.Evaluator.Helpers
             return result;
         }
 
+        static public Expression ToStringOrDefault(this Expression expression)
+        {
+            return Expression.Call(typeof(ObjectExtensions), "ToStringOrDefault", new Type[0], Expression.Convert(expression, typeof(object)));
+        }
+
         static public Expression ConvertTo(this Expression expression, Type type)
         {
             if (expression.Type == type)
@@ -911,7 +916,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             }
 
             if (type == typeof(string))
-                return Expression.Call(typeof(ObjectExtensions), "ToStringOrDefault", new Type[0], Expression.Convert(expression, typeof(object)));
+                return expression.ToStringOrDefault();
 
             try
             {
@@ -932,6 +937,12 @@ namespace Traficante.TSQL.Evaluator.Helpers
             return expression;
         }
 
+        static public Expression ConverToComparableType(this Expression expression)
+        {
+            if (typeof(IComparable).IsAssignableFrom(expression.Type) == false)
+                return expression.ConvertTo(typeof(string));
+            return expression;
+        }
     }
 
     public class FieldExpression : Expression
