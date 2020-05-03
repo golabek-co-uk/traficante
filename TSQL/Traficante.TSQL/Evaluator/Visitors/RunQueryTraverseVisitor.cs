@@ -668,6 +668,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+        public void Visit(NullNode node)
+        {
+            node.Accept(_visitor);
+        }
+
         public void Visit(ExecuteNode node)
         {
             node.FunctionToRun?.Accept(this);

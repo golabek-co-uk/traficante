@@ -820,6 +820,28 @@ namespace Traficante.TSQL.Parser
             return new ArgsListNode(args.ToArray());
         }
 
+        private ArgsListNode ComposeConvertArgs()
+        {
+            var args = new List<Node>();
+            Consume(TokenType.LeftParenthesis);
+            args.Add(ComposeType());
+
+            if (Current.TokenType != TokenType.RightParenthesis)
+            {
+                do
+                {
+                    if (Current.TokenType == TokenType.Comma)
+                        Consume(Current.TokenType);
+
+                    args.Add(ComposeEqualityOperators());
+                } while (Current.TokenType == TokenType.Comma);
+            }
+
+            Consume(TokenType.RightParenthesis);
+
+            return new ArgsListNode(args.ToArray());
+        }
+
         private ArgsListNode ComposeExecuteArgs()
         {
             var args = new List<Node>();
@@ -893,6 +915,9 @@ namespace Traficante.TSQL.Parser
                 case TokenType.Variable:
                     token = ConsumeAndGetToken(TokenType.Variable);
                     return new VariableNode(token.Value);
+                case TokenType.Null:
+                    token = ConsumeAndGetToken(TokenType.Null);
+                    return new NullNode();
             }
 
             throw new TSQLException($"Token {Current.Value}({Current.TokenType}) cannot be used here.", _lexer.GetLocation(Current.Span.Start));
@@ -943,10 +968,17 @@ namespace Traficante.TSQL.Parser
                 throw new TSQLException($"Expected token is {TokenType.Function} but {Current.TokenType} received", _lexer.GetLocation(Current.Span.Start));
 
             bool isCastFunction = Current.Value.Equals("CAST", StringComparison.CurrentCultureIgnoreCase);
+            bool isConvertFunction = Current.Value.Equals("CONVERT", StringComparison.CurrentCultureIgnoreCase);
 
             Consume(TokenType.Function);
 
-            var args = isCastFunction ? ComposeCastArgs() : ComposeFunctionArgs();
+            ArgsListNode args = null;
+            if (isCastFunction)
+                args = ComposeCastArgs();
+            else if (isConvertFunction)
+                args = ComposeConvertArgs();
+            else
+                args = ComposeFunctionArgs();
 
             return new FunctionNode(func.Value.Trim(), args, path, null);
         }

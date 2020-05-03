@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using Traficante.TSQL.Lib.Attributes;
@@ -65,15 +66,6 @@ namespace Traficante.TSQL.Lib
             return obj?.ToString();
         }
 
-        [BindableMethod]
-        public object Cast(object obj, object type)
-        {
-            if (type == typeof(System.String))
-                return obj?.ToString();
-            if (type == typeof(System.Boolean))
-                return Convert.ToBoolean(obj);
-            throw new NotImplementedException("Cast not yet implemented");
-        }
         
     }
 }

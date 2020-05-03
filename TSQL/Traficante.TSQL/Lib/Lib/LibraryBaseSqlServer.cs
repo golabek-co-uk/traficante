@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using Traficante.TSQL.Lib.Attributes;
 
 namespace Traficante.TSQL.Lib
@@ -15,4 +13,6 @@ namespace Traficante.TSQL.Lib
             return obj;
         }
     }
+
+
 }

@@ -15,6 +15,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
             try
             {
                 var converter = TypeDescriptor.GetConverter(typeof(T));
+         
                 if (converter != null)
                 {
                     // Cast ConvertFromString(string text) : object to (T)

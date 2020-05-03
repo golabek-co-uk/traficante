@@ -340,7 +340,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             var argsTypes = args.Select(x => x.Type).ToArray();
             Traficante.TSQL.Schema.Managers.MethodInfo methodInfo = node.Method ?? this._engine.ResolveMethod(node.Name, node.Path, argsTypes);
             node.ChangeMethod(methodInfo);
-            
 
             if (node.IsAggregateMethod)
             {
@@ -417,13 +416,19 @@ namespace Traficante.TSQL.Evaluator.Visitors
                     return;
                 }
 
-
                 if (methodInfo == null)
                     throw new TSQLException($"Function does not exist: {node.Name}");
                 var instance = methodInfo.FunctionMethod.ReflectedType.GetConstructors()[0].Invoke(new object[] { });
                 /// TODO: check if there can be more that one generic argument
-                var method = methodInfo.FunctionMethod.IsGenericMethodDefinition ?
-                    methodInfo.FunctionMethod.MakeGenericMethod(node.ReturnType) : methodInfo.FunctionMethod;
+                var method = methodInfo.FunctionMethod;
+                if (method.IsGenericMethodDefinition)
+                {
+                    if (args.Length > 0 && typeof(Type).IsAssignableFrom(argsTypes[0]))
+                        method = method.MakeGenericMethod(node.ArgumentsTypes[0]);
+                    else
+                        method = method.MakeGenericMethod(node.ReturnType);
+
+                }
 
                 var parameters = method.GetParameters();
                 for (int i = 0; i < parameters.Length; i++)
@@ -1545,6 +1550,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public void Visit(TypeNode node)
         {
             Nodes.Push(Expression.Constant(node.ReturnType));
+        }
+
+        public void Visit(NullNode node)
+        {
+            Nodes.Push(Expression.Constant(null, node.ReturnType));
         }
 
         public void Visit(ExecuteNode node)

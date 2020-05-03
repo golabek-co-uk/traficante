@@ -23,6 +23,28 @@ namespace Traficante.TSQL.Evaluator.Helpers
             dynamicModule = dynamicAssembly.DefineDynamicModule("Types");
         }
 
+        private static readonly Dictionary<Type, Type[]> SafeTypeCompatibilityTable = new Dictionary<Type, Type[]>
+            {
+                {typeof(bool), new[] {typeof(bool)}},
+                {typeof(short), new[] {typeof(short), typeof(byte), typeof(bool)}},
+                {typeof(int), new[] {typeof(int), typeof(short), typeof(byte), typeof(bool)}},
+                {typeof(long), new[] {typeof(long), typeof(int), typeof(short), typeof(byte), typeof(bool)}},
+                {typeof(DateTimeOffset), new[] {typeof(DateTimeOffset)}},
+                {typeof(DateTime), new[] {typeof(DateTime)}},
+                {typeof(string), new[] {typeof(string)}},
+                {typeof(decimal), new[] {typeof(decimal), typeof(double), typeof(float)}},
+                {typeof(double), new[] { typeof(double), typeof(float)}},
+                {typeof(float), new[] { typeof(double), typeof(float)}},
+            };
+        private static readonly Dictionary<Type, Type[]> UnsafeTypeCompatibilityTable = new Dictionary<Type, Type[]>
+            {
+                {typeof(byte), new[] {typeof(long), typeof(int), typeof(short)}},
+                {typeof(short), new[] {typeof(long), typeof(int)}},
+                {typeof(int), new[] { typeof(long) }},
+                {typeof(float), new[] {typeof(decimal) }},
+                {typeof(double), new[] {typeof(decimal) }}
+            };
+
         static public IReadOnlyDictionary<(Type, Type), Type> BinaryTypes { get; }
 
         static TypeHelper()
@@ -58,6 +80,30 @@ namespace Traficante.TSQL.Evaluator.Helpers
 
             dict.Add((typeof(object), typeof(object)), typeof(object));
         }
+
+        public static bool IsSafeTypePossibleToConvert(Type to, Type from)
+        {
+            if (to.IsGenericType)
+                to = to.GetUnderlyingNullable();
+            if (from.IsGenericType)
+                from = from.GetUnderlyingNullable();
+            if (SafeTypeCompatibilityTable.ContainsKey(to))
+                return SafeTypeCompatibilityTable[to].Any(f => f == from);
+            return to == from || to.IsAssignableFrom(from);
+        }
+
+        public static bool IsUnsafeTypePossibleToConvert(Type to, Type from)
+        {
+            if (to.IsGenericType)
+                to = to.GetUnderlyingNullable();
+            if (from.IsGenericType)
+                from = from.GetUnderlyingNullable();
+            if (UnsafeTypeCompatibilityTable.ContainsKey(to))
+                return UnsafeTypeCompatibilityTable[to].Any(f => f == from);
+            return to == from || to.IsAssignableFrom(from);
+        }
+
+
 
         static public Type GetReturnType(Type left, Type right)
         {
@@ -551,6 +597,35 @@ namespace Traficante.TSQL.Evaluator.Helpers
             where TType : Attribute
         {
             return parameters.Where(f => f.GetCustomAttribute<TType>() != null).ToArray();
+        }
+
+        public static bool IsNumericType(this Type type)
+        {
+            switch (Type.GetTypeCode(type))
+            {
+                case TypeCode.Byte:
+                case TypeCode.SByte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.Decimal:
+                case TypeCode.Double:
+                case TypeCode.Single:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static object Default(this Type type)
+        {
+            if (type.IsValueType)
+                return Activator.CreateInstance(type);
+            else
+                return null;
         }
     }
 

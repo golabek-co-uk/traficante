@@ -602,6 +602,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new TypeNode(node.Name, node.Size));
         }
 
+        public virtual void Visit(NullNode node)
+        {
+            Nodes.Push(new NullNode());
+        }
+
         public virtual void Visit(ExecuteNode node)
         {
             FunctionNode functionToRun = node.FunctionToRun != null ? (FunctionNode)Nodes.Pop() : null;

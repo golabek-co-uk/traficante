@@ -599,12 +599,18 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+        public void Visit(NullNode node)
+        {
+            node.Accept(_visitor);
+        }
+
         public void Visit(ExecuteNode node)
         {
             node.VariableToSet?.Accept(this);
             node.FunctionToRun?.Accept(this);
             node.Accept(_visitor);
         }
+
 
         public void SetScope(Scope scope)
         {

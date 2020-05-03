@@ -11,27 +11,7 @@ namespace Traficante.TSQL.Schema.Managers
 {
     public class SchemaManager
     {
-        private static readonly Dictionary<Type, Type[]> SafeTypeCompatibilityTable = new Dictionary<Type, Type[]>
-            {
-                {typeof(bool), new[] {typeof(bool)}},
-                {typeof(short), new[] {typeof(short), typeof(byte), typeof(bool)}},
-                {typeof(int), new[] {typeof(int), typeof(short), typeof(byte), typeof(bool)}},
-                {typeof(long), new[] {typeof(long), typeof(int), typeof(short), typeof(byte), typeof(bool)}},
-                {typeof(DateTimeOffset), new[] {typeof(DateTimeOffset)}},
-                {typeof(DateTime), new[] {typeof(DateTime)}},
-                {typeof(string), new[] {typeof(string)}},
-                {typeof(decimal), new[] {typeof(decimal), typeof(double), typeof(float)}},
-                {typeof(double), new[] { typeof(double), typeof(float)}},
-                {typeof(float), new[] { typeof(double), typeof(float)}},
-            };
-        private static readonly Dictionary<Type, Type[]> UnsafeTypeCompatibilityTable = new Dictionary<Type, Type[]>
-            {
-                {typeof(byte), new[] {typeof(long), typeof(int), typeof(short)}},
-                {typeof(short), new[] {typeof(long), typeof(int)}},
-                {typeof(int), new[] { typeof(long) }},
-                {typeof(float), new[] {typeof(decimal) }},
-                {typeof(double), new[] {typeof(decimal) }}
-            };
+
 
         private List<MethodGroupInfo> _methods = new List<MethodGroupInfo>();
         private List<TableInfo> _tables = new List<TableInfo>();
@@ -121,7 +101,7 @@ namespace Traficante.TSQL.Schema.Managers
                         var param = parameters[f + parametersToSkip].ParameterType.GetUnderlyingNullable();
                         var arg = methodArgs[f].GetUnderlyingNullable();
 
-                        if (IsSafeTypePossibleToConvert(param, arg) || IsUnsafeTypePossibleToConvert(param, arg) || param.IsGenericParameter || param.IsArray && param.GetElementType().IsGenericParameter)
+                        if (TypeHelper.IsSafeTypePossibleToConvert(param, arg) || TypeHelper.IsUnsafeTypePossibleToConvert(param, arg) || param.IsGenericParameter || param.IsArray && param.GetElementType().IsGenericParameter)
                             continue;
 
                         hasMatchedArgTypes = false;
@@ -248,21 +228,6 @@ namespace Traficante.TSQL.Schema.Managers
                     }
                     return true;
                 }).FirstOrDefault();
-        }
-
-
-        public static bool IsSafeTypePossibleToConvert(Type to, Type from)
-        {
-            if (SafeTypeCompatibilityTable.ContainsKey(to))
-                return SafeTypeCompatibilityTable[to].Any(f => f == from);
-            return to == from || to.IsAssignableFrom(from);
-        }
-
-        public static bool IsUnsafeTypePossibleToConvert(Type to, Type from)
-        {
-            if (UnsafeTypeCompatibilityTable.ContainsKey(to))
-                return UnsafeTypeCompatibilityTable[to].Any(f => f == from);
-            return to == from || to.IsAssignableFrom(from);
         }
     }
 

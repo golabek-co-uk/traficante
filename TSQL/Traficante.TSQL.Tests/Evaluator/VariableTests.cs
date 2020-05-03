@@ -54,10 +54,10 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.IsNull(result);
             var variable = sut.GetVariable("@d");
             Assert.AreEqual("@d", variable.Name);
-            Assert.AreEqual(typeof(DateTime?), variable.Type);
-            Assert.AreEqual(2018, ((DateTime)variable.Value).Year);
-            Assert.AreEqual(12, ((DateTime)variable.Value).Month);
-            Assert.AreEqual(1, ((DateTime)variable.Value).Day);
+            Assert.AreEqual(typeof(DateTimeOffset?), variable.Type);
+            Assert.AreEqual(2018, ((DateTimeOffset)variable.Value).Year);
+            Assert.AreEqual(12, ((DateTimeOffset)variable.Value).Month);
+            Assert.AreEqual(1, ((DateTimeOffset)variable.Value).Day);
         }
 
         [TestMethod]

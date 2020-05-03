@@ -17,18 +17,6 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
     public class FunctionsTests : TestBase
     {
         [TestMethod]
-        public void Select_Function_Cast()
-        {
-            TSQLEngine sut = new TSQLEngine();
-            sut.AddFunction<string, bool>("SERVERPROPERTY", x => true);
-
-            var result = sut.RunAndReturnTable("SELECT CAST(SERVERPROPERTY(N'IsHadrEnabled') AS bit) AS [IsHadrEnabled]");
-            Assert.IsNotNull(result);
-            Assert.AreEqual("IsHadrEnabled", result.Columns.First().ColumnName);
-            Assert.AreEqual(true, result[0][0]);
-        }
-
-        [TestMethod]
         public void Select_ISNULL()
         {
             TSQLEngine sut = new TSQLEngine();
