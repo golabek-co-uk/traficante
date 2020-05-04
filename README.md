@@ -1,5 +1,7 @@
 # Traficante
 
+![traficante](traficante.PNG)
+
 Cross database SQL queries
 
 Supported connectors:
