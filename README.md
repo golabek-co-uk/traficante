@@ -9,4 +9,5 @@ Supported connectors:
 - Csv
 - ElasticSearch
 
-![traficante](traficante.PNG)
+![traficante](screenshot.PNG)
+
