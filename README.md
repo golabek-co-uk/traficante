@@ -1,8 +1,11 @@
-# Traficante
 
-![traficante](traficante.PNG)
+<p align="center"><img src="traficante.PNG" alt="Traficante"></p>
+<h1 align="center">Traficante</h1>
+<p align="center">Cross database SQL queries</p>
 
-Cross database SQL queries
+
+## About
+An app that let you run cross database SQL queries.
 
 Supported connectors:
 - SqlServer
