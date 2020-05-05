@@ -149,24 +149,11 @@ namespace Traficante.TSQL.Parser
             }
 
 
-            List<string> accessors = new List<string>();
-            while (Current.TokenType == TokenType.Word ||
-                  Current.TokenType == TokenType.Identifier)
-            {
-                if (Current.TokenType == TokenType.Word)
-                    accessors.Add(ConsumeAndGetToken(TokenType.Word).Value);
-                else if (Current.TokenType == TokenType.Identifier)
-                    accessors.Add(ConsumeAndGetToken(TokenType.Identifier).Value);
-                if (Current.TokenType == TokenType.Dot)
-                    Consume(TokenType.Dot);
-                else
-                    break;
-            }
-            
+            List<string> path = ConsumePath();
             var args = ComposeExecuteArgs();
-            var method = accessors.Last();
-            var path = accessors.Take(accessors.Count - 1);
-            return new ExecuteNode(variableNode, new FunctionNode(method, args, path.ToArray(), null));
+            var methodName = path.Last();
+            var methodPath = path.Take(path.Count - 1);
+            return new ExecuteNode(variableNode, new FunctionNode(methodName, args, methodPath.ToArray(), null));
         }
 
         private TypeNode ComposeType()
@@ -674,77 +661,36 @@ namespace Traficante.TSQL.Parser
                 Consume(TokenType.From);
             }
 
-            string alias;
-            if (Current.TokenType == TokenType.Word || Current.TokenType == TokenType.Identifier)
+            List<string> path = ConsumePath();
+            if (Current.TokenType == TokenType.Function)
             {
-                var part1 = Current.TokenType == TokenType.Word ? ConsumeAndGetToken(TokenType.Word).Value : ConsumeAndGetToken(TokenType.Identifier).Value;
-
-                FromNode fromNode = null;
-                if (Current.TokenType == TokenType.Dot)
-                {
-                    Consume(TokenType.Dot);
-                    if (Current.TokenType == TokenType.Identifier)
-                    {
-                        var part2 = ConsumeAndGetToken(TokenType.Identifier).Value;
-                        if (Current.TokenType == TokenType.Dot)
-                        {
-                            Consume(TokenType.Dot);
-                            if (Current.TokenType == TokenType.Identifier)
-                            {
-                                var part3 = ConsumeAndGetToken(TokenType.Identifier).Value;
-                                if (Current.TokenType == TokenType.Dot)
-                                {
-                                    Consume(TokenType.Dot);
-                                    var part4 = ConsumeAndGetToken(TokenType.Identifier).Value;
-                                    alias = ComposeAlias();
-                                    fromNode = new FromTableNode(new TableNode(part4, new string[3] { part1, part2, part3 }), alias);
-                                }
-                                else
-                                {
-                                    alias = ComposeAlias();
-                                    fromNode = new FromTableNode(new TableNode(part3, new string[2] { part1, part2 }), alias);
-                                }
-                            }
-                            else if (Current.TokenType == TokenType.Function)
-                            {
-                                var function = ComposeFunctionMethod(new string[2] { part1, part2 });
-                                alias = ComposeAlias();
-                                fromNode = new FromFunctionNode(function, alias);
-                            }
-                        }
-                        else
-                        {
-                            alias = ComposeAlias();
-                            fromNode = new FromTableNode(new TableNode(part2, new string[1] { part1 }), alias);
-                        }
-                    }
-                    else if (Current.TokenType == TokenType.Function)
-                    {
-                        var function = ComposeFunctionMethod(new string[1] { part1 });
-                        alias = ComposeAlias();
-                        fromNode = new FromFunctionNode(function, alias);
-                    }
-                }
-                else
-                {
-                    alias = ComposeAlias();
-                    fromNode = new FromTableNode(new TableNode(part1, new string[0]), alias);
-                }
-
-                return fromNode;
-            }
-            else if (Current.TokenType == TokenType.Function)
-            {
-
-                var function = ComposeFunctionMethod(new string[0]);
-                alias = ComposeAlias();
-
+                var function = ComposeFunctionMethod(path.ToArray());
+                var alias = ComposeAlias();
                 return new FromFunctionNode(function, alias);
             }
+            else
+            {
+                var alias = ComposeAlias();
+                return new FromTableNode(new TableNode(path.Last(), path.Take(path.Count - 1).ToArray()), alias);
+            }
+        }
 
-            var column = (IdentifierNode) ComposeBaseTypes();
-            alias = ComposeAlias();
-            return new InMemoryTableFromNode(column.Name, alias);
+        private List<string> ConsumePath()
+        {
+            List<string> path = new List<string>();
+            while (Current.TokenType == TokenType.Word ||
+                  Current.TokenType == TokenType.Identifier)
+            {
+                if (Current.TokenType == TokenType.Word)
+                    path.Add(ConsumeAndGetToken(TokenType.Word).Value);
+                else if (Current.TokenType == TokenType.Identifier)
+                    path.Add(ConsumeAndGetToken(TokenType.Identifier).Value);
+                if (Current.TokenType == TokenType.Dot)
+                    Consume(TokenType.Dot);
+                else
+                    break;
+            }
+            return path;
         }
 
         private void ConsumeWhiteSpaces()
