@@ -670,6 +670,9 @@ namespace Traficante.TSQL.Parser
             }
             else
             {
+                if (path.Count == 0)
+                    throw new TSQLException($"Expected token is {TokenType.Identifier} or {TokenType.Function} but received {Current.TokenType}", _lexer.GetLocation(Current.Span.Start));
+
                 var tableName = path.Last();
                 var tablePath =  path.Count > 1 ? path.Take(path.Count - 1).ToArray() : new string[0];
                 var alias = ComposeAlias();
