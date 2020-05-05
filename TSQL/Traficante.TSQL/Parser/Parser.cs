@@ -96,7 +96,7 @@ namespace Traficante.TSQL.Parser
                 }
                 else
                 {
-                    var table = new WordNode(ConsumeAndGetToken(TokenType.Property).Value);
+                    var table = new WordNode(ConsumeAndGetToken(TokenType.Identifier).Value);
 
                     fromNode = new FromTableNode(new TableNode(table.Value, new string[1] { name.Value }), string.Empty);
                     return new DescNode(fromNode, DescForType.Constructors);
@@ -151,15 +151,12 @@ namespace Traficante.TSQL.Parser
 
             List<string> accessors = new List<string>();
             while (Current.TokenType == TokenType.Word ||
-                  Current.TokenType == TokenType.Identifier ||
-                  Current.TokenType == TokenType.Property)
+                  Current.TokenType == TokenType.Identifier)
             {
                 if (Current.TokenType == TokenType.Word)
                     accessors.Add(ConsumeAndGetToken(TokenType.Word).Value);
                 else if (Current.TokenType == TokenType.Identifier)
                     accessors.Add(ConsumeAndGetToken(TokenType.Identifier).Value);
-                else if (Current.TokenType == TokenType.Property)
-                    accessors.Add(ConsumeAndGetToken(TokenType.Property).Value);
                 if (Current.TokenType == TokenType.Dot)
                     Consume(TokenType.Dot);
                 else
@@ -686,19 +683,19 @@ namespace Traficante.TSQL.Parser
                 if (Current.TokenType == TokenType.Dot)
                 {
                     Consume(TokenType.Dot);
-                    if (Current.TokenType == TokenType.Property)
+                    if (Current.TokenType == TokenType.Identifier)
                     {
-                        var part2 = ConsumeAndGetToken(TokenType.Property).Value;
+                        var part2 = ConsumeAndGetToken(TokenType.Identifier).Value;
                         if (Current.TokenType == TokenType.Dot)
                         {
                             Consume(TokenType.Dot);
-                            if (Current.TokenType == TokenType.Property)
+                            if (Current.TokenType == TokenType.Identifier)
                             {
-                                var part3 = ConsumeAndGetToken(TokenType.Property).Value;
+                                var part3 = ConsumeAndGetToken(TokenType.Identifier).Value;
                                 if (Current.TokenType == TokenType.Dot)
                                 {
                                     Consume(TokenType.Dot);
-                                    var part4 = ConsumeAndGetToken(TokenType.Property).Value;
+                                    var part4 = ConsumeAndGetToken(TokenType.Identifier).Value;
                                     alias = ComposeAlias();
                                     fromNode = new FromTableNode(new TableNode(part4, new string[3] { part1, part2, part3 }), alias);
                                 }
@@ -886,14 +883,6 @@ namespace Traficante.TSQL.Parser
                     var numiercAccess = (NumericAccessToken) Current;
                     Consume(TokenType.NumericAccess);
                     return new AccessArrayFieldNode(numiercAccess);
-                //case TokenType.Function:
-                //    //var methodAccess = (MethodAccessToken) Current;
-                //    //Consume(TokenType.MethodAccess);
-                //    //Consume(TokenType.Dot);
-                //    return ComposeFunctionMethod(null, null);
-                case TokenType.Property:
-                    token = ConsumeAndGetToken(TokenType.Property);
-                    return new IdentifierNode(token.Value);
                 case TokenType.Star:
                     Consume(TokenType.Star);
                     return new AllColumnsNode();

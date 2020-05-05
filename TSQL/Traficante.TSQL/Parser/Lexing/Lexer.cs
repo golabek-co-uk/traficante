@@ -160,9 +160,9 @@ namespace Traficante.TSQL.Parser.Lexing
             if (regex == TokenRegexDefinition.Function)
                 return TokenType.Function;
             var last = Current();
-            if (regex == TokenRegexDefinition.KColumn && last != null && last.TokenType == TokenType.Dot)
-                return TokenType.Property;
-            if (regex == TokenRegexDefinition.KColumn)
+            if (regex == TokenRegexDefinition.KIdentifier)
+                return TokenType.Identifier;
+            if (regex == TokenRegexDefinition.KIdentifierBracketed)
                 return TokenType.Identifier;
             if (regex == TokenRegexDefinition.KVariable)
                 return TokenType.Variable;
@@ -170,7 +170,9 @@ namespace Traficante.TSQL.Parser.Lexing
                 return TokenType.InnerJoin;
             if (regex == TokenRegexDefinition.KOuterJoin)
                 return TokenType.OuterJoin;
-            if (regex == TokenRegexDefinition.KHFrom)
+            if (regex == TokenRegexDefinition.KIdentifier)
+                return TokenType.Word;
+            if (regex == TokenRegexDefinition.KIdentifierBracketed)
                 return TokenType.Word;
 
             return TokenType.Word;
@@ -205,10 +207,9 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KEqual = Format(Keyword, EqualityToken.TokenText);
             public static readonly string KSelect = Format(Keyword, SelectToken.TokenText);
             public static readonly string KFrom = Format(Keyword, FromToken.TokenText);
-            public static readonly string KColumnValue = @"([\w*?_?-]){1,}";
-            public static readonly string KColumn = @"\[?([\w*?_?-]){1,}\]?";
-            public static readonly string KHFromValue = @"#?([\w*?_?-]){1,}";
-            public static readonly string KHFrom = @"\[?#?([\w*?_?-]){1,}\]?";
+            public static readonly string KIdentifier = @"(#?[\w*?_]){1,}";
+            public static readonly string KIdentifierBracketed = @"\G\[([\\#\s\w*?_?-]){1,}\]?";
+            public static readonly string KIdentifierBracketedValue = @"([\\#\s\w*?_?-]){1,}";
             public static readonly string KVariable = @"@@?([\w*?_?-]){1,}";
             public static readonly string KLike = Format(Keyword, LikeToken.TokenText);
             public static readonly string KNotLike = @"(?<=[\s]{1,}|^)not[\s]{1,}like(?=[\s]{1,}|$)";
@@ -328,8 +329,7 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KOrderBy, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KTrue, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KFalse, RegexOptions.IgnoreCase),
-                new TokenDefinition(TokenRegexDefinition.KColumn, subPattern: TokenRegexDefinition.KColumnValue),
-                new TokenDefinition(TokenRegexDefinition.KHFrom, subPattern: TokenRegexDefinition.KHFromValue),
+
                 new TokenDefinition(TokenRegexDefinition.KVariable),
                 new TokenDefinition(TokenRegexDefinition.KDot),
                 new TokenDefinition(TokenRegexDefinition.KOn, RegexOptions.IgnoreCase),
@@ -344,6 +344,9 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KEnd, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KDeclare, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KSet, RegexOptions.IgnoreCase),
+
+                new TokenDefinition(TokenRegexDefinition.KIdentifier),
+                new TokenDefinition(TokenRegexDefinition.KIdentifierBracketed, subPattern: TokenRegexDefinition.KIdentifierBracketedValue),
             };
         }
 
@@ -424,8 +427,6 @@ namespace Traficante.TSQL.Parser.Lexing
                     return new ColumnToken(tokenText, new TextSpan(Position, tokenText.Length));
                 case TokenType.Variable:
                     return new VariableToken(tokenText, new TextSpan(Position, tokenText.Length));
-                case TokenType.Property:
-                    return new AccessPropertyToken(tokenText, new TextSpan(Position, tokenText.Length));
                 case TokenType.Like:
                     return new LikeToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.NotLike:

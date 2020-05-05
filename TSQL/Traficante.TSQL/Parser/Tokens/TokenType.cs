@@ -25,7 +25,6 @@
         Variable,
         NumericColumn,
         Function,
-        Property,
         VarArg,
         Greater,
         GreaterEqual,

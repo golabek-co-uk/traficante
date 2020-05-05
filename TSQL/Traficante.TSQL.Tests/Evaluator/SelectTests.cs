@@ -1230,5 +1230,55 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual(1, resunt.Count);
             Assert.IsTrue(resunt[0][0] is DateTimeOffset);
         }
+
+        [TestMethod]
+        public void SelectColumnWithAlias()
+        {
+            var query = "select a.Money, a.Money AliasedMoney, a.Money [Aliased Money], a.Money AS AsAliasedMoney, a.Money as [As Aliased Money] from #A.entities() a";
+
+            var sources = new Dictionary<string, IEnumerable<BasicEntity>>
+            {
+                {
+                    "#A", new[]
+                    {
+                        new BasicEntity("may", 100m)
+                    }
+                }
+            };
+
+            var vm = CreateAndRunVirtualMachine(query, sources);
+            var table = vm.Run();
+
+            Assert.AreEqual("a.Money", table.Columns.ElementAt(0).ColumnName);
+            Assert.AreEqual(100m, table[0][0]);
+
+            Assert.AreEqual("AliasedMoney", table.Columns.ElementAt(1).ColumnName);
+            Assert.AreEqual(100m, table[0][1]);
+
+            Assert.AreEqual("Aliased Money", table.Columns.ElementAt(2).ColumnName);
+            Assert.AreEqual(100m, table[0][2]);
+
+            Assert.AreEqual("AsAliasedMoney", table.Columns.ElementAt(3).ColumnName);
+            Assert.AreEqual(100m, table[0][2]);
+
+            Assert.AreEqual("As Aliased Money", table.Columns.ElementAt(4).ColumnName);
+            Assert.AreEqual(100m, table[0][2]);
+                
+        }
+
+        [TestMethod]
+        public void SelectTableWithAlias()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            sut.AddTable("Persons", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" }
+            });
+
+            Assert.AreEqual("John", sut.RunAndReturnTable("SELECT p.FirstName FROM Persons p")[0][0]);
+            Assert.AreEqual("John", sut.RunAndReturnTable("SELECT p.FirstName FROM Persons [p]")[0][0]);
+            Assert.AreEqual("John", sut.RunAndReturnTable("SELECT [p p].FirstName FROM Persons [p p]")[0][0]);
+            Assert.AreEqual("John", sut.RunAndReturnTable("SELECT [p p].FirstName FROM Persons AS [p p]")[0][0]);
+        }
+
     }
 }

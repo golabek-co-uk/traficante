@@ -15,7 +15,7 @@ using Traficante.TSQL.Tests;
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
     [TestClass]
-    public class TextFunctionsTests : TestBase
+    public class StringFunctionsTests : TestBase
     {
 
         [TestMethod]
