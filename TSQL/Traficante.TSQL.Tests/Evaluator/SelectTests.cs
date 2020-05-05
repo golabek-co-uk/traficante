@@ -1280,5 +1280,21 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
             Assert.AreEqual("John", sut.RunAndReturnTable("SELECT [p p].FirstName FROM Persons AS [p p]")[0][0]);
         }
 
+        [TestMethod]
+        public void SelectTableWithReservedWord()
+        {
+            TSQLEngine sut = new TSQLEngine();
+            sut.AddTable("SELECT", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" }
+            });
+            sut.AddTable("FROM", new Person[] {
+                new Person { Id = 1, FirstName = "John", LastName = "Smith" }
+            });
+
+
+            Assert.AreEqual("John", sut.RunAndReturnTable("SELECT p.FirstName FROM [SELECT] p")[0][0]);
+            Assert.AreEqual("John", sut.RunAndReturnTable("SELECT p.FirstName FROM [FROM] p")[0][0]);
+        }
+
     }
 }

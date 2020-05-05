@@ -670,8 +670,10 @@ namespace Traficante.TSQL.Parser
             }
             else
             {
+                var tableName = path.Last();
+                var tablePath =  path.Count > 1 ? path.Take(path.Count - 1).ToArray() : new string[0];
                 var alias = ComposeAlias();
-                return new FromTableNode(new TableNode(path.Last(), path.Take(path.Count - 1).ToArray()), alias);
+                return new FromTableNode(new TableNode(tableName, tablePath), alias);
             }
         }
 

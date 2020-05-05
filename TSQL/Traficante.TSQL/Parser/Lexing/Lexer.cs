@@ -17,6 +17,11 @@ namespace Traficante.TSQL.Parser.Lexing
 
         private TokenType GetTokenCandidate(string tokenText, TokenDefinition matchedDefinition)
         {
+            var regex = matchedDefinition.Regex.ToString();
+
+            if (regex == TokenRegexDefinition.KIdentifierBracketed)
+                return TokenType.Identifier;
+
             switch (tokenText.ToLowerInvariant())
             {
                 case DescToken.TokenText:
@@ -135,8 +140,6 @@ namespace Traficante.TSQL.Parser.Lexing
             if (int.TryParse(tokenText, out _) && !tokenText.Contains(" "))
                 return TokenType.Integer;
 
-            var regex = matchedDefinition.Regex.ToString();
-
             if (regex == TokenRegexDefinition.KNotIn)
                 return TokenType.NotIn;
             if (regex == TokenRegexDefinition.KNotLike)
@@ -159,11 +162,6 @@ namespace Traficante.TSQL.Parser.Lexing
                 return TokenType.OrderBy;
             if (regex == TokenRegexDefinition.Function)
                 return TokenType.Function;
-            var last = Current();
-            if (regex == TokenRegexDefinition.KIdentifier)
-                return TokenType.Identifier;
-            if (regex == TokenRegexDefinition.KIdentifierBracketed)
-                return TokenType.Identifier;
             if (regex == TokenRegexDefinition.KVariable)
                 return TokenType.Variable;
             if (regex == TokenRegexDefinition.KInnerJoin)
@@ -171,9 +169,7 @@ namespace Traficante.TSQL.Parser.Lexing
             if (regex == TokenRegexDefinition.KOuterJoin)
                 return TokenType.OuterJoin;
             if (regex == TokenRegexDefinition.KIdentifier)
-                return TokenType.Word;
-            if (regex == TokenRegexDefinition.KIdentifierBracketed)
-                return TokenType.Word;
+                return TokenType.Identifier;
 
             return TokenType.Word;
         }
