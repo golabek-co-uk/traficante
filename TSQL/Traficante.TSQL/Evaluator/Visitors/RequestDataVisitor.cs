@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading;
-using System.Linq.Expressions;
-using System.Reflection;
-using Traficante.TSQL.Evaluator.Exceptions;
-using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
@@ -312,13 +308,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public virtual void Visit(AccessArrayFieldNode node)
         {
             var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new AccessArrayFieldNode(node.Token)); //, parentNodeType.GetProperty(node.Name)));
+            Nodes.Push(new AccessArrayFieldNode(node.Token));
         }
 
         public virtual void Visit(AccessObjectKeyNode node)
         {
             var parentNodeType = Nodes.Peek().ReturnType;
-            Nodes.Push(new AccessObjectKeyNode(node.Token)); //, parentNodeType.GetProperty(node.ObjectName)));
+            Nodes.Push(new AccessObjectKeyNode(node.Token));
         }
 
         public virtual void Visit(PropertyValueNode node)

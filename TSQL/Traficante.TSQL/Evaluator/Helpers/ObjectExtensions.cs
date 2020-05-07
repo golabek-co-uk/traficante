@@ -1,27 +1,23 @@
 ﻿using System;
 using System.ComponentModel;
+using Traficante.TSQL.Lib;
 
 namespace Traficante.TSQL.Evaluator.Helpers
 {
     static public class ObjectExtensions
     {
-        static public string ToStringOrDefault(this object obj)
+        private static Library _library = new Library();
+
+        static public string ToStringOrDefault(this object value)
         {
-            return obj?.ToString();
+            return value?.ToString();
         }
 
-        static public T ConvertOrDefault<T>(this object obj)
+        static public T ConvertOrDefault<T>(this object value)
         {
             try
             {
-                var converter = TypeDescriptor.GetConverter(typeof(T));
-         
-                if (converter != null)
-                {
-                    // Cast ConvertFromString(string text) : object to (T)
-                    return (T)converter.ConvertFromString(obj?.ToString());
-                }
-                return default(T);
+                return (T)_library.Convert(typeof(T), value);
             }
             catch
             {

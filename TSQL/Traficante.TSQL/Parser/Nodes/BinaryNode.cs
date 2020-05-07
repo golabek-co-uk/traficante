@@ -1,7 +1,5 @@
 ﻿using System;
 using Traficante.TSQL.Evaluator.Helpers;
-using Traficante.TSQL.Parser.Helpers;
-using Traficante.TSQL.Evaluator.Helpers;
 
 namespace Traficante.TSQL.Parser.Nodes
 {

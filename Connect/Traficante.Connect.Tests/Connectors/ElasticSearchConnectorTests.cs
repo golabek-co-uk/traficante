@@ -66,10 +66,6 @@ namespace Traficante.Connect.Tests.Connectors
                         var value = sut.GetValue(i);
                         if (value != null)
                         {
-                            if (field.Type != value.GetType())
-                            {
-                                var xxx = 1;
-                            }
                             Assert.AreEqual(field.Type, value.GetType());
                         }
                     }

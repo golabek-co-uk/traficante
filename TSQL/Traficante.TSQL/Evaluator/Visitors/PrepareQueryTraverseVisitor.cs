@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using Traficante.TSQL.Evaluator.Utils;
-using Traficante.TSQL.Evaluator.Utils.Symbols;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
-using Traficante.Sql.Evaluator.Resources;
 using System.Linq;
 
 namespace Traficante.TSQL.Evaluator.Visitors
@@ -125,42 +123,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Root.Accept(this);
             node.Expression.Accept(this);
             node.Accept(_visitor);
-
-            //var self = node;
-            //var theMostInner = self;
-            //while (!(self is null))
-            //{
-            //    theMostInner = self;
-            //    self = self.Root as DotNode;
-            //}
-
-            //var ident = (IdentifierNode) theMostInner.Root;
-            //if (node == theMostInner && Scope.ScopeSymbolTable.SymbolIsOfType<TableSymbol>(ident.Name))
-            //{
-            //    if (theMostInner.Expression is DotNode dotNode)
-            //    {
-            //        var col = (IdentifierNode) dotNode.Root;
-            //        Visit(new AccessColumnNode(col.Name, ident.Name, TextSpan.Empty));
-            //    }
-            //    else
-            //    {
-            //        var col = (IdentifierNode) theMostInner.Expression;
-            //        Visit(new AccessColumnNode(col.Name, ident.Name, TextSpan.Empty));
-            //    }
-
-            //    return;
-            //}
-
-            //self = node;
-
-            //while (!(self is null))
-            //{
-            //    self.Root.Accept(this);
-            //    self.Expression.Accept(this);
-            //    self.Accept(_visitor);
-
-            //    self = self.Expression as DotNode;
-            //}
         }
 
         public virtual void Visit(WhereNode node)

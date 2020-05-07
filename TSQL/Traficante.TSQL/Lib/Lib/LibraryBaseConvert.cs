@@ -114,7 +114,7 @@ namespace Traficante.TSQL.Lib
             if (value == null)
                 return type.Default();
 
-            var valueType = value.GetType();
+            var valueType = value?.GetType();
             var valueTypeCode = Type.GetTypeCode(valueType);
 
             if (type.IsAssignableFrom(valueType))
@@ -188,13 +188,27 @@ namespace Traficante.TSQL.Lib
 
             if (type == typeof(string))
             {
-                if (_toStringDataTimeStyle.TryGetValue(style.GetValueOrDefault(0), out string dateFormat))
+                if (valueType == typeof(DateTimeOffset?) || valueType == typeof(DateTimeOffset))
                 {
-                    DateTimeOffset dt = (DateTimeOffset)value;
-                    return dt.ToString(dateFormat);
+                    if (_toStringDataTimeStyle.TryGetValue(style.GetValueOrDefault(0), out string dateFormat))
+                    {
+                        DateTimeOffset dt = (DateTimeOffset)value;
+                        return dt.ToString(dateFormat);
+                    }
+                    else
+                        throw new TSQLException($"{style} is not a valid style when converting datetime to string");
                 }
-                else
-                    throw new TSQLException($"{style} is not a valid style when converting datetime to string");
+                if (valueType == typeof(DateTime?) || valueType == typeof(DateTime))
+                {
+                    if (_toStringDataTimeStyle.TryGetValue(style.GetValueOrDefault(0), out string dateFormat))
+                    {
+                        DateTime dt = (DateTime)value;
+                        return dt.ToString(dateFormat);
+                    }
+                    else
+                        throw new TSQLException($"{style} is not a valid style when converting datetime to string");
+                }
+                return value?.ToString();
             }
 
             if (type == typeof(bool?))
@@ -237,10 +251,10 @@ namespace Traficante.TSQL.Lib
             }
 
             var converter = TypeDescriptor.GetConverter(type);
-            if (converter.CanConvertFrom(value?.GetType()))
+            if (converter.CanConvertFrom(valueType))
                 return converter.ConvertFrom(value);
-
-            throw new TSQLException($"Convert from {value?.GetType()?.Name} to {type.Name} is not implemented");
+            return converter.ConvertFromString(value?.ToString());
+            throw new TSQLException($"Convert from {valueType?.Name} to {type.Name} is not implemented");
 
         }
 

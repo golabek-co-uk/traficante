@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Reflection;
-using Traficante.TSQL.Evaluator.Exceptions;
-using Traficante.TSQL.Evaluator.Helpers;
 using Traficante.TSQL.Evaluator.Utils;
 using Traficante.TSQL.Parser;
 using Traficante.TSQL.Parser.Nodes;
@@ -15,17 +12,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
     {
         private readonly TSQLEngine _engine;
         private readonly CancellationToken _cancellationToken;
-        private readonly List<string> _generatedAliases = new List<string>();
-        private string _queryAlias;
-
 
         protected Scope CurrentScope { get; set; }
         protected QueryPart QueryPart { get; set; }
-
         protected Stack<Node> Nodes { get; } = new Stack<Node>();
-
         public RootNode Root => (RootNode)Nodes.Peek();
-
 
         public PrepareQueryVisitor(TSQLEngine engine, CancellationToken cancellationToken)
         {
@@ -49,8 +40,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromFunctionNode node)
         {
-            //_queryAlias = StringHelpers.CreateAliasIfEmpty(node.Alias, _generatedAliases);
-            //_generatedAliases.Add(_queryAlias);
             var aliasedSchemaFromNode = new FromFunctionNode(node.Function, node.Alias);
             Nodes.Push(aliasedSchemaFromNode);
         }
@@ -63,7 +52,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(FromTableNode node)
         {
-            //var alisa = string.IsNullOrEmpty(node.Alias) ? node.Table.TableOrView : node.Alias;
             var aliasedSchemaFromNode = new FromTableNode(node.Table, node.Alias);
             Nodes.Push(aliasedSchemaFromNode);
         }
@@ -409,36 +397,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new TopNode((IntegerNode)node.Expression));
         }
 
-        //public virtual void Visit(FromFunctionNode node)
-        //{
-        //    Nodes.Push(new FromFunctionNode((FunctionNode)Nodes.Pop(), node.Alias));
-        //}
-
-        //public virtual void Visit(FromTableNode node)
-        //{
-        //    Nodes.Push(new FromTableNode(node.Table, node.Alias));
-        //}
-
-        //public virtual void Visit(InMemoryTableFromNode node)
-        //{
-        //    Nodes.Push(new InMemoryTableFromNode(node.VariableName, node.Alias));
-        //}
-
-        //public virtual void Visit(JoinFromNode node)
-        //{
-        //    var expression = Nodes.Pop();
-        //    var joinedTable = (FromNode)Nodes.Pop();
-        //    var source = (FromNode)Nodes.Pop();
-        //    var joinedFrom = new JoinFromNode(source, joinedTable, expression, node.JoinType);
-        //    Nodes.Push(joinedFrom);
-        //}
-
-        //public virtual void Visit(ExpressionFromNode node)
-        //{
-        //    var from = (FromNode)Nodes.Pop();
-        //    Nodes.Push(new ExpressionFromNode(from));
-        //}
-
         public virtual void Visit(IntoNode node)
         {
             Nodes.Push(new IntoNode(node.Name));
@@ -447,21 +405,6 @@ namespace Traficante.TSQL.Evaluator.Visitors
         public virtual void Visit(QueryScope node)
         {
         }
-
-        //public void Visit(QueryNode node)
-        //{
-        //    var orderBy = node.OrderBy != null ? Nodes.Pop() as OrderByNode : null;
-        //    var groupBy = node.GroupBy != null ? Nodes.Pop() as GroupByNode : null;
-
-        //    var skip = node.Skip != null ? Nodes.Pop() as SkipNode : null;
-        //    var take = node.Take != null ? Nodes.Pop() as TakeNode : null;
-
-        //    var select = Nodes.Pop() as SelectNode;
-        //    var where = node.Where != null ? Nodes.Pop() as WhereNode : null;
-        //    var from = Nodes.Pop() as FromNode;
-
-        //    Nodes.Push(new QueryNode(select, from, where, groupBy, orderBy, skip, take));
-        //}
 
         public virtual void Visit(RootNode node)
         {
@@ -519,37 +462,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new MultiStatementNode(items, node.ReturnType));
         }
 
-        //public virtual void Visit(CteExpressionNode node)
-        //{
-        //    var sets = new CteInnerExpressionNode[node.InnerExpression.Length];
-
-        //    for (var i = node.InnerExpression.Length - 1; i >= 0; --i)
-        //        sets[i] = (CteInnerExpressionNode)Nodes.Pop();
-
-        //    Nodes.Push(new CteExpressionNode(sets, Nodes.Pop()));
-        //}
-
         public virtual void Visit(CteInnerExpressionNode node)
         {
             Nodes.Push(new CteInnerExpressionNode(Nodes.Pop(), node.Name));
         }
-
-        //public virtual void Visit(JoinsNode node)
-        //{
-        //    Nodes.Push(new JoinsNode((JoinFromNode) Nodes.Pop()));
-        //}
-
-        //public virtual void Visit(JoinNode node)
-        //{
-        //    var expression = Nodes.Pop();
-        //    var fromNode = (FromNode) Nodes.Pop();
-
-        //    if (node is OuterJoinNode outerJoin)
-        //        Nodes.Push(new OuterJoinNode(outerJoin.Type, fromNode, expression));
-        //    else
-        //        Nodes.Push(new InnerJoinNode(fromNode, expression));
-        //}
-
         public virtual void Visit(OrderByNode node)
         {
             var fields = new FieldOrderedNode[node.Fields.Length];

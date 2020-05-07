@@ -207,11 +207,12 @@ namespace Traficante.TSQL.Evaluator.Helpers
             if (field != null)
             {
                 var e =  Expression.Condition(
-                    expression.Type.IsNullable() ?
-                        (Expression)Expression.IsFalse(Expression.PropertyOrField(expression, "HasValue")) :
-                        (Expression)Expression.Equal(expression, Expression.Default(expression.Type)),
-                    Expression.Default(field.FieldType),
-                    Expression.PropertyOrField(expression, field.Name));
+                        expression.Type.IsNullable() ?
+                            (Expression)Expression.IsFalse(Expression.PropertyOrField(expression, "HasValue")) :
+                            (Expression)Expression.Equal(expression, Expression.Default(expression.Type)),
+                        Expression.Default(field.FieldType),
+                        Expression.PropertyOrField(expression, field.Name))
+                    .ConverToNullable();
                 return new FieldExpression(e, propertyOrField, tableAttribute?.Name, tableAttribute?.Alias);
                 //return e;
             }
@@ -220,11 +221,12 @@ namespace Traficante.TSQL.Evaluator.Helpers
             if (property != null)
             {
                 var e =  Expression.Condition(
-                    expression.Type.IsNullable() ? 
-                        (Expression)Expression.IsFalse(Expression.PropertyOrField(expression, "HasValue")) :
-                        (Expression)Expression.Equal(expression, Expression.Default(expression.Type)),
-                    Expression.Default(property.PropertyType),
-                    Expression.PropertyOrField(expression, property.Name));
+                        expression.Type.IsNullable() ? 
+                            (Expression)Expression.IsFalse(Expression.PropertyOrField(expression, "HasValue")) :
+                            (Expression)Expression.Equal(expression, Expression.Default(expression.Type)),
+                        Expression.Default(property.PropertyType),
+                        Expression.PropertyOrField(expression, property.Name))
+                    .ConverToNullable();
                 return new FieldExpression(e, propertyOrField, tableAttribute?.Name, tableAttribute?.Alias);
                 //return e;
             }

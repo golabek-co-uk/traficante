@@ -163,7 +163,7 @@ namespace Traficante.Studio.ViewModels
                            .Subscribe(this.ResultsDataColumns.Add);
 
 
-                    Type itemWrapperType = new TypeHelper().CreateWrapperTypeFor(itemsType); ;
+                    Type itemWrapperType = new AnonymousTypeBuilder().CreateWrapperTypeFor(itemsType); ;
                     FieldInfo itemWrapperInnerField = itemWrapperType.GetFields().FirstOrDefault(x => x.Name == "_inner"); ;
           
                     ReadOnlyObservableCollection<object> data;
