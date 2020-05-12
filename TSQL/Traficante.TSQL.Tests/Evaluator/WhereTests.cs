@@ -177,7 +177,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
         [TestMethod]
-        public void CompareDateAndString()
+        public void CompareDateAndString_AutoConverToDate()
         {
             TSQLEngine sut = new TSQLEngine();
             sut.AddTable("Person", new Person[] {
