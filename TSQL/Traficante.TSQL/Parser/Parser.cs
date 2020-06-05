@@ -57,6 +57,10 @@ namespace Traficante.TSQL.Parser
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeDesc()), TokenType.Semicolon);
                 case TokenType.Select:
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeSetOps(0)), TokenType.Semicolon);
+                case TokenType.Insert:
+                    return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeInsert()), TokenType.Semicolon);
+                case TokenType.Update:
+                    return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeUpdate()), TokenType.Semicolon);
                 case TokenType.With:
                     return ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeCteExpression()), TokenType.Semicolon);
                 case TokenType.Table:
@@ -148,8 +152,7 @@ namespace Traficante.TSQL.Parser
                 Consume(TokenType.Equality);
             }
 
-
-            List<string> path = ConsumePath();
+            List<string> path = ConsumeDottedIdentifiers();
             var args = ComposeExecuteArgs();
             var methodName = path.Last();
             var methodPath = path.Take(path.Count - 1);
@@ -268,6 +271,53 @@ namespace Traficante.TSQL.Parser
             }
 
             return isSet || nestingLevel > 0 ? node : new SingleSetNode(query);
+        }
+
+        private Node ComposeInsert()
+        {
+            Consume(TokenType.Insert);
+            ConsumeWhiteSpaces();
+            Consume(TokenType.InTo);
+            ConsumeWhiteSpaces();
+            var tablePath = ConsumeDottedIdentifiers();
+            var tableNode = new TableNode(tablePath.FirstOrDefault(), tablePath.Skip(1).ToArray());
+            ConsumeWhiteSpaces();
+
+            Consume(TokenType.LBracket);
+
+            int index = 0;
+            var fields = new List<FieldNode>();
+            while (Current.TokenType != TokenType.RBracket)
+            {
+                var field = ConsumeField(index++);
+                if (Current.TokenType == TokenType.Comma)
+                    Consume(TokenType.Comma);
+                fields.Add(field);
+            }
+            Consume(TokenType.RBracket);
+
+            List<Node> values = new List<Node>();
+            SelectNode selectNode = null;
+            if (Current.TokenType == TokenType.Values)
+            {
+                Consume(TokenType.LBracket);
+                while (Current.TokenType != TokenType.RBracket)
+                {
+                    values.Add(ComposeOperations());
+                }
+                Consume(TokenType.RBracket);
+            }
+            else if (Current.TokenType == TokenType.Select)
+            {
+                selectNode = ComposeSelectNode();
+            }
+
+            return new InsertNode(tableNode, fields.ToArray(), values.ToArray(), selectNode);
+        }
+
+        private Node ComposeUpdate()
+        {
+            return null;
         }
 
         private string[] ComposeSetOperatorKeys()
@@ -661,7 +711,7 @@ namespace Traficante.TSQL.Parser
                 Consume(TokenType.From);
             }
 
-            List<string> path = ConsumePath();
+            List<string> path = ConsumeDottedIdentifiers();
             if (Current.TokenType == TokenType.Function)
             {
                 var function = ComposeFunctionMethod(path.ToArray());
@@ -680,7 +730,7 @@ namespace Traficante.TSQL.Parser
             }
         }
 
-        private List<string> ConsumePath()
+        private List<string> ConsumeDottedIdentifiers()
         {
             List<string> path = new List<string>();
             while (Current.TokenType == TokenType.Word ||

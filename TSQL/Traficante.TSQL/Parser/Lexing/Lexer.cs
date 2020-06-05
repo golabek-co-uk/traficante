@@ -201,6 +201,8 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KWhiteSpace = @"[\s]{1,}";
             public static readonly string KWordBracketed = @"N?'((?:''|[^'])*)'";
             public static readonly string KEqual = Format(Keyword, EqualityToken.TokenText);
+            public static readonly string KInsert = Format(Keyword, InsertToken.TokenText);
+            public static readonly string KUpdate = Format(Keyword, UpdateToken.TokenText);
             public static readonly string KSelect = Format(Keyword, SelectToken.TokenText);
             public static readonly string KFrom = Format(Keyword, FromToken.TokenText);
             public static readonly string KIdentifier = @"(#?[\w*?_]){1,}";
@@ -307,6 +309,8 @@ namespace Traficante.TSQL.Parser.Lexing
                 new TokenDefinition(TokenRegexDefinition.KWhiteSpace),
                 new TokenDefinition(TokenRegexDefinition.KUnionAll, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KWordBracketed, RegexOptions.ECMAScript),
+                new TokenDefinition(TokenRegexDefinition.KInsert, RegexOptions.IgnoreCase),
+                new TokenDefinition(TokenRegexDefinition.KUpdate, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KSelect, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KFrom, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KUnion, RegexOptions.IgnoreCase),
@@ -415,6 +419,14 @@ namespace Traficante.TSQL.Parser.Lexing
                     return new WhereToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.WhiteSpace:
                     return new WhiteSpaceToken(new TextSpan(Position, tokenText.Length));
+                case TokenType.Insert:
+                    return new InsertToken(new TextSpan(Position, tokenText.Length));
+                case TokenType.Update:
+                    return new UpdateToken(new TextSpan(Position, tokenText.Length));
+                case TokenType.InTo:
+                    return new InToToken(new TextSpan(Position, tokenText.Length));
+                case TokenType.Values:
+                    return new ValuesToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.From:
                     return new FromToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Select:

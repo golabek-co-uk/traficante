@@ -706,4 +706,4 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
     }
-}
+    }
