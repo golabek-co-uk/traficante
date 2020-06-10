@@ -16,6 +16,8 @@ namespace Traficante.Connect
         {
             if (connector is CsvConnectorConfig csvConfig)
                 Connectors.Add(new CsvConnector(csvConfig));
+            if (connector is JsonConnectorConfig jsonConfig)
+                Connectors.Add(new JsonConnector(jsonConfig));
             if (connector is MySqlConnectorConfig mySqlConfig)
                 Connectors.Add(new MySqlConnector(mySqlConfig));
             if (connector is SqlServerConnectorConfig sqlServerConfig)
