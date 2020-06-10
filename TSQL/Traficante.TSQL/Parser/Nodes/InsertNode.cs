@@ -14,7 +14,7 @@ namespace Traficante.TSQL.Parser.Nodes
         public TableNode Table { get; }
         public FieldNode[] Fields { get; set; }
         public Node[] Values { get; }
-        public SelectNode SelectNode { get; }
+        public SelectNode Select { get; }
         public override string Id { get; }
         public override Type ReturnType { get; }
 

@@ -77,5 +77,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
         void Visit(CaseNode node);
         void Visit(TypeNode node);
         void Visit(NullNode node);
+        void Visit(InsertNode node);
+        void Visit(UpdateNode node);
     }
 }

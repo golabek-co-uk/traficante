@@ -530,6 +530,28 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new ExecuteNode(variableToSet, functionToRun));
         }
 
+        public void Visit(InsertNode node)
+        {
+            var values = new Node[node.Values.Length];
+            for (var i = node.Values.Length - 1; i >= 0; --i)
+                values[i] = (Node)Nodes.Pop();
+
+            SelectNode select = node.Select != null ? (SelectNode)Nodes.Pop() : null;
+
+            var fields = new FieldNode[node.Fields.Length];
+            for (var i = node.Fields.Length - 1; i >= 0; --i)
+                fields[i] = (FieldNode)Nodes.Pop();
+
+            TableNode topNode = node.Table != null ? (TableNode)Nodes.Pop() : null;
+
+            Nodes.Push(new InsertNode(topNode, fields.ToArray(), values.ToArray(), select));
+        }
+
+        public void Visit(UpdateNode node)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetScope(Scope scope)
         {
             CurrentScope = scope;

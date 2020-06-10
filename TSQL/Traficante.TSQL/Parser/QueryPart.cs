@@ -11,6 +11,8 @@ namespace Traficante.TSQL.Parser
         From,
         Where,
         GroupBy,
-        Having
+        Having,
+        Insert,
+        Update
     }
 }

@@ -558,6 +558,23 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+        public void Visit(InsertNode node)
+        {
+            SetQueryPart(QueryPart.Insert);
+            foreach (var value in node.Values)
+                value.Accept(this);
+            node.Select?.Accept(this);
+            foreach (var field in node.Fields)
+                field.Accept(this);
+            node.Table?.Accept(this);
+            node.Accept(_visitor);
+        }
+
+        public void Visit(UpdateNode node)
+        {
+            SetQueryPart(QueryPart.Update);
+        }
+
         public void SetScope(Scope scope)
         {
    

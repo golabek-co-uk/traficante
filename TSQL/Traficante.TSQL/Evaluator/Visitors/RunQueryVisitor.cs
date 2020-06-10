@@ -1569,6 +1569,24 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
+        public void Visit(InsertNode node)
+        {
+            var values = new Expression[node.Values.Length];
+            for (var i = node.Values.Length - 1; i >= 0; --i)
+                values[i] = Nodes.Pop();
+
+            Expression select = node.Select != null ? Nodes.Pop() : null;
+
+            var fields = new Expression[node.Fields.Length];
+            for (var i = node.Fields.Length - 1; i >= 0; --i)
+                fields[i] = Nodes.Pop();
+        }
+
+        public void Visit(UpdateNode node)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetScope(Scope scope)
         {
             // if (scope?.Name == "Query")

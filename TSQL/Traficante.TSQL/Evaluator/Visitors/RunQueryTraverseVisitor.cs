@@ -718,6 +718,23 @@ namespace Traficante.TSQL.Evaluator.Visitors
             }
         }
 
+        public void Visit(InsertNode node)
+        {
+            SetQueryPart(QueryPart.Insert);
+            foreach (var value in node.Values)
+                value.Accept(this);
+            node.Select?.Accept(this);
+            foreach (var field in node.Fields)
+                field.Accept(this);
+            node.Table?.Accept(this);
+            node.Accept(_visitor);
+        }
+
+        public void Visit(UpdateNode node)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SetQueryPart(QueryPart part)
         {
             _visitor.SetQueryPart(part);
