@@ -136,6 +136,7 @@ namespace Traficante.Studio.ViewModels
                     ConnectEngine connectEngine = new ConnectEngine();
                     connectEngine.AddConector(new CsvConnectorConfig { Alias = "csv" });
                     connectEngine.AddConector(new JsonConnectorConfig { Alias = "json" });
+                    connectEngine.AddConector(new ExcelConnectorConfig { Alias = "excel" });
                     foreach (var obj in this.AppData.Objects)
                     {
                         if (obj is SqlServerObjectModel)

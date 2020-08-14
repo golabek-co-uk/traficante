@@ -168,7 +168,7 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 return typeof(string);
 
             if (left == typeof(object) || right == typeof(object))
-                return typeof(object);
+                return typeof(string);
 
             throw new TSQLException($"Cannot find commont type for {left.Name} and {right.Name}");
         }
