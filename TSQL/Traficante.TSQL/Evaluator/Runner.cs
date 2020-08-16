@@ -24,7 +24,7 @@ namespace Traficante.TSQL.Converter
         {
             try
             {
-                this.lexer = new Lexer(script, true);
+                this.lexer = new Lexer(script);
                 this.parser = new Parser.Parser(lexer);
                 this.queryTree = parser.ComposeAll();
 

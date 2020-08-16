@@ -13,7 +13,7 @@ namespace Traficante.TSQL.Tests.Parser
         [TestMethod]
         public void CheckEmptyString_ShouldReturnWordToken()
         {
-            var lexer = new Lexer("''", true);
+            var lexer = new Lexer("''");
 
             var token = lexer.Current();
 
@@ -28,7 +28,7 @@ namespace Traficante.TSQL.Tests.Parser
         [TestMethod]
         public void CheckTestString_ShouldReturnWordToken()
         {
-            var lexer = new Lexer("'test'", true);
+            var lexer = new Lexer("'test'");
 
             var token = lexer.Current();
 
@@ -43,7 +43,7 @@ namespace Traficante.TSQL.Tests.Parser
         [TestMethod]
         public void GetLineAndColumn()
         {
-            var lexer = new Lexer("SELECT * FROME\r\nXYZ x\r\nWHERE x.Id = 1", true);
+            var lexer = new Lexer("SELECT * FROME\r\nXYZ x\r\nWHERE x.Id = 1");
 
             Assert.AreEqual('S', lexer.Input[0]);
             Assert.AreEqual(1, lexer.GetLocation(0).LineNumber);
@@ -69,7 +69,7 @@ namespace Traficante.TSQL.Tests.Parser
             Assert.AreEqual(3, lexer.GetLocation(36).LineNumber);
             Assert.AreEqual(14, lexer.GetLocation(36).ColumnNumber);
 
-            lexer = new Lexer("SELECT * FROME\nXYZ x\nWHERE x.Id = 1", true);
+            lexer = new Lexer("SELECT * FROME\nXYZ x\nWHERE x.Id = 1");
 
             Assert.AreEqual('S', lexer.Input[0]);
             Assert.AreEqual(1, lexer.GetLocation(0).LineNumber);

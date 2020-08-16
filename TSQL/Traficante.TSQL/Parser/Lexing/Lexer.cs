@@ -7,12 +7,9 @@ namespace Traficante.TSQL.Parser.Lexing
 {
     public class Lexer : LexerBase<Token>
     {
-        private readonly bool _skipWhiteSpaces;
-
-        public Lexer(string input, bool skipWhiteSpaces) :
+        public Lexer(string input) :
             base(input, new NoneToken(), DefinitionSets.General)
         {
-            _skipWhiteSpaces = skipWhiteSpaces;
         }
 
         private TokenType GetTokenCandidate(string tokenText, TokenDefinition matchedDefinition)
@@ -170,6 +167,8 @@ namespace Traficante.TSQL.Parser.Lexing
                 return TokenType.OuterJoin;
             if (regex == TokenRegexDefinition.KIdentifier)
                 return TokenType.Identifier;
+            if (regex == TokenRegexDefinition.KComment)
+                return TokenType.Comment;
 
             return TokenType.Word;
         }
@@ -178,6 +177,8 @@ namespace Traficante.TSQL.Parser.Lexing
         {
             private const string Keyword = @"(?<=[\s]{1,}|^){keyword}(?=[\s]{1,}|$)";
             public const string Function = @"[a-zA-Z_-]{1,}[a-zA-Z1-9_-]{1,}[\d]*\s?(?=[\(])";
+
+            public static readonly string KComment = $@"--.*";
 
             public static readonly string KAnd = Format(Keyword, AndToken.TokenText);
             public static readonly string KComma = CommaToken.TokenText;
@@ -257,6 +258,7 @@ namespace Traficante.TSQL.Parser.Lexing
             public static readonly string KDeclare = Format(Keyword, DeclareToken.TokenText);
             public static readonly string KSet = Format(Keyword, SetToken.TokenText);
 
+
             private static string Format(string keyword, string arg)
             {
                 try
@@ -274,6 +276,7 @@ namespace Traficante.TSQL.Parser.Lexing
         {
             public static TokenDefinition[] General => new[]
             {
+                new TokenDefinition(TokenRegexDefinition.KComment),
                 new TokenDefinition(TokenRegexDefinition.KDesc, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KAsc, RegexOptions.IgnoreCase),
                 new TokenDefinition(TokenRegexDefinition.KLike, RegexOptions.IgnoreCase),
@@ -347,13 +350,14 @@ namespace Traficante.TSQL.Parser.Lexing
 
                 new TokenDefinition(TokenRegexDefinition.KIdentifier),
                 new TokenDefinition(TokenRegexDefinition.KIdentifierBracketed, subPattern: TokenRegexDefinition.KIdentifierBracketedValue),
+
             };
         }
 
         public override Token Next()
         {
             var token = base.Next();
-            while (_skipWhiteSpaces && token.TokenType == TokenType.WhiteSpace)
+            while (token.TokenType == TokenType.WhiteSpace || token.TokenType == TokenType.Comment)
                 token = base.Next();
             return token;
         }
@@ -371,6 +375,8 @@ namespace Traficante.TSQL.Parser.Lexing
 
             switch (token)
             {
+                case TokenType.Comment:
+                    return new CommentToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Desc:
                     return new DescToken(new TextSpan(Position, tokenText.Length));
                 case TokenType.Asc:

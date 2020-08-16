@@ -2,6 +2,7 @@
 {
     public enum TokenType : short
     {
+        Comment,
         Word,
         Decimal,
         LeftParenthesis,
