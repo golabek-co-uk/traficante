@@ -115,11 +115,6 @@ namespace Traficante.TSQL.Evaluator.Helpers
             return fieldsBuilder;
         }
 
-        //      return typeInfo.IsPrimitive 
-        //|| typeInfo.IsEnum
-        //|| type.Equals(typeof(string))
-        //|| type.Equals(typeof(decimal));
-
         private static List<FieldBuilder> AddFields(TypeBuilder dynamicTypeBuilder, IEnumerable<(string Name, Type Type, string ColumnName, string TableName, string TableAlias)> fields)
         {
             List<FieldBuilder> fieldsBuilder = new List<FieldBuilder>();
@@ -174,29 +169,24 @@ namespace Traficante.TSQL.Evaluator.Helpers
 
                 Label gotoIsNull = il.DefineLabel();
 
+                il.Emit(OpCodes.Ldc_I4_S, 23); // put "23" on the stack
+                il.Emit(OpCodes.Mul); // multiply "23 x last hash" and put result on the stack
+
                 il.Emit(OpCodes.Ldarg_0); // put "this" on the stack
                 il.Emit(OpCodes.Ldfld, field); // put "this.field" on the stack
+                if (field.FieldType.IsValueType)
+                    il.Emit(OpCodes.Box, field.FieldType); // box a value type into a ref type if needed
                 il.Emit(OpCodes.Ldnull); // put "null" on the stack
                 il.Emit(OpCodes.Ceq); // if "this.field" is "null"
                 il.Emit(OpCodes.Brtrue, gotoIsNull); // if "this.field" is null, goto IsNull
 
-                // "this.field" is not null
-                il.Emit(OpCodes.Ldc_I4_S, 23); // put "23" on the stack
-                il.Emit(OpCodes.Mul); // multiply "23 x last hash" and put result on the stack
-
+                il.Emit(OpCodes.Ldarg_0); // put "this" on the stack
+                il.Emit(OpCodes.Ldfld, field); // put "this.field" on the stack
                 if (field.FieldType.IsValueType)
                 {
-
                     int localIndex = il.DeclareLocal(field.FieldType).LocalIndex; // declare the local variable
-                    il.Emit(OpCodes.Ldarg_0); // put "this" on the stack
-                    il.Emit(OpCodes.Ldfld, field); // put "this.field" on the stack
                     il.Emit(OpCodes.Stloc, localIndex); // assign the value to the local variable
                     il.Emit(OpCodes.Ldloca_S, localIndex); // load reference to the value from the local variable
-                }
-                else
-                {
-                    il.Emit(OpCodes.Ldarg_0); // put "this" on the stack
-                    il.Emit(OpCodes.Ldfld, field); // put "this.field" on the stack
                 }
 
                 il.Emit(OpCodes.Call, field.FieldType.GetMethod("GetHashCode", new Type[] { })); // call "GetHashCode" and put result on the stack
@@ -232,8 +222,14 @@ namespace Traficante.TSQL.Evaluator.Helpers
             {
                 il.Emit(OpCodes.Ldarg_0); // put "this" on the stack
                 il.Emit(OpCodes.Ldfld, field); // put "this.field" on the stack 
+                if (field.FieldType.IsValueType) // box a value type into a ref type if needed
+                    il.Emit(OpCodes.Box, field.FieldType); // box a value type into a ref type if needed
+
                 il.Emit(OpCodes.Ldarg_1); //put "objecToCompare" on the stack
                 il.Emit(OpCodes.Ldfld, field); //put "objecToCompare.field" on the stack
+                if (field.FieldType.IsValueType) // box a value type into a ref type if needed
+                    il.Emit(OpCodes.Box, field.FieldType); // box a value type into a ref type if needed
+
                 il.Emit(OpCodes.Call, typeof(Object).GetMethod("Equals", new Type[] { typeof(object), typeof(object) }));
                 il.Emit(OpCodes.Brfalse, goToFalse); //if Equals returned false, go to  "goToFalse" lable
             }
@@ -272,19 +268,21 @@ namespace Traficante.TSQL.Evaluator.Helpers
 
             var il = equals.GetILGenerator();
             Label goToFalse = il.DefineLabel();
-
             foreach (var field in fieldsBuilder)
             {
                 il.Emit(OpCodes.Ldarg_1); // put "obj1" on the stack
                 il.Emit(OpCodes.Ldfld, field); // put "obj1.field" on the stack 
+                if (field.FieldType.IsValueType) // box a value type into a ref type if needed
+                    il.Emit(OpCodes.Box, field.FieldType); // box a value type into a ref type if needed
+
                 il.Emit(OpCodes.Ldarg_2); //put "obj2" on the stack
                 il.Emit(OpCodes.Ldfld, field); //put "obj2.field" on the stack
+                if (field.FieldType.IsValueType)
+                    il.Emit(OpCodes.Box, field.FieldType); // box a value type into a ref type if needed
 
-                il.Emit(OpCodes.Ceq); //if obj1.field == obj2.field, put 1 else 0 on the stuck
-                il.Emit(OpCodes.Brfalse, goToFalse); // if 0 on the stuck, return false
                 // TODO: replace OpCodes.Ceq with the following code
-                //il.Emit(OpCodes.Call, typeof(Object).GetMethod("Equals", new Type[] { typeof(object), typeof(object) }));
-                //il.Emit(OpCodes.Brfalse, goToFalse); //if Equals returned false, go to  "goToFalse" lable
+                il.Emit(OpCodes.Call, typeof(Object).GetMethod("Equals", new Type[] { typeof(object), typeof(object) }));
+                il.Emit(OpCodes.Brfalse, goToFalse); //if Equals returned false, go to  "goToFalse" lable
             }
             il.Emit(OpCodes.Ldc_I4_1); // put true on the stack
             il.Emit(OpCodes.Ret);// return true
@@ -317,32 +315,32 @@ namespace Traficante.TSQL.Evaluator.Helpers
             il.Emit(OpCodes.Ldc_I4_S, 17); // put "17" on the stack
             foreach (var field in fieldsBuilder)
             {
+                if (field.FieldType.IsValueType == false && field.FieldType.GenericTypeArguments.Length > 0)
+                    continue;
+
                 Label gotoIsNull = il.DefineLabel();
 
+                il.Emit(OpCodes.Ldc_I4_S, 23); // put "23" on the stack
+                il.Emit(OpCodes.Mul); // multiply "23 x last hash" and put result on the stack
+
+                // if (obj.field != null)
                 il.Emit(OpCodes.Ldarg_1); // put "obj" on the stack
                 il.Emit(OpCodes.Ldfld, field); // put "obj.field" on the stack
+                if (field.FieldType.IsValueType)
+                    il.Emit(OpCodes.Box, field.FieldType); // box a value type into a ref type if needed
                 il.Emit(OpCodes.Ldnull); // put "null" on the stack
                 il.Emit(OpCodes.Ceq); // if "obj.field" is "null"
                 il.Emit(OpCodes.Brtrue, gotoIsNull); // if "this.field" is null, goto IsNull
 
-                // "this.field" is not null
-                il.Emit(OpCodes.Ldc_I4_S, 23); // put "23" on the stack
-                il.Emit(OpCodes.Mul); // multiply "23 x last hash" and put result on the stack
-
+                il.Emit(OpCodes.Ldarg_1); // put "obj" on the stack
+                il.Emit(OpCodes.Ldfld, field); // put "obj.field" on the stack
                 if (field.FieldType.IsValueType)
                 {
-
                     int localIndex = il.DeclareLocal(field.FieldType).LocalIndex; // declare the local variable
-                    il.Emit(OpCodes.Ldarg_1); // put "obj" on the stack
-                    il.Emit(OpCodes.Ldfld, field); // put "obj.field" on the stack
                     il.Emit(OpCodes.Stloc, localIndex); // assign the value to the local variable
                     il.Emit(OpCodes.Ldloca_S, localIndex); // load reference to the value from the local variable
                 }
-                else
-                {
-                    il.Emit(OpCodes.Ldarg_1); // put "obj" on the stack
-                    il.Emit(OpCodes.Ldfld, field); // put "obj.field" on the stack
-                }
+
                 il.Emit(OpCodes.Call, field.FieldType.GetMethod("GetHashCode", new Type[] { })); // call "GetHashCode" and put result on the stack
                 il.Emit(OpCodes.Add); // add result of "23 x last hash"  to result of "GetHashCode" and put is on the stack
 
