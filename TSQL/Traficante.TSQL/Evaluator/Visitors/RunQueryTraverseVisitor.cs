@@ -16,6 +16,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
     {
         private readonly RunQueryVisitor _visitor;
         private readonly CancellationToken _cancellationToken;
+        private readonly Stack<Query> _queries = new Stack<Query>();
 
         public RunQueryTraverseVisitor(RunQueryVisitor visitor, CancellationToken cancellationToken)
         {
@@ -215,6 +216,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+        public void Visit(FromSubQueryNode node)
+        {
+            SetQueryPart(QueryPart.From);
+            node.SubQuery.Accept(this);
+            node.Accept(_visitor);
+        }
+
         public void Visit(InMemoryTableFromNode node)
         {
             SetQueryPart(QueryPart.From);
@@ -353,9 +361,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(QueryNode node)
         {
-            Query queryState = new Query();
-            queryState.QueryNode = node;
-            _visitor.SetQuery(queryState);
+            Query query = new Query();
+            query.QueryNode = node;
+            _queries.Push(query);
+
+            _visitor.SetQuery(query);
 
             node.From?.Accept(this);
             node.Where?.Accept(this);
@@ -371,6 +381,10 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
 
             SetQueryPart(QueryPart.None);
+
+            _queries.Pop();
+            if (_queries.Any())
+                _visitor.SetQuery(_queries.Peek());
         }
 
         public void Visit(OrNode node)

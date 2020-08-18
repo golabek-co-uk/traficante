@@ -981,8 +981,21 @@ namespace Traficante.TSQL.Evaluator.Visitors
                 Type resultItemType = _typeBuilder.CreateAnonymousType(tableData.ResultFields, node.Table.TableOrView, node.Alias);
                 return resultItemExpression.MapTo(resultItemType);
             });
-            
 
+            Nodes.Push(sequence);
+        }
+
+        public void Visit(FromSubQueryNode node)
+        {
+            var sequence = Nodes.Pop();
+            sequence = sequence.Select(item =>
+            {
+                Type resultItemType = _typeBuilder.CreateAnonymousType(
+                    item.Type.GetFields().Select(x => (x.Name, x.FieldType)), 
+                    node.Alias, 
+                    node.Alias);
+                return item.MapTo(resultItemType);
+            });
             Nodes.Push(sequence);
         }
 
@@ -1024,7 +1037,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
 
         public void Visit(SingleSetNode node)
         {
-            throw new NotImplementedException();
+
         }
 
         public void Visit(UnionNode node)

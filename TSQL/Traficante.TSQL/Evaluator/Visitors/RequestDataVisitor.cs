@@ -44,6 +44,11 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(new FromFunctionNode(node.Function, node.Alias));
         }
 
+        public void Visit(FromSubQueryNode node)
+        {
+            Nodes.Push(new FromSubQueryNode(node.SubQuery, node.Alias));
+        }
+
         public void Visit(InMemoryTableFromNode node)
         {
             Nodes.Push(new InMemoryTableFromNode(node.VariableName, node.Alias));

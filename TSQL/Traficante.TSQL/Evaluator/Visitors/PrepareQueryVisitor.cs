@@ -44,6 +44,12 @@ namespace Traficante.TSQL.Evaluator.Visitors
             Nodes.Push(aliasedSchemaFromNode);
         }
 
+        public void Visit(FromSubQueryNode node)
+        {
+            var aliasedSchemaFromNode = new FromSubQueryNode(node.SubQuery, node.Alias);
+            Nodes.Push(aliasedSchemaFromNode);
+        }
+
         public void Visit(InMemoryTableFromNode node)
         {
             var alias = string.IsNullOrEmpty(node.Alias) ? node.VariableName : node.Alias;

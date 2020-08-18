@@ -712,6 +712,14 @@ namespace Traficante.TSQL.Parser
             }
 
             List<string> path = ConsumeDottedIdentifiers();
+            if (Current.TokenType == TokenType.LeftParenthesis)
+            {
+                Consume(TokenType.LeftParenthesis);
+                var statementNode = ComposeAndSkipIfPresent(p => new StatementNode(p.ComposeSetOps(0)), TokenType.RightParenthesis);
+                var alias = ComposeAlias();
+                return new FromSubQueryNode(statementNode, alias);
+            }
+            else
             if (Current.TokenType == TokenType.Function)
             {
                 var function = ComposeFunctionMethod(path.ToArray());

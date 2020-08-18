@@ -6,58 +6,8 @@ using System.Text;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core
 {
-    class Trainer
-
-    {
-
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-
-    }
-
-
-
-    public class TrainerPet
-
-    {
-
-        public int TrainerId { get; set; }
-
-        public int PetId { get; set; }
-
-    }
-
-
-
-    class Pet
-
-    {
-
-        public int Id { get; set; }
-
-        public string Name { get; set; }
-
-    }
-
-
-
-    class Output
-
-    {
-
-        public Trainer Trainer { get; set; }
-
-        public TrainerPet TrainerPet { get; set; }
-
-        public Pet Pet { get; set; }
-
-    }
-
-
-
     [TestClass]
-    public class Tests : TestBase
+    public class QueryableTests : TestBase
     {
         [TestMethod]
         public void GroupByTest()
@@ -111,5 +61,30 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                                    });
             }).ToList();
         }
+    }
+
+    class Trainer
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class TrainerPet
+    {
+        public int TrainerId { get; set; }
+        public int PetId { get; set; }
+    }
+
+    class Pet
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    class Output
+    {
+        public Trainer Trainer { get; set; }
+        public TrainerPet TrainerPet { get; set; }
+        public Pet Pet { get; set; }
     }
 }

@@ -2,16 +2,16 @@
 
 namespace Traficante.TSQL.Parser.Nodes
 {
-    public class FromTableNode : FromNode
+    public class FromSubQueryNode : FromNode
     {
-        public FromTableNode(TableNode table, string alias)
+        public FromSubQueryNode(StatementNode subQuery, string alias)
             : base(alias)
         {
-            Table = table;
-            Id = $"{nameof(FromTableNode)}{table.Id}{Alias}";
+            SubQuery = subQuery;
+            Id = $"{nameof(FromSubQueryNode)}{subQuery.Id}{Alias}";
         }
 
-        public TableNode Table { get; set; }
+        public StatementNode SubQuery { get; set; }
 
         public override string Id { get; }
 
@@ -23,7 +23,7 @@ namespace Traficante.TSQL.Parser.Nodes
         public override string ToString()
         {
 
-            return $"from {Table} {Alias}";
+            return $"from {SubQuery} {Alias}";
         }
 
         public override int GetHashCode()
@@ -33,7 +33,7 @@ namespace Traficante.TSQL.Parser.Nodes
 
         public override bool Equals(object obj)
         {
-            if (obj is FromTableNode node)
+            if (obj is FromSubQueryNode node)
                 return node.Id == Id;
 
             return base.Equals(obj);

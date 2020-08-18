@@ -178,6 +178,13 @@ namespace Traficante.TSQL.Evaluator.Visitors
             node.Accept(_visitor);
         }
 
+        public void Visit(FromSubQueryNode node)
+        {
+            SetQueryPart(QueryPart.From);
+            node.SubQuery.Accept(this);
+            node.Accept(_visitor);
+        }
+
         public void Visit(InMemoryTableFromNode node)
         {
             SetQueryPart(QueryPart.From);

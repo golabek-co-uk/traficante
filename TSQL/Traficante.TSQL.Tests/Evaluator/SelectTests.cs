@@ -502,7 +502,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             Assert.AreEqual(0.9m, table[0][0]);
         }
-        
+
         [TestMethod]
         public void CaseWhenSimpleTest()
         {
@@ -672,7 +672,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
 
             Assert.AreEqual("As Aliased Money", table.Columns.ElementAt(4).ColumnName);
             Assert.AreEqual(100m, table[0][2]);
-                
+
         }
 
         [TestMethod]
@@ -706,4 +706,4 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
         }
 
     }
-    }
+}
