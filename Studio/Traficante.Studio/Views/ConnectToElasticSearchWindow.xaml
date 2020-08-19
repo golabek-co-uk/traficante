@@ -31,6 +31,6 @@
       <Button Name="Cancel" Margin="10,0,0,0">Cancel</Button>
     </StackPanel>
     <TextBlock Grid.Row="3"></TextBlock>
-    <TextBlock Text="{Binding ConnectError}" Grid.Row="2" Grid.Column="1"></TextBlock>
+    <TextBox Name="Errors" Grid.Row="3" Grid.Column="1" AcceptsReturn="True" TextWrapping="Wrap" Foreground="Red" Background="Transparent" BorderThickness="0"></TextBox>
   </Grid>
 </Window>

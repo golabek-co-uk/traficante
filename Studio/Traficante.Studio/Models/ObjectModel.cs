@@ -73,4 +73,9 @@ namespace Traficante.Studio.Models
     {
         string GetFieldName();
     }
+
+    public interface IAliasObjectModel
+    {
+        string GetAlias();
+    }
 }

@@ -49,8 +49,11 @@
     <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.9.9" />
     <PackageReference Include="Dock.Model" Version="0.9.9" />
     <PackageReference Include="Dock.Model.ReactiveUI" Version="0.9.9" />
-    <PackageReference Include="DynamicData" Version="6.16.3" />
+    <PackageReference Include="DynamicData" Version="6.16.6" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="ReactiveUI" Version="11.5.26" />
+    <PackageReference Include="ReactiveUI.Fody" Version="11.5.26" />
+    <PackageReference Include="ReactiveUI.Validation" Version="1.5.5" />
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
   <ItemGroup>
@@ -123,11 +126,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controls\" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Views\EditorView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controls\" />
   </ItemGroup>
 </Project>

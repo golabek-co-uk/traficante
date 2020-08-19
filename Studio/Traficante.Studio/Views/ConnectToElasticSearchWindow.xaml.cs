@@ -1,10 +1,15 @@
-﻿using Avalonia;
+﻿using System;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
-using System.Reactive;
-using System.Reactive.Disposables;
+using Traficante.Studio.Models;
+using Traficante.Studio.Services;
 using Traficante.Studio.ViewModels;
 
 namespace Traficante.Studio.Views
@@ -16,7 +21,8 @@ namespace Traficante.Studio.Views
         public Button Cancel => this.FindControl<Button>("Cancel");
         public TextBox Alias => this.FindControl<TextBox>("Alias");
         public TextBox Server => this.FindControl<TextBox>("Server");
-        
+        public TextBox Errors => this.FindControl<TextBox>("Errors");
+
         public ConnectToElasticSearchWindow()
         {
             this.InitializeComponent();
@@ -46,11 +52,17 @@ namespace Traficante.Studio.Views
 
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)
                     .DisposeWith(disposables);
-
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Server, x => x.Server.Text)
                     .DisposeWith(disposables);
-                this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.Server.IsEnabled)
+                ViewModel.ConnectCommand.IsExecuting
+                    .Select(isExecuting => !isExecuting)
+                    .Subscribe(canChange => {
+                        this.Alias.IsEnabled = canChange;
+                        this.Server.IsEnabled = canChange;
+                    })
                     .DisposeWith(disposables);
+
+                this.Bind(ViewModel, x => x.Errors, x => x.Errors.Text);
             });
 
             AvaloniaXamlLoader.Load(this);

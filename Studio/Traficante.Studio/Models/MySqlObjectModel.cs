@@ -12,7 +12,7 @@ using Traficante.Studio.Services;
 
 namespace Traficante.Studio.Models
 {
-    public class MySqlObjectModel : ObjectModel
+    public class MySqlObjectModel : ObjectModel, IAliasObjectModel
     {
         [DataMember]
         public MySqlConnectionModel ConnectionInfo { get; set; }
@@ -41,6 +41,11 @@ namespace Traficante.Studio.Models
                     return Observable.Empty<object>();
                 })
                 .Subscribe(x => Items.Add(x));
+        }
+
+        public string GetAlias()
+        {
+            return this.ConnectionInfo.Alias;
         }
     }
 

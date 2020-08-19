@@ -58,7 +58,7 @@ namespace Traficante.TSQL.Evaluator.Tests.Core
                 new Person { Id = 2, FirstName = "Joe", LastName = "Smith" }
             });
 
-            var result = sut.RunAndReturnTable("SELECT * FROM (SELECT * FROM Person WHERE (FirstName = 'Joe')) a");
+            var result = sut.RunAndReturnTable("SELECT * FROM (SELECT * FROM Person WHERE ((FirstName = 'Joe') AND (FirstName = 'Joe')) a");
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual("Joe", result[0][1]);
         }

@@ -12,7 +12,7 @@ using Traficante.Connect.Connectors;
 
 namespace Traficante.Studio.Models
 {
-    public class ElasticSearchObjectModel : ObjectModel
+    public class ElasticSearchObjectModel : ObjectModel, IAliasObjectModel
     {
         [DataMember]
         public ElasticSearchConnectionModel ConnectionInfo { get; set; }
@@ -51,6 +51,11 @@ namespace Traficante.Studio.Models
                     return Observable.Empty<object>();
                 })
                 .Subscribe(x => Items.Add(x));
+        }
+
+        public string GetAlias()
+        {
+            return this.ConnectionInfo.Alias;
         }
     }
 

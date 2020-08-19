@@ -1,10 +1,15 @@
-﻿using Avalonia;
+﻿using System;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
-using System.Reactive;
-using System.Reactive.Disposables;
+using Traficante.Studio.Models;
+using Traficante.Studio.Services;
 using Traficante.Studio.ViewModels;
 
 namespace Traficante.Studio.Views
@@ -18,6 +23,7 @@ namespace Traficante.Studio.Views
         public TextBox ServerName => this.FindControl<TextBox>("ServerName");
         public TextBox UserId => this.FindControl<TextBox>("UserId");
         public TextBox Password => this.FindControl<TextBox>("Password");
+        public TextBox Errors => this.FindControl<TextBox>("Errors");
 
         public ConnectToMySqlWindow()
         {
@@ -38,32 +44,29 @@ namespace Traficante.Studio.Views
 
                 ViewModel.CloseInteraction.RegisterHandler(x =>
                 {
-                    try
-                    {
-                        this.Window.Close();
-                    }
-                    catch { }
+                    try { this.Window.Close(); } catch { }
                     x.SetOutput(Unit.Default);
                 });
 
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)
                     .DisposeWith(disposables);
-
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Server, x => x.ServerName.Text)
                     .DisposeWith(disposables);
-                this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.ServerName.IsEnabled)
-                    .DisposeWith(disposables);
-
-
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.UserId, x => x.UserId.Text)
                     .DisposeWith(disposables);
-                this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.UserId.IsEnabled)
-                    .DisposeWith(disposables);
-
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Password, x => x.Password.Text)
                     .DisposeWith(disposables);
-                this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.Password.IsEnabled)
+                ViewModel.ConnectCommand.IsExecuting
+                    .Select(isExecuting => !isExecuting)
+                    .Subscribe(canChange => {
+                        this.Alias.IsEnabled = canChange;
+                        this.ServerName.IsEnabled = canChange;
+                        this.UserId.IsEnabled = canChange;
+                        this.Password.IsEnabled = canChange;
+                    })
                     .DisposeWith(disposables);
+
+                this.Bind(ViewModel, x => x.Errors, x => x.Errors.Text);
             });
 
             AvaloniaXamlLoader.Load(this);

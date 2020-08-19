@@ -3,8 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
+using ReactiveUI.Validation.Extensions;
+using System;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Traficante.Studio.ViewModels;
 
 namespace Traficante.Studio.Views
@@ -16,6 +19,8 @@ namespace Traficante.Studio.Views
         public Button Cancel => this.FindControl<Button>("Cancel");
         public TextBox Alias => this.FindControl<TextBox>("Alias");
         public TextBox Database => this.FindControl<TextBox>("Database");
+        public Button DatabaseFileSelector => this.FindControl<Button>("DatabaseFileSelector");
+        public TextBox Errors => this.FindControl<TextBox>("Errors");
 
         public ConnectToSqliteWindow()
         {
@@ -36,21 +41,28 @@ namespace Traficante.Studio.Views
 
                 ViewModel.CloseInteraction.RegisterHandler(x =>
                 {
-                    try
-                    {
-                        this.Window.Close();
-                    }
-                    catch { }
+                    try { this.Window.Close(); } catch { }
                     x.SetOutput(Unit.Default);
                 });
 
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)
                     .DisposeWith(disposables);
-
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Database, x => x.Database.Text)
                     .DisposeWith(disposables);
-                this.OneWayBind(ViewModel, x => x.CanChangeControls, x => x.Database.IsEnabled)
+                this.BindCommand(ViewModel, x => x.DatabaseFileSelectorCommand, x => x.DatabaseFileSelector)
                     .DisposeWith(disposables);
+                ViewModel.ConnectCommand.IsExecuting
+                    .Select(isExecuting => !isExecuting)
+                    .Subscribe(canChange => {
+                        this.Alias.IsEnabled = canChange;
+                        this.Database.IsEnabled = canChange;
+                        this.DatabaseFileSelector.IsEnabled = canChange;
+                    })
+                    .DisposeWith(disposables);
+
+                this.Bind(ViewModel, x => x.Errors, x => x.Errors.Text);
+
+                ViewModel.Window = this;
             });
 
             AvaloniaXamlLoader.Load(this);

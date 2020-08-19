@@ -1,8 +1,10 @@
 ﻿using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
@@ -13,43 +15,26 @@ namespace Traficante.Studio.ViewModels
 {
     public class ConnectToSqlServerWindowViewModel : ViewModelBase
     {
+        public AppData AppData { get; set; }
+
         public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        private SqlServerObjectModel _input;
-        public SqlServerObjectModel Input
-        {
-            get => _input;
-            set => this.RaiseAndSetIfChanged(ref _input, value);
-        }
+        [Reactive]
+        public SqlServerObjectModel Input { get; set; }
 
-        private SqlServerObjectModel _inputOrginal;
-        public SqlServerObjectModel InputOrginal
-        {
-            get => _inputOrginal;
-            set => this.RaiseAndSetIfChanged(ref _inputOrginal, value);
-        }
+        [Reactive]
+        public SqlServerObjectModel InputOrginal { get; set; }
 
+        [Reactive]
         public SqlServerObjectModel Output { get; set; }
 
-        private string _connectError;
-        public string ConnectError
-        {
-            get => _connectError;
-            set => this.RaiseAndSetIfChanged(ref _connectError, value);
-        }
+        [Reactive]
+        public string Errors { get; set; }
 
         private readonly ObservableAsPropertyHelper<bool> _isConnecting;
-        public bool IsConnecting  => _isConnecting.Value;
-
-        private readonly ObservableAsPropertyHelper<bool> _canChangeServerAndAuthentication;
-        public bool CanChangeServerAndAuthentication => _canChangeServerAndAuthentication.Value;
-
-        private readonly ObservableAsPropertyHelper<bool> _canChangeUserIdAndPassword;
-        public bool CanChangeUserIdAndPassword => _canChangeUserIdAndPassword.Value;
-
-        public AppData AppData { get; set; }
+        public bool IsConnecting => _isConnecting.Value;
 
         public ConnectToSqlServerWindowViewModel(SqlServerObjectModel input, AppData appData)
         {
@@ -58,33 +43,17 @@ namespace Traficante.Studio.ViewModels
             AppData = appData;
 
             ConnectCommand = ReactiveCommand
-                .CreateFromObservable( () =>  
-                    Observable
-                        .StartAsync(ct => Connect(ct))
-                        .TakeUntil(this.CancelCommand));
+                .CreateFromObservable(() =>
+                   Observable
+                       .StartAsync(ct => Connect(ct))
+                       .TakeUntil(this.CancelCommand));
+            ConnectCommand.IsExecuting
+                .ToProperty(this, x => x.IsConnecting, out _isConnecting);
 
             CancelCommand = ReactiveCommand
                 .CreateFromObservable(() =>
                    Observable
                        .StartAsync(ct => Cancel()));
-
-            //CancelCommand = ReactiveCommand
-            //    .CreateFromObservable(() =>
-            //        Observable
-            //            .ObserveOn(RxApp.MainThreadScheduler)
-            //            .StartAsync(ct => Cancel(ct)));
-
-            ConnectCommand.IsExecuting
-                .ToProperty(this, x => x.IsConnecting, out _isConnecting);
-
-            ConnectCommand.IsExecuting
-                .Select(x => x == false)
-                .ToProperty(this, x => x.CanChangeServerAndAuthentication, out _canChangeServerAndAuthentication);
-
-            Observable.Merge(
-                    ConnectCommand.IsExecuting.Select(x => x == false), 
-                    this.Input.WhenAnyValue(x => x.ConnectionInfo.Authentication).Select(x => x == Models.SqlServerAuthentication.SqlServer))
-                .ToProperty(this, x => x.CanChangeUserIdAndPassword, out _canChangeUserIdAndPassword);
         }
 
         private async Task<Unit> Cancel()
@@ -94,27 +63,50 @@ namespace Traficante.Studio.ViewModels
             return Unit.Default;
         }
 
+        public (bool IsValid, string Errors) Validate()
+        {
+            StringBuilder errors = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Alias))
+                errors.AppendLine("Alias is required.");
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Server))
+                errors.AppendLine("Server is required.");
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.UserId)
+                && Input.ConnectionInfo.Authentication == Models.SqlServerAuthentication.SqlServer)
+                errors.AppendLine("UserId is required.");
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Password)
+                && Input.ConnectionInfo.Authentication == Models.SqlServerAuthentication.SqlServer)
+                errors.AppendLine("Password is required.");
+            return (errors.Length == 0, errors.ToString());
+        }
+
         private async Task<Unit> Connect(CancellationToken ct)
         {
+            Errors = string.Empty;
             try
             {
-                ConnectError = string.Empty;
+                var isValid = Validate();
+                if (isValid.IsValid == false)
+                {
+                    Errors = isValid.Errors;
+                    return Unit.Default;
+                }
+
                 await new SqlServerConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
-                Output = Input;
+
                 if (InputOrginal != null)
-                {
-                    var index = AppData.Objects.IndexOf(InputOrginal);
-                    AppData.Objects.RemoveAt(index);
-                    AppData.Objects.Insert(index, Input);
-                }
+                    AppData.UpdateObject(InputOrginal, Input);
                 else
-                {
-                    AppData.Objects.Add(Output);
-                }
+                    AppData.AddObject(Input);
+
+                Output = Input;
                 await CloseInteraction.Handle(Unit.Default);
-            } catch(Exception ex)
+            }
+            catch(TaskCanceledException)
             {
-                ConnectError = ex.Message;
+            }
+            catch(Exception ex)
+            {
+                Errors = ex.Message;
             }
             return Unit.Default;
         }

@@ -13,7 +13,7 @@ using Traficante.Studio.Services;
 
 namespace Traficante.Studio.Models
 {
-    public class SqlServerObjectModel : ObjectModel
+    public class SqlServerObjectModel : ObjectModel, IAliasObjectModel
     {
         [DataMember]
         public SqlServerConnectionModel ConnectionInfo { get; set; }
@@ -45,6 +45,11 @@ namespace Traficante.Studio.Models
                     return Observable.Empty<object>();
                 })
                 .Subscribe(x => Items.Add(x));
+        }
+
+        public string GetAlias()
+        {
+            return this.ConnectionInfo.Alias;
         }
     }
 

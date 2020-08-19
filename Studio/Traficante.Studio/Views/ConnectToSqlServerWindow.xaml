@@ -3,7 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="200"
-        Width="400" Height="250"
+        Width="400" Height="300"
         x:Class="Traficante.Studio.Views.ConnectToSqlServerWindow"
         x:Name="Window"
         Title="Connect To SqlServer">
@@ -40,6 +40,6 @@
       <Button Name="Cancel" Margin="10,0,0,0">Cancel</Button>
     </StackPanel>
     <TextBlock Grid.Row="6"></TextBlock>
-    <TextBlock Text="{Binding ConnectError}" Grid.Row="6" Grid.Column="1"></TextBlock>
+    <TextBox Name="Errors" Grid.Row="6" Grid.Column="1" AcceptsReturn="True" TextWrapping="Wrap" Foreground="Red" Background="Transparent" BorderThickness="0"></TextBox>
   </Grid>
 </Window>

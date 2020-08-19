@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -22,6 +23,9 @@ namespace Traficante.Connect.Connectors
         {
             using (SqliteConnection connection = new SqliteConnection())
             {
+                if (File.Exists(this.Config.Database) == false)
+                    throw new Exception($"File {this.Config.Database} does not exist.");
+
                 connection.ConnectionString = this.Config.ToConnectionString();
                 await connection.OpenAsync(ct);
             }

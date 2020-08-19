@@ -1,4 +1,5 @@
 ﻿using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.Reactive;
@@ -12,7 +13,7 @@ using Traficante.Studio.Services;
 
 namespace Traficante.Studio.Models
 {
-    public class SqliteObjectModel : ObjectModel
+    public class SqliteObjectModel : ObjectModel, IAliasObjectModel
     {
         [DataMember]
         public SqliteConnectionModel ConnectionInfo { get; set; }
@@ -51,6 +52,11 @@ namespace Traficante.Studio.Models
                     return Observable.Empty<object>();
                 })
                 .Subscribe(x => Items.Add(x));
+        }
+
+        public string GetAlias()
+        {
+            return this.ConnectionInfo.Alias;
         }
     }
 
@@ -204,9 +210,11 @@ namespace Traficante.Studio.Models
     public class SqliteConnectionModel : ReactiveObject
     {
         [DataMember]
+        [Reactive]
         public string Alias { get; set; }
 
         [DataMember]
+        [Reactive]
         public string Database { get; set; }
         
         public SqliteConnectorConfig ToConectorConfig()

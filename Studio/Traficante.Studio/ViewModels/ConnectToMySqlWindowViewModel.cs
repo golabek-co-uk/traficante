@@ -1,9 +1,14 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Controls;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using System;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Traficante.Connect.Connectors;
 using Traficante.Studio.Models;
 using Traficante.Studio.Services;
 
@@ -11,41 +16,26 @@ namespace Traficante.Studio.ViewModels
 {
     public class ConnectToMySqlWindowViewModel : ViewModelBase
     {
+        public AppData AppData { get; set; }
         public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        private MySqlObjectModel _input;
-        public MySqlObjectModel Input
-        {
-            get => _input;
-            set => this.RaiseAndSetIfChanged(ref _input, value);
-        }
+        [Reactive]
+        public MySqlObjectModel Input { get; set; }
 
-        private MySqlObjectModel _inputOrginal;
-        public MySqlObjectModel InputOrginal
-        {
-            get => _inputOrginal;
-            set => this.RaiseAndSetIfChanged(ref _inputOrginal, value);
-        }
+        [Reactive]
+        public MySqlObjectModel InputOrginal { get; set; }
 
+        [Reactive]
         public MySqlObjectModel Output { get; set; }
 
-        private string _connectError;
-        public string ConnectError
-        {
-            get => _connectError;
-            set => this.RaiseAndSetIfChanged(ref _connectError, value);
-        }
+        [Reactive]
+        public string Errors { get; set; }
 
         private readonly ObservableAsPropertyHelper<bool> _isConnecting;
         public bool IsConnecting => _isConnecting.Value;
-
-        private readonly ObservableAsPropertyHelper<bool> _canChangeControls;
-        public bool CanChangeControls => _canChangeControls.Value;
-
-
-        public AppData AppData { get; set; }
+ 
 
         public ConnectToMySqlWindowViewModel(MySqlObjectModel input, AppData appData)
         {
@@ -58,19 +48,13 @@ namespace Traficante.Studio.ViewModels
                    Observable
                        .StartAsync(ct => Connect(ct))
                        .TakeUntil(this.CancelCommand));
+            ConnectCommand.IsExecuting
+                .ToProperty(this, x => x.IsConnecting, out _isConnecting);
 
             CancelCommand = ReactiveCommand
                 .CreateFromObservable(() =>
                    Observable
                        .StartAsync(ct => Cancel()));
-
-            ConnectCommand.IsExecuting
-                .ToProperty(this, x => x.IsConnecting, out _isConnecting);
-
-            ConnectCommand.IsExecuting
-                .Select(x => x == false)
-                .ToProperty(this, x => x.CanChangeControls, out _canChangeControls);
-
         }
 
         private async Task<Unit> Cancel()
@@ -80,28 +64,48 @@ namespace Traficante.Studio.ViewModels
             return Unit.Default;
         }
 
+        public (bool IsValid, string Errors) Validate()
+        {
+            StringBuilder errors = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Alias))
+                errors.AppendLine("Alias is required.");
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Server))
+                errors.AppendLine("Server is required.");
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.UserId))
+                errors.AppendLine("UserId is required.");
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Password))
+                errors.AppendLine("Password is required.");
+            return (errors.Length == 0, errors.ToString());
+        }
+
         private async Task<Unit> Connect(CancellationToken ct)
         {
+            Errors = string.Empty;
             try
             {
-                ConnectError = string.Empty;
-                await new Traficante.Connect.Connectors.MySqlConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
-                Output = Input;
+                var isValid = Validate();
+                if (isValid.IsValid == false)
+                {
+                    Errors = isValid.Errors;
+                    return Unit.Default;
+                }
+
+                await new MySqlConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
+
                 if (InputOrginal != null)
-                {
-                    var index = AppData.Objects.IndexOf(InputOrginal);
-                    AppData.Objects.RemoveAt(index);
-                    AppData.Objects.Insert(index, Input);
-                }
+                    AppData.UpdateObject(InputOrginal, Input);
                 else
-                {
-                    AppData.Objects.Add(Output);
-                }
+                    AppData.AddObject(Input);
+
+                Output = Input;
                 await CloseInteraction.Handle(Unit.Default);
+            }
+            catch (TaskCanceledException)
+            {
             }
             catch (Exception ex)
             {
-                ConnectError = ex.Message;
+                Errors = ex.Message;
             }
             return Unit.Default;
         }

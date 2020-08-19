@@ -10,6 +10,8 @@
         x:Class="Traficante.Studio.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="Traficante.Studio">
+  <Window.Styles>
+  </Window.Styles>
   <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="*" Background="Transparent">
     <views:MenuView Grid.Row="0" Grid.Column="0"/>
     <views:ToolBarView Grid.Row="1" Grid.Column="0"/>
