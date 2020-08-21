@@ -103,6 +103,9 @@
     <ProjectReference Include="..\AvaloniaEdit\AvaloniaEdit.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\ConnectToElasticSearchWindow - Copy.xaml.cs">
+      <DependentUpon>ConnectToElasticSearchWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ConnectToElasticSearchWindow.xaml.cs">
       <DependentUpon>ConnectToElasticSearchWindow.xaml</DependentUpon>
     </Compile>

@@ -14,7 +14,8 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> ConnectToMySqlCommand { get; }
         public ReactiveCommand<Unit, Unit> ConnectToSqliteCommand { get; }
         public ReactiveCommand<Unit, Unit> ConnectToElasticSearchCommand { get; }
-        
+        public ReactiveCommand<Unit, Unit> ConnectToFileCommand { get; }
+
         public ReactiveCommand<Unit, Unit> NewQueryCommand { get; }
 
         public ToolBarViewModel()
@@ -23,6 +24,7 @@ namespace Traficante.Studio.ViewModels
             ConnectToMySqlCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToMySql);
             ConnectToSqliteCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToSqlite);
             ConnectToElasticSearchCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToElasticSearch);
+            ConnectToFileCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToFile);
             NewQueryCommand = ReactiveCommand.Create<Unit, Unit>(NewQuery);
         }
 
@@ -55,5 +57,12 @@ namespace Traficante.Studio.ViewModels
             Interactions.ConnectToElasticSearch.Handle(null).Subscribe();
             return Unit.Default;
         }
+
+        private Unit ConnectToFile(Unit arg)
+        {
+            Interactions.ConnectToFile.Handle(null).Subscribe();
+            return Unit.Default;
+        }
+        
     }
 }

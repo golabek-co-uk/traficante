@@ -134,9 +134,6 @@ namespace Traficante.Studio.ViewModels
                 try
                 {
                     ConnectEngine connectEngine = new ConnectEngine();
-                    connectEngine.AddConector(new CsvConnectorConfig { Alias = "csv" });
-                    connectEngine.AddConector(new JsonConnectorConfig { Alias = "json" });
-                    connectEngine.AddConector(new ExcelConnectorConfig { Alias = "excel" });
                     foreach (var obj in this.AppData.Objects)
                     {
                         if (obj is SqlServerObjectModel)
@@ -147,6 +144,8 @@ namespace Traficante.Studio.ViewModels
                             connectEngine.AddConector(((SqliteObjectModel)obj).ConnectionInfo.ToConectorConfig());
                         if (obj is ElasticSearchObjectModel)
                             connectEngine.AddConector(((ElasticSearchObjectModel)obj).ConnectionInfo.ToConectorConfig());
+                        if (obj is FilesObjectModel)
+                            connectEngine.AddConector(((FilesObjectModel)obj).ConnectionInfo.ToConectorConfig());
                     }
 
                     var sql = string.IsNullOrEmpty(this.SelectedText) == false ? this.SelectedText : this.Query.Text;

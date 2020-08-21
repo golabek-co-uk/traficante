@@ -7,34 +7,31 @@ using System.Threading;
 
 namespace Traficante.Connect.Connectors
 {
-    public class JsonConnector : Connector
+    public class JsonHelper
     {
-        public JsonConnector(JsonConnectorConfig config)
-        {
-            this.Config = config;
-        }
+        //public JsonConnector(JsonConnectorConfig config)
+        //{
+        //    this.Config = config;
+        //}
 
-        public override Delegate ResolveMethod(string name, string[] path, Type[] arguments, CancellationToken ct)
-        {
-            if (string.Equals(name, "fromFile", StringComparison.InvariantCultureIgnoreCase)
-                && arguments.Length == 1
-                && arguments[0] == typeof(string))
-            {
-                Func<string, JsonDataReader> fromFile = (pathToFile) =>
-                {
-                    var reader = new JsonTextReader(new StreamReader(File.OpenRead(pathToFile)));
-                    return new JsonDataReader(reader);
-                };
-                return fromFile;
-            }
-            return null;
-        }
+        //public override Delegate ResolveMethod(string name, string[] path, Type[] arguments, CancellationToken ct)
+        //{
+        //    if (string.Equals(name, "fromFile", StringComparison.InvariantCultureIgnoreCase)
+        //        && arguments.Length == 1
+        //        && arguments[0] == typeof(string))
+        //    {
+        //        Func<string, JsonDataReader> fromFile = (pathToFile) =>
+        //        {
+        //            var reader = new JsonTextReader(new StreamReader(File.OpenRead(pathToFile)));
+        //            return new JsonDataReader(reader);
+        //        };
+        //        return fromFile;
+        //    }
+        //    return null;
+        //}
     }
 
-    public class JsonConnectorConfig : ConnectorConfig
-    {
-        public string FilePath { get; set; }
-    }
+  
 
     public class JsonDataReader : IDataReader
     {

@@ -16,11 +16,7 @@ namespace Traficante.Studio.Models
     {
         [DataMember]
         public ElasticSearchConnectionModel ConnectionInfo { get; set; }
-        public override string Title
-        {
-            get { return this.ConnectionInfo.Alias; }
-            set { }
-        }
+        public override string Title => this.ConnectionInfo.Alias;
 
         public ElasticSearchObjectModel()
         {

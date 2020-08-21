@@ -67,6 +67,18 @@ namespace Traficante.Studio.ViewModels
             AppData.Objects.Remove(sqlite);
         }
 
+        public void ChangeObject(FilesObjectModel file)
+        {
+            Interactions.ConnectToFile
+                .Handle(file)
+                .Subscribe();
+        }
+
+        public void RemoveObject(FilesObjectModel file)
+        {
+            AppData.Objects.Remove(file);
+        }
+
         public void GenerateSelectQuery(ITableObjectModel objectPath)
         {
             var path = objectPath.GetTablePath();

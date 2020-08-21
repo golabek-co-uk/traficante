@@ -15,7 +15,7 @@ using Traficante.Studio.Services;
 
 namespace Traficante.Studio.ViewModels
 {
-    public class ConnectToSqliteWindowViewModel : ViewModelBase
+    public class ConnectToFileViewModel : ViewModelBase
     {
         public AppData AppData { get; set; }
         public Window Window { get; set; }
@@ -25,13 +25,13 @@ namespace Traficante.Studio.ViewModels
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
         [Reactive]
-        public SqliteObjectModel Input { get; set; }
+        public FilesObjectModel Input { get; set; }
 
         [Reactive]
-        public SqliteObjectModel InputOrginal { get; set; }
+        public FilesObjectModel InputOrginal { get; set; }
 
         [Reactive]
-        public SqliteObjectModel Output { get; set; }
+        public FilesObjectModel Output { get; set; }
 
         [Reactive]
         public string Errors { get; set; }
@@ -40,10 +40,12 @@ namespace Traficante.Studio.ViewModels
         public bool IsConnecting => _isConnecting.Value;
 
 
-        public ConnectToSqliteWindowViewModel(SqliteObjectModel input, AppData appData)
+        public ConnectToFileViewModel(FilesObjectModel input, AppData appData)
         {
             InputOrginal = input;
-            Input = input != null ? new AppDataSerializer().Clone(input) : new SqliteObjectModel();
+            Input = input != null ? new AppDataSerializer().Clone(input) : new FilesObjectModel();
+            if (Input.ConnectionInfo.Files.Any() == false)
+                Input.ConnectionInfo.Files.Add(new FileConnectionModel());
             AppData = appData;
 
             ConnectCommand = ReactiveCommand
@@ -70,8 +72,8 @@ namespace Traficante.Studio.ViewModels
             StringBuilder errors = new StringBuilder();
             if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Alias))
                 errors.AppendLine("Alias is required.");
-            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Database))
-                errors.AppendLine("Database is required.");
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Files[0].File))
+                errors.AppendLine("File is required.");
             return (errors.Length == 0, errors.ToString());
         }
 
@@ -87,7 +89,7 @@ namespace Traficante.Studio.ViewModels
                     return Unit.Default;
                 }
 
-                await new SqliteConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
+                //await new SqliteConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
                 
                 if (InputOrginal != null)
                     AppData.UpdateObject(InputOrginal, Input);
@@ -111,15 +113,15 @@ namespace Traficante.Studio.ViewModels
         {
             OpenFileDialog openDialog = new OpenFileDialog();
             openDialog.AllowMultiple = false;
-            openDialog.Title = "Choose Sqlite database";
-            openDialog.Filters.Add(new FileDialogFilter() { Name = "Sqlite files", Extensions = { "db", "sqlite" } });
+            openDialog.Title = "Choose File";
             openDialog.Filters.Add(new FileDialogFilter() { Name = "All files", Extensions = { "*" } });
+            openDialog.Filters.Add(new FileDialogFilter() { Name = "CSV files", Extensions = { "csv" } });
             var path = await openDialog.ShowAsync(Window);
             if (path != null)
             {
                 try
                 {
-                    Input.ConnectionInfo.Database = path.FirstOrDefault();
+                    Input.ConnectionInfo.Files[0].File = path.FirstOrDefault();
                 }
                 catch (Exception ex) { Interactions.Exceptions.Handle(ex).Subscribe(); }
             }

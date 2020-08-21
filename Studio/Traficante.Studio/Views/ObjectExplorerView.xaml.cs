@@ -78,6 +78,15 @@ namespace Traficante.Studio.Views
                 item.ContextMenu = item.ContextMenu != null ? item.ContextMenu : new ContextMenu();
                 item.ContextMenu.Items = new List<MenuItem> { change, remove };
             }
+            if (item.DataContext is FilesObjectModel file)
+            {
+                MenuItem change = new MenuItem { Header = "Change" };
+                change.Click += (x, y) => ViewModel.ChangeObject(file);
+                MenuItem remove = new MenuItem { Header = "Remove" };
+                remove.Click += (x, y) => ViewModel.RemoveObject(file);
+                item.ContextMenu = item.ContextMenu != null ? item.ContextMenu : new ContextMenu();
+                item.ContextMenu.Items = new List<MenuItem> { change, remove };
+            }
             if (item.DataContext is ITableObjectModel objectPath)
             {
                 MenuItem generateSelect = new MenuItem { Header = "Select query" };

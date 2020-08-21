@@ -14,12 +14,8 @@ namespace Traficante.Connect
 
         public void AddConector(ConnectorConfig connector)
         {
-            if (connector is CsvConnectorConfig csvConfig)
-                Connectors.Add(new CsvConnector(csvConfig));
-            if (connector is ExcelConnectorConfig exelConfig)
-                Connectors.Add(new ExcelConnector(exelConfig));
-            if (connector is JsonConnectorConfig jsonConfig)
-                Connectors.Add(new JsonConnector(jsonConfig));
+            if (connector is FilesConnectorConfig fileConfig)
+                Connectors.Add(new FilesConnector(fileConfig));
             if (connector is MySqlConnectorConfig mySqlConfig)
                 Connectors.Add(new MySqlConnector(mySqlConfig));
             if (connector is SqlServerConnectorConfig sqlServerConfig)
@@ -41,21 +37,21 @@ namespace Traficante.Connect
             {
                 sqlEngine.AddTableResolver((name, path) =>
                 {
-                    var alias = path.FirstOrDefault();
+                    var alias = path.FirstOrDefault() ?? name;
                     var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
                     if (connector == null)
                         throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                    Delegate @delegate = connector.ResolveTable(name, path, ct);
+                    Delegate @delegate = connector.ResolveTable(path.Append(name).ToArray(), ct);
                     return @delegate;
                 });
 
                 sqlEngine.AddMethodResolver((name, path, arguments) =>
                 {
-                    var alias = path.FirstOrDefault();
+                    var alias = path.FirstOrDefault() ?? name;
                     var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
                     if (connector == null)
                         throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
-                    Delegate @delegate = connector.ResolveMethod(name, path, arguments, ct);
+                    Delegate @delegate = connector.ResolveMethod(path.Append(name).ToArray(), arguments, ct);
                     return @delegate;
                 });
 

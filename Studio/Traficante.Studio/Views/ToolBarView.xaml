@@ -11,6 +11,7 @@
         <MenuItem Header="MySql" Name="ConnectToMySql" Padding="2 2 2 2"/>
         <MenuItem Header="Sqlite" Name="ConnectToSqlite" Padding="2 2 2 2"/>
         <MenuItem Header="ElasticSearch" Name="ConnectToElasticSearch" Padding="2 2 2 2"/>
+        <MenuItem Header="File" Name="ConnectToFile" Padding="2 2 2 2"/>
       </MenuItem>
       <MenuItem Header="New Query" Name="NewQuery" Padding="2 2 2 2" Margin="5 0 0 0">
       </MenuItem>

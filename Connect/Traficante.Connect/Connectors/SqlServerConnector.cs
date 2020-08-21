@@ -20,22 +20,18 @@ namespace Traficante.Connect.Connectors
             base.Config = config;
         }
 
-        public override Delegate ResolveTable(string name, string[] path, CancellationToken ct)
+        public override Delegate ResolveTable(string[] path, CancellationToken ct)
         {
             Func<Task<object>> @delegate = async () =>
             {
                 SqlConnection sqlConnection = null;
                 try
                 {
-                    string sqlPath = "";
-                    if (path.Length > 1)
-                        sqlPath = string.Join(".", path.Skip(1).Select(x => $"[{x}]")) + ".";
-                    string sqlName = $"[{name}]";
-
+                    string sqlPath = string.Join(".", path.Skip(1).Select(x => $"[{x}]"));
                     sqlConnection = new SqlConnection(this.Config.ToConnectionString());
                     SqlCommand sqliteCommand = new SqlCommand();
                     sqliteCommand.Connection = sqlConnection;
-                    sqliteCommand.CommandText = $"SELECT * FROM {sqlPath}{sqlName}";
+                    sqliteCommand.CommandText = $"SELECT * FROM {sqlPath}";
                     await sqlConnection.OpenAsync(ct);
                     return await sqliteCommand.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
                 }

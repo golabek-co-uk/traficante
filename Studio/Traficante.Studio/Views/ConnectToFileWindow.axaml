@@ -1,0 +1,21 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Traficante.Studio.Views.ConnectToFileWindow"
+        Title="Connect To File">
+  <Grid Margin="10" ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+    <TextBlock Grid.Row="0">Alias</TextBlock>
+    <TextBox Grid.Row="0" Grid.Column="1" Name="Alias" Margin="10,0,0,20"/>
+    <TextBlock Grid.Row="1">File</TextBlock>
+    <TextBox Name="File"  Grid.Row="1" Grid.Column="1" Margin="10,0,20,10" />
+    <Button Name="FileSelector" Grid.Row="1" Grid.Column="2" Margin="-20,0,0,10" Width="20">...</Button>
+    <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,10">
+      <Button Name="Connect" Width="50">OK</Button>
+      <Button Name="Cancel" Margin="10,0,0,0">Cancel</Button>
+    </StackPanel>
+    <TextBlock Grid.Row="3"></TextBlock>
+    <TextBox Name="Errors" Grid.Row="3" Grid.Column="1" AcceptsReturn="True" TextWrapping="Wrap" Foreground="Red" Background="Transparent" BorderThickness="0"></TextBox>
+  </Grid>
+</Window>

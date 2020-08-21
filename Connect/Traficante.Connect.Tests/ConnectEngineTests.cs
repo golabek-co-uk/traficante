@@ -13,7 +13,7 @@ namespace Traficante.Connect.Tests
         public void Select_From_Csv()
         {
             ConnectEngine connectEngine = new ConnectEngine();
-            connectEngine.AddConector(new CsvConnectorConfig { Alias = "csv" });
+            connectEngine.AddConector(new FilesConnectorConfig { Alias = "csv" });
             var result = connectEngine.Run("SELECT id,email FROM csv.fromFile('employees.csv')").Cast<object>().ToList();
             var itemType = result[0].GetType();
             Assert.AreEqual(8, result.Count);
@@ -41,7 +41,7 @@ namespace Traficante.Connect.Tests
         public void Select_From_Csv_Join_Sqlite()
         {
             ConnectEngine connectEngine = new ConnectEngine();
-            connectEngine.AddConector(new CsvConnectorConfig { Alias = "csv" });
+            connectEngine.AddConector(new FilesConnectorConfig { Alias = "csv" });
             connectEngine.AddConector(new SqliteConnectorConfig { Alias = "chinook", Database = "chinook.db" });
             var result = connectEngine.Run(@"
                 SELECT e2.EmployeeId, e1.last_name FROM csv.fromFile('employees.csv') e1

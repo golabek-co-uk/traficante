@@ -10,57 +10,17 @@ using Traficante.TSQL;
 
 namespace Traficante.Connect.Connectors
 {
-    public class ExcelConnector : Connector
+    public class ExcelHelper
     {
-        public ExcelConnectorConfig Config => (ExcelConnectorConfig)base.Config;
-
-        public ExcelConnector(ExcelConnectorConfig config)
+        static ExcelHelper()
         {
-            base.Config = config;
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         }
-
-        public override Delegate ResolveMethod(string name, string[] path, Type[] arguments, CancellationToken ct)
-        {
-            if (string.Equals(name, "fromFile", StringComparison.InvariantCultureIgnoreCase)
-                && arguments.Length == 1
-                && arguments[0] == typeof(string))
-            {
-                Func<string, IDataReader> fromFile = (pathToFile) =>
-                {
-                    var stream = System.IO.File.Open(pathToFile, FileMode.Open, FileAccess.Read);
-                    var reader = ExcelReaderFactory.CreateReader(stream);
-                    return new ExcelDataReader(reader);
-                };
-                return fromFile;
-            }
-            if (string.Equals(name, "fromFile", StringComparison.InvariantCultureIgnoreCase)
-                && arguments.Length == 2
-                && arguments[0] == typeof(string)
-                && arguments[1] == typeof(string))
-            {
-                Func<string, string, IDataReader> fromFile = (pathToFile, sheet) =>
-                {
-                    var stream = System.IO.File.Open(pathToFile, FileMode.Open, FileAccess.Read);
-                    var reader = ExcelReaderFactory.CreateReader(stream);
-                    do
-                    {
-                        if (string.Equals(reader.Name?.Trim(), sheet?.Trim(), StringComparison.InvariantCultureIgnoreCase))
-                            return new ExcelDataReader(reader);
-                    }
-                    while (reader.NextResult());
-                    throw new TSQLException($"Sheet does not exist: {sheet}");
-                };
-                return fromFile;
-            }
-            return null;
-        }
-
-        public async Task<IEnumerable<string>> GetSheets()
+        
+        public async Task<IEnumerable<string>> GetSheets(string filePath)
         {
             List<string> sheets = new List<string>();
-            using (var stream = System.IO.File.Open(this.Config.FilePath, FileMode.Open, FileAccess.Read))
-            using (var reader = ExcelReaderFactory.CreateReader(stream))
+            using (var reader = OpenReader(filePath))
             {
                 do
                 {
@@ -71,25 +31,37 @@ namespace Traficante.Connect.Connectors
             return await Task.FromResult(sheets);
         }
 
-        //public async Task<IEnumerable<(string Name, string Type, bool? NotNull)>> GetFields(string sheet)
-        //{
-        //    List<string> sheets = new List<string>();
-        //    using (var stream = System.IO.File.Open(this.Config.FilePath, FileMode.Open, FileAccess.Read))
-        //    using (var reader = ExcelReaderFactory.CreateReader(stream))
-        //    {
-        //        do
-        //        {
-        //            sheets.Add(reader.Name);
-        //        }
-        //        while (reader.NextResult());
-        //    }
-        //    return await Task.FromResult(sheets);
-        //}
-    }
+        public async Task<IEnumerable<(string Name, string Type, bool? NotNull)>> GetFields(string filePath, string sheet)
+        {
+            using (var reader = OpenReader(filePath, sheet))
+            {
+                List<(string Name, string Type, bool? NotNull)> fields = new List<(string Name, string Type, bool? NotNull)>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                    fields.Add((reader.GetName(i), null, null));
+                return await Task.FromResult(fields);
+            }
+        }
 
-    public class ExcelConnectorConfig : ConnectorConfig
-    {
-        public string FilePath { get; set; }
+        public ExcelDataReader OpenReader(string filePath, string sheet = null)
+        {
+            var stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+            var reader = ExcelReaderFactory.CreateReader(stream);
+            var exelReader = new ExcelDataReader(reader);
+            if (string.IsNullOrEmpty(sheet))
+            {
+                return exelReader;
+            }
+            else
+            {
+                do
+                {
+                    if (string.Equals(reader.Name?.Trim(), sheet?.Trim(), StringComparison.InvariantCultureIgnoreCase))
+                        return new ExcelDataReader(reader);
+                }
+                while (reader.NextResult());
+                throw new TSQLException($"Sheet does not exist: {sheet}");
+            }
+        }
     }
 
     public class ExcelDataReader : IDataReader
@@ -109,6 +81,8 @@ namespace Traficante.Connect.Connectors
             //                                                .ToList()
             //                   });
         }
+
+        public string Name => this._reader.Name;
 
         public Type GetFieldType(int i)
         {

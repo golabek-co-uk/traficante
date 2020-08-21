@@ -11,6 +11,8 @@
         <MenuItem Header="SqlServer" Name="ConnectToSqlServer"/>
         <MenuItem Header="MySql" Name="ConnectToMySql"/>
         <MenuItem Header="Sqlite" Name="ConnectToSqlite"/>
+        <MenuItem Header="ElasticSearch" Name="ConnectToElasticSearch"/>
+        <MenuItem Header="File" Name="ConnectToFile"/>
       </MenuItem>
       <Separator/>
       <MenuItem Header="_New" Name="New"/>

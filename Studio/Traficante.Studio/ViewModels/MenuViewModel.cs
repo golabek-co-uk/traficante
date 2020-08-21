@@ -15,6 +15,8 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> ConnectToSqlServerCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ConnectToMySqlCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ConnectToSqliteCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> ConnectToElasticSearchCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> ConnectToFileCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NewCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveCommand { get; set; }
@@ -30,6 +32,8 @@ namespace Traficante.Studio.ViewModels
             ConnectToSqlServerCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToSqlServer);
             ConnectToMySqlCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToMySql);
             ConnectToSqliteCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToSqlite);
+            ConnectToElasticSearchCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToElasticSearch);
+            ConnectToFileCommand = ReactiveCommand.Create<Unit, Unit>(ConnectToFile);
             NewCommand = ReactiveCommand.Create<Unit, Unit>(New);
             OpenCommand = ReactiveCommand.Create<Unit, Unit>(Open);
             SaveCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(Save);
@@ -56,6 +60,18 @@ namespace Traficante.Studio.ViewModels
         private Unit ConnectToSqlite(Unit arg)
         {
             Interactions.ConnectToSqlite.Handle(null).Subscribe();
+            return Unit.Default;
+        }
+
+        private Unit ConnectToElasticSearch(Unit arg)
+        {
+            Interactions.ConnectToElasticSearch.Handle(null).Subscribe();
+            return Unit.Default;
+        }
+
+        private Unit ConnectToFile(Unit arg)
+        {
+            Interactions.ConnectToFile.Handle(null).Subscribe();
             return Unit.Default;
         }
 

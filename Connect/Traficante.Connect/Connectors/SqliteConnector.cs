@@ -31,13 +31,14 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public override Delegate ResolveTable(string name, string[] path, CancellationToken ct)
+        public override Delegate ResolveTable(string[] path, CancellationToken ct)
         {
             Func<Task<object>> @delegate = async () =>
             {
                 SqliteConnection sqliteConnection = null;
                 try
                 {
+                    string name = path.LastOrDefault();
                     sqliteConnection = new SqliteConnection(this.Config.ToConnectionString());
                     SqliteCommand sqliteCommand = new SqliteCommand();
                     sqliteCommand.Connection = sqliteConnection;

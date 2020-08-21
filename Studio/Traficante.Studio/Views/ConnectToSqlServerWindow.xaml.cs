@@ -45,7 +45,7 @@ namespace Traficante.Studio.Views
 
                 ViewModel.CloseInteraction.RegisterHandler(x =>
                 {
-                    try { this.Window.Close(); } catch { }
+                    try { this.Close(); } catch { }
                     x.SetOutput(Unit.Default);
                 });
 

@@ -8,12 +8,12 @@ namespace Traficante.Connect
     {
         public ConnectorConfig Config { get; set; }
 
-        public virtual Delegate ResolveMethod(string name, string[] path, Type[] arguments, CancellationToken ct)
+        public virtual Delegate ResolveMethod(string[] path, Type[] arguments, CancellationToken ct)
         {
             return null;
         }
 
-        public virtual Delegate ResolveTable(string name, string[] path, CancellationToken ct)
+        public virtual Delegate ResolveTable(string[] path, CancellationToken ct)
         {
             return null;
         }

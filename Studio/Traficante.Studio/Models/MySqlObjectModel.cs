@@ -16,7 +16,7 @@ namespace Traficante.Studio.Models
     {
         [DataMember]
         public MySqlConnectionModel ConnectionInfo { get; set; }
-        public override string Title { get => this.ConnectionInfo.Alias; set { } }
+        public override string Title => this.ConnectionInfo.Alias;
 
         public MySqlObjectModel()
         {

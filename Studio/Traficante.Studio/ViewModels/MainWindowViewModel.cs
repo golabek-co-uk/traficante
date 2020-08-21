@@ -49,11 +49,21 @@ namespace Traficante.Studio.ViewModels
                     interaction.SetOutput(dataContext.Output);
                 });
 
-                Interactions.ConnectToElasticSearch.RegisterHandler(
+            Interactions.ConnectToElasticSearch.RegisterHandler(
                 async interaction =>
                 {
                     var dataContext = new ConnectToElasticSearchViewModel(interaction.Input, _appData);
                     var dialog = new ConnectToElasticSearchWindow() { DataContext = dataContext };
+                    await dialog.ShowDialog(Window);
+                    Window.Focus();
+                    interaction.SetOutput(dataContext.Output);
+                });
+
+            Interactions.ConnectToFile.RegisterHandler(
+                async interaction =>
+                {
+                    var dataContext = new ConnectToFileViewModel(interaction.Input, _appData);
+                    var dialog = new ConnectToFileWindow() { DataContext = dataContext };
                     await dialog.ShowDialog(Window);
                     Window.Focus();
                     interaction.SetOutput(dataContext.Output);

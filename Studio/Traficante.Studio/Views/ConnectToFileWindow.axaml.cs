@@ -1,31 +1,28 @@
-﻿using System;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
-using Traficante.Studio.Models;
-using Traficante.Studio.Services;
+using ReactiveUI.Validation.Extensions;
+using System;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Traficante.Studio.ViewModels;
 
 namespace Traficante.Studio.Views
 {
-    public class ConnectToMySqlWindow : ReactiveWindow<ConnectToMySqlWindowViewModel>
+    public class ConnectToFileWindow : ReactiveWindow<ConnectToFileViewModel>
     {
         public Window Window => this.FindControl<Window>("Window");
         public Button Connect => this.FindControl<Button>("Connect");
         public Button Cancel => this.FindControl<Button>("Cancel");
         public TextBox Alias => this.FindControl<TextBox>("Alias");
-        public TextBox ServerName => this.FindControl<TextBox>("ServerName");
-        public TextBox UserId => this.FindControl<TextBox>("UserId");
-        public TextBox Password => this.FindControl<TextBox>("Password");
+        public TextBox File => this.FindControl<TextBox>("File");
+        public Button FileSelector => this.FindControl<Button>("FileSelector");
         public TextBox Errors => this.FindControl<TextBox>("Errors");
 
-        public ConnectToMySqlWindow()
+        public ConnectToFileWindow()
         {
             this.InitializeComponent();
 #if DEBUG
@@ -50,23 +47,22 @@ namespace Traficante.Studio.Views
 
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)
                     .DisposeWith(disposables);
-                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Server, x => x.ServerName.Text)
+                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Files[0].File, x => x.File.Text)
                     .DisposeWith(disposables);
-                this.Bind(ViewModel, x => x.Input.ConnectionInfo.UserId, x => x.UserId.Text)
-                    .DisposeWith(disposables);
-                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Password, x => x.Password.Text)
+                this.BindCommand(ViewModel, x => x.DatabaseFileSelectorCommand, x => x.FileSelector)
                     .DisposeWith(disposables);
                 ViewModel.ConnectCommand.IsExecuting
                     .Select(isExecuting => !isExecuting)
                     .Subscribe(canChange => {
                         this.Alias.IsEnabled = canChange;
-                        this.ServerName.IsEnabled = canChange;
-                        this.UserId.IsEnabled = canChange;
-                        this.Password.IsEnabled = canChange;
+                        this.File.IsEnabled = canChange;
+                        this.FileSelector.IsEnabled = canChange;
                     })
                     .DisposeWith(disposables);
 
                 this.Bind(ViewModel, x => x.Errors, x => x.Errors.Text);
+
+                ViewModel.Window = this;
             });
 
             AvaloniaXamlLoader.Load(this);

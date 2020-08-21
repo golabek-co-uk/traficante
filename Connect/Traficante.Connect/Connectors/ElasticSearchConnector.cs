@@ -30,13 +30,24 @@ namespace Traficante.Connect.Connectors
             }
         }
 
-        public override Delegate ResolveTable(string name, string[] path, CancellationToken ct)
+        public override Delegate ResolveTable(string[] path, CancellationToken ct)
         {
-            if (path.Length > 2)
-                throw new Exception($"Incorrect Elasticsearch path {name} ->  {string.Join(" -> ", path)}");
+            if (path.Length > 3)
+                throw new Exception($"Incorrect Elasticsearch path {string.Join(" -> ", path)}");
 
-            string indexName = path.Length == 2 ? path.Last() : name;
-            string typeName = path.Length == 2 ? name : null;
+            string indexName = null;
+            string typeName = null;
+            if (path.Length == 3)
+            {
+                typeName = path[2];
+                indexName = path[1];
+            }
+            if (path.Length == 2)
+            {
+                typeName = null;
+                indexName = path[1];
+            }
+
             Func <IDataReader> @delegate = () =>
             {
                 return new ElasticSearchDataReader(this, indexName, typeName, "{ \"query\": { \"match_all\": {} } }", ct);

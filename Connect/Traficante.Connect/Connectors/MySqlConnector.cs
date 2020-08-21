@@ -22,22 +22,18 @@ namespace Traficante.Connect.Connectors
             base.Config = config;
         }
 
-        public override Delegate ResolveTable(string name, string[] path, CancellationToken ct)
+        public override Delegate ResolveTable(string[] path, CancellationToken ct)
         {
             Func<Task<object>> @delegate = async () =>
             {
                 MySqlConnection connection = null;
                 try
                 {
-                    string sqlPath = "";
-                    if (path.Length > 1)
-                        sqlPath = string.Join(".", path.Skip(1).Select(x => $"`{x}`")) + ".";
-                    string sqlName = $"`{name}`";
-
+                    string sqlPath = string.Join(".", path.Skip(1).Select(x => $"`{x}`")); ;
                     connection = new MySqlConnection(this.Config.ToConnectionString());
                     MySqlCommand command = new MySqlCommand();
                     command.Connection = connection;
-                    command.CommandText = $"SELECT * FROM {sqlPath}{sqlName}";
+                    command.CommandText = $"SELECT * FROM {sqlPath}";
                     await connection.OpenAsync(ct);
                     return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
                 }
