@@ -1,5 +1,4 @@
 ﻿using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.ObjectModel;
 using System.Reactive;
@@ -199,27 +198,6 @@ namespace Traficante.Studio.Models
         public string GetFieldName()
         {
             return Name;
-        }
-    }
-
-    [DataContract]
-    public class SqliteConnectionModel : ReactiveObject
-    {
-        [DataMember]
-        [Reactive]
-        public string Alias { get; set; }
-
-        [DataMember]
-        [Reactive]
-        public string Database { get; set; }
-        
-        public SqliteConnectorConfig ToConectorConfig()
-        {
-            return new SqliteConnectorConfig()
-            {
-                Alias = this.Alias,
-                Database = this.Database,
-            };
         }
     }
 

@@ -31,7 +31,7 @@ namespace Traficante.Connect.Connectors
             {
                 Func<string, IDataReader> fromFile = (pathToFile) =>
                 {
-                    switch (GetFileType(pathToFile))
+                    switch (new FileHelper().GetType(pathToFile))
                     {
                         case FileType.Csv:
                             return new CsvHelper().OpenReader(pathToFile);
@@ -49,7 +49,7 @@ namespace Traficante.Connect.Connectors
             {
                 Func<string, string, IDataReader> fromFile = (pathToFile, arg1) =>
                 {
-                    switch (GetFileType(pathToFile))
+                    switch (new FileHelper().GetType(pathToFile))
                     {
                         case FileType.Csv:
                             return new CsvHelper().OpenReader(pathToFile);
@@ -83,7 +83,7 @@ namespace Traficante.Connect.Connectors
                     arg1 = path[2];
                 }
 
-                switch(GetFileType(file.Path))
+                switch(file.Type)
                 {
                     case FileType.Csv:
                         return new CsvHelper().OpenReader(file.Path);
@@ -94,18 +94,6 @@ namespace Traficante.Connect.Connectors
             };
             return @delegate;
         }
-
-
-        public FileType GetFileType(string file)
-        {
-            string extension = Path.GetExtension(file);
-            if (string.Equals(".csv", extension, StringComparison.InvariantCultureIgnoreCase))
-                return FileType.Csv;
-            if (string.Equals(".xlt", extension, StringComparison.InvariantCultureIgnoreCase) || 
-                string.Equals(".xlsx", extension, StringComparison.InvariantCultureIgnoreCase))
-                return FileType.Excel;
-            return FileType.Unknown;
-        }
     }
 
     public class FilesConnectorConfig : ConnectorConfig
@@ -115,14 +103,43 @@ namespace Traficante.Connect.Connectors
 
     public class FileConnectorConfig
     {
-        public string Path {get;set;}
         public string Name { get; set; }
+        public string Path { get; set; }
+        public FileType Type {get;set;}
+    }
+
+    public class FileHelper
+    {
+        public FileType GetType(string file)
+        {
+            string extension = Path.GetExtension(file);
+            if (string.Equals(".csv", extension, StringComparison.InvariantCultureIgnoreCase))
+                return FileType.Csv;
+            if (string.Equals(".json", extension, StringComparison.InvariantCultureIgnoreCase))
+                return FileType.Json;
+            if (string.Equals(".xml", extension, StringComparison.InvariantCultureIgnoreCase))
+                return FileType.Xml;
+            if (string.Equals(".txt", extension, StringComparison.InvariantCultureIgnoreCase))
+                return FileType.Text;
+            if (string.Equals(".xlt", extension, StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(".xlsx", extension, StringComparison.InvariantCultureIgnoreCase))
+                return FileType.Excel;
+            return FileType.Unknown;
+        }
+
+        public string GetName(string file)
+        {
+            return Path.GetFileName(file);
+        }
     }
 
     public enum FileType
     {
         Csv,
         Excel,
+        Json,
+        Xml,
+        Text,
         Unknown
     }
 

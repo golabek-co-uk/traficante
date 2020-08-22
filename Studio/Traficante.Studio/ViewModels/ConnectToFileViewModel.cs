@@ -72,7 +72,7 @@ namespace Traficante.Studio.ViewModels
             StringBuilder errors = new StringBuilder();
             if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Alias))
                 errors.AppendLine("Alias is required.");
-            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Files[0].File))
+            if (string.IsNullOrWhiteSpace(Input.ConnectionInfo.Files[0].Path))
                 errors.AppendLine("File is required.");
             return (errors.Length == 0, errors.ToString());
         }
@@ -89,8 +89,6 @@ namespace Traficante.Studio.ViewModels
                     return Unit.Default;
                 }
 
-                //await new SqliteConnector(Input.ConnectionInfo.ToConectorConfig()).TryConnect(ct);
-                
                 if (InputOrginal != null)
                     AppData.UpdateObject(InputOrginal, Input);
                 else
@@ -116,12 +114,16 @@ namespace Traficante.Studio.ViewModels
             openDialog.Title = "Choose File";
             openDialog.Filters.Add(new FileDialogFilter() { Name = "All files", Extensions = { "*" } });
             openDialog.Filters.Add(new FileDialogFilter() { Name = "CSV files", Extensions = { "csv" } });
-            var path = await openDialog.ShowAsync(Window);
+            openDialog.Filters.Add(new FileDialogFilter() { Name = "Excel files", Extensions = { "xls", "xlsb", "xlsm", "xlsx" } });
+
+            var path = (await openDialog.ShowAsync(Window))?.FirstOrDefault();
             if (path != null)
             {
                 try
                 {
-                    Input.ConnectionInfo.Files[0].File = path.FirstOrDefault();
+                    Input.ConnectionInfo.Files[0].Path = path;
+                //    Input.ConnectionInfo.Files[0].Name = new FileHelper().GetName(path);
+                //    Input.ConnectionInfo.Files[0].Type = new FileHelper().GetType(path);
                 }
                 catch (Exception ex) { Interactions.Exceptions.Handle(ex).Subscribe(); }
             }

@@ -47,7 +47,7 @@ namespace Traficante.Studio.Views
 
                 this.Bind(ViewModel, x => x.Input.ConnectionInfo.Alias, x => x.Alias.Text)
                     .DisposeWith(disposables);
-                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Files[0].File, x => x.File.Text)
+                this.Bind(ViewModel, x => x.Input.ConnectionInfo.Files[0].Path, x => x.File.Text)
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.DatabaseFileSelectorCommand, x => x.FileSelector)
                     .DisposeWith(disposables);
