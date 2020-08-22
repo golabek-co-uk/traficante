@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
+using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
@@ -18,6 +19,7 @@ namespace Traficante.Studio.Models
         [DataMember]
         public SqlServerConnectionModel ConnectionInfo { get; set; }
         public override string Title => this.ConnectionInfo.Alias;
+        public override object Icon => Icons.Database;
 
         public SqlServerObjectModel()
         {
@@ -53,6 +55,7 @@ namespace Traficante.Studio.Models
     public class SqlServerDatabaseObjectModel : ObjectModel
     {
         public SqlServerObjectModel Server { get; }
+        public override object Icon => Icons.Database;
 
         public SqlServerDatabaseObjectModel(SqlServerObjectModel sqlServer, string name)
         {
@@ -85,7 +88,7 @@ namespace Traficante.Studio.Models
     public class SqlServerTablesObjectModel : ObjectModel
     {
         public SqlServerDatabaseObjectModel Database { get; }
-
+        public override object Icon => Icons.Folder;
         public SqlServerTablesObjectModel(SqlServerDatabaseObjectModel database)
         {
             Database = database;
@@ -113,6 +116,7 @@ namespace Traficante.Studio.Models
         public SqlServerDatabaseObjectModel Database { get; }
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
+        public override object Icon => Icons.Table;
 
         public SqlServerTableObjectModel(SqlServerDatabaseObjectModel databse, string schema, string name)
         {
@@ -151,7 +155,7 @@ namespace Traficante.Studio.Models
     public class SqlServerViewsObjectModel : ObjectModel
     {
         public SqlServerDatabaseObjectModel Database { get; }
-
+        public override object Icon => Icons.Folder;
         public SqlServerViewsObjectModel(SqlServerDatabaseObjectModel database)
         {
             Database = database;
@@ -179,6 +183,7 @@ namespace Traficante.Studio.Models
         public SqlServerDatabaseObjectModel Database { get; }
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
+        public override object Icon => Icons.Table;
 
         public SqlServerViewObjectModel(SqlServerDatabaseObjectModel databse, string schema, string name)
         {
@@ -218,6 +223,7 @@ namespace Traficante.Studio.Models
     {
         public SqlServerDatabaseObjectModel Databse { get; }
         public string NameOnly { get; set; }
+        public override object Icon => Icons.Field;
 
         public SqlServerFieldObjectModel(SqlServerDatabaseObjectModel databse, string name, string type, bool? notNull)
         {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
+using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
@@ -14,6 +15,7 @@ namespace Traficante.Studio.Models
         public FileConnectionModel File { get; set; }
 
         public override string Title => File.Name;
+        public override object Icon => Icons.File;
 
         public ExcelFileObjectModel(FilesObjectModel files, FileConnectionModel file)
         {
@@ -41,6 +43,7 @@ namespace Traficante.Studio.Models
     {
         public ExcelFileObjectModel File { get; }
         public string Sheet { get; set; }
+        public override object Icon => Icons.Table;
 
         public ExcelFileSheetObjectModel(ExcelFileObjectModel file, string sheet)
         {
@@ -69,6 +72,7 @@ namespace Traficante.Studio.Models
     {
         public ExcelFileSheetObjectModel Sheet { get; }
         public string Name { get; set; }
+        public override object Icon => Icons.Field;
 
         public ExcelFileFieldObjectModel(ExcelFileSheetObjectModel sheet, string name, string type, bool? notNull)
         {

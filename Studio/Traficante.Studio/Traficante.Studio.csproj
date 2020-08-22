@@ -22,6 +22,7 @@
     <AvaloniaResource Remove="Views\ConnectToSqlServerWindow.xaml" />
     <AvaloniaResource Remove="Views\EditorView.xaml" />
     <AvaloniaResource Remove="Views\ExceptionWindow.xaml" />
+    <AvaloniaResource Remove="Views\Icons.xaml" />
     <AvaloniaResource Remove="Views\MenuView.xaml" />
     <AvaloniaResource Remove="Views\ObjectExplorerView.xaml" />
     <AvaloniaResource Remove="Views\QueryView.xaml" />
@@ -34,10 +35,16 @@
     <None Remove="Views\ConnectToSqlServerWindow.xaml" />
     <None Remove="Views\EditorView.xaml" />
     <None Remove="Views\ExceptionWindow.xaml" />
+    <None Remove="Views\Icons.xaml" />
     <None Remove="Views\MenuView.xaml" />
     <None Remove="Views\ObjectExplorerView.xaml" />
     <None Remove="Views\QueryView.xaml" />
     <None Remove="Views\ToolBarView.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaXaml Include="Views\Icons.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.9.12" />
@@ -114,6 +121,9 @@
     </Compile>
     <Compile Update="Views\ExceptionWindow.xaml.cs">
       <DependentUpon>ExceptionWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Icons.xaml.cs">
+      <DependentUpon>Icons.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\MenuView.xaml.cs">
       <DependentUpon>MenuView.xaml</DependentUpon>

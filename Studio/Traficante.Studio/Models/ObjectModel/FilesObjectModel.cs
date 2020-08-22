@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
+using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
@@ -21,6 +22,7 @@ namespace Traficante.Studio.Models
         [DataMember]
         [Reactive]
         public FilesConnectionModel ConnectionInfo { get; set; }
+        public override object Icon => Icons.Database;
 
 
         public override string Title => this.ConnectionInfo.Alias;

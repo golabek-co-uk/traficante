@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
-
+using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
@@ -22,6 +22,7 @@ namespace Traficante.Studio.Models
         private FilesObjectModel Files { get; }
         private FileConnectionModel File { get; }
         public override string Title => File.Name;
+        public override object Icon => Icons.File;
 
         public CsvFileObjectModel(FilesObjectModel files, FileConnectionModel file)
         {
@@ -49,6 +50,7 @@ namespace Traficante.Studio.Models
     {
         public CsvFileObjectModel File { get; }
         public string Name { get; set; }
+        public override object Icon => Icons.Field;
 
         public CsvFileFieldObjectModel(CsvFileObjectModel file, string name, string type, bool? notNull)
         {

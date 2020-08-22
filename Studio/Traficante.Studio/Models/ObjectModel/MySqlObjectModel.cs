@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
+using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
@@ -17,6 +18,7 @@ namespace Traficante.Studio.Models
         [DataMember]
         public MySqlConnectionModel ConnectionInfo { get; set; }
         public override string Title => this.ConnectionInfo.Alias;
+        public override object Icon => Icons.Database;
 
         public MySqlObjectModel()
         {
@@ -52,6 +54,7 @@ namespace Traficante.Studio.Models
     public class MySqlDatabaseObjectModel : ObjectModel
     {
         public MySqlObjectModel Server { get; }
+        public override object Icon => Icons.Database;
 
         public MySqlDatabaseObjectModel(MySqlObjectModel server, string name)
         {
@@ -84,6 +87,7 @@ namespace Traficante.Studio.Models
     public class MySqlTablesObjectModel : ObjectModel
     {
         public MySqlDatabaseObjectModel Database { get; }
+        public override object Icon => Icons.Folder;
 
         public MySqlTablesObjectModel(MySqlDatabaseObjectModel database)
         {
@@ -110,7 +114,8 @@ namespace Traficante.Studio.Models
     public class MySqlTableObjectModel : ObjectModel, ITableObjectModel
     {
         public MySqlDatabaseObjectModel Database { get; }
-        
+        public override object Icon => Icons.Table;
+
         public MySqlTableObjectModel(MySqlDatabaseObjectModel databse, string name)
         {
             Database = databse;
@@ -146,6 +151,7 @@ namespace Traficante.Studio.Models
     public class MySqlViewsObjectModel : ObjectModel
     {
         public MySqlDatabaseObjectModel Database { get; }
+        public override object Icon => Icons.Folder;
 
         public MySqlViewsObjectModel(MySqlDatabaseObjectModel database)
         {
@@ -172,6 +178,7 @@ namespace Traficante.Studio.Models
     public class MySqlViewObjectModel : ObjectModel, ITableObjectModel
     {
         public MySqlDatabaseObjectModel Database { get; }
+        public override object Icon => Icons.Table;
 
         public MySqlViewObjectModel(MySqlDatabaseObjectModel databse, string name)
         {
@@ -209,6 +216,7 @@ namespace Traficante.Studio.Models
     {
         public MySqlDatabaseObjectModel Databse { get; }
         public string Name { get; set; }
+        public override object Icon => Icons.Field;
 
         public MySqlFieldObjectModel(MySqlDatabaseObjectModel databse, string name, string type, bool? notNull)
         {

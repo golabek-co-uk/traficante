@@ -2,16 +2,24 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Parsers;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.ReactiveUI;
+using Org.BouncyCastle.Asn1.X509;
 using ReactiveUI;
+using SharpDX.Direct2D1;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Traficante.Studio.Models;
 using Traficante.Studio.ViewModels;
 
@@ -20,7 +28,6 @@ namespace Traficante.Studio.Views
     public class ObjectExplorerView : ReactiveUserControl<ObjectExplorerViewModel>
     {
         public TreeView Objects => this.FindControl<TreeView>("Objects");
-
 
         public ObjectExplorerView()
         {
@@ -42,6 +49,16 @@ namespace Traficante.Studio.Views
         private void TreeViewItemMaterialized(object sender, ItemContainerEventArgs e)
         {
             var item = (TreeViewItem)e.Containers[0].ContainerControl;
+            //var model = item.DataContext as ObjectModel;
+
+            //var iconResource = Objects.FindResource(model.Icon);
+            //var icon = item.FindControl<DrawingPresenter>("Icon");
+            //icon.Drawing = iconResource as Drawing;
+
+            if (item.DataContext is LoadItemsObjectModel)
+            {
+                item.IsVisible = false;
+            }
             if (item.DataContext is SqlServerObjectModel sqlServer)
             {
                 MenuItem change = new MenuItem { Header = "Change" };
@@ -142,7 +159,7 @@ namespace Traficante.Studio.Views
             {
                 this._pressedItem = null;
             }
-            
+
         }
 
     }

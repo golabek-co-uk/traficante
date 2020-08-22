@@ -2,16 +2,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:Traficante.Studio.Views"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Traficante.Studio.Views.ObjectExplorerView"
              xmlns:models="clr-namespace:Traficante.Studio.Models">
-
-
   <DockPanel>
     <TreeView Name="Objects">
       <TreeView.ItemTemplate>
         <TreeDataTemplate ItemsSource="{Binding Items}">
-          <TextBlock Text="{Binding Title}" />
+          <StackPanel Orientation="Horizontal">
+            <DrawingPresenter Drawing="{Binding Icon}" Name="Icon" Height="10" Margin="0 0 4 0" />
+            <TextBlock Name="Title" Text="{Binding Title}" />
+          </StackPanel>
         </TreeDataTemplate>
       </TreeView.ItemTemplate>          
     </TreeView>

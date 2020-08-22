@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
+using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
@@ -17,6 +18,7 @@ namespace Traficante.Studio.Models
         [DataMember]
         public SqliteConnectionModel ConnectionInfo { get; set; }
         public override string Title => this.ConnectionInfo.Alias;
+        public override object Icon => Icons.Database;
 
         public SqliteObjectModel()
         {
@@ -58,11 +60,12 @@ namespace Traficante.Studio.Models
     public class SqliteTablesObjectModel : ObjectModel
     {
         public SqliteObjectModel Database { get; }
+        public override string Title => "Tables";
+        public override object Icon => Icons.Folder;
 
         public SqliteTablesObjectModel(SqliteObjectModel database)
         {
             Database = database;
-            Title = "Tables";
         }
 
         public override void LoadItems()
@@ -84,7 +87,7 @@ namespace Traficante.Studio.Models
     public class SqliteTableObjectModel : ObjectModel, ITableObjectModel
     {
         public SqliteObjectModel Database { get; }
-
+        public override object Icon => Icons.Table;
         public SqliteTableObjectModel(SqliteObjectModel databse, string name)
         {
             Database = databse;
@@ -120,11 +123,12 @@ namespace Traficante.Studio.Models
     public class SqliteViewsObjectModel : ObjectModel
     {
         public SqliteObjectModel Database { get; }
+        public override string Title => "Views";
+        public override object Icon => Icons.Folder;
 
         public SqliteViewsObjectModel(SqliteObjectModel database)
         {
             Database = database;
-            Title = "Views";
         }
 
         public override void LoadItems()
@@ -148,6 +152,7 @@ namespace Traficante.Studio.Models
         public SqliteObjectModel Database { get; }
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
+        public override object Icon => Icons.Table;
 
         public SqliteViewObjectModel(SqliteObjectModel databse, string name)
         {
@@ -185,6 +190,7 @@ namespace Traficante.Studio.Models
     {
         public SqliteObjectModel Databse { get; }
         public string Name { get; set; }
+        public override object Icon => Icons.Field;
 
         public SqliteFieldObjectModel(SqliteObjectModel databse, string name, string type, bool? notNull)
         {
