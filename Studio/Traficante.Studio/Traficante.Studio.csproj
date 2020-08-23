@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFrameworks>netcoreapp3.1;</TargetFrameworks>
     <Version>0.1.0</Version>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <NoWin32Manifest>true</NoWin32Manifest>
+    <AssemblyName>Traficante.Studio</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
@@ -16,33 +17,38 @@
     <AvaloniaResource Include="Assets\*" />
   </ItemGroup>
   <ItemGroup>
+    <AvaloniaResource Remove="Views\BaseLight.xaml" />
+    <AvaloniaResource Remove="Views\BaseLightIcons.xaml" />
     <AvaloniaResource Remove="Views\ConnectToElasticSearchWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToMySqlWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToSqliteWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToSqlServerWindow.xaml" />
     <AvaloniaResource Remove="Views\EditorView.xaml" />
     <AvaloniaResource Remove="Views\ExceptionWindow.xaml" />
-    <AvaloniaResource Remove="Views\Icons.xaml" />
     <AvaloniaResource Remove="Views\MenuView.xaml" />
     <AvaloniaResource Remove="Views\ObjectExplorerView.xaml" />
     <AvaloniaResource Remove="Views\QueryView.xaml" />
     <AvaloniaResource Remove="Views\ToolBarView.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Views\BaseLight.xaml" />
+    <None Remove="Views\BaseLightIcons.xaml" />
     <None Remove="Views\ConnectToElasticSearchWindow.xaml" />
     <None Remove="Views\ConnectToMySqlWindow.xaml" />
     <None Remove="Views\ConnectToSqliteWindow.xaml" />
     <None Remove="Views\ConnectToSqlServerWindow.xaml" />
     <None Remove="Views\EditorView.xaml" />
     <None Remove="Views\ExceptionWindow.xaml" />
-    <None Remove="Views\Icons.xaml" />
     <None Remove="Views\MenuView.xaml" />
     <None Remove="Views\ObjectExplorerView.xaml" />
     <None Remove="Views\QueryView.xaml" />
     <None Remove="Views\ToolBarView.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaXaml Include="Views\Icons.xaml">
+    <AvaloniaXaml Include="Views\BaseLight.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\BaseLightIcons.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
   </ItemGroup>
@@ -110,8 +116,8 @@
     <ProjectReference Include="..\AvaloniaEdit\AvaloniaEdit.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Views\ConnectToElasticSearchWindow - Copy.xaml.cs">
-      <DependentUpon>ConnectToElasticSearchWindow.xaml</DependentUpon>
+    <Compile Update="Views\BaseLightIcons.xaml.cs">
+      <DependentUpon>BaseLightIcons.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\ConnectToElasticSearchWindow.xaml.cs">
       <DependentUpon>ConnectToElasticSearchWindow.xaml</DependentUpon>
@@ -122,9 +128,6 @@
     <Compile Update="Views\ExceptionWindow.xaml.cs">
       <DependentUpon>ExceptionWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Icons.xaml.cs">
-      <DependentUpon>Icons.xaml</DependentUpon>
-    </Compile>
     <Compile Update="Views\MenuView.xaml.cs">
       <DependentUpon>MenuView.xaml</DependentUpon>
     </Compile>
@@ -133,6 +136,9 @@
     </Compile>
     <Compile Update="Views\QueryView.xaml.cs">
       <DependentUpon>QueryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\BaseLight.xaml.cs">
+      <DependentUpon>BaseLight.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\ToolBarView.xaml.cs">
       <DependentUpon>ToolBarView.xaml</DependentUpon>

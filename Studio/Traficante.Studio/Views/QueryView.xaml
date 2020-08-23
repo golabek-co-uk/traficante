@@ -7,10 +7,20 @@
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
   <Grid Name="Grid" RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="*">
-    <DockPanel Grid.Row="0" Margin="2 2 2 2">
-      <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*">
-        <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Run</Button>
-        <Button Name="Cancel" Grid.Column="0" IsVisible="False" Height="20" Margin="0 0 0 0" Padding="0 0 0 0" MinWidth="50">Cancel</Button>
+    <DockPanel Grid.Row="0" Background="#FFE7E8EC" >
+      <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
+        <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
+          <StackPanel Orientation="Horizontal">
+            <DrawingPresenter Drawing="{DynamicResource Icon.Run}" Height="10" Margin="0 0 4 0" />
+            <TextBlock>Execute</TextBlock>
+          </StackPanel>
+        </Button>
+        <Button Name="Cancel" Grid.Column="0" IsVisible="False" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
+          <StackPanel Orientation="Horizontal">
+            <DrawingPresenter Drawing="{DynamicResource Icon.Stop}" Height="10" Margin="0 0 4 0" />
+            <TextBlock>Stop</TextBlock>
+          </StackPanel>
+        </Button>
       </Grid>
     </DockPanel>
     

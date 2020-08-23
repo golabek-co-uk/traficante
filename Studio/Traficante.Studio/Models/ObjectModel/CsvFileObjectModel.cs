@@ -22,7 +22,7 @@ namespace Traficante.Studio.Models
         private FilesObjectModel Files { get; }
         private FileConnectionModel File { get; }
         public override string Title => File.Name;
-        public override object Icon => Icons.File;
+        public override object Icon => BaseLightIcons.File;
 
         public CsvFileObjectModel(FilesObjectModel files, FileConnectionModel file)
         {
@@ -50,7 +50,7 @@ namespace Traficante.Studio.Models
     {
         public CsvFileObjectModel File { get; }
         public string Name { get; set; }
-        public override object Icon => Icons.Field;
+        public override object Icon => BaseLightIcons.Field;
 
         public CsvFileFieldObjectModel(CsvFileObjectModel file, string name, string type, bool? notNull)
         {

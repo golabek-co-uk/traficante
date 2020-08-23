@@ -2,12 +2,14 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace Traficante.Studio.Views
 {
-    public class Icons : UserControl
+    public class BaseLightIcons : ResourceDictionary
     {
-        public Icons()
+
+        public BaseLightIcons()
         {
             this.InitializeComponent();
         }
@@ -19,17 +21,15 @@ namespace Traficante.Studio.Views
 
         public Drawing GetIcon(string name)
         {
-           return this.FindResource(name) as Drawing;
+            return this.FindResource(name) as Drawing;
         }
 
-        private static Icons IconsInstance = new Icons();
+        private static BaseLightIcons IconsInstance = new BaseLightIcons();
         public static Drawing None => IconsInstance.GetIcon("None");
         public static Drawing Database => IconsInstance.GetIcon("Database");
         public static Drawing Folder => IconsInstance.GetIcon("Folder");
         public static Drawing File => IconsInstance.GetIcon("File");
         public static Drawing Table => IconsInstance.GetIcon("Table");
         public static Drawing Field => IconsInstance.GetIcon("Field");
-        
-
     }
 }

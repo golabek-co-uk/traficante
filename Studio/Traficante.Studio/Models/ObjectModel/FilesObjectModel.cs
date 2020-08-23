@@ -22,7 +22,7 @@ namespace Traficante.Studio.Models
         [DataMember]
         [Reactive]
         public FilesConnectionModel ConnectionInfo { get; set; }
-        public override object Icon => Icons.Database;
+        public override object Icon => BaseLightIcons.Database;
 
 
         public override string Title => this.ConnectionInfo.Alias;

@@ -18,7 +18,7 @@ namespace Traficante.Studio.Models
         [DataMember]
         public ElasticSearchConnectionModel ConnectionInfo { get; set; }
         public override string Title => this.ConnectionInfo.Alias;
-        public override object Icon => Icons.Database;
+        public override object Icon => BaseLightIcons.Database;
 
         public ElasticSearchObjectModel()
         {
@@ -60,7 +60,7 @@ namespace Traficante.Studio.Models
     public class ElasticSearchIndicesObjectModel : ObjectModel
     {
         public ElasticSearchObjectModel Server { get; }
-        public override object Icon => Icons.Folder;
+        public override object Icon => BaseLightIcons.Folder;
 
         public ElasticSearchIndicesObjectModel(ElasticSearchObjectModel server)
         {
@@ -88,7 +88,7 @@ namespace Traficante.Studio.Models
     {
         public ElasticSearchObjectModel Server { get; }
         private volatile JsonDocument _index = null;
-        public override object Icon => Icons.Table;
+        public override object Icon => BaseLightIcons.Table;
 
         public ElasticSearchIndexObjectModel(ElasticSearchObjectModel server, string name)
         {
@@ -154,7 +154,7 @@ namespace Traficante.Studio.Models
     public class ElasticSearchAliasesObjectModel : ObjectModel
     {
         public ElasticSearchObjectModel Server { get; }
-        public override object Icon => Icons.Folder;
+        public override object Icon => BaseLightIcons.Folder;
 
         public ElasticSearchAliasesObjectModel(ElasticSearchObjectModel server)
         {
@@ -181,7 +181,7 @@ namespace Traficante.Studio.Models
     public class ElasticSearchAliasObjectModel : ObjectModel, ITableObjectModel
     {
         public ElasticSearchObjectModel Server { get; }
-        public override object Icon => Icons.Table;
+        public override object Icon => BaseLightIcons.Table;
 
         public ElasticSearchAliasObjectModel(ElasticSearchObjectModel server, string name)
         {
@@ -225,7 +225,7 @@ namespace Traficante.Studio.Models
     {
         public ElasticSearchObjectModel Server { get; }
         public JsonElement JsonElement { get; set; }
-        public override object Icon => Icons.Field;
+        public override object Icon => BaseLightIcons.Field;
 
         public ElasticSearchJsonDocument(ElasticSearchObjectModel server, string name, JsonElement jsonElement)
         {

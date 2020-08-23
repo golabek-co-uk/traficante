@@ -7,7 +7,7 @@ namespace Traficante.Studio.Models
         private readonly FilesObjectModel _files;
         private readonly FileConnectionModel _file;
 
-        public override object Icon => Icons.File;
+        public override object Icon => BaseLightIcons.File;
 
         public XmlFileObjectModel(FilesObjectModel files, FileConnectionModel file)
         {

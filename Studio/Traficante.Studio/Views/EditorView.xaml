@@ -11,7 +11,7 @@
       ShowLineNumbers="True"
       HorizontalScrollBarVisibility="Visible"
       VerticalScrollBarVisibility="Visible" />
-    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto"  Background="{DynamicResource ThemeControlMidBrush}">
         <TextBlock Grid.Column="0"></TextBlock>
         <TextBlock Grid.Column="1" Margin="0 0 3 0">Ln:</TextBlock>
         <TextBlock Grid.Column="2" Width="30" Name="Ln"></TextBlock>

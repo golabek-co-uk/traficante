@@ -15,7 +15,7 @@ namespace Traficante.Studio.Models
         public FileConnectionModel File { get; set; }
 
         public override string Title => File.Name;
-        public override object Icon => Icons.File;
+        public override object Icon => BaseLightIcons.File;
 
         public ExcelFileObjectModel(FilesObjectModel files, FileConnectionModel file)
         {
@@ -43,7 +43,7 @@ namespace Traficante.Studio.Models
     {
         public ExcelFileObjectModel File { get; }
         public string Sheet { get; set; }
-        public override object Icon => Icons.Table;
+        public override object Icon => BaseLightIcons.Table;
 
         public ExcelFileSheetObjectModel(ExcelFileObjectModel file, string sheet)
         {
@@ -72,7 +72,7 @@ namespace Traficante.Studio.Models
     {
         public ExcelFileSheetObjectModel Sheet { get; }
         public string Name { get; set; }
-        public override object Icon => Icons.Field;
+        public override object Icon => BaseLightIcons.Field;
 
         public ExcelFileFieldObjectModel(ExcelFileSheetObjectModel sheet, string name, string type, bool? notNull)
         {

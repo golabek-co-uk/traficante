@@ -7,11 +7,17 @@
   <DockPanel Height="30">
     <Menu Margin="0 3 0 3">
       <MenuItem Header="Connect" Padding="2 2 2 2" Margin="0 0 0 0">
-        <MenuItem Header="SqlServer" Name="ConnectToSqlServer" Padding="2 2 2 2"/>
-        <MenuItem Header="MySql" Name="ConnectToMySql" Padding="2 2 2 2"/>
-        <MenuItem Header="Sqlite" Name="ConnectToSqlite" Padding="2 2 2 2"/>
-        <MenuItem Header="ElasticSearch" Name="ConnectToElasticSearch" Padding="2 2 2 2"/>
-        <MenuItem Header="File" Name="ConnectToFile" Padding="2 2 2 2"/>
+        <MenuItem.Icon>
+          <DrawingPresenter Drawing="{DynamicResource Icon.NewDatabase}" />
+        </MenuItem.Icon>
+        <MenuItem.Items>
+          <MenuItem Header="SqlServer" Name="ConnectToSqlServer" Padding="2 2 2 2">
+          </MenuItem>
+          <MenuItem Header="MySql" Name="ConnectToMySql" Padding="2 2 2 2"/>
+          <MenuItem Header="Sqlite" Name="ConnectToSqlite" Padding="2 2 2 2"/>
+          <MenuItem Header="ElasticSearch" Name="ConnectToElasticSearch" Padding="2 2 2 2"/>
+          <MenuItem Header="File" Name="ConnectToFile" Padding="2 2 2 2"/>
+        </MenuItem.Items>
       </MenuItem>
       <MenuItem Header="New Query" Name="NewQuery" Padding="2 2 2 2" Margin="5 0 0 0">
       </MenuItem>
