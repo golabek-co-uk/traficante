@@ -7,7 +7,6 @@
 
     <Style Selector="TabControl">
         <Setter Property="Background" Value="#F0F0F0"/>
-        <Setter Property="Height" Value="120"/>
     </Style>
     <Style Selector="TabControl WrapPanel">
         <Setter Property="Background" Value="#2B579A"/>

@@ -40,7 +40,7 @@ namespace Traficante.Studio.Models
         public override void LoadItems()
         {
             Observable
-                .FromAsync(() => Task.Run(async () =>
+                .FromAsync(() => Task.Run(() =>
                 {
                     return ConnectionInfo
                         .Files

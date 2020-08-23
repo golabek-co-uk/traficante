@@ -1,9 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using Traficante.TSQL.Evaluator.Tests.Core.Schema;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace Traficante.TSQL.Evaluator.Tests.Core

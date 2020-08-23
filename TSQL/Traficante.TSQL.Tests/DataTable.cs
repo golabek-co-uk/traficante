@@ -186,5 +186,10 @@ namespace Traficante.TSQL.Tests
             return Equals(obj as DataRow);
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
     }
 }

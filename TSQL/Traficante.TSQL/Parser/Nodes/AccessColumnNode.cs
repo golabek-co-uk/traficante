@@ -42,7 +42,7 @@ namespace Traficante.TSQL.Parser.Nodes
             return $"{Alias}.{Name}";
         }
 
-        public void ChangeReturnType(Type returnType)
+        new public void ChangeReturnType(Type returnType)
         {
             _returnType = returnType;
         }

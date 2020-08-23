@@ -15,7 +15,7 @@ namespace Traficante.Connect.Connectors
 {
     public class FilesConnector : Connector
     {
-        public FilesConnectorConfig Config => (FilesConnectorConfig)base.Config;
+        new public FilesConnectorConfig Config => (FilesConnectorConfig)base.Config;
 
         public FilesConnector(FilesConnectorConfig config)
         {
@@ -86,9 +86,9 @@ namespace Traficante.Connect.Connectors
                 switch(file.Type)
                 {
                     case FileType.Csv:
-                        return new CsvHelper().OpenReader(file.Path);
+                        return await Task.FromResult(new CsvHelper().OpenReader(file.Path));
                     case FileType.Excel:
-                        return new ExcelHelper().OpenReader(file.Path, arg1);
+                        return await Task.FromResult(new ExcelHelper().OpenReader(file.Path, arg1));
                 }
                 throw new Exception($"Cannot recognize the file format: {file.Path}");
             };

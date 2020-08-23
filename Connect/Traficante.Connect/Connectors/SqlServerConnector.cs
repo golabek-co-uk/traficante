@@ -13,7 +13,7 @@ namespace Traficante.Connect.Connectors
 {
     public class SqlServerConnector : Connector
     {
-        public SqlServerConnectorConfig Config => (SqlServerConnectorConfig)base.Config;
+        new public SqlServerConnectorConfig Config => (SqlServerConnectorConfig)base.Config;
 
         public SqlServerConnector(SqlServerConnectorConfig config)
         {

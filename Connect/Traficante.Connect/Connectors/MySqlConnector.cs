@@ -15,7 +15,7 @@ namespace Traficante.Connect.Connectors
 {
     public class MySqlConnector : Connector
     {
-        public MySqlConnectorConfig Config => (MySqlConnectorConfig)base.Config;
+        new public MySqlConnectorConfig Config => (MySqlConnectorConfig)base.Config;
 
         public MySqlConnector(MySqlConnectorConfig config)
         {

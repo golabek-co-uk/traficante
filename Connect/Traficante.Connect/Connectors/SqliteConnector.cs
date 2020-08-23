@@ -12,7 +12,7 @@ namespace Traficante.Connect.Connectors
 {
     public class SqliteConnector : Connector
     {
-        public SqliteConnectorConfig Config => (SqliteConnectorConfig)base.Config;
+        new public SqliteConnectorConfig Config => (SqliteConnectorConfig)base.Config;
 
         public SqliteConnector(SqliteConnectorConfig config)
         {

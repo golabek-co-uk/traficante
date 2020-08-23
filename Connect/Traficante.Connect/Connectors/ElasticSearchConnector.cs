@@ -14,7 +14,7 @@ namespace Traficante.Connect.Connectors
 {
     public class ElasticSearchConnector : Connector
     {
-        public ElasticSearchConnectorConfig Config => (ElasticSearchConnectorConfig)base.Config;
+        new public ElasticSearchConnectorConfig Config => (ElasticSearchConnectorConfig)base.Config;
 
         public ElasticSearchConnector(ElasticSearchConnectorConfig config)
         {
@@ -378,7 +378,7 @@ namespace Traficante.Connect.Connectors
 
         public async Task<bool> ReadAsync()
         {
-            return Read();
+            return await Task.FromResult(Read());
         }
 
         public async Task<bool> NextResultAsync()

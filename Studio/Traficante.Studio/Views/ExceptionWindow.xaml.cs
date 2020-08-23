@@ -16,7 +16,7 @@ namespace Traficante.Studio.Views
     {
         
         public Window Window => this.FindControl<Window>("Window");
-        public Button Close => this.FindControl<Button>("Close");
+        public Button CloseButton => this.FindControl<Button>("Close");
         public TextBlock Message => this.FindControl<TextBlock>("Message");
         public TextBlock Details => this.FindControl<TextBlock>("Details");
 
@@ -32,7 +32,7 @@ namespace Traficante.Studio.Views
         {
             this.WhenActivated(disposables =>
             {
-                this.BindCommand(ViewModel, x => x.CloseCommand, x => x.Close)
+                this.BindCommand(ViewModel, x => x.CloseCommand, x => x.CloseButton)
                     .DisposeWith(disposables);
                 ViewModel.CloseInteraction.RegisterHandler(x =>
                 {
