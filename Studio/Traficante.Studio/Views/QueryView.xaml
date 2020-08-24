@@ -7,7 +7,7 @@
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
   <Grid Name="Grid" RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="*">
-    <DockPanel Grid.Row="0" Background="#FFE7E8EC" >
+    <DockPanel Name="QueryViewHeader" Grid.Row="0" >
       <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
         <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
           <StackPanel Orientation="Horizontal">
@@ -33,24 +33,22 @@
     <TabControl Name="Results" Grid.Row="3" IsVisible="False">
       <TabItem>
         <TabItem.Header>
-          <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Results</TextBlock>
+          Results
         </TabItem.Header>
-        <DockPanel>
-          <Grid RowDefinitions="*,Auto">
-            <dg:DataGrid Grid.Row="0" Name="ResultsData">
-              <DataGrid.ContextMenu>
-                <ContextMenu>
-                  <MenuItem Name="ExportResultsAs" Header="Export Results As..."></MenuItem>
-                </ContextMenu>
-              </DataGrid.ContextMenu>
-            </dg:DataGrid>
-            <TextBlock Grid.Row="1" Name="ResultsCount" FontSize="10"></TextBlock>
-          </Grid>
-        </DockPanel>
+        <Grid RowDefinitions="*,Auto" Margin="2 2 2 2">
+          <dg:DataGrid Grid.Row="0" Name="ResultsData" IsVisible="False">
+            <DataGrid.ContextMenu>
+              <ContextMenu>
+                <MenuItem Name="ExportResultsAs" Header="Export Results As..."></MenuItem>
+              </ContextMenu>
+            </DataGrid.ContextMenu>
+          </dg:DataGrid>
+          <TextBlock Grid.Row="1" Name="ResultsCount" FontSize="10"></TextBlock>
+        </Grid>
       </TabItem>
       <TabItem >
         <TabItem.Header>
-          <TextBlock VerticalAlignment="Center" Height="20" FontSize="12">Messages</TextBlock>
+          Messages
         </TabItem.Header>
         <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible">
           <StackPanel>

@@ -5,41 +5,70 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d">
 
-    <Style Selector="TabControl">
-        <Setter Property="Background" Value="#F0F0F0"/>
-    </Style>
-    <Style Selector="TabControl WrapPanel">
-        <Setter Property="Background" Value="#2B579A"/>
-    </Style>
+  <Style Selector="DataGrid">
+    <Style.Resources>
+    </Style.Resources>  
+    <Setter Property="RowBackground" Value="#FFFFFFFF" />
+    <Setter Property="AlternatingRowBackground" Value="#FFFFFFFF" />
+    <Setter Property="GridLinesVisibility" Value="All" />
+    <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource ThemeControlMidBrush}" />
+    <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource ThemeControlMidBrush}" />
+    <Setter Property="Background" Value="#FFFFFFFF" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeControlMidHighBrush}"/>
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
 
-    <Style Selector="TabItem">
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Height" Value="34"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Background" Value="#2B579A"/>
-        <Setter Property="Foreground" Value="#F0F0F0"/>
-        <Setter Property="Margin" Value="0 0 0 0"/>
-        <Setter Property="Padding" Value="10 0"/>
-    </Style>
-    <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#124078"/>
-    </Style>
+  <Style Selector="DataGridColumnHeader">
+    <Setter Property="Background" Value="#FFFFFFFF"/>
+    <Setter Property="AreSeparatorsVisible" Value="false" />
+    <Setter Property="AreSeparatorsVisible" Value="true" />
+  </Style>
 
-    <Style Selector="TabItem:focus">
-        <Setter Property="Foreground" Value="#2B579A"/>
-        <Setter Property="Margin" Value="0 0 0 0"/>
-        <Setter Property="Padding" Value="10 0"/>
-    </Style>
-    <Style Selector="TabItem:focus /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#f0f0f0"/>
-    </Style>
+  <Style Selector="DataGridColumnHeader /template/ Rectangle#VerticalSeparator">
+    <Setter Property="Stroke" Value="#FFF5F5F5"/>
+    <Setter Property="StrokeThickness" Value="1"/>
+  </Style>
+  
+  <Style Selector="DockPanel#QueryViewHeader">
+    <Setter Property="Background" Value="#FFE7E8EC"/>
+  </Style>
+  
+  <Style Selector="TabControl">
+      <Setter Property="Background" Value="{DynamicResource HighlightForegroundColor}"/>
+  </Style>
+  <Style Selector="TabControl WrapPanel">
+      <Setter Property="Background" Value="#FFE7E8EC"/>
+      <Setter Property="Height" Value="22"/>
+  </Style>
 
-    <Style Selector="TabItem:selected">
-        <Setter Property="Foreground" Value="#2B579A"/>
-        <Setter Property="Margin" Value="0 0 0 0"/>
-        <Setter Property="Padding" Value="10 0"/>
-    </Style>
-    <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#f0f0f0"/>
-    </Style>
+  <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Height" Value="20"/>
+      <Setter Property="VerticalAlignment" Value="Bottom"/>
+      <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+      <Setter Property="Padding" Value="3 3 3 3"/>
+  </Style>
+  <Style Selector="TabItem ControlTemplate ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderThickness" Value="0"/>
+  </Style>
+  <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FFC9DEF5"/>
+  </Style>
+
+  <Style Selector="TabItem:focus">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundColor}"/>
+      <Setter Property="Padding" Value="3 3 3 3"/>
+  </Style>
+  <Style Selector="TabItem:focus /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FFC9DEF5"/>
+  </Style>
+
+  <Style Selector="TabItem:selected">
+    <Setter Property="Height" Value="22"/>
+    <Setter Property="Padding" Value="3 3 3 3"/>
+  </Style>
+  <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#FFFFFFFF"/>
+  </Style>
 </Styles>

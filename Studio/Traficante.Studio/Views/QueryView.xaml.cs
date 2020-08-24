@@ -12,6 +12,7 @@ using AvaloniaEdit;
 using Avalonia.Input;
 using System.Reactive.Linq;
 using System.Linq;
+using DynamicData.Binding;
 
 namespace Traficante.Studio.Views
 {
@@ -65,8 +66,19 @@ namespace Traficante.Studio.Views
                     })
                     .DisposeWith(disposables);
 
+                this.ViewModel.ResultsDataColumns = this.ResultsData.Columns;
                 this.OneWayBind(ViewModel, x => x.ResultsData, x => x.ResultsData.Items, x => (System.Collections.IEnumerable)x)
                     .DisposeWith(disposables);
+                this.WhenAnyValue(x => x.ViewModel.ResultsDataColumns)
+                    .Subscribe(columns =>
+                    {
+                        columns.ToObservableChangeSet().Subscribe(column =>
+                        {
+                            this.ResultsData.IsVisible = columns != null && columns.Count > 0;
+                        });
+                    })
+                    .DisposeWith(disposables);
+
                 this.WhenAnyValue(x => x.ViewModel.ResultsError)
                     .Subscribe(x =>
                     {
@@ -83,7 +95,7 @@ namespace Traficante.Studio.Views
                     })
                     .DisposeWith(disposables);
       
-                this.ViewModel.ResultsDataColumns = this.ResultsData.Columns;
+                
                 this.BindCommand(ViewModel, x => x.SaveResultsAsCommand, x => x.ExportResultsAs);
 
                 this.Bind(ViewModel, x => x.ResultsCount, x => x.ResultsCount.Text)
