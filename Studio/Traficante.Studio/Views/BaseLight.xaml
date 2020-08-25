@@ -1,9 +1,33 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         x:Class="Traficante.Studio.Views.BaseLight"
+        xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+        xmlns:idc="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d">
+
+  <Style Selector="Button">
+    <Setter Property="Padding" Value="3 2 3 3" />
+  </Style>
+  
+  <Style Selector="Button.Secondary">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent"/>
+  </Style>
+  
+
+  <Style Selector="Button.Secondary:pointerover">
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}"/>
+  </Style>
+
+  <Style Selector="Button.Secondary:pressed /template/ ContentPresenter">
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeAccentBrush}"/>
+  </Style>
 
   <Style Selector="DataGrid">
     <Style.Resources>
@@ -30,7 +54,12 @@
   </Style>
   
   <Style Selector="DockPanel#QueryViewHeader">
-    <Setter Property="Background" Value="#FFE7E8EC"/>
+    <Setter Property="Background" Value="Transparent"/>
+  </Style>
+  
+  <Style Selector="idc|DockToolChrome:active /template/ Grid#PART_Grip">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
   </Style>
   
   <Style Selector="TabControl">

@@ -138,14 +138,14 @@ namespace Traficante.Studio
                             {
                                 Id = "LeftPaneTop",
                                 Title = "LeftPaneTop",
-                                Proportion = double.NaN,
+                                Proportion = 0.2,
                                 ActiveDockable = objectExplorer,
                                 VisibleDockables = CreateList<IDockable>
                                 (
                                     objectExplorer
                                 )
                             }
-                        )
+                        ),
                     },
                     new SplitterDock()
                     {
