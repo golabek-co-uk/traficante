@@ -6,7 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
-  <Grid Name="Grid" RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="*">
+  <Grid Name="Grid" RowDefinitions="Auto,*,Auto,Auto,Auto" ColumnDefinitions="*">
     <DockPanel Name="QueryViewHeader" Grid.Row="0" >
       <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
         <Button Name="Run" Classes="Secondary" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
@@ -30,7 +30,7 @@
     
     <GridSplitter Name="ResultsSplitter" Grid.Row="2"  IsVisible="False" VerticalAlignment="Center" HorizontalAlignment="Stretch"></GridSplitter>
     
-    <TabControl Name="Results" Grid.Row="3" IsVisible="False">
+    <TabControl Name="Results" Grid.Row="3" IsVisible="False" Margin="4">
       <TabItem>
         <TabItem.Header>
           Results
@@ -43,7 +43,6 @@
               </ContextMenu>
             </DataGrid.ContextMenu>
           </dg:DataGrid>
-          <TextBlock Grid.Row="1" Name="ResultsCount" FontSize="10"></TextBlock>
         </Grid>
       </TabItem>
       <TabItem >
@@ -58,5 +57,16 @@
         </ScrollViewer>
       </TabItem>
     </TabControl>
+
+    <Border Grid.Row="4" BorderThickness="0 1 0 0" BorderBrush="{DynamicResource ThemeBorderLowBrush}" Padding="2">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" >
+        <TextBlock Grid.Column="0" Name="ResultsCount" Margin="5 0 0 0"></TextBlock>
+        <TextBlock Grid.Column="2" Margin="0 0 3 0">Ln:</TextBlock>
+        <TextBlock Grid.Column="3" Width="30" Name="Ln"></TextBlock>
+        <TextBlock Grid.Column="4" Margin="0 0 3 0">Col:</TextBlock>
+        <TextBlock Grid.Column="5" Width="30" Name="Col"></TextBlock>
+      </Grid>
+    </Border>
+
   </Grid>
 </UserControl>

@@ -29,7 +29,9 @@ namespace Traficante.Studio.Views
         public GridSplitter ResultsSplitter => this.FindControl<GridSplitter>("ResultsSplitter");
         public MenuItem ExportResultsAs => this.FindControl<MenuItem>("ExportResultsAs");
         public TextBlock ResultsCount => this.FindControl<TextBlock>("ResultsCount");
-        
+        public TextBlock Ln => this.FindControl<TextBlock>("Ln");
+        public TextBlock Col => this.FindControl<TextBlock>("Col");
+
 
         public QueryView()
         {
@@ -44,6 +46,10 @@ namespace Traficante.Studio.Views
                     .DisposeWith(disposables);
                 this.Bind(ViewModel, x => x.SelectedText, x => x.Text.SelectedText)
                     .DisposeWith(disposables);
+                this.WhenAnyValue(x => x.Text.Line)
+                    .Subscribe(x => this.Ln.Text = x.ToString());
+                this.WhenAnyValue(x => x.Text.Column)
+                    .Subscribe(x => this.Col.Text = x.ToString());
 
                 this.BindCommand(ViewModel, x => x.RunCommand, x => x.Run)
                     .DisposeWith(disposables);

@@ -9,14 +9,15 @@ using ReactiveUI;
 using System.Linq;
 using System.Reactive.Linq;
 using Traficante.Studio.ViewModels;
+using ReactiveUI.Fody.Helpers;
 
 namespace Traficante.Studio.Views
 {
     public class EditorView : ReactiveUserControl<EditorViewModel>
     {
         public TextEditor TextEditor => this.FindControl<TextEditor>("TextEditor");
-        public TextBlock Ln => this.FindControl<TextBlock>("Ln");
-        public TextBlock Col => this.FindControl<TextBlock>("Col");
+        //public TextBlock Ln => this.FindControl<TextBlock>("Ln");
+        //public TextBlock Col => this.FindControl<TextBlock>("Col");
         
 
         public static readonly AvaloniaProperty<string> TextProperty = AvaloniaProperty.Register<EditorView, string>("Text");
@@ -28,6 +29,20 @@ namespace Traficante.Studio.Views
                 this.TextEditor.Text = value;
                 this.SetValue(TextProperty, value);
             }
+        }
+
+        public static readonly AvaloniaProperty<int> LineProperty = AvaloniaProperty.Register<EditorView, int>("Line");
+        public int Line
+        {
+            get => this.GetValue(LineProperty);
+            set => this.SetValue(LineProperty, value);
+        }
+
+        public static readonly AvaloniaProperty<int> ColumnProperty = AvaloniaProperty.Register<EditorView, int>("Column");
+        public int Column
+        {
+            get => this.GetValue(ColumnProperty);
+            set => this.SetValue(ColumnProperty, value);
         }
 
         public static readonly AvaloniaProperty<string> SelectedTextProperty = AvaloniaProperty.Register<EditorView, string>("SelectedText");
@@ -59,8 +74,10 @@ namespace Traficante.Studio.Views
                     nameof(this.TextEditor.TextArea.Caret.PositionChanged))
                 .Subscribe(x =>
                 {
-                    this.Ln.Text = this.TextEditor.TextArea.Caret.Line.ToString();
-                    this.Col.Text = this.TextEditor.TextArea.Caret.Column.ToString();
+                    Line = this.TextEditor.TextArea.Caret.Line;
+                    Column = this.TextEditor.TextArea.Caret.Column;
+                    //this.Ln.Text = this.TextEditor.TextArea.Caret.Line.ToString();
+                    //this.Col.Text = this.TextEditor.TextArea.Caret.Column.ToString();
                 });
 
                 Observable.FromEventPattern(

@@ -5,18 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Traficante.Studio.Views.EditorView">
-  <Grid RowDefinitions="*,Auto" ColumnDefinitions="*">
-    <AvalonEdit:TextEditor Grid.Row="0"
-      Name="TextEditor"
-      ShowLineNumbers="True"
-      HorizontalScrollBarVisibility="Auto"
-      VerticalScrollBarVisibility="Auto" />
-    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto"  Background="{DynamicResource ThemeControlMidBrush}">
-        <TextBlock Grid.Column="0"></TextBlock>
-        <TextBlock Grid.Column="1" Margin="0 0 3 0">Ln:</TextBlock>
-        <TextBlock Grid.Column="2" Width="30" Name="Ln"></TextBlock>
-        <TextBlock Grid.Column="3" Margin="0 0 3 0">Col:</TextBlock>
-        <TextBlock Grid.Column="4" Width="30" Name="Col"></TextBlock>
-    </Grid>
-  </Grid>
+  <AvalonEdit:TextEditor
+    Name="TextEditor"
+    ShowLineNumbers="True"
+    HorizontalScrollBarVisibility="Auto"
+    VerticalScrollBarVisibility="Auto" />
 </UserControl>
