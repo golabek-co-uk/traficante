@@ -9,16 +9,16 @@
   <Grid Name="Grid" RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="*">
     <DockPanel Name="QueryViewHeader" Grid.Row="0" >
       <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
-        <Button Name="Run" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
+        <Button Name="Run" Classes="Secondary" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
           <StackPanel Orientation="Horizontal">
             <DrawingPresenter Drawing="{DynamicResource Icon.Run}" Height="10" Margin="0 0 4 0" />
-            <TextBlock>Execute</TextBlock>
+            <TextBlock>Run</TextBlock>
           </StackPanel>
         </Button>
-        <Button Name="Cancel" Grid.Column="0" IsVisible="False" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
+        <Button Name="Cancel" Classes="Secondary" Grid.Column="0" IsVisible="False" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
           <StackPanel Orientation="Horizontal">
             <DrawingPresenter Drawing="{DynamicResource Icon.Stop}" Height="10" Margin="0 0 4 0" />
-            <TextBlock>Stop</TextBlock>
+            <TextBlock>Cancel</TextBlock>
           </StackPanel>
         </Button>
       </Grid>

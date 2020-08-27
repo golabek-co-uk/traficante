@@ -120,32 +120,21 @@ namespace Traficante.Studio
             {
                 Id = "BodyLayout",
                 Title = "BodyLayout",
-                Proportion = double.NaN,
+                Proportion = 0.2,
                 Orientation = Orientation.Horizontal,
                 ActiveDockable = null,
                 VisibleDockables = CreateList<IDockable>
                 (
-                    new ProportionalDock
+                    new ToolDock
                     {
-                        Id = "LeftPane",
-                        Title = "LeftPane",
+                        Id = "LeftPaneTop",
+                        Title = "LeftPaneTop",
                         Proportion = double.NaN,
-                        Orientation = Orientation.Vertical,
-                        ActiveDockable = null,
+                        ActiveDockable = objectExplorer,
                         VisibleDockables = CreateList<IDockable>
                         (
-                            new ToolDock
-                            {
-                                Id = "LeftPaneTop",
-                                Title = "LeftPaneTop",
-                                Proportion = 0.2,
-                                ActiveDockable = objectExplorer,
-                                VisibleDockables = CreateList<IDockable>
-                                (
-                                    objectExplorer
-                                )
-                            }
-                        ),
+                            objectExplorer
+                        )
                     },
                     new SplitterDock()
                     {

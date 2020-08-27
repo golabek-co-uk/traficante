@@ -9,8 +9,8 @@
     <AvalonEdit:TextEditor Grid.Row="0"
       Name="TextEditor"
       ShowLineNumbers="True"
-      HorizontalScrollBarVisibility="Visible"
-      VerticalScrollBarVisibility="Visible" />
+      HorizontalScrollBarVisibility="Auto"
+      VerticalScrollBarVisibility="Auto" />
     <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto"  Background="{DynamicResource ThemeControlMidBrush}">
         <TextBlock Grid.Column="0"></TextBlock>
         <TextBlock Grid.Column="1" Margin="0 0 3 0">Ln:</TextBlock>

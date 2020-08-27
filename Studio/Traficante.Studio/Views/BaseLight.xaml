@@ -53,28 +53,19 @@
     <Setter Property="StrokeThickness" Value="1"/>
   </Style>
   
-  <Style Selector="DockPanel#QueryViewHeader">
-    <Setter Property="Background" Value="Transparent"/>
-  </Style>
-  
-  <Style Selector="idc|DockToolChrome:active /template/ Grid#PART_Grip">
-    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
-    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-  </Style>
-  
   <Style Selector="TabControl">
-      <Setter Property="Background" Value="{DynamicResource HighlightForegroundColor}"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
   </Style>
   <Style Selector="TabControl WrapPanel">
-      <Setter Property="Background" Value="#FFE7E8EC"/>
-      <Setter Property="Height" Value="22"/>
+      <Setter Property="Background" Value="Transparent"/>
   </Style>
 
   <Style Selector="TabItem">
       <Setter Property="FontSize" Value="12"/>
-      <Setter Property="Height" Value="20"/>
+      <Setter Property="Height" Value="24"/>
       <Setter Property="VerticalAlignment" Value="Bottom"/>
-      <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}"/>
+      <Setter Property="Background" Value="Transparent"/>
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
       <Setter Property="Padding" Value="3 3 3 3"/>
   </Style>
@@ -82,7 +73,7 @@
     <Setter Property="BorderThickness" Value="0"/>
   </Style>
   <Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#FFC9DEF5"/>
+      <Setter Property="Background" Value="Transparent"/>
   </Style>
 
   <Style Selector="TabItem:focus">
@@ -90,14 +81,66 @@
       <Setter Property="Padding" Value="3 3 3 3"/>
   </Style>
   <Style Selector="TabItem:focus /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#FFC9DEF5"/>
+      <Setter Property="Background" Value="Transparent"/>
   </Style>
 
   <Style Selector="TabItem:selected">
-    <Setter Property="Height" Value="22"/>
     <Setter Property="Padding" Value="3 3 3 3"/>
   </Style>
   <Style Selector="TabItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#FFFFFFFF"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderThickness" Value="0 0 0 2"/>
+    <Setter Property="BorderBrush" Value="#1C97EA"/>
   </Style>
+
+  <Style Selector="ScrollBar /template/ Grid">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  <Style Selector="ScrollBar /template/ Track RepeatButton">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton#PART_LineUpButton">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  <Style Selector="ScrollBar /template/ RepeatButton#PART_LineDownButton">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  
+  <Style Selector="ScrollBar:horizontal /template/ Grid">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  <Style Selector="ScrollBar:horizontal /template/ Track RepeatButton">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  <Style Selector="ScrollBar:horizontal /template/ RepeatButton#PART_LineUpButton">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  <Style Selector="ScrollBar:horizontal /template/ RepeatButton#PART_LineDownButton">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  <Style Selector="ScrollViewer /template/ Grid">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+  <Style Selector="ScrollViewer /template/ Panel#PART_ScrollBarsSeparator">
+    <Setter Property="Background" Value="White"/>
+  </Style>
+ 
+  <Style Selector="DockPanel#QueryViewHeader">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="Margin" Value="4 5 4 5" />
+  </Style>
+
+  <Style Selector="idc|DockToolChrome /template/ Border#PART_Border">
+    <Setter Property="BorderThickness" Value="1 1 1 1" />
+  </Style>
+
+  <Style Selector="idc|DockToolChrome:active /template/ Grid#PART_Grip">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+  </Style>
+
+  <Style Selector="idc|DocumentControl">
+    <Setter Property="Margin" Value="0 4 0 0" />
+  </Style>
+  
 </Styles>

@@ -7,7 +7,7 @@
              x:Class="Traficante.Studio.Views.ObjectExplorerView"
              xmlns:models="clr-namespace:Traficante.Studio.Models">
   <DockPanel>
-    <TreeView Name="Objects">
+    <TreeView Name="Objects" BorderThickness="0">
       <TreeView.ItemTemplate>
         <TreeDataTemplate ItemsSource="{Binding Items}">
           <StackPanel Orientation="Horizontal">
