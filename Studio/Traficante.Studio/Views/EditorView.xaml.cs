@@ -10,15 +10,18 @@ using System.Linq;
 using System.Reactive.Linq;
 using Traficante.Studio.ViewModels;
 using ReactiveUI.Fody.Helpers;
+using AvaloniaEdit.Highlighting;
+using System.IO;
+using System.Xml;
+using AvaloniaEdit.Highlighting.Xshd;
+using Traficante.Studio.Highlighting;
 
 namespace Traficante.Studio.Views
 {
     public class EditorView : ReactiveUserControl<EditorViewModel>
     {
         public TextEditor TextEditor => this.FindControl<TextEditor>("TextEditor");
-        //public TextBlock Ln => this.FindControl<TextBlock>("Ln");
-        //public TextBlock Col => this.FindControl<TextBlock>("Col");
-        
+
 
         public static readonly AvaloniaProperty<string> TextProperty = AvaloniaProperty.Register<EditorView, string>("Text");
         public string Text
@@ -76,8 +79,6 @@ namespace Traficante.Studio.Views
                 {
                     Line = this.TextEditor.TextArea.Caret.Line;
                     Column = this.TextEditor.TextArea.Caret.Column;
-                    //this.Ln.Text = this.TextEditor.TextArea.Caret.Line.ToString();
-                    //this.Col.Text = this.TextEditor.TextArea.Caret.Column.ToString();
                 });
 
                 Observable.FromEventPattern(
@@ -92,6 +93,11 @@ namespace Traficante.Studio.Views
                 this.TextEditor.AddHandler(DragDrop.DragOverEvent, DragOver);
                 DragDrop.SetAllowDrop(this.TextEditor, true);
                 DragDrop.SetAllowDrop(this.TextEditor.TextArea, true);
+
+                this.TextEditor.SyntaxHighlighting = new HighlightingHelper().LoadHighlightingDefinition("TSQL");
+
+                //new AvaloniaEdit.Indentation.CSharp.CSharpIndentationStrategy()
+                //this.TextEditor
             });
             
             AvaloniaXamlLoader.Load(this);

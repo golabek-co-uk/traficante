@@ -7,6 +7,7 @@
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
   <Grid Name="Grid" RowDefinitions="Auto,*,Auto,Auto,Auto" ColumnDefinitions="*">
+    
     <DockPanel Name="QueryViewHeader" Grid.Row="0" >
       <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
         <Button Name="Run" Classes="Secondary" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
