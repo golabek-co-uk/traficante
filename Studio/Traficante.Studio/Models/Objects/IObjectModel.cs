@@ -6,6 +6,7 @@ namespace Traficante.Studio.Models
     {
         string Title { get; }
         object Icon { get; }
-        ObservableCollection<object> Items { get; }
+        ObservableCollection<IObjectModel> Children { get; }
+        IObjectModel Parent { get; }
     }
 }

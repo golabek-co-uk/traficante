@@ -17,7 +17,7 @@ namespace Traficante.Studio.ViewModels
         public override object Icon => Object.Icon;
 
 
-        public SelectableObjectModel(IQueryableObjectModel queryableObject)
+        public SelectableObjectModel(IQueryableObjectModel queryableObject) : base(null)
         {
             this.Object = queryableObject;
             this.QueryLanguages = queryableObject
@@ -27,21 +27,21 @@ namespace Traficante.Studio.ViewModels
             this.QueryLanguage = this.QueryLanguages.FirstOrDefault()?.QueryLanguage;
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(() =>
                 {
-                    return Object.QueryableItems ?? new ObservableCollection<object>();
+                    return Object.QueryableChildren ?? new ObservableCollection<IObjectModel>();
                 }))
                 .SelectMany(x => x)
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 }

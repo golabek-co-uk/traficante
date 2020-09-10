@@ -22,37 +22,37 @@ namespace Traficante.Studio.Models
         public override object Icon => BaseLightIcons.Database;
         public string ConnectionAlias => this.ConnectionInfo.Alias;
         public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.TraficantSQL };
-        public ObservableCollection<object> QueryableItems => null;
+        public ObservableCollection<IObjectModel> QueryableChildren => null;
 
-        public ElasticSearchObjectModel()
+        public ElasticSearchObjectModel() : base(null)
         {
             ConnectionInfo = new ElasticSearchConnectionModel();
         }
 
-        public ElasticSearchObjectModel(ElasticSearchConnectionModel connectionString)
+        public ElasticSearchObjectModel(ElasticSearchConnectionModel connectionString) : base(null)
         {
             ConnectionInfo = connectionString;
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(async () =>
                 {
                     await new ElasticSearchConnector(this.ConnectionInfo.ToConectorConfig()).TryConnect();
-                    return new object[] {
+                    return new IObjectModel[] {
                         new ElasticSearchIndicesObjectModel(this),
                         new ElasticSearchAliasesObjectModel(this)
                     };
                 }))
                 .SelectMany(x => x)
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 
@@ -61,25 +61,25 @@ namespace Traficante.Studio.Models
         public ElasticSearchObjectModel Server { get; }
         public override object Icon => BaseLightIcons.Folder;
 
-        public ElasticSearchIndicesObjectModel(ElasticSearchObjectModel server)
+        public ElasticSearchIndicesObjectModel(ElasticSearchObjectModel server) : base (server)
         {
             Server = server;
             Title = "Indices";
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(async () => await new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetIndices()))
                 .SelectMany(x => x)
                 .Select(x => new ElasticSearchIndexObjectModel(Server, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 
@@ -120,7 +120,7 @@ namespace Traficante.Studio.Models
             }
         }
 
-        public ElasticSearchIndexObjectModel(ElasticSearchObjectModel server, string name)
+        public ElasticSearchIndexObjectModel(ElasticSearchObjectModel server, string name) : base(server)
         {
             Server = server;
             Title = name;
@@ -132,7 +132,7 @@ namespace Traficante.Studio.Models
             .ConfigureAwait(false);
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(async () =>
@@ -147,12 +147,12 @@ namespace Traficante.Studio.Models
                 }))
                 .SelectMany(x => x)
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 
@@ -161,25 +161,25 @@ namespace Traficante.Studio.Models
         public ElasticSearchObjectModel Server { get; }
         public override object Icon => BaseLightIcons.Folder;
 
-        public ElasticSearchAliasesObjectModel(ElasticSearchObjectModel server)
+        public ElasticSearchAliasesObjectModel(ElasticSearchObjectModel server) : base(server)
         {
             Server = server;
             Title = "Aliases";
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(async () => await new ElasticSearchConnector(Server.ConnectionInfo.ToConectorConfig()).GetAliases()))
                 .SelectMany(x => x)
                 .Select(x => new ElasticSearchAliasObjectModel(Server, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 
@@ -191,13 +191,13 @@ namespace Traficante.Studio.Models
         public string[] TablePath => new string[] { this.Server.Title, Title };
         public string[] TableFields => new string[0];
         
-        public ElasticSearchAliasObjectModel(ElasticSearchObjectModel server, string name)
+        public ElasticSearchAliasObjectModel(ElasticSearchObjectModel server, string name) : base(server)
         {
             Server = server;
             Title = name;
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(async () =>
@@ -210,12 +210,12 @@ namespace Traficante.Studio.Models
                 }))
                 .SelectMany(x => x)
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 
@@ -225,7 +225,7 @@ namespace Traficante.Studio.Models
         public JsonElement JsonElement { get; set; }
         public override object Icon => BaseLightIcons.Field;
 
-        public ElasticSearchJsonDocument(ElasticSearchObjectModel server, string name, JsonElement jsonElement)
+        public ElasticSearchJsonDocument(ElasticSearchObjectModel server, string name, JsonElement jsonElement) : base(server)
         {
             Server = server;
             JsonElement = jsonElement;
@@ -233,11 +233,11 @@ namespace Traficante.Studio.Models
             if (JsonElement.ValueKind != JsonValueKind.Object && JsonElement.ValueKind != JsonValueKind.Array)
             {
                 Title = $"{name}: {jsonElement.ToString()}";
-                Items = new ObservableCollection<object>();
+                Children = new ObservableCollection<IObjectModel>();
             }
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(() =>
@@ -256,12 +256,12 @@ namespace Traficante.Studio.Models
                 }))
                 .SelectMany(x => x)
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 }

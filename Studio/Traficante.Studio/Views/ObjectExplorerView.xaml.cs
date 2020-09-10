@@ -55,7 +55,7 @@ namespace Traficante.Studio.Views
             //var icon = item.FindControl<DrawingPresenter>("Icon");
             //icon.Drawing = iconResource as Drawing;
 
-            if (item.DataContext is LoadItemsObjectModel)
+            if (item.DataContext is LoadChildrenObjectModel)
             {
                 item.IsVisible = false;
             }

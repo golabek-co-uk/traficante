@@ -12,9 +12,9 @@ namespace Traficante.Studio.ViewModels
         public QueryLanguageModel QueryLanguage { get; set; }
         public override string Title => "Not Selected";
         public override object Icon => BaseLightIcons.Database;
-        public override ObservableCollection<object> Items => null;
+        public override ObservableCollection<IObjectModel> Children => null;
 
-        public NotSelectedDatabaseModel()
+        public NotSelectedDatabaseModel() : base(null)
         {
             QueryLanguage = QueryLanguageModel.TraficantSQL;
             QueryLanguages = new[] { new QueryLanguageRadioButtonModel(QueryLanguageModel.TraficantSQL, this) };

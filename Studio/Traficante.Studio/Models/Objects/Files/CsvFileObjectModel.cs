@@ -24,25 +24,25 @@ namespace Traficante.Studio.Models
         public override string Title => File.Name;
         public override object Icon => BaseLightIcons.File;
 
-        public CsvFileObjectModel(FilesObjectModel files, FileConnectionModel file)
+        public CsvFileObjectModel(FilesObjectModel files, FileConnectionModel file) : base(files)
         {
             Files = files;
             File = file;
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(async () => await new Traficante.Connect.Connectors.CsvHelper().GetFields(File.Path)))
                 .SelectMany(x => x)
                 .Select(x => new CsvFileFieldObjectModel(this, x.Name, x.Type, x.NotNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 
@@ -52,9 +52,9 @@ namespace Traficante.Studio.Models
         public string Name { get; set; }
         public override object Icon => BaseLightIcons.Field;
         public string FieldName => Name;
-        public override ObservableCollection<object> Items => null;
+        public override ObservableCollection<IObjectModel> Children => null;
 
-        public CsvFileFieldObjectModel(CsvFileObjectModel file, string name, string type, bool? notNull)
+        public CsvFileFieldObjectModel(CsvFileObjectModel file, string name, string type, bool? notNull) : base(file)
         {
             File = file;
             Title = $"{name} {type}";

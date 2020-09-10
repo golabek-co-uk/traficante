@@ -9,7 +9,7 @@ namespace Traficante.Studio.Models
 
         public override object Icon => BaseLightIcons.File;
 
-        public TextFileObjectModel(FilesObjectModel files, FileConnectionModel file)
+        public TextFileObjectModel(FilesObjectModel files, FileConnectionModel file) : base(files)
         {
             this._files = files;
             this._file = file;

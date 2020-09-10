@@ -27,19 +27,19 @@ namespace Traficante.Studio.Models
         public override string Title => this.ConnectionInfo.Alias;
         public string ConnectionAlias => this.ConnectionInfo.Alias;
         public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.TraficantSQL };
-        public ObservableCollection<object> QueryableItems => null;
+        public ObservableCollection<IObjectModel> QueryableChildren => null;
 
-        public FilesObjectModel()
+        public FilesObjectModel() : base(null)
         {
             this.ConnectionInfo = new FilesConnectionModel();
         }
 
-        public FilesObjectModel(FilesConnectionModel connectionInfo)
+        public FilesObjectModel(FilesConnectionModel connectionInfo) : base(null)
         {
             this.ConnectionInfo = connectionInfo;
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(() =>
@@ -51,28 +51,28 @@ namespace Traficante.Studio.Models
                             switch (x.Type)
                             {
                                 case FileType.Csv:
-                                   return (object)new CsvFileObjectModel(this, x);
+                                   return new CsvFileObjectModel(this, x);
                                 case FileType.Excel:
-                                    return (object)new ExcelFileObjectModel(this, x);
+                                    return new ExcelFileObjectModel(this, x);
                                 case FileType.Json:
-                                    return (object)new JsonFileObjectModel(this, x);
+                                    return new JsonFileObjectModel(this, x);
                                 case FileType.Xml:
-                                    return (object)new XmlFileObjectModel(this, x);
+                                    return new XmlFileObjectModel(this, x);
                                 case FileType.Text:
-                                    return (object)new TextFileObjectModel(this, x);
+                                    return new TextFileObjectModel(this, x);
                             }
-                            return null;
+                            return (IObjectModel)null;
                         })
                         .Where(x => x != null);
                 }))
                 .SelectMany(x => x)
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 }

@@ -17,25 +17,25 @@ namespace Traficante.Studio.Models
         public override string Title => File.Name;
         public override object Icon => BaseLightIcons.File;
 
-        public ExcelFileObjectModel(FilesObjectModel files, FileConnectionModel file)
+        public ExcelFileObjectModel(FilesObjectModel files, FileConnectionModel file) : base(files)
         {
             this.Files = files;
             this.File = file;
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(async () => await new ExcelHelper().GetSheets(this.File.Path)))
                 .SelectMany(x => x)
                 .Select(x => new ExcelFileSheetObjectModel(this, x))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 
@@ -45,26 +45,26 @@ namespace Traficante.Studio.Models
         public string Sheet { get; set; }
         public override object Icon => BaseLightIcons.Table;
 
-        public ExcelFileSheetObjectModel(ExcelFileObjectModel file, string sheet)
+        public ExcelFileSheetObjectModel(ExcelFileObjectModel file, string sheet) : base(file)
         {
             File = file;
             Title = $"{sheet}";
             Sheet = sheet;
         }
 
-        public override void LoadItems()
+        public override void LoadChildren()
         {
             Observable
                 .FromAsync(() => Task.Run(async () => await new ExcelHelper().GetFields(this.File.File.Path, Sheet)))
                 .SelectMany(x => x)
                 .Select(x => new ExcelFileFieldObjectModel(this, x.Name, x.Type, x.NotNull))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Catch<object, Exception>(ex =>
+                .Catch<IObjectModel, Exception>(ex =>
                 {
                     Interactions.Exceptions.Handle(ex).Subscribe();
-                    return Observable.Empty<object>();
+                    return Observable.Empty<IObjectModel>();
                 })
-                .Subscribe(x => Items.Add(x));
+                .Subscribe(x => Children.Add(x));
         }
     }
 
@@ -74,9 +74,9 @@ namespace Traficante.Studio.Models
         public string Name { get; set; }
         public override object Icon => BaseLightIcons.Field;
         public string FieldName => Name;
-        public override ObservableCollection<object> Items => null;
+        public override ObservableCollection<IObjectModel> Children => null;
 
-        public ExcelFileFieldObjectModel(ExcelFileSheetObjectModel sheet, string name, string type, bool? notNull)
+        public ExcelFileFieldObjectModel(ExcelFileSheetObjectModel sheet, string name, string type, bool? notNull) : base(sheet)
         {
             Sheet = sheet;
             Title = $"{name} {type}";

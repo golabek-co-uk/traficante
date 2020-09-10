@@ -68,7 +68,6 @@ namespace Traficante.Studio.ViewModels
         private async Task<Unit> Ok()
         {
             this.AppData.GetSelectedQuery().LanguageId = ((ISelectableObject)SelectedObject).QueryLanguage.Id;
-            this.AppData.GetSelectedQuery().ObjectId = SelectedObject.Id;
             await CloseInteraction.Handle(Unit.Default);
             return Unit.Default;
         }

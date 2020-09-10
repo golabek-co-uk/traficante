@@ -9,7 +9,7 @@
   <DockPanel>
     <TreeView Name="Objects" BorderThickness="0">
       <TreeView.ItemTemplate>
-        <TreeDataTemplate ItemsSource="{Binding Items}">
+        <TreeDataTemplate ItemsSource="{Binding Children}">
           <StackPanel Orientation="Horizontal">
             <DrawingPresenter Drawing="{Binding Icon}" Name="Icon" Height="10" Margin="0 0 4 0" />
             <TextBlock Name="Title" Text="{Binding Title}" />

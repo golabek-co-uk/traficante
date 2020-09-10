@@ -11,56 +11,65 @@ namespace Traficante.Studio.Models
         public virtual object Icon => null;
 
 
-        private ObservableCollection<object> _items;
-        public virtual ObservableCollection<object> Items
+        private ObservableCollection<IObjectModel> _children;
+        public virtual ObservableCollection<IObjectModel> Children
         {
             get
             {
-                if (_items == null)
+                if (_children == null)
                 {
-                    _items = new ObservableCollection<object>();
-                    _items.Add(new LoadItemsObjectModel(() =>
+                    _children = new ObservableCollection<IObjectModel>();
+                    _children.Add(new LoadChildrenObjectModel(() =>
                     {
-                        ((LoadItemsObjectModel)Items[0]).Title = "";
-                        LoadItems();
+                        ((LoadChildrenObjectModel)Children[0]).Title = "";
+                        LoadChildren();
                     }));
 
                 }
-                return _items;
+                return _children;
             }
-            set { _items = value; }
+            set { _children = value; }
         }
 
-        public virtual void LoadItems()
+        public IObjectModel Parent { get; set; }
+
+        public ObjectModel(IObjectModel parent)
+        {
+            Parent = parent;
+        }
+
+        public virtual void LoadChildren()
         {
             throw new NotImplementedException();
         }
     }
 
-    public class LoadItemsObjectModel : ReactiveObject
+    public class LoadChildrenObjectModel : ReactiveObject, IObjectModel
     {
         public string Title { get; set; } = "...";
         public object Icon => null;
-        public Action LoadItems { get; }
+        public Action LoadChildren { get; }
 
-        public LoadItemsObjectModel(Action loadItems)
+        public LoadChildrenObjectModel(Action loadChildren)
         {
 
-            LoadItems = loadItems;
+            LoadChildren = loadChildren;
         }
 
-        private ObservableCollection<object> _items;
-        public ObservableCollection<object> Items
+        private ObservableCollection<IObjectModel> _children;
+        public ObservableCollection<IObjectModel> Children
         {
             get
             {
-                if (_items == null)
+                if (_children == null)
                 {
-                    _items = new ObservableCollection<object>();
-                    LoadItems();
+                    _children = new ObservableCollection<IObjectModel>();
+                    LoadChildren();
                 }
-                return _items;
+                return _children;
             }
         }
+
+        public IObjectModel Parent => throw new NotImplementedException();
     }
 }

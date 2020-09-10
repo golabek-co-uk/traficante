@@ -41,7 +41,7 @@
       <TreeView.Styles>
       </TreeView.Styles>  
       <TreeView.ItemTemplate>
-        <TreeDataTemplate ItemsSource="{Binding Items}">
+        <TreeDataTemplate ItemsSource="{Binding Children}">
           <StackPanel Orientation="Horizontal">
             <DrawingPresenter Drawing="{Binding Icon}" Name="Icon" Height="12" Margin="0 0 4 0" />
             <StackPanel Width="300">
