@@ -79,6 +79,7 @@ namespace Traficante.Studio.ViewModels
 
         public ReactiveCommand<Unit, Unit> RunCommand { get; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
+        public ReactiveCommand<Unit, Unit> DatabaseSelectorCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveResultsAsCommand { get; set; }
         
 
@@ -89,6 +90,7 @@ namespace Traficante.Studio.ViewModels
             InitQuery();
             RunCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(Run);
             CancelCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(Cancel);
+            DatabaseSelectorCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(DatabaseSelector);
             SaveResultsAsCommand = ReactiveCommand.CreateFromTask<Unit, Unit>(SaveResultsAs);
             Interactions.SaveQuery.RegisterHandler(Save);
             Interactions.SaveAsQuery.RegisterHandler(SaveAs);
@@ -235,6 +237,11 @@ namespace Traficante.Studio.ViewModels
             return Task.FromResult(Unit.Default);
         }
 
+        public Task<Unit> DatabaseSelector(Unit arg)
+        {
+            Interactions.DatabaseSelector.Handle(null).Subscribe();
+            return Task.FromResult(Unit.Default);
+        }
         public async Task<Unit> SaveResultsAs(Unit arg)
         {
             SaveFileDialog saveDialog = new SaveFileDialog();

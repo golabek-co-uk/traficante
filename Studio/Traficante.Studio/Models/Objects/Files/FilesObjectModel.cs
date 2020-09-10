@@ -13,19 +13,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
+using Traficante.Studio.ViewModels;
 using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class FilesObjectModel : ObjectModel, IAliasObjectModel
+    public class FilesObjectModel : ObjectModel, IConnectionObjectModel, IQueryableObjectModel
     {
         [DataMember]
         [Reactive]
         public FilesConnectionModel ConnectionInfo { get; set; }
         public override object Icon => BaseLightIcons.Database;
-
-
         public override string Title => this.ConnectionInfo.Alias;
+        public string ConnectionAlias => this.ConnectionInfo.Alias;
+        public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.TraficantSQL };
+        public ObservableCollection<object> QueryableItems => null;
 
         public FilesObjectModel()
         {
@@ -71,11 +73,6 @@ namespace Traficante.Studio.Models
                     return Observable.Empty<object>();
                 })
                 .Subscribe(x => Items.Add(x));
-        }
-
-        public string GetAlias()
-        {
-            return this.ConnectionInfo.Alias;
         }
     }
 }

@@ -69,6 +69,16 @@ namespace Traficante.Studio.ViewModels
                     interaction.SetOutput(dataContext.Output);
                 });
 
+            Interactions.DatabaseSelector.RegisterHandler(
+                async interaction =>
+                {
+                    var dataContext = new DatabaseSelectorWindowViewModel(_appData);
+                    var dialog = new DatabaseSelectorWindow() { DataContext = dataContext };
+                    await dialog.ShowDialog(Window);
+                    Window.Focus();
+                    interaction.SetOutput(dataContext.Output);
+                });
+
             Interactions.Exceptions.RegisterHandler(
                 interaction =>
                 {

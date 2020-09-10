@@ -8,7 +8,7 @@
         xmlns:idc="clr-namespace:Dock.Avalonia.Controls;assembly=Dock.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Traficante.Studio.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/icon.png"
         Title="Traficante.Studio">
   <Window.Styles>
     <StyleInclude Source='/Views/BaseLight.xaml'/>

@@ -51,19 +51,14 @@ namespace Traficante.Studio.Models
         public CsvFileObjectModel File { get; }
         public string Name { get; set; }
         public override object Icon => BaseLightIcons.Field;
+        public string FieldName => Name;
+        public override ObservableCollection<object> Items => null;
 
         public CsvFileFieldObjectModel(CsvFileObjectModel file, string name, string type, bool? notNull)
         {
             File = file;
             Title = $"{name} {type}";
             Name = name;
-        }
-
-        public override ObservableCollection<object> Items => null;
-
-        public string GetFieldName()
-        {
-            return Name;
         }
     }
 }

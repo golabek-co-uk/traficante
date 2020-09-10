@@ -138,7 +138,7 @@ namespace Traficante.Studio.Views
                     var objectField = _pressedItem.DataContext as IFieldObjectModel;
                     if (objectSource != null)
                     {
-                        var path = objectSource.GetTablePath();
+                        var path = objectSource.TablePath;
                         var sqlPath = string.Join(".", path.Select(x => $"[{x}]"));
                         var pressedItemDraggedData = new DataObject();
                         pressedItemDraggedData.Set(DataFormats.Text, sqlPath);
@@ -146,7 +146,7 @@ namespace Traficante.Studio.Views
                     }
                     if (objectField != null)
                     {
-                        var name = objectField.GetFieldName();
+                        var name = objectField.FieldName;
                         var sqlName = $"[{name}]";
                         var pressedItemDraggedData = new DataObject();
                         pressedItemDraggedData.Set(DataFormats.Text, sqlName);

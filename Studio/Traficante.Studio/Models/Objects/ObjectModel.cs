@@ -2,15 +2,10 @@
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class ObjectModel : ReactiveObject
+    public class ObjectModel : ReactiveObject, IObjectModel
     {
         public virtual string Title { get; set; }
         public virtual object Icon => null;
@@ -67,21 +62,5 @@ namespace Traficante.Studio.Models
                 return _items;
             }
         }
-    }
-
-    public interface ITableObjectModel
-    {
-        string[] GetTablePath();
-        string[] GetTableFields();
-    }
-
-    public interface IFieldObjectModel
-    {
-        string GetFieldName();
-    }
-
-    public interface IAliasObjectModel
-    {
-        string GetAlias();
     }
 }

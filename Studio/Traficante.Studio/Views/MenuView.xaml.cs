@@ -15,6 +15,7 @@ namespace Traficante.Studio.Views
         public MenuItem ConnectToSqlite => this.FindControl<MenuItem>("ConnectToSqlite");
         public MenuItem ConnectToElasticSearch => this.FindControl<MenuItem>("ConnectToElasticSearch");
         public MenuItem ConnectToFile => this.FindControl<MenuItem>("ConnectToFile");
+        public MenuItem NewQuery => this.FindControl<MenuItem>("NewQuery");
         public MenuItem New => this.FindControl<MenuItem>("New");
         public MenuItem Open => this.FindControl<MenuItem>("Open");
         public MenuItem Save => this.FindControl<MenuItem>("Save");
@@ -47,6 +48,8 @@ namespace Traficante.Studio.Views
                 this.BindCommand(ViewModel, x => x.ConnectToElasticSearchCommand, x => x.ConnectToElasticSearch)
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.ConnectToFileCommand, x => x.ConnectToFile)
+                    .DisposeWith(disposables);
+                this.BindCommand(ViewModel, x => x.NewCommand, x => x.NewQuery)
                     .DisposeWith(disposables);
                 this.BindCommand(ViewModel, x => x.NewCommand, x => x.New)
                     .DisposeWith(disposables);

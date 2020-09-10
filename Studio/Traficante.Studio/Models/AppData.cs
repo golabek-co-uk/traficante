@@ -20,22 +20,22 @@ namespace Traficante.Studio.Models
 
         public void AddObject(ObjectModel newModel)
         {
-            var newModelAlias = (IAliasObjectModel)newModel;
-            foreach(IAliasObjectModel model in Objects)
+            var newModelAlias = (IConnectionObjectModel)newModel;
+            foreach(IConnectionObjectModel model in Objects)
             {
-                if (string.Equals(model.GetAlias(), newModelAlias.GetAlias(), StringComparison.CurrentCultureIgnoreCase))
-                    throw new Exception($"Another connection with '{newModelAlias.GetAlias()}' alias already exists.");
+                if (string.Equals(model.ConnectionAlias, newModelAlias.ConnectionAlias, StringComparison.CurrentCultureIgnoreCase))
+                    throw new Exception($"Another connection with '{newModelAlias.ConnectionAlias}' alias already exists.");
             }
             Objects.Add(newModel);
         }
 
         public void UpdateObject(ObjectModel existingModel, ObjectModel newModel)
         {
-            var newModelAlias = (IAliasObjectModel)newModel;
-            foreach (IAliasObjectModel model in Objects)
+            var newModelAlias = (IConnectionObjectModel)newModel;
+            foreach (IConnectionObjectModel model in Objects)
             {
-                if (model != existingModel && string.Equals(model.GetAlias(), newModelAlias.GetAlias(), StringComparison.CurrentCultureIgnoreCase))
-                    throw new Exception($"Another connection with '{newModelAlias.GetAlias()}' alias already exists.");
+                if (model != existingModel && string.Equals(model.ConnectionAlias, newModelAlias.ConnectionAlias, StringComparison.CurrentCultureIgnoreCase))
+                    throw new Exception($"Another connection with '{newModelAlias.ConnectionAlias}' alias already exists.");
             }
             var index = Objects.IndexOf(existingModel);
             Objects.RemoveAt(index);

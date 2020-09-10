@@ -9,16 +9,20 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
+using Traficante.Studio.ViewModels;
 using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class ElasticSearchObjectModel : ObjectModel, IAliasObjectModel
+    public class ElasticSearchObjectModel : ObjectModel, IConnectionObjectModel, IQueryableObjectModel
     {
         [DataMember]
         public ElasticSearchConnectionModel ConnectionInfo { get; set; }
         public override string Title => this.ConnectionInfo.Alias;
         public override object Icon => BaseLightIcons.Database;
+        public string ConnectionAlias => this.ConnectionInfo.Alias;
+        public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.TraficantSQL };
+        public ObservableCollection<object> QueryableItems => null;
 
         public ElasticSearchObjectModel()
         {
@@ -49,11 +53,6 @@ namespace Traficante.Studio.Models
                     return Observable.Empty<object>();
                 })
                 .Subscribe(x => Items.Add(x));
-        }
-
-        public string GetAlias()
-        {
-            return this.ConnectionInfo.Alias;
         }
     }
 
@@ -89,6 +88,37 @@ namespace Traficante.Studio.Models
         public ElasticSearchObjectModel Server { get; }
         private volatile JsonDocument _index = null;
         public override object Icon => BaseLightIcons.Table;
+        public string TableName => Title;
+        public string[] TablePath 
+        {
+            get
+            {
+                if (_index != null)
+                {
+                    var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(this._index).ToList();
+                    if (mappingTypes.Count > 1)
+                        return new string[] { this.Server.Title, Title, mappingTypes.First() };
+                }
+                return new string[] { this.Server.Title, Title };
+            }
+        }
+
+        public string[] TableFields
+        {
+            get
+            {
+                if (_index != null)
+                {
+                    var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(this._index).ToList();
+                    var fields = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetFields(this._index).ToList();
+                    if (mappingTypes.Count > 1)
+                        return fields.Where(x => x.MappingType == mappingTypes[0]).Select(x => x.Name).ToArray();
+                    else
+                        return fields.Select(x => x.Name).ToArray();
+                }
+                return new string[0];
+            }
+        }
 
         public ElasticSearchIndexObjectModel(ElasticSearchObjectModel server, string name)
         {
@@ -124,31 +154,6 @@ namespace Traficante.Studio.Models
                 })
                 .Subscribe(x => Items.Add(x));
         }
-
-        public string[] GetTablePath()
-        {
-            if (_index != null)
-            {
-                var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(this._index).ToList();
-                if (mappingTypes.Count > 1)
-                    return new string[] { this.Server.Title, Title, mappingTypes.First() };
-            }
-            return new string[] { this.Server.Title, Title };
-        }
-
-        public string[] GetTableFields()
-        {
-            if (_index != null)
-            {
-                var mappingTypes = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetMappingTypes(this._index).ToList();
-                var fields = new ElasticSearchConnector(this.Server.ConnectionInfo.ToConectorConfig()).GetFields(this._index).ToList();
-                if (mappingTypes.Count > 1)
-                    return fields.Where(x => x.MappingType == mappingTypes[0]).Select(x => x.Name).ToArray();
-                else
-                    return fields.Select(x => x.Name).ToArray();
-            }
-            return new string[0];
-        }
     }
 
     public class ElasticSearchAliasesObjectModel : ObjectModel
@@ -182,7 +187,10 @@ namespace Traficante.Studio.Models
     {
         public ElasticSearchObjectModel Server { get; }
         public override object Icon => BaseLightIcons.Table;
-
+        public string TableName => Title;
+        public string[] TablePath => new string[] { this.Server.Title, Title };
+        public string[] TableFields => new string[0];
+        
         public ElasticSearchAliasObjectModel(ElasticSearchObjectModel server, string name)
         {
             Server = server;
@@ -208,16 +216,6 @@ namespace Traficante.Studio.Models
                     return Observable.Empty<object>();
                 })
                 .Subscribe(x => Items.Add(x));
-        }
-
-        public string[] GetTablePath()
-        {
-            return new string[] { this.Server.Title, Title };
-        }
-
-        public string[] GetTableFields()
-        {
-            return new string[0];
         }
     }
 

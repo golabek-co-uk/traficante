@@ -4,32 +4,38 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450">
-  <DockPanel Height="20">
-    <Menu>
-    <MenuItem Header="_File">
-      <MenuItem Header="_Connect">
-        <MenuItem Header="SqlServer" Name="ConnectToSqlServer"/>
-        <MenuItem Header="MySql" Name="ConnectToMySql"/>
-        <MenuItem Header="Sqlite" Name="ConnectToSqlite"/>
-        <MenuItem Header="ElasticSearch" Name="ConnectToElasticSearch"/>
-        <MenuItem Header="File" Name="ConnectToFile"/>
+  <DockPanel>
+    <Menu Margin="0 5 0 5">
+      <MenuItem Header="_File" Margin="3 0 0 0">
+        <Separator/>
+        <MenuItem Header="_New" Name="New"/>
+        <MenuItem Header="_Open" Name="Open"/>
+        <MenuItem Header="_Save" Name="Save"/>
+        <MenuItem Header="_Save As" Name="SaveAs"/>
+        <MenuItem Header="_Save All" Name="SaveAll"/>
+        <MenuItem Header="_Close" Name="Close"/>
+        <Separator/>
+        <MenuItem Header="_Exit" Name="Exit"/>
       </MenuItem>
-      <Separator/>
-      <MenuItem Header="_New" Name="New"/>
-      <MenuItem Header="_Open" Name="Open"/>
-      <MenuItem Header="_Save" Name="Save"/>
-      <MenuItem Header="_Save As" Name="SaveAs"/>
-      <MenuItem Header="_Save All" Name="SaveAll"/>
-      <MenuItem Header="_Close" Name="Close"/>
-      <Separator/>
-      <MenuItem Header="_Exit" Name="Exit"/>
-    </MenuItem>
-    <MenuItem Header="_Edit">
-      <MenuItem Header="Copy" Name="Copy"/>
-      <MenuItem Header="Paste" Name="Paste"/>
-    </MenuItem>
-    <!--<MenuItem Header="_View">
-    </MenuItem>-->
+      <MenuItem Header="_Edit" Margin="3 0 0 0">
+        <MenuItem Header="Copy" Name="Copy"/>
+        <MenuItem Header="Paste" Name="Paste"/>
+      </MenuItem>
+      <MenuItem Header="Connect" Margin="6 0 0 0">
+        <MenuItem.Icon>
+          <DrawingPresenter Drawing="{DynamicResource Icon.NewDatabase}" />
+        </MenuItem.Icon>
+        <MenuItem.Items>
+          <MenuItem Header="SqlServer" Name="ConnectToSqlServer" Padding="2 2 2 2"/>
+          <MenuItem Header="MySql" Name="ConnectToMySql" Padding="2 2 2 2"/>
+          <MenuItem Header="Sqlite" Name="ConnectToSqlite" Padding="2 2 2 2"/>
+          <MenuItem Header="ElasticSearch" Name="ConnectToElasticSearch" Padding="2 2 2 2"/>
+          <MenuItem Header="File" Name="ConnectToFile" Padding="2 2 2 2"/>
+        </MenuItem.Items>
+      </MenuItem>
+      <MenuItem Header="New Query" Name="NewQuery"  Margin="6 0 0 0" />
+      <!--<MenuItem Header="_View">
+      </MenuItem>-->
   </Menu>
   </DockPanel>
 </UserControl>

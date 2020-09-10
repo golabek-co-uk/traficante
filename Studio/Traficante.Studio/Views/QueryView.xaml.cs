@@ -13,6 +13,8 @@ using Avalonia.Input;
 using System.Reactive.Linq;
 using System.Linq;
 using DynamicData.Binding;
+using Avalonia.VisualTree;
+using System.Diagnostics;
 
 namespace Traficante.Studio.Views
 {
@@ -21,6 +23,7 @@ namespace Traficante.Studio.Views
         public Grid Grid => this.FindControl<Grid>("Grid");
         public Button Run => this.FindControl<Button>("Run");
         public Button Cancel => this.FindControl<Button>("Cancel");
+        public Button DatabaseSelector => this.FindControl<Button>("DatabaseSelector");
         public EditorView Text => this.FindControl<EditorView>("Text");
         public TabControl Results => this.FindControl<TabControl>("Results");
         public DataGrid ResultsData => this.FindControl<DataGrid>("ResultsData");
@@ -71,6 +74,8 @@ namespace Traficante.Studio.Views
                         }
                     })
                     .DisposeWith(disposables);
+                this.BindCommand(ViewModel, x => x.DatabaseSelectorCommand, x => x.DatabaseSelector)
+                    .DisposeWith(disposables);
 
                 this.ViewModel.ResultsDataColumns = this.ResultsData.Columns;
                 this.OneWayBind(ViewModel, x => x.ResultsData, x => x.ResultsData.Items, x => (System.Collections.IEnumerable)x)
@@ -101,7 +106,6 @@ namespace Traficante.Studio.Views
                     })
                     .DisposeWith(disposables);
       
-                
                 this.BindCommand(ViewModel, x => x.SaveResultsAsCommand, x => x.ExportResultsAs);
 
                 this.Bind(ViewModel, x => x.ResultsCount, x => x.ResultsCount.Text)

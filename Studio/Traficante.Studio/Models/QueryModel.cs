@@ -22,6 +22,22 @@ namespace Traficante.Studio.Models
             set => this.RaiseAndSetIfChanged(ref _path, value);
         }
 
+        private string _languageId;
+        [DataMember]
+        public string LanguageId
+        {
+            get => _languageId;
+            set => this.RaiseAndSetIfChanged(ref _languageId, value);
+        }
+
+        private string _objectId;
+        [DataMember]
+        public string ObjectId
+        {
+            get => _objectId;
+            set => this.RaiseAndSetIfChanged(ref _objectId, value);
+        }
+
         public string AutoSavePath => System.IO.Path.Combine("AutoSave", this.Id);
 
         private bool _isDirty;
@@ -38,5 +54,4 @@ namespace Traficante.Studio.Models
             set => this.RaiseAndSetIfChanged(ref _text, value);
         }
     }
-
 }

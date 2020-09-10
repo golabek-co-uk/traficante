@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
@@ -18,6 +19,8 @@ namespace Traficante.Studio.Views
         
         public MenuItem NewQuery => this.FindControl<MenuItem>("NewQuery");
 
+        public ScrollBar test => this.FindControl<ScrollBar>("test");
+        
 
         public ToolBarView()
         {
@@ -45,6 +48,8 @@ namespace Traficante.Studio.Views
 
                 this.BindCommand(ViewModel, x => x.NewQueryCommand, x => x.NewQuery)
                     .DisposeWith(disposables);
+
+                
             });
         }
     }

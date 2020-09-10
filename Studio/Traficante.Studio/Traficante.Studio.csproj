@@ -23,6 +23,7 @@
     <AvaloniaResource Remove="Views\ConnectToMySqlWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToSqliteWindow.xaml" />
     <AvaloniaResource Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <AvaloniaResource Remove="Views\DatabaseSelectorWindow.xaml" />
     <AvaloniaResource Remove="Views\EditorView.xaml" />
     <AvaloniaResource Remove="Views\ExceptionWindow.xaml" />
     <AvaloniaResource Remove="Views\MenuView.xaml" />
@@ -37,6 +38,7 @@
     <None Remove="Views\ConnectToMySqlWindow.xaml" />
     <None Remove="Views\ConnectToSqliteWindow.xaml" />
     <None Remove="Views\ConnectToSqlServerWindow.xaml" />
+    <None Remove="Views\DatabaseSelectorWindow.xaml" />
     <None Remove="Views\EditorView.xaml" />
     <None Remove="Views\ExceptionWindow.xaml" />
     <None Remove="Views\MenuView.xaml" />
@@ -51,6 +53,9 @@
     <AvaloniaXaml Include="Views\BaseLightIcons.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\DatabaseSelectorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.9.12" />
@@ -58,14 +63,14 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.9.12" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
     <PackageReference Include="CsvHelper" Version="15.0.5" />
-    <PackageReference Include="Dock.Avalonia" Version="0.9.9" />
-    <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.9.9" />
-    <PackageReference Include="Dock.Model" Version="0.9.9" />
-    <PackageReference Include="Dock.Model.ReactiveUI" Version="0.9.9" />
-    <PackageReference Include="DynamicData" Version="6.16.6" />
+    <PackageReference Include="Dock.Avalonia" Version="0.9.12" />
+    <PackageReference Include="Dock.Avalonia.Themes.Default" Version="0.9.12" />
+    <PackageReference Include="Dock.Model" Version="0.9.12" />
+    <PackageReference Include="Dock.Model.ReactiveUI" Version="0.9.12" />
+    <PackageReference Include="DynamicData" Version="6.16.9" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="ReactiveUI" Version="11.5.26" />
-    <PackageReference Include="ReactiveUI.Fody" Version="11.5.26" />
+    <PackageReference Include="ReactiveUI" Version="11.5.35" />
+    <PackageReference Include="ReactiveUI.Fody" Version="11.5.35" />
     <PackageReference Include="ReactiveUI.Validation" Version="1.5.5" />
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
@@ -121,6 +126,9 @@
     </Compile>
     <Compile Update="Views\ConnectToElasticSearchWindow.xaml.cs">
       <DependentUpon>ConnectToElasticSearchWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\DatabaseSelectorWindow.xaml.cs">
+      <DependentUpon>DatabaseSelectorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\EditorView.xaml.cs">
       <DependentUpon>EditorView.xaml</DependentUpon>

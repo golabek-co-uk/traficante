@@ -21,7 +21,7 @@ namespace Traficante.Studio.Views
 
         public Drawing GetIcon(string name)
         {
-            return this.FindResource(name) as Drawing;
+            return this.FindResource("Icon." + name) as Drawing;
         }
 
         private static BaseLightIcons IconsInstance = new BaseLightIcons();
@@ -31,5 +31,7 @@ namespace Traficante.Studio.Views
         public static Drawing File => IconsInstance.GetIcon("File");
         public static Drawing Table => IconsInstance.GetIcon("Table");
         public static Drawing Field => IconsInstance.GetIcon("Field");
+        public static Drawing Search => IconsInstance.GetIcon("Search");
+        
     }
 }

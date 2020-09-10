@@ -7,9 +7,8 @@
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              x:Class="Traficante.Studio.Views.QueryView">
   <Grid Name="Grid" RowDefinitions="Auto,*,Auto,Auto,Auto" ColumnDefinitions="*">
-    
-    <DockPanel Name="QueryViewHeader" Grid.Row="0" >
-      <Grid RowDefinitions="Auto"  ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
+    <Grid Name="QueryViewHeader" Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+      <Grid Grid.Column="0" RowDefinitions="Auto" ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
         <Button Name="Run" Classes="Secondary" Grid.Column="0" Height="20" Margin="0 0 0 0" Padding="2 1 2 1" MinWidth="50">
           <StackPanel Orientation="Horizontal">
             <DrawingPresenter Drawing="{DynamicResource Icon.Run}" Height="10" Margin="0 0 4 0" />
@@ -23,7 +22,20 @@
           </StackPanel>
         </Button>
       </Grid>
-    </DockPanel>
+      <Grid Grid.Column="1" RowDefinitions="Auto" ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
+      </Grid>
+      <Grid Grid.Column="2" RowDefinitions="Auto" ColumnDefinitions="Auto,*" Margin="3 3 3 3" >
+        <Button Name="DatabaseSelector" Classes="Secondary">
+          <StackPanel Orientation="Horizontal">
+            <DrawingPresenter Drawing="{DynamicResource Icon.Database}" Height="12" Margin="0 0 4 0" />
+            <StackPanel>
+              <TextBlock>Not Selected</TextBlock>
+              <TextBlock FontSize="8">Traficant SQL</TextBlock>
+            </StackPanel>
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Grid>
     
     <DockPanel Grid.Row="1">
       <views:EditorView Name="Text" />
@@ -36,15 +48,17 @@
         <TabItem.Header>
           Results
         </TabItem.Header>
-        <Grid RowDefinitions="*,Auto" Margin="2 2 2 2">
-          <dg:DataGrid Grid.Row="0" Name="ResultsData" IsVisible="False">
-            <DataGrid.ContextMenu>
-              <ContextMenu>
-                <MenuItem Name="ExportResultsAs" Header="Export Results As..."></MenuItem>
-              </ContextMenu>
-            </DataGrid.ContextMenu>
-          </dg:DataGrid>
-        </Grid>
+        <Border BorderThickness="1" BorderBrush="{DynamicResource ThemeControlMidHighBrush}">
+          <Grid RowDefinitions="*,Auto" Margin="2 2 2 2">
+            <dg:DataGrid Grid.Row="0" Name="ResultsData" IsVisible="False">
+              <DataGrid.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Name="ExportResultsAs" Header="Export Results As..."></MenuItem>
+                </ContextMenu>
+              </DataGrid.ContextMenu>
+            </dg:DataGrid>
+          </Grid>
+        </Border>
       </TabItem>
       <TabItem >
         <TabItem.Header>

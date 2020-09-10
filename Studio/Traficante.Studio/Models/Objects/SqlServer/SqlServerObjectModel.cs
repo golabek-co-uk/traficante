@@ -10,16 +10,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
+using Traficante.Studio.ViewModels;
 using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class SqlServerObjectModel : ObjectModel, IAliasObjectModel
+    public class SqlServerObjectModel : ObjectModel, IConnectionObjectModel, IQueryableObjectModel
     {
         [DataMember]
         public SqlServerConnectionModel ConnectionInfo { get; set; }
         public override string Title => this.ConnectionInfo.Alias;
         public override object Icon => BaseLightIcons.Database;
+        public string ConnectionAlias => this.ConnectionInfo.Alias;
+        public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.SqlServerSQL };
+        public ObservableCollection<object> QueryableItems => Items;
 
         public SqlServerObjectModel()
         {
@@ -45,17 +49,14 @@ namespace Traficante.Studio.Models
                 })
                 .Subscribe(x => Items.Add(x));
         }
-
-        public string GetAlias()
-        {
-            return this.ConnectionInfo.Alias;
-        }
     }
 
-    public class SqlServerDatabaseObjectModel : ObjectModel
+    public class SqlServerDatabaseObjectModel : ObjectModel, IQueryableObjectModel
     {
         public SqlServerObjectModel Server { get; }
         public override object Icon => BaseLightIcons.Database;
+        public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.SqlServerSQL };
+        public ObservableCollection<object> QueryableItems => null;
 
         public SqlServerDatabaseObjectModel(SqlServerObjectModel sqlServer, string name)
         {
@@ -117,6 +118,9 @@ namespace Traficante.Studio.Models
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
         public override object Icon => BaseLightIcons.Table;
+        public string TableName => Title;
+        public string[] TablePath => new string[] { Database.Server.Title, Database.Title, OnlySchema, OnlyName };
+        public string[] TableFields => new string[0];
 
         public SqlServerTableObjectModel(SqlServerDatabaseObjectModel databse, string schema, string name)
         {
@@ -139,16 +143,6 @@ namespace Traficante.Studio.Models
                     return Observable.Empty<object>();
                 })
                 .Subscribe(x => Items.Add(x));
-        }
-
-        public string[] GetTablePath()
-        {
-            return new string[] { Database.Server.Title, Database.Title, OnlySchema, OnlyName };
-        }
-
-        public string[] GetTableFields()
-        {
-            return new string[0];
         }
     }
 
@@ -184,6 +178,9 @@ namespace Traficante.Studio.Models
         public string OnlyName { get; set; }
         public string OnlySchema { get; set; }
         public override object Icon => BaseLightIcons.Table;
+        public string TableName => Title;
+        public string[] TablePath => new string[] { Database.Server.Title, Database.Title, OnlySchema, OnlyName };
+        public string[] TableFields => new string[0];
 
         public SqlServerViewObjectModel(SqlServerDatabaseObjectModel databse, string schema, string name)
         {
@@ -207,16 +204,6 @@ namespace Traficante.Studio.Models
                 })
                 .Subscribe(x => Items.Add(x));
         }
-
-        public string[] GetTablePath()
-        {
-            return new string[] { Database.Server.Title, Database.Title, OnlySchema, OnlyName };
-        }
-
-        public string[] GetTableFields()
-        {
-            return new string[0];
-        }
     }
 
     public class SqlServerFieldObjectModel : ObjectModel, IFieldObjectModel
@@ -224,19 +211,14 @@ namespace Traficante.Studio.Models
         public SqlServerDatabaseObjectModel Databse { get; }
         public string NameOnly { get; set; }
         public override object Icon => BaseLightIcons.Field;
+        public string FieldName => NameOnly;
+        public override ObservableCollection<object> Items => null;
 
         public SqlServerFieldObjectModel(SqlServerDatabaseObjectModel databse, string name, string type, bool? notNull)
         {
             Databse = databse;
             Title = $"{name} {type}";
             NameOnly = name;
-        }
-
-        public override ObservableCollection<object> Items => null;
-
-        public string GetFieldName()
-        {
-            return this.NameOnly;
         }
     }
 

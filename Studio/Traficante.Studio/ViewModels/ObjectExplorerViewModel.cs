@@ -81,9 +81,9 @@ namespace Traficante.Studio.ViewModels
 
         public void GenerateSelectQuery(ITableObjectModel objectPath)
         {
-            var path = objectPath.GetTablePath();
+            var path = objectPath.TablePath;
             var sqlPath = string.Join(".", path.Select(x => $"[{x}]"));
-            var fields = objectPath.GetTableFields();
+            var fields = objectPath.TableFields;
             var sqlFields = fields.Length > 0 ? string.Join(", ", fields.Select(x => $"[{x}]")) : "*";
             var sql = $"SELECT {sqlFields} FROM {sqlPath}";
             AppData.Queries.Add(new QueryModel { Id = Guid.NewGuid().ToString(), Text = sql });

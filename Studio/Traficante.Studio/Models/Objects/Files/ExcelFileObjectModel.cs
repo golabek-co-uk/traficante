@@ -73,19 +73,14 @@ namespace Traficante.Studio.Models
         public ExcelFileSheetObjectModel Sheet { get; }
         public string Name { get; set; }
         public override object Icon => BaseLightIcons.Field;
+        public string FieldName => Name;
+        public override ObservableCollection<object> Items => null;
 
         public ExcelFileFieldObjectModel(ExcelFileSheetObjectModel sheet, string name, string type, bool? notNull)
         {
             Sheet = sheet;
             Title = $"{name} {type}";
             Name = name;
-        }
-
-        public override ObservableCollection<object> Items => null;
-
-        public string GetFieldName()
-        {
-            return Name;
         }
     }
 }

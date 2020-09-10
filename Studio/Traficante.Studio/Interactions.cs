@@ -15,7 +15,8 @@ namespace Traficante.Studio
         public static readonly Interaction<SqliteObjectModel, SqliteObjectModel> ConnectToSqlite = new Interaction<SqliteObjectModel, SqliteObjectModel>();
         public static readonly Interaction<ElasticSearchObjectModel, ElasticSearchObjectModel> ConnectToElasticSearch = new Interaction<ElasticSearchObjectModel, ElasticSearchObjectModel>();
         public static readonly Interaction<FilesObjectModel, FilesObjectModel> ConnectToFile = new Interaction<FilesObjectModel, FilesObjectModel>();
-        
+        public static readonly Interaction<object, object> DatabaseSelector = new Interaction<object, object>();
+
 
         public static readonly Interaction<Unit, Unit> Exit = new Interaction<Unit, Unit>();
         public static readonly Interaction<Unit, Unit> Paste = new Interaction<Unit, Unit>();

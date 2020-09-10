@@ -1,0 +1,79 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:Traficante.Studio.Views;assembly=Traficante.Studio"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600" Width="600" Height="600"
+        x:Class="Traficante.Studio.Views.DatabaseSelectorWindow"
+        Title="DataSource Selector">
+  
+  <Window.Styles>
+    <StyleInclude Source='/Views/BaseLight.xaml'/>
+  </Window.Styles>
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source='/Views/BaseLightIcons.xaml'/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <DockPanel 
+      HorizontalAlignment="Stretch" 
+      VerticalAlignment="Stretch" 
+      LastChildFill="False">
+    
+    <Border Margin="10 10 10 10" Classes="SearchBox" Width="300" 
+        DockPanel.Dock="Top" 
+        HorizontalAlignment="Left">
+      <Grid ColumnDefinitions="*,Auto">
+          <TextBox Name="SearchBox" Classes="SearchBox" Grid.Column="0"></TextBox>
+          <DrawingPresenter Drawing="{DynamicResource Icon.Search}" Name="Icon"  Grid.Column="1" Height="14" Margin="5 0 5 0" />
+      </Grid>
+    </Border>
+
+    <TreeView Name="Objects" 
+        BorderThickness="0"              
+        Margin="0 10 0 10"
+        DockPanel.Dock="Top" 
+        VerticalAlignment="Stretch"
+        HorizontalAlignment="Stretch">
+      <TreeView.Styles>
+      </TreeView.Styles>  
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate ItemsSource="{Binding Items}">
+          <StackPanel Orientation="Horizontal">
+            <DrawingPresenter Drawing="{Binding Icon}" Name="Icon" Height="12" Margin="0 0 4 0" />
+            <StackPanel Width="300">
+              <TextBlock Text="{Binding Title}" FontSize="14"></TextBlock>
+              <TextBlock Text="{Binding Type}" FontSize="8"></TextBlock>
+            </StackPanel>
+            <ItemsControl Items="{Binding QueryLanguages}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <RadioButton IsChecked="{Binding IsSelected}" >
+                    <StackPanel>
+                      <TextBlock Text="{Binding Name}" FontSize="10"></TextBlock>
+                      <TextBlock Text="{Binding Description}" FontSize="8"></TextBlock>
+                    </StackPanel>
+                  </RadioButton>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>          
+    </TreeView>
+     
+    <StackPanel 
+        Orientation="Horizontal"
+        DockPanel.Dock="Bottom"
+        HorizontalAlignment="Right"
+        Margin="0 20 20 20">
+      <Button Name="Ok" Margin="5 5 5 5" Width="50">OK</Button>
+      <Button Name="Cancel" Margin="5 5 5 5" Width="50">Cancel</Button>
+    </StackPanel>
+
+  </DockPanel>
+
+</Window>
