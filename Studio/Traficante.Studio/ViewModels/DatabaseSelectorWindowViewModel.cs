@@ -41,7 +41,7 @@ namespace Traficante.Studio.ViewModels
         }
 
         [Reactive]
-        public ObjectModel SelectedObject { get; set; }
+        public ISelectableObject SelectedObject { get; set; }
 
         [Reactive]
         public QueryLanguageModel SelectedQueryLanguage { get; set; }
@@ -67,7 +67,18 @@ namespace Traficante.Studio.ViewModels
 
         private async Task<Unit> Ok()
         {
-            this.AppData.GetSelectedQuery().LanguageId = ((ISelectableObject)SelectedObject).QueryLanguage.Id;
+            this.AppData.GetSelectedQuery().SelectedLanguageId = SelectedObject.QueryLanguage.Id;
+
+            List<string> objPath = new List<string>();
+            IObjectModel obj = SelectedObject.Object;
+            do
+            {
+                objPath.Add(obj.Title);
+                obj = obj.Parent;
+            } while (obj != null);
+
+            this.AppData.GetSelectedQuery().SelectedObjectPath = objPath.ToArray();
+
             await CloseInteraction.Handle(Unit.Default);
             return Unit.Default;
         }

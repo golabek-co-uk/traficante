@@ -34,7 +34,8 @@ namespace Traficante.Studio.Views
         public TextBlock ResultsCount => this.FindControl<TextBlock>("ResultsCount");
         public TextBlock Ln => this.FindControl<TextBlock>("Ln");
         public TextBlock Col => this.FindControl<TextBlock>("Col");
-
+        public TextBlock SelectedObject => this.FindControl<TextBlock>("SelectedObject");
+        public TextBlock SelectedLanguage => this.FindControl<TextBlock>("SelectedLanguage");
 
         public QueryView()
         {
@@ -109,6 +110,22 @@ namespace Traficante.Studio.Views
                 this.BindCommand(ViewModel, x => x.SaveResultsAsCommand, x => x.ExportResultsAs);
 
                 this.Bind(ViewModel, x => x.ResultsCount, x => x.ResultsCount.Text)
+                    .DisposeWith(disposables);
+
+                this.WhenAnyValue(x => x.ViewModel.Query.SelectedLanguageId)
+                    .Subscribe(x =>
+                    {
+                        this.SelectedLanguage.Text = QueryLanguageModel.All.FirstOrDefault(y => y.Id == x)?.Name;
+                    })
+                    .DisposeWith(disposables);
+                this.WhenAnyValue(x => x.ViewModel.Query.SelectedObjectPath)
+                    .Subscribe(x =>
+                    {
+                        if (x != null)
+                            this.SelectedObject.Text = string.Join("->", x);
+                        else
+                            this.SelectedObject.Text = new NotSelectedDatabaseModel().Title;
+                    })
                     .DisposeWith(disposables);
 
             });

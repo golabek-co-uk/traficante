@@ -1,6 +1,8 @@
 ﻿using ReactiveUI;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
+using Traficante.Studio.ViewModels;
 
 namespace Traficante.Studio.Models
 {
@@ -22,20 +24,20 @@ namespace Traficante.Studio.Models
             set => this.RaiseAndSetIfChanged(ref _path, value);
         }
 
-        private string _languageId;
+        private string _selectedLanguageId;
         [DataMember]
-        public string LanguageId
+        public string SelectedLanguageId
         {
-            get => _languageId;
-            set => this.RaiseAndSetIfChanged(ref _languageId, value);
+            get => _selectedLanguageId;
+            set => this.RaiseAndSetIfChanged(ref _selectedLanguageId, value);
         }
 
-        private string _objectId;
+        private string[] _selectedObjectPath;
         [DataMember]
-        public string ObjectId
+        public string[] SelectedObjectPath
         {
-            get => _objectId;
-            set => this.RaiseAndSetIfChanged(ref _objectId, value);
+            get => _selectedObjectPath;
+            set => this.RaiseAndSetIfChanged(ref _selectedObjectPath, value);
         }
 
         public string AutoSavePath => System.IO.Path.Combine("AutoSave", this.Id);

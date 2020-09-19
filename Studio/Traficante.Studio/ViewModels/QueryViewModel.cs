@@ -117,9 +117,9 @@ namespace Traficante.Studio.ViewModels
                     else
                         Title = "New Query";
                 });
-        }
+    }
 
-        public Task<Unit> Run(Unit arg)
+    public Task<Unit> Run(Unit arg)
         {
             _runCancellationToken = new CancellationTokenSource();
             return Task.Run(() =>
