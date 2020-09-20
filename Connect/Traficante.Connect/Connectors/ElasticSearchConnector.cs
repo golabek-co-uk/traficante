@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Traficante.TSQL;
@@ -48,11 +50,38 @@ namespace Traficante.Connect.Connectors
                 indexName = path[1];
             }
 
-            Func <IDataReader> @delegate = () =>
+            Func<Task<object>> @delegate = () =>
             {
-                return new ElasticSearchDataReader(this, indexName, typeName, "{ \"query\": { \"match_all\": {} } }", ct);
+                return Task.FromResult((object)new ElasticSearchDataReader(this, indexName, typeName, "{ \"query\": { \"match_all\": {} } }", ct));
             };
             return @delegate;
+        }
+
+        public override async Task<object> RunQuery(string query, string language, string[] path, CancellationToken ct)
+        {
+            if (language == QueryLanguage.ElasticSearchDSL.Id)
+            {
+                var queryLines = query.Split('\n').SkipWhile(x => string.IsNullOrEmpty(x));
+
+                var requestString = queryLines.FirstOrDefault();
+                var queryString = string.Join('\n', queryLines.Skip(1));
+
+                var isPost = Regex.Match(requestString, "POST (.*)", RegexOptions.IgnoreCase);
+                if (isPost.Success)
+                {
+                    using (HttpClient client = new HttpClient())
+                    {
+                        var response = await client.PostAsync(
+                            ToFullUrl(isPost.Groups[0].Value),
+                            new StringContent(queryString, Encoding.UTF8, "application/json"),
+                            ct);
+                        response.EnsureSuccessStatusCode();
+                        var jsonString = await response.Content.ReadAsStringAsync();
+                        return jsonString;
+                    }
+                }
+            }
+            throw new TSQLException($"Not supported language: {language}");
         }
 
         public async Task<IEnumerable<string>> GetIndices()

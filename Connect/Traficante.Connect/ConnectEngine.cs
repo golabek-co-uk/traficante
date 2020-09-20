@@ -5,6 +5,11 @@ using Traficante.Connect.Connectors;
 using System.Linq;
 using System.Collections;
 using System.Threading;
+using System.Data;
+using Traficante.TSQL.Evaluator.Helpers;
+using System.Linq.Expressions;
+using System.Reflection.Emit;
+using System.Threading.Tasks;
 
 namespace Traficante.Connect
 {
@@ -31,7 +36,7 @@ namespace Traficante.Connect
             Connectors.Add(connector);
         }
 
-        public IEnumerable Run(string sql, CancellationToken ct = default)
+        public async Task<object> Run(string query, CancellationToken ct = default)
         {
             using (TSQLEngine sqlEngine = new TSQLEngine())
             {
@@ -55,8 +60,53 @@ namespace Traficante.Connect
                     return @delegate;
                 });
 
-                return sqlEngine.Run(sql, ct);
+                return sqlEngine.Run(query, ct);
             }
+        }
+
+        public async Task<object> Run(string query, string language, string[] path, CancellationToken ct = default)
+        {
+            if (string.IsNullOrEmpty(language) || language == QueryLanguage.TraficantSQL.Id)
+                return await Run(query, ct);
+
+            var alias = path.FirstOrDefault();
+            var connector = Connectors.FirstOrDefault(x => x.Config.Alias == alias);
+            var results = await connector.RunQuery(query, language, path.Skip(1).ToArray(), ct);
+
+            List<(string Name, Type FieldType)> resultFields = null;
+            if (results is Task)
+            {
+                Task<object> resultsTask = (Task<object>)results;
+                await Task.WhenAll(resultsTask);
+                try
+                {
+                    resultsTask.Wait();
+                    results = resultsTask.Result;
+                }
+                catch (AggregateException ex)
+                {
+                    throw ex.InnerException;
+                }
+            }
+            var resultType = results.GetType();
+            if (typeof(IDataReader).IsAssignableFrom(resultType))
+            {
+                var resultReader = (IDataReader)results;
+                var resultItemsType = typeof(object[]);
+                resultFields = Enumerable
+                    .Range(0, resultReader.FieldCount)
+                    .Select(x => (resultReader.GetName(x), resultReader.GetFieldType(x)))
+                    .ToList();
+                results = new DataReaderEnumerable(resultReader, ct);
+                Expression sequence = ExpressionHelpers.AsParallel(results, resultItemsType);
+                sequence = sequence.Select(resultItemExpression =>
+                {
+                    Type resultItemType = new AnonymousTypeBuilder().CreateAnonymousType(resultFields);
+                    return resultItemExpression.MapTo(resultItemType);
+                });
+                return ExpressionHelpers.Execute(sequence, ct);
+            }
+            return results;
         }
     }
 

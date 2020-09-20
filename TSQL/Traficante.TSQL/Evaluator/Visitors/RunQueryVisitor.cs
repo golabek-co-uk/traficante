@@ -1028,10 +1028,7 @@ namespace Traficante.TSQL.Evaluator.Visitors
             if (Nodes.Any())
             {
                 Expression last = Nodes.Pop();
-                last = last.WithCancellation(this._cancellationToken);
-                Expression<Func<object>> toStream = Expression.Lambda<Func<object>>(last);
-                var compiledToStream = toStream.Compile();
-                Result = compiledToStream();
+                Result = ExpressionHelpers.Execute(last, this._cancellationToken);
             }
         }
 

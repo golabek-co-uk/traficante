@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Data;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Traficante.Connect
 {
@@ -14,6 +16,11 @@ namespace Traficante.Connect
         }
 
         public virtual Delegate ResolveTable(string[] path, CancellationToken ct)
+        {
+            return null;
+        }
+
+        public virtual Task<object> RunQuery(string query, string language, string[] path, CancellationToken ct)
         {
             return null;
         }

@@ -4,5 +4,4 @@
     {
         public string Alias { get; set; }
     }
-
 }

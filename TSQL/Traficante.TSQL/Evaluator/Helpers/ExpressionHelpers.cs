@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -945,6 +946,15 @@ namespace Traficante.TSQL.Evaluator.Helpers
                 return expression.ConvertTo(typeof(string));
             return expression;
         }
+
+        public static object Execute(Expression expression, CancellationToken ct = default(CancellationToken))
+        {
+            var cancelableExpression = expression.WithCancellation(ct);
+            var lambdaExpression = Expression.Lambda<Func<object>>(cancelableExpression);
+            var compiledExpression = lambdaExpression.Compile();
+            return compiledExpression();
+        }
+
     }
 
     public class FieldExpression : Expression

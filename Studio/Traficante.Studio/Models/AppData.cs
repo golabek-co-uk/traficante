@@ -42,6 +42,16 @@ namespace Traficante.Studio.Models
             Objects.Insert(index, newModel);
         }
 
+        public ObjectModel GetObject(string alias)
+        {
+            foreach (IConnectionObjectModel model in Objects)
+            {
+                if (model.ConnectionAlias == alias)
+                    return (ObjectModel)model;
+            }
+            return null;
+        }
+
         private int _selectedQueryIndex;
         [DataMember]
         public int SelectedQueryIndex

@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Traficante.Connect.Connectors;
@@ -14,7 +15,7 @@ namespace Traficante.Connect.Tests
         {
             ConnectEngine connectEngine = new ConnectEngine();
             connectEngine.AddConector(new FilesConnectorConfig { Alias = "csv" });
-            var result = connectEngine.Run("SELECT id,email FROM csv.fromFile('employees.csv')").Cast<object>().ToList();
+            var result = ((IEnumerable)connectEngine.Run("SELECT id,email FROM csv.fromFile('employees.csv')")).Cast<object>().ToList();
             var itemType = result[0].GetType();
             Assert.AreEqual(8, result.Count);
             Assert.AreEqual("27", result[0].GetValue<string>("id"));
@@ -28,7 +29,7 @@ namespace Traficante.Connect.Tests
         {
             ConnectEngine connectEngine = new ConnectEngine();
             connectEngine.AddConector(new SqliteConnectorConfig { Alias = "chinook", Database = "chinook.db" });
-            var result = connectEngine.Run("SELECT EmployeeId, Email FROM chinook.employees").Cast<object>().ToList();
+            var result = ((IEnumerable)connectEngine.Run("SELECT EmployeeId, Email FROM chinook.employees")).Cast<object>().ToList();
             var itemType = result[0].GetType();
             Assert.AreEqual(8, result.Count);
             Assert.AreEqual(1, result[0].GetValue<int>("EmployeeId"));
@@ -43,10 +44,10 @@ namespace Traficante.Connect.Tests
             ConnectEngine connectEngine = new ConnectEngine();
             connectEngine.AddConector(new FilesConnectorConfig { Alias = "csv" });
             connectEngine.AddConector(new SqliteConnectorConfig { Alias = "chinook", Database = "chinook.db" });
-            var result = connectEngine.Run(@"
+            var result = ((IEnumerable)connectEngine.Run(@"
                 SELECT e2.EmployeeId, e1.last_name FROM csv.fromFile('employees.csv') e1
                 INNER JOIN chinook.employees e2 ON e1.Email = e2.email
-                ").Cast<object>().ToList();
+                ")).Cast<object>().ToList();
             var itemType = result[0].GetType();
             Assert.AreEqual(8, result.Count);
             Assert.AreEqual(1, result[0].GetValue<int>("e2.EmployeeId"));

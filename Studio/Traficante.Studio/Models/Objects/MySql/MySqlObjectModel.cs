@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Traficante.Connect;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.Services;
 using Traficante.Studio.ViewModels;
@@ -21,7 +22,8 @@ namespace Traficante.Studio.Models
         public override string Title => this.ConnectionInfo.Alias;
         public override object Icon => BaseLightIcons.Database;
         public string ConnectionAlias => this.ConnectionInfo.Alias;
-        public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.MySQLSQL };
+        public ConnectorConfig ConnectorConfig => this.ConnectionInfo.ToConectorConfig();
+        public QueryLanguage[] QueryLanguages => new[] { QueryLanguage.MySQLSQL };
         public ObservableCollection<IObjectModel> QueryableChildren => Children;
 
         public MySqlObjectModel() : base(null)
@@ -54,7 +56,7 @@ namespace Traficante.Studio.Models
     {
         public MySqlObjectModel Server { get; }
         public override object Icon => BaseLightIcons.Database;
-        public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.MySQLSQL };
+        public QueryLanguage[] QueryLanguages => new[] { QueryLanguage.MySQLSQL };
         public ObservableCollection<IObjectModel> QueryableChildren => null;
 
         public MySqlDatabaseObjectModel(MySqlObjectModel server, string name) : base(server)

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Traficante.Connect;
 using Traficante.Studio.Models;
 
 namespace Traficante.Studio.ViewModels
@@ -12,7 +13,7 @@ namespace Traficante.Studio.ViewModels
     {
         public IQueryableObjectModel Object { get; set; }
         public QueryLanguageRadioButtonModel[] QueryLanguages { get; set; }
-        public QueryLanguageModel QueryLanguage { get; set; }
+        public QueryLanguage QueryLanguage { get; set; }
         public override string Title => Object.Title;
         public override object Icon => Object.Icon;
 

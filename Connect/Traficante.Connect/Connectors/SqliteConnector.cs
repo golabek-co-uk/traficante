@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Traficante.TSQL;
 
 namespace Traficante.Connect.Connectors
 {
@@ -53,6 +55,20 @@ namespace Traficante.Connect.Connectors
                 }
             };
             return @delegate;
+        }
+
+        public override async Task<object> RunQuery(string query, string language, string[] path, CancellationToken ct)
+        {
+            if (language == QueryLanguage.SqliteSQL.Id)
+            {
+                SqliteConnection connection = new SqliteConnection(this.Config.ToConnectionString());
+                SqliteCommand command = new SqliteCommand();
+                command.Connection = connection;
+                command.CommandText = query;
+                await connection.OpenAsync(ct);
+                return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
+            }
+            throw new TSQLException($"Not supported language: {language}");
         }
 
         public async Task<IEnumerable<string>> GetTables()

@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Traficante.Connect;
 using Traficante.Connect.Connectors;
 using Traficante.Studio.ViewModels;
 using Traficante.Studio.Views;
@@ -21,7 +22,8 @@ namespace Traficante.Studio.Models
         public override string Title => this.ConnectionInfo.Alias;
         public override object Icon => BaseLightIcons.Database;
         public string ConnectionAlias => this.ConnectionInfo.Alias;
-        public QueryLanguageModel[] QueryLanguages => new[] { QueryLanguageModel.TraficantSQL };
+        public ConnectorConfig ConnectorConfig => this.ConnectionInfo.ToConectorConfig();
+        public QueryLanguage[] QueryLanguages => new[] { QueryLanguage.TraficantSQL, QueryLanguage.ElasticSearchDSL };
         public ObservableCollection<IObjectModel> QueryableChildren => null;
 
         public ElasticSearchObjectModel() : base(null)

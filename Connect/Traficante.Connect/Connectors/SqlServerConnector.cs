@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -7,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using Traficante.TSQL;
 using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.Connect.Connectors
@@ -64,6 +66,24 @@ namespace Traficante.Connect.Connectors
         }
 
         // https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql-server-schema-collections?view=netframework-4.8
+
+        public override async Task<object> RunQuery(string query, string language, string[] path, CancellationToken ct)
+        {
+            if (language == QueryLanguage.SqlServerSQL.Id)
+            {
+                using (SqlConnection connection = new SqlConnection(this.Config.ToConnectionString()))
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = query;
+                    await connection.OpenAsync(ct);
+                    if (path.Any())
+                        await connection.ChangeDatabaseAsync(path.First());
+                    return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
+                }
+            }
+            throw new TSQLException($"Not supported language: {language}");
+        }
 
         public async Task<IEnumerable<string>> GetDatabases()
         {

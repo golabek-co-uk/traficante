@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using Traficante.Connect;
+using Traficante.TSQL;
 using Traficante.TSQL.Evaluator.Visitors;
 
 namespace Traficante.Connect.Connectors
@@ -63,6 +65,24 @@ namespace Traficante.Connect.Connectors
                 await connection.OpenAsync(ct);
                 connection.ChangeDatabase(databaseName);
             }
+        }
+
+        public override async Task<object> RunQuery(string query, string language, string[] path, CancellationToken ct)
+        {
+            if (language == QueryLanguage.MySQLSQL.Id)
+            {
+                using (MySqlConnection connection = new MySqlConnection(this.Config.ToConnectionString()))
+                using (MySqlCommand command = new MySqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = query;
+                    await connection.OpenAsync(ct);
+                    if (path.Any())
+                        connection.ChangeDatabase(path.First());
+                    return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
+                }
+            }
+            throw new TSQLException($"Not supported language: {language}");
         }
 
         public async Task<IEnumerable<string>> GetDatabases()

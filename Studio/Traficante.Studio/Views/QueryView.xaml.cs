@@ -15,6 +15,7 @@ using System.Linq;
 using DynamicData.Binding;
 using Avalonia.VisualTree;
 using System.Diagnostics;
+using Traficante.Connect;
 
 namespace Traficante.Studio.Views
 {
@@ -115,7 +116,7 @@ namespace Traficante.Studio.Views
                 this.WhenAnyValue(x => x.ViewModel.Query.SelectedLanguageId)
                     .Subscribe(x =>
                     {
-                        this.SelectedLanguage.Text = QueryLanguageModel.All.FirstOrDefault(y => y.Id == x)?.Name;
+                        this.SelectedLanguage.Text = QueryLanguage.All.FirstOrDefault(y => y.Id == x)?.Name;
                     })
                     .DisposeWith(disposables);
                 this.WhenAnyValue(x => x.ViewModel.Query.SelectedObjectPath)

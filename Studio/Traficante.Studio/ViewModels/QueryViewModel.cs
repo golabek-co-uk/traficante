@@ -122,7 +122,7 @@ namespace Traficante.Studio.ViewModels
     public Task<Unit> Run(Unit arg)
         {
             _runCancellationToken = new CancellationTokenSource();
-            return Task.Run(() =>
+            return Task.Run(async () =>
             {
                 RxApp.MainThreadScheduler.Schedule(() =>
                 {
@@ -136,22 +136,15 @@ namespace Traficante.Studio.ViewModels
                 try
                 {
                     ConnectEngine connectEngine = new ConnectEngine();
-                    foreach (var obj in this.AppData.Objects)
-                    {
-                        if (obj is SqlServerObjectModel)
-                            connectEngine.AddConector(((SqlServerObjectModel)obj).ConnectionInfo.ToConectorConfig());
-                        if (obj is MySqlObjectModel)
-                            connectEngine.AddConector(((MySqlObjectModel)obj).ConnectionInfo.ToConectorConfig());
-                        if (obj is SqliteObjectModel)
-                            connectEngine.AddConector(((SqliteObjectModel)obj).ConnectionInfo.ToConectorConfig());
-                        if (obj is ElasticSearchObjectModel)
-                            connectEngine.AddConector(((ElasticSearchObjectModel)obj).ConnectionInfo.ToConectorConfig());
-                        if (obj is FilesObjectModel)
-                            connectEngine.AddConector(((FilesObjectModel)obj).ConnectionInfo.ToConectorConfig());
-                    }
+                    foreach (IConnectionObjectModel obj in this.AppData.Objects)
+                        connectEngine.AddConector(obj.ConnectorConfig);
 
-                    var sql = string.IsNullOrEmpty(this.SelectedText) == false ? this.SelectedText : this.Query.Text;
-                    var items = connectEngine.Run(sql, this._runCancellationToken.Token);
+                    var query = string.IsNullOrEmpty(this.SelectedText) == false ? this.SelectedText : this.Query.Text;
+                    var items = await connectEngine.Run(
+                        query, 
+                        this.Query.SelectedLanguageId, 
+                        this.Query.SelectedObjectPath,
+                        this._runCancellationToken.Token);
                     var itemsType = items.GetType().GenericTypeArguments.FirstOrDefault();
 
                     itemsType
@@ -164,7 +157,6 @@ namespace Traficante.Studio.ViewModels
                                Binding = new DataBinding(x.Name),
                            })
                            .Subscribe(this.ResultsDataColumns.Add);
-
 
                     Type itemWrapperType = new AnonymousTypeBuilder().CreateWrapperTypeFor(itemsType); ;
                     FieldInfo itemWrapperInnerField = itemWrapperType.GetFields().FirstOrDefault(x => x.Name == "_inner"); ;

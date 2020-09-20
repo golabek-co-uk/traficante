@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Traficante.Studio.Models;
+using Traficante.Connect;
 
 namespace Traficante.Studio.ViewModels
 {
@@ -44,7 +45,7 @@ namespace Traficante.Studio.ViewModels
         public ISelectableObject SelectedObject { get; set; }
 
         [Reactive]
-        public QueryLanguageModel SelectedQueryLanguage { get; set; }
+        public QueryLanguage SelectedQueryLanguage { get; set; }
 
         public DatabaseSelectorWindowViewModel(AppData appData)
         {
