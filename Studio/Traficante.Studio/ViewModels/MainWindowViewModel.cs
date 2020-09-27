@@ -5,6 +5,7 @@ using System.Reactive.Concurrency;
 using Avalonia.Controls;
 using Dock.Model;
 using ReactiveUI;
+using Traficante.Connect;
 using Traficante.Studio.Models;
 using Traficante.Studio.Views;
 
@@ -98,7 +99,8 @@ namespace Traficante.Studio.ViewModels
             {
                 _appData.Queries.Add(new QueryModel
                 {
-                    Id = Guid.NewGuid().ToString()
+                    Id = Guid.NewGuid().ToString(),
+                    SelectedLanguageId = QueryLanguage.TraficantSQL.Id
                 });
                 x.SetOutput(Unit.Default);
             });
@@ -123,7 +125,8 @@ namespace Traficante.Studio.ViewModels
                     _appData.Queries.Add(new QueryModel
                     {
                         Id = Guid.NewGuid().ToString(),
-                        Path = path
+                        Path = path,
+                        SelectedLanguageId = QueryLanguage.TraficantSQL.Id
                     });
                 }
                 x.SetOutput(Unit.Default);
