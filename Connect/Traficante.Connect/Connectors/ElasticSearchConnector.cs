@@ -78,6 +78,46 @@ namespace Traficante.Connect.Connectors
                         return jsonString;
                     }
                 }
+                var isGet = Regex.Match(requestString, "GET (.*)", RegexOptions.IgnoreCase);
+                if (isGet.Success)
+                {
+                    using (HttpClient client = new HttpClient())
+                    {
+                        var response = await client.GetAsync(
+                            ToFullUrl(isPost.Groups[0].Value),
+                            ct);
+                        response.EnsureSuccessStatusCode();
+                        var jsonString = await response.Content.ReadAsStringAsync();
+                        return jsonString;
+                    }
+                }
+                var isPut = Regex.Match(requestString, "PUT (.*)", RegexOptions.IgnoreCase);
+                if (isPut.Success)
+                {
+                    using (HttpClient client = new HttpClient())
+                    {
+                        var response = await client.PutAsync(
+                            ToFullUrl(isPost.Groups[0].Value),
+                            new StringContent(queryString, Encoding.UTF8, "application/json"),
+                            ct);
+                        response.EnsureSuccessStatusCode();
+                        var jsonString = await response.Content.ReadAsStringAsync();
+                        return jsonString;
+                    }
+                }
+                var isDelete = Regex.Match(requestString, "DELETE (.*)", RegexOptions.IgnoreCase);
+                if (isDelete.Success)
+                {
+                    using (HttpClient client = new HttpClient())
+                    {
+                        var response = await client.DeleteAsync(
+                            ToFullUrl(isPost.Groups[0].Value),
+                            ct);
+                        response.EnsureSuccessStatusCode();
+                        var jsonString = await response.Content.ReadAsStringAsync();
+                        return jsonString;
+                    }
+                }
             }
             throw new TSQLException($"Not supported language: {language}");
         }
