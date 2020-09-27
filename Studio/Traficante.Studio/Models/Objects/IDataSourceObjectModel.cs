@@ -1,12 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using Traficante.Connect;
-using Traficante.Studio.ViewModels;
 
 namespace Traficante.Studio.Models
 {
-    public interface IQueryableObjectModel : IObjectModel
+    public interface IDataSourceObjectModel : IObjectModel
     {
+        public string ConnectionAlias { get; }
+        public ConnectorConfig ConnectorConfig { get; }
         QueryLanguage[] QueryLanguages { get; }
         ObservableCollection<IObjectModel> QueryableChildren { get; }
+        public bool HasQueryableChildren { get; }
     }
 }

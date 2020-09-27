@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using Traficante.TSQL;
 using Traficante.Connect.Connectors;
 using System.Linq;
-using System.Collections;
 using System.Threading;
 using System.Data;
 using Traficante.TSQL.Evaluator.Helpers;
 using System.Linq.Expressions;
-using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace Traficante.Connect
@@ -45,7 +43,7 @@ namespace Traficante.Connect
                     var alias = path.FirstOrDefault() ?? name;
                     var connector = Connectors.FirstOrDefault(x => string.Equals(x.Config.Alias, alias, StringComparison.InvariantCultureIgnoreCase));
                     if (connector == null)
-                        throw new ApplicationException($"Cannot find the connector with the alias '{alias}'");
+                        throw new ApplicationException($"Cannot find the datebase with the alias '{alias}'");
                     Delegate @delegate = connector.ResolveTable(path.Append(name).ToArray(), ct);
                     return @delegate;
                 });
@@ -71,6 +69,8 @@ namespace Traficante.Connect
 
             var alias = path.FirstOrDefault();
             var connector = Connectors.FirstOrDefault(x => x.Config.Alias == alias);
+            if (connector == null)
+                throw new ApplicationException($"Cannot find the datebase with the alias '{alias}'");
             var results = await connector.RunQuery(query, language, path.Skip(1).ToArray(), ct);
 
             List<(string Name, Type FieldType)> resultFields = null;

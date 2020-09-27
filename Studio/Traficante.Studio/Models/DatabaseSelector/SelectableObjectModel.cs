@@ -1,4 +1,5 @@
 ﻿using ReactiveUI;
+using SharpDX.Direct3D11;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,21 +12,23 @@ namespace Traficante.Studio.ViewModels
 {
     public class SelectableObjectModel : ObjectModel, ISelectableObject
     {
-        public IQueryableObjectModel Object { get; set; }
+        public IDataSourceObjectModel Object { get; set; }
         public QueryLanguageRadioButtonModel[] QueryLanguages { get; set; }
         public QueryLanguage QueryLanguage { get; set; }
         public override string Title => Object.Title;
         public override object Icon => Object.Icon;
 
 
-        public SelectableObjectModel(IQueryableObjectModel queryableObject) : base(null)
+        public SelectableObjectModel(IDataSourceObjectModel dataSource) : base(null)
         {
-            this.Object = queryableObject;
-            this.QueryLanguages = queryableObject
+            this.Object = dataSource;
+            this.QueryLanguages = dataSource
                 .QueryLanguages
                 .Select(x => new QueryLanguageRadioButtonModel(x, this))
                 .ToArray();
             this.QueryLanguage = this.QueryLanguages.FirstOrDefault()?.QueryLanguage;
+            if (dataSource.HasQueryableChildren == false)
+                this.Children.Clear();
         }
 
         public override void LoadChildren()

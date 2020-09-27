@@ -71,16 +71,14 @@ namespace Traficante.Connect.Connectors
         {
             if (language == QueryLanguage.MySQLSQL.Id)
             {
-                using (MySqlConnection connection = new MySqlConnection(this.Config.ToConnectionString()))
-                using (MySqlCommand command = new MySqlCommand())
-                {
-                    command.Connection = connection;
-                    command.CommandText = query;
-                    await connection.OpenAsync(ct);
-                    if (path.Any())
-                        connection.ChangeDatabase(path.First());
-                    return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
-                }
+                MySqlConnection connection = new MySqlConnection(this.Config.ToConnectionString());
+                MySqlCommand command = new MySqlCommand();
+                command.Connection = connection;
+                command.CommandText = query;
+                await connection.OpenAsync(ct);
+                if (path.Any())
+                    connection.ChangeDatabase(path.First());
+                return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
             }
             throw new TSQLException($"Not supported language: {language}");
         }

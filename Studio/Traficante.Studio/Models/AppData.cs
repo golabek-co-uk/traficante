@@ -20,8 +20,8 @@ namespace Traficante.Studio.Models
 
         public void AddObject(ObjectModel newModel)
         {
-            var newModelAlias = (IConnectionObjectModel)newModel;
-            foreach(IConnectionObjectModel model in Objects)
+            var newModelAlias = (IDataSourceObjectModel)newModel;
+            foreach(IDataSourceObjectModel model in Objects)
             {
                 if (string.Equals(model.ConnectionAlias, newModelAlias.ConnectionAlias, StringComparison.CurrentCultureIgnoreCase))
                     throw new Exception($"Another connection with '{newModelAlias.ConnectionAlias}' alias already exists.");
@@ -31,8 +31,8 @@ namespace Traficante.Studio.Models
 
         public void UpdateObject(ObjectModel existingModel, ObjectModel newModel)
         {
-            var newModelAlias = (IConnectionObjectModel)newModel;
-            foreach (IConnectionObjectModel model in Objects)
+            var newModelAlias = (IDataSourceObjectModel)newModel;
+            foreach (IDataSourceObjectModel model in Objects)
             {
                 if (model != existingModel && string.Equals(model.ConnectionAlias, newModelAlias.ConnectionAlias, StringComparison.CurrentCultureIgnoreCase))
                     throw new Exception($"Another connection with '{newModelAlias.ConnectionAlias}' alias already exists.");
@@ -44,7 +44,7 @@ namespace Traficante.Studio.Models
 
         public ObjectModel GetObject(string alias)
         {
-            foreach (IConnectionObjectModel model in Objects)
+            foreach (IDataSourceObjectModel model in Objects)
             {
                 if (model.ConnectionAlias == alias)
                     return (ObjectModel)model;

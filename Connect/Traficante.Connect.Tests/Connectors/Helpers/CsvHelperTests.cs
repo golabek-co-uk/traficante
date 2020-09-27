@@ -2,6 +2,7 @@
 using Traficante.Connect.Connectors;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace Traficante.Connect.Tests.Connectors
 {
@@ -20,7 +21,7 @@ namespace Traficante.Connect.Tests.Connectors
             });
             var connectEngine = new ConnectEngine();
             connectEngine.AddConector(csvConnector);
-            var results = connectEngine.Run("select * from csv.[employees.csv]").Cast<object>().ToList();
+            var results = ((IEnumerable)connectEngine.Run("select * from csv.[employees.csv]").Result).Cast<object>().ToList();
             Assert.AreEqual(8, results.Count);
         }
     }

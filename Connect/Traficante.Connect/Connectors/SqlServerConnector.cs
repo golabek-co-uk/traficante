@@ -71,16 +71,14 @@ namespace Traficante.Connect.Connectors
         {
             if (language == QueryLanguage.SqlServerSQL.Id)
             {
-                using (SqlConnection connection = new SqlConnection(this.Config.ToConnectionString()))
-                using (SqlCommand command = new SqlCommand())
-                {
-                    command.Connection = connection;
-                    command.CommandText = query;
-                    await connection.OpenAsync(ct);
-                    if (path.Any())
-                        await connection.ChangeDatabaseAsync(path.First());
-                    return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
-                }
+                SqlConnection connection = new SqlConnection(this.Config.ToConnectionString());
+                SqlCommand command = new SqlCommand();
+                command.Connection = connection;
+                command.CommandText = query;
+                await connection.OpenAsync(ct);
+                if (path.Any())
+                    await connection.ChangeDatabaseAsync(path.First());
+                return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, ct);
             }
             throw new TSQLException($"Not supported language: {language}");
         }

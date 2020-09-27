@@ -15,7 +15,7 @@ using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class MySqlObjectModel : ObjectModel, IConnectionObjectModel, IQueryableObjectModel
+    public class MySqlObjectModel : ObjectModel, IDataSourceObjectModel
     {
         [DataMember]
         public MySqlConnectionModel ConnectionInfo { get; set; }
@@ -25,7 +25,7 @@ namespace Traficante.Studio.Models
         public ConnectorConfig ConnectorConfig => this.ConnectionInfo.ToConectorConfig();
         public QueryLanguage[] QueryLanguages => new[] { QueryLanguage.MySQLSQL };
         public ObservableCollection<IObjectModel> QueryableChildren => Children;
-
+        public bool HasQueryableChildren => true;
         public MySqlObjectModel() : base(null)
         {
             ConnectionInfo = new MySqlConnectionModel();
@@ -52,7 +52,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class MySqlDatabaseObjectModel : ObjectModel, IQueryableObjectModel
+    public class MySqlDatabaseObjectModel : ObjectModel
     {
         public MySqlObjectModel Server { get; }
         public override object Icon => BaseLightIcons.Database;

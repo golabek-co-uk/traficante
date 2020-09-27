@@ -2,6 +2,7 @@
 using Traficante.Connect.Connectors;
 using System.Linq;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace Traficante.Connect.Tests.Connectors
 {
@@ -20,7 +21,7 @@ namespace Traficante.Connect.Tests.Connectors
             });
             var connectEngine = new ConnectEngine();
             connectEngine.AddConector(excelConnector);
-            var results = connectEngine.Run("select * from excel.[employees.xlsx]").Cast<object>().ToList();
+            var results = ((IEnumerable)connectEngine.Run("select * from excel.[employees.xlsx]")).Cast<object>().ToList();
             Assert.AreEqual(9, results.Count);
         }
 
@@ -36,7 +37,7 @@ namespace Traficante.Connect.Tests.Connectors
             });
             var connectEngine = new ConnectEngine();
             connectEngine.AddConector(excelConnector);
-            var results = connectEngine.Run("select * from excel.[employees.xlsx].Sheet1").Cast<object>().ToList();
+            var results = ((IEnumerable)connectEngine.Run("select * from excel.[employees.xlsx].Sheet1")).Cast<object>().ToList();
             Assert.AreEqual(9, results.Count);
         }
 

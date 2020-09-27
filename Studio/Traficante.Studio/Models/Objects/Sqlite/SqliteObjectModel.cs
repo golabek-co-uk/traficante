@@ -15,7 +15,7 @@ using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class SqliteObjectModel : ObjectModel, IConnectionObjectModel, IQueryableObjectModel
+    public class SqliteObjectModel : ObjectModel, IDataSourceObjectModel
     {
         [DataMember]
         public SqliteConnectionModel ConnectionInfo { get; set; }
@@ -25,7 +25,7 @@ namespace Traficante.Studio.Models
         public ConnectorConfig ConnectorConfig => this.ConnectionInfo.ToConectorConfig();
         public QueryLanguage[] QueryLanguages => new[] { QueryLanguage.SqliteSQL };
         public ObservableCollection<IObjectModel> QueryableChildren => null;
-
+        public bool HasQueryableChildren => false;
         public SqliteObjectModel() : base(null)
         {
             ConnectionInfo = new SqliteConnectionModel();

@@ -136,7 +136,7 @@ namespace Traficante.Studio.ViewModels
                 try
                 {
                     ConnectEngine connectEngine = new ConnectEngine();
-                    foreach (IConnectionObjectModel obj in this.AppData.Objects)
+                    foreach (IDataSourceObjectModel obj in this.AppData.Objects)
                         connectEngine.AddConector(obj.ConnectorConfig);
 
                     var query = string.IsNullOrEmpty(this.SelectedText) == false ? this.SelectedText : this.Query.Text;
@@ -345,43 +345,4 @@ namespace Traficante.Studio.ViewModels
             return null;
         }
     }
-
-    //public class ValueSubject : ISubject<object>, IDisposable
-    //{
-    //    private IAvaloniaObject target;
-    //    private AvaloniaProperty targetProperty;
-
-    //    public ValueSubject(IAvaloniaObject target, AvaloniaProperty targetProperty)
-    //    {
-    //        this.target = target;
-    //        this.targetProperty = targetProperty;
-    //    }
-
-    //    public void Dispose()
-    //    {
-            
-    //    }
-
-    //    public void OnCompleted()
-    //    {
-           
-    //    }
-
-    //    public void OnError(Exception error)
-    //    {
-            
-    //    }
-
-    //    public void OnNext(object value)
-    //    {
-    //        Console.WriteLine(value?.ToString());
-    //    }
-
-    //    public IDisposable Subscribe(IObserver<object> observer)
-    //    {
-            
-    //        return this;
-    //    }
-    //}
-
 }

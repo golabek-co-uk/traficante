@@ -5,7 +5,7 @@ namespace Traficante.Studio.ViewModels
 {
     public interface ISelectableObject
     {
-        IQueryableObjectModel Object { get; }
+        IDataSourceObjectModel Object { get; }
         public string Title { get; }
         public object Icon { get; }
         QueryLanguage QueryLanguage { get; set; }

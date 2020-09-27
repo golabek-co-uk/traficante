@@ -20,26 +20,7 @@ namespace Traficante.Studio.ViewModels
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
         public Interaction<Unit, Unit> CloseInteraction { get; } = new Interaction<Unit, Unit>();
 
-        public IEnumerable<object> Objects
-        {
-            get
-            {
-                var objects = 
-                    new List<ISelectableObject>() { new NotSelectedDatabaseModel() }
-                    .Concat(
-                        this.AppData.Objects.Select<ObjectModel, ISelectableObject>(objectModel =>
-                        {
-                            if (objectModel is IQueryableObjectModel)
-                            {
-                                var queryableObject = (IQueryableObjectModel)objectModel;
-                                return new SelectableObjectModel(queryableObject);
-                            }
-                            return null;
-                        }))
-                    .Where(x => x != null);
-                return objects;
-            }
-        }
+        public IEnumerable<ISelectableObject> Objects { get; set; }
 
         [Reactive]
         public ISelectableObject SelectedObject { get; set; }
@@ -50,6 +31,17 @@ namespace Traficante.Studio.ViewModels
         public DatabaseSelectorWindowViewModel(AppData appData)
         {
             AppData = appData;
+
+            Objects =
+                new List<ISelectableObject>() { new NotSelectedDatabaseModel() }
+                .Concat(
+                    this.AppData.Objects.Select<ObjectModel, ISelectableObject>(objectModel =>
+                    {
+                        if (objectModel is IDataSourceObjectModel dataSourceObject)
+                            return new SelectableObjectModel(dataSourceObject);
+                        return null;
+                    }))
+                .Where(x => x != null);
 
             OkCommand = ReactiveCommand
                 .CreateFromTask(
@@ -72,12 +64,11 @@ namespace Traficante.Studio.ViewModels
 
             List<string> objPath = new List<string>();
             IObjectModel obj = SelectedObject.Object;
-            do
+            while (obj != null)
             {
                 objPath.Add(obj.Title);
                 obj = obj.Parent;
-            } while (obj != null);
-
+            }
             this.AppData.GetSelectedQuery().SelectedObjectPath = objPath.ToArray();
 
             await CloseInteraction.Handle(Unit.Default);

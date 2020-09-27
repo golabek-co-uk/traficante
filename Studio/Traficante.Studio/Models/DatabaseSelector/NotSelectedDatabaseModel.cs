@@ -8,7 +8,7 @@ namespace Traficante.Studio.ViewModels
 {
     public class NotSelectedDatabaseModel : ObjectModel, ISelectableObject
     {
-        public IQueryableObjectModel Object { get; set; }
+        public IDataSourceObjectModel Object { get; set; }
         public QueryLanguageRadioButtonModel[] QueryLanguages { get; set; }
         public QueryLanguage QueryLanguage { get; set; }
         public override string Title => "Not Selected";

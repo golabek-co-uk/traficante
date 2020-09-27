@@ -16,7 +16,7 @@ using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class SqlServerObjectModel : ObjectModel, IConnectionObjectModel, IQueryableObjectModel
+    public class SqlServerObjectModel : ObjectModel, IDataSourceObjectModel
     {
         [DataMember]
         public SqlServerConnectionModel ConnectionInfo { get; set; }
@@ -26,6 +26,7 @@ namespace Traficante.Studio.Models
         public ConnectorConfig ConnectorConfig => this.ConnectionInfo.ToConectorConfig();
         public QueryLanguage[] QueryLanguages => new[] { QueryLanguage.SqlServerSQL };
         public ObservableCollection<IObjectModel> QueryableChildren => Children;
+        public bool HasQueryableChildren => true;
 
         public SqlServerObjectModel() : base(null)
         {
@@ -53,7 +54,7 @@ namespace Traficante.Studio.Models
         }
     }
 
-    public class SqlServerDatabaseObjectModel : ObjectModel, IQueryableObjectModel
+    public class SqlServerDatabaseObjectModel : ObjectModel
     {
         public SqlServerObjectModel Server { get; }
         public override object Icon => BaseLightIcons.Database;

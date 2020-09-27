@@ -29,8 +29,8 @@
           <StackPanel Orientation="Horizontal">
             <DrawingPresenter Drawing="{DynamicResource Icon.Database}" Height="12" Margin="0 0 4 0" />
             <StackPanel>
-              <TextBlock Name="SelectedObject">Not Selected</TextBlock>
-              <TextBlock Name="SelectedLanguage" FontSize="8">Traficant SQL</TextBlock>
+              <TextBlock Name="SelectedObject"></TextBlock>
+              <TextBlock Name="SelectedLanguage" FontSize="8"></TextBlock>
             </StackPanel>
           </StackPanel>
         </Button>

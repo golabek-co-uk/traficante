@@ -122,8 +122,8 @@ namespace Traficante.Studio.Views
                 this.WhenAnyValue(x => x.ViewModel.Query.SelectedObjectPath)
                     .Subscribe(x =>
                     {
-                        if (x != null)
-                            this.SelectedObject.Text = string.Join("->", x);
+                        if (x != null && x.Length > 0)
+                            this.SelectedObject.Text = string.Join(".", x);
                         else
                             this.SelectedObject.Text = new NotSelectedDatabaseModel().Title;
                     })

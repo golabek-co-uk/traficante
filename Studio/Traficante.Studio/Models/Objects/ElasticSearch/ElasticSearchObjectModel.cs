@@ -5,17 +5,15 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Traficante.Connect;
 using Traficante.Connect.Connectors;
-using Traficante.Studio.ViewModels;
 using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class ElasticSearchObjectModel : ObjectModel, IConnectionObjectModel, IQueryableObjectModel
+    public class ElasticSearchObjectModel : ObjectModel, IDataSourceObjectModel
     {
         [DataMember]
         public ElasticSearchConnectionModel ConnectionInfo { get; set; }
@@ -25,6 +23,7 @@ namespace Traficante.Studio.Models
         public ConnectorConfig ConnectorConfig => this.ConnectionInfo.ToConectorConfig();
         public QueryLanguage[] QueryLanguages => new[] { QueryLanguage.TraficantSQL, QueryLanguage.ElasticSearchDSL };
         public ObservableCollection<IObjectModel> QueryableChildren => null;
+        public bool HasQueryableChildren => false;
 
         public ElasticSearchObjectModel() : base(null)
         {

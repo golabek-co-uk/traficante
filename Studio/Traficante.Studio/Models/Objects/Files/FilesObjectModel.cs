@@ -19,7 +19,7 @@ using Traficante.Studio.Views;
 
 namespace Traficante.Studio.Models
 {
-    public class FilesObjectModel : ObjectModel, IConnectionObjectModel, IQueryableObjectModel
+    public class FilesObjectModel : ObjectModel, IDataSourceObjectModel
     {
         [DataMember]
         [Reactive]
@@ -30,6 +30,7 @@ namespace Traficante.Studio.Models
         public ConnectorConfig ConnectorConfig => this.ConnectionInfo.ToConectorConfig();
         public QueryLanguage[] QueryLanguages => new[] { QueryLanguage.TraficantSQL };
         public ObservableCollection<IObjectModel> QueryableChildren => null;
+        public bool HasQueryableChildren => false;
 
         public FilesObjectModel() : base(null)
         {
