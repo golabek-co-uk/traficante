@@ -34,4 +34,4 @@ steps:
     #configuration: '$(buildConfiguration)'
     testSelector: testAssemblies
     testAssemblyVer2:
-      Traficante.*.Tests.dll
+      **\Traficante.*.Tests.dll
